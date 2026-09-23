@@ -1,0 +1,75 @@
+import '../models/match_model.dart';
+
+class MockMatchesRepository {
+  MockMatchesRepository._();
+
+  static const List<MatchModel> matches = [
+    MatchModel(
+      id: 'm1',
+      sportId: 'football',
+      sportName: 'Football (7v7)',
+      hostName: 'Vijay Sethu',
+      hostAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+      hostPhone: '+91 98765 43210',
+      venueId: 'v1',
+      venueName: 'Madurai Turf Arena',
+      area: 'KK Nagar',
+      date: 'Today, 08:00 PM',
+      time: '08:00 PM - 09:00 PM',
+      skillLevel: 'Intermediate',
+      totalPlayersNeeded: 14,
+      joinedPlayersCount: 11,
+      playerAvatars: [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=150&q=80',
+      ],
+      pricePerPlayer: 120.0,
+      description: 'Friendly 7v7 football match. We need 3 more players. Bibs and match balls provided!',
+    ),
+    MatchModel(
+      id: 'm2',
+      sportId: 'cricket',
+      sportName: 'Box Cricket',
+      hostName: 'Manojh Kumar',
+      hostAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+      hostPhone: '+91 94433 11224',
+      venueId: 'v1',
+      venueName: 'Madurai Turf Arena',
+      area: 'KK Nagar',
+      date: 'Tomorrow, 07:00 AM',
+      time: '07:00 AM - 09:00 AM',
+      skillLevel: 'Open to All',
+      totalPlayersNeeded: 12,
+      joinedPlayersCount: 9,
+      playerAvatars: [
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=150&q=80',
+      ],
+      pricePerPlayer: 150.0,
+      description: 'Morning tennis ball box cricket match! 10 overs per inning. All skill levels welcome.',
+    ),
+    MatchModel(
+      id: 'm3',
+      sportId: 'badminton',
+      sportName: 'Badminton Doubles',
+      hostName: 'Priya Dharshini',
+      hostAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+      hostPhone: '+91 99887 76655',
+      venueId: 'v2',
+      venueName: 'Royal Badminton Hub',
+      area: 'Anna Nagar',
+      date: 'Today, 06:00 PM',
+      time: '06:00 PM - 07:00 PM',
+      skillLevel: 'Advanced',
+      totalPlayersNeeded: 4,
+      joinedPlayersCount: 3,
+      playerAvatars: [
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
+      ],
+      pricePerPlayer: 115.0,
+      description: 'Fast-paced doubles smash game. Yonex Mavis 350 shuttles provided.',
+    ),
+  ];
+}
