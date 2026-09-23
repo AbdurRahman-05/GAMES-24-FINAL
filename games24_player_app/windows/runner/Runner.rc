@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.playhub.madurai" "\0"
-            VALUE "FileDescription", "playhub_madurai" "\0"
+            VALUE "CompanyName", "com.example" "\0"
+            VALUE "FileDescription", "games24_player_app" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "playhub_madurai" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.playhub.madurai. All rights reserved." "\0"
-            VALUE "OriginalFilename", "playhub_madurai.exe" "\0"
-            VALUE "ProductName", "playhub_madurai" "\0"
+            VALUE "InternalName", "games24_player_app" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
+            VALUE "OriginalFilename", "games24_player_app.exe" "\0"
+            VALUE "ProductName", "games24_player_app" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
