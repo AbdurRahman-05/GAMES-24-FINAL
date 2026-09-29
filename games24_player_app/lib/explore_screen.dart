@@ -9,6 +9,39 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
+  final List<Map<String, dynamic>> _allTurfs = [
+    {
+      'name': 'Apex Sports Club',
+      'price': '₹1,200',
+      'location': 'Koramangala • 1.2 km away',
+      'imageUrl': 'https://picsum.photos/seed/turf1/800/400',
+      'rating': '4.9',
+      'reviews': '128',
+      'sports': 'Football • Cricket',
+      'tags': ['Floodlights', 'Parking', 'Changing Room'],
+    },
+    {
+      'name': 'Metro Arena Indoor',
+      'price': '₹950',
+      'location': 'Indiranagar • 2.5 km away',
+      'imageUrl': 'https://picsum.photos/seed/turf2/800/400',
+      'rating': '4.7',
+      'reviews': '94',
+      'sports': 'Badminton • Tennis',
+      'tags': ['Indoor AC', 'Cafeteria'],
+    },
+    {
+      'name': 'Green Valley Arena',
+      'price': '₹1,500',
+      'location': 'HSR Layout • 3.0 km away',
+      'imageUrl': 'https://picsum.photos/seed/turf3/800/400',
+      'rating': '4.8',
+      'reviews': '210',
+      'sports': 'Football • Basketball',
+      'tags': ['Synthetic Grass', 'Washrooms'],
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -104,13 +137,82 @@ class _ExploreScreenState extends State<ExploreScreen> {
           const SizedBox(width: 12),
           const Icon(Icons.search, color: Color(0xFF6B7280), size: 20),
           const SizedBox(width: 8),
-          const Expanded(
-            child: Text(
-              'Search turfs, locations, sports...',
-              style: TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 14,
-              ),
+          Expanded(
+            child: Autocomplete<Map<String, dynamic>>(
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                if (textEditingValue.text.isEmpty) {
+                  return const Iterable<Map<String, dynamic>>.empty();
+                }
+                return _allTurfs.where((turf) {
+                  return turf['name']
+                      .toString()
+                      .toLowerCase()
+                      .contains(textEditingValue.text.toLowerCase());
+                });
+              },
+              displayStringForOption: (option) => option['name'],
+              onSelected: (option) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookingScreen(
+                      turfName: option['name'],
+                      imageUrl: option['imageUrl'],
+                      price: option['price'],
+                      location: option['location'],
+                      sports: (option['sports'] as String).split(' • '),
+                    ),
+                  ),
+                );
+              },
+              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                return TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  decoration: const InputDecoration(
+                    hintText: 'Search turfs, locations, sports...',
+                    hintStyle: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.only(top: 10),
+                  ),
+                  style: const TextStyle(fontSize: 14),
+                );
+              },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 8,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width - 92,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ListView.separated(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        itemBuilder: (context, index) {
+                          final option = options.elementAt(index);
+                          return ListTile(
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(option['imageUrl'], width: 40, height: 40, fit: BoxFit.cover),
+                            ),
+                            title: Text(option['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            subtitle: Text(option['location'], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                            onTap: () => onSelected(option),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Container(
@@ -138,10 +240,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
           _buildChip('All Sports', Icons.sports_soccer, true),
           const SizedBox(width: 8),
           _buildChip('Cricket', Icons.sports_cricket, false),
-          const SizedBox(width: 8),
-          _buildChip('Today, 3 Slots', Icons.calendar_today_outlined, false),
-          const SizedBox(width: 8),
-          _buildChip('Evening', Icons.access_time, false),
         ],
       ),
     );

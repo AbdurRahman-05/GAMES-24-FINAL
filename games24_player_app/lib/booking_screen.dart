@@ -24,7 +24,7 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   int _selectedDateIndex = 1; // Default to 'Sat 11'
   String _selectedSport = 'Football';
-  String _selectedTimeSlot = '05:00 PM';
+  final Set<String> _selectedTimeSlots = {'05:00 PM'};
   bool _isOpenForChallenge = false;
   final TextEditingController _teamNameController = TextEditingController();
 
@@ -201,14 +201,33 @@ class _BookingScreenState extends State<BookingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text(
+            children: [
+              const Text(
                 'Select Date',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
               ),
-              Text(
-                'October 2024',
-                style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+              Row(
+                children: [
+                  const Text(
+                    'October 2024',
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 30)),
+                      );
+                      if (picked != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Selected ${picked.day}/${picked.month}/${picked.year}')));
+                      }
+                    },
+                    child: const Icon(Icons.calendar_month, color: Color(0xFF166534), size: 20),
+                  ),
+                ],
               ),
             ],
           ),
@@ -395,15 +414,15 @@ class _BookingScreenState extends State<BookingScreen> {
         Row(
           children: slots.map((slot) {
             final isBooked = slot['status'] == 'booked';
-            final isSelected = _selectedTimeSlot == slot['time'];
+            final isSelected = _selectedTimeSlots.contains(slot['time']);
             
             Color bgColor = const Color(0xFFF3F5F1); // Available
             Color textColor = const Color(0xFF111827);
             Color borderColor = Colors.transparent;
 
             if (isBooked) {
-              bgColor = const Color(0xFFF3F4F6); // Greyed out
-              textColor = const Color(0xFFD1D5DB);
+              bgColor = const Color(0xFFFEE2E2); // Light red
+              textColor = const Color(0xFFDC2626); // Red letters
             } else if (isSelected) {
               bgColor = const Color(0xFF0F6D38); // Dark Green
               textColor = Colors.white;
@@ -414,26 +433,45 @@ class _BookingScreenState extends State<BookingScreen> {
               child: GestureDetector(
                 onTap: isBooked ? null : () {
                   setState(() {
-                    _selectedTimeSlot = slot['time'];
+                    if (_selectedTimeSlots.contains(slot['time'])) {
+                      _selectedTimeSlots.remove(slot['time']);
+                    } else {
+                      _selectedTimeSlots.add(slot['time']);
+                    }
                   });
                 },
                 child: Container(
+                  height: 52,
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: borderColor, width: 2),
                   ),
                   alignment: Alignment.center,
-                  child: Text(
-                    slot['time'],
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: textColor,
-                      decoration: isBooked ? TextDecoration.lineThrough : null,
-                    ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        slot['time'],
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: textColor,
+                        ),
+                      ),
+                      if (isBooked) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Booked',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
@@ -562,10 +600,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     color: const Color(0xFFBBE5CA),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    '1\nHour',
+                  child: Text(
+                    '${_selectedTimeSlots.length}\nHour${_selectedTimeSlots.length != 1 ? 's' : ''}',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Color(0xFF0F6D38), fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Color(0xFF0F6D38), fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -573,11 +611,11 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(height: 20),
             _buildSummaryRow('Date', 'Sat, Oct 11, 2024'),
             const SizedBox(height: 8),
-            _buildSummaryRow('Time', '05:00 PM - 06:00 PM'),
+            _buildSummaryRow('Time', _selectedTimeSlots.isEmpty ? 'None selected' : _selectedTimeSlots.join(', ')),
             const SizedBox(height: 8),
             _buildSummaryRow('Sport', _selectedSport),
             const SizedBox(height: 8),
-            _buildSummaryRow('Subtotal', widget.price),
+            _buildSummaryRow('Subtotal', '₹${int.parse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) * _selectedTimeSlots.length}'),
             const SizedBox(height: 8),
             _buildSummaryRow('Taxes & Platform Fee', '₹90'),
             const SizedBox(height: 16),
@@ -589,7 +627,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   style: TextStyle(fontSize: 14, color: Color(0xFF4B5563)),
                 ),
                 Text(
-                  '₹${int.parse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) + 90}',
+                  '₹${int.parse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) * _selectedTimeSlots.length + 90}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -654,7 +692,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     turfName: widget.turfName,
                     date: '${dateStr['day']}, Oct ${dateStr['date']}',
-                    time: _selectedTimeSlot,
+                    time: _selectedTimeSlots.join(', '),
                     sport: _selectedSport,
                     challengerName: teamName,
                     challengerTeamInitials: initials,
@@ -662,6 +700,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     isCreator: true,
                   ),
                 );
+              }
+              if (_selectedTimeSlots.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one slot')));
+                return;
               }
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Booking Confirmed!')),
@@ -685,7 +727,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '- ₹${int.parse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) + 90}',
+                  '- ₹${int.parse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) * _selectedTimeSlots.length + 90}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
                 ),
               ],

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:games24_player_app/booking_screen.dart';
-import 'package:games24_player_app/challenge_manager.dart';class HomeScreen extends StatefulWidget {
+import 'package:games24_player_app/challenge_manager.dart';
+import 'package:games24_player_app/tournaments_screen.dart';
+import 'package:games24_player_app/my_bookings_screen.dart';
+import 'package:games24_player_app/teams_hub_screen.dart';
+
+class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
 
   const HomeScreen({super.key, this.onExploreTap});
@@ -10,9 +15,52 @@ import 'package:games24_player_app/challenge_manager.dart';class HomeScreen exte
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final List<Map<String, dynamic>> _allTurfs = [
+    {
+      'name': 'Apex Sports Club',
+      'price': '₹1,200',
+      'location': 'Koramangala • 1.2 km away',
+      'imageUrl': 'https://picsum.photos/seed/turf1/800/400',
+      'rating': '4.9',
+      'reviews': '128',
+      'sports': 'Football • Cricket',
+      'tags': ['Floodlights', 'Parking', 'Changing Room'],
+    },
+    {
+      'name': 'Metro Arena Indoor',
+      'price': '₹950',
+      'location': 'Indiranagar • 2.5 km away',
+      'imageUrl': 'https://picsum.photos/seed/turf2/800/400',
+      'rating': '4.7',
+      'reviews': '94',
+      'sports': 'Badminton • Tennis',
+      'tags': ['Indoor AC', 'Cafeteria'],
+    },
+    {
+      'name': 'Green Valley Arena',
+      'price': '₹1,500',
+      'location': 'HSR Layout • 3.0 km away',
+      'imageUrl': 'https://picsum.photos/seed/turf3/800/400',
+      'rating': '4.8',
+      'reviews': '210',
+      'sports': 'Football • Basketball',
+      'tags': ['Synthetic Grass', 'Washrooms'],
+    },
+  ];
+
+  final List<Map<String, dynamic>> _categories = [
+    {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': true},
+    {'name': 'Cricket', 'icon': Icons.sports_cricket, 'isSelected': false},
+    {'name': 'Tennis', 'icon': Icons.sports_tennis, 'isSelected': false},
+    {'name': 'Basketball', 'icon': Icons.sports_basketball, 'isSelected': false},
+    {'name': 'Go-Kart', 'icon': Icons.directions_car, 'isSelected': false},
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return Container(
+      color: const Color(0xFFFAFAFA),
+      child: SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -32,14 +80,23 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader('Upcoming Matches', 'View Schedule', hasLiveBadge: true),
+            child: _buildSectionHeader(
+              'Upcoming Matches', 
+              'View Schedule', 
+              hasLiveBadge: true,
+              onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TournamentsScreen())),
+            ),
           ),
           const SizedBox(height: 16),
           _buildUpcomingMatches(),
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader('Your Active Bookings', 'History'),
+            child: _buildSectionHeader(
+              'Your Active Bookings', 
+              'History',
+              onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyBookingsScreen())),
+            ),
           ),
           const SizedBox(height: 16),
           Padding(
@@ -49,7 +106,11 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader('Join Team / Open Challenges', 'View All'),
+            child: _buildSectionHeader(
+              'Join Team / Open Challenges', 
+              'View All',
+              onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TeamsHubScreen())),
+            ),
           ),
           const SizedBox(height: 16),
           _buildOpenChallenges(),
@@ -71,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 24),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildSearchBar() {
@@ -79,10 +140,17 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
           child: Container(
-            height: 50,
+            height: 54,
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -90,13 +158,81 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Icon(Icons.search, color: Color(0xFF6B7280)),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Search turfs, matches, or sports...',
-                      hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                      border: InputBorder.none,
-                    ),
-                    style: const TextStyle(fontSize: 14),
+                  child: Autocomplete<Map<String, dynamic>>(
+                    optionsBuilder: (TextEditingValue textEditingValue) {
+                      if (textEditingValue.text.isEmpty) {
+                        return const Iterable<Map<String, dynamic>>.empty();
+                      }
+                      return _allTurfs.where((turf) {
+                        return turf['name']
+                            .toString()
+                            .toLowerCase()
+                            .contains(textEditingValue.text.toLowerCase());
+                      });
+                    },
+                    displayStringForOption: (option) => option['name'],
+                    onSelected: (option) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingScreen(
+                            turfName: option['name'],
+                            imageUrl: option['imageUrl'],
+                            price: option['price'],
+                            location: option['location'],
+                            sports: (option['sports'] as String).split(' • '),
+                          ),
+                        ),
+                      );
+                    },
+                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                      return TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        decoration: const InputDecoration(
+                          hintText: 'Search turfs...',
+                          hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.only(top: 14),
+                        ),
+                        style: const TextStyle(fontSize: 14),
+                      );
+                    },
+                    optionsViewBuilder: (context, onSelected, options) {
+                      return Align(
+                        alignment: Alignment.topLeft,
+                        child: Material(
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width - 86,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: ListView.separated(
+                              padding: EdgeInsets.zero,
+                              shrinkWrap: true,
+                              itemCount: options.length,
+                              separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                              itemBuilder: (context, index) {
+                                final option = options.elementAt(index);
+                                return ListTile(
+                                  leading: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(option['imageUrl'], width: 40, height: 40, fit: BoxFit.cover),
+                                  ),
+                                  title: Text(option['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                  subtitle: Text(option['location'], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                                  onTap: () => onSelected(option),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -104,14 +240,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(width: 12),
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: const Color(0xFF166534),
-            borderRadius: BorderRadius.circular(12),
+        GestureDetector(
+          onTap: () {
+            _showFilterBottomSheet(context);
+          },
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFF166534),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.tune, color: Colors.white),
           ),
-          child: const Icon(Icons.tune, color: Colors.white),
         ),
       ],
     );
@@ -123,8 +264,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Text(
           title,
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
             color: Color(0xFF111827),
           ),
         ),
@@ -173,31 +315,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategories() {
-    final categories = [
-      {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': true},
-      {'name': 'Cricket', 'icon': Icons.sports_cricket, 'isSelected': false},
-      {'name': 'Tennis', 'icon': Icons.sports_tennis, 'isSelected': false},
-      {'name': 'Basketball', 'icon': Icons.sports_basketball, 'isSelected': false},
-      {'name': 'Go-Kart', 'icon': Icons.directions_car, 'isSelected': false},
-    ];
-
     return SizedBox(
       height: 96,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
-        itemCount: categories.length,
+        itemCount: _categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final cat = categories[index];
+          final cat = _categories[index];
           final isSelected = cat['isSelected'] as bool;
-          return Container(
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                for (var category in _categories) {
+                  category['isSelected'] = false;
+                }
+                _categories[index]['isSelected'] = true;
+              });
+            },
+            child: Container(
             width: 88,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF166534) : const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(16),
-              border: isSelected ? null : Border.all(color: const Color(0xFFE5E7EB)),
+              color: isSelected ? const Color(0xFF166534) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: isSelected ? [
+                BoxShadow(color: const Color(0xFF166534).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))
+              ] : [
+                BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))
+              ],
+              border: isSelected ? null : Border.all(color: const Color(0xFFF3F4F6), width: 1.5),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-          );
+          ));
         },
       ),
     );
@@ -264,8 +412,12 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 280,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+              ],
+              border: Border.all(color: const Color(0xFFF3F4F6)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,13 +461,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       match['location'] as String,
                       style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF166534),
-                        borderRadius: BorderRadius.circular(8),
+                    GestureDetector(
+                      onTap: () {
+                        _showJoinMatchDialog(context, match);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF166534),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('Join', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
-                      child: const Text('Join', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -349,10 +506,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildActiveBookings() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+        ],
+        border: Border.all(color: const Color(0xFFF3F4F6)),
       ),
       child: Row(
         children: [
@@ -443,9 +604,12 @@ class _HomeScreenState extends State<HomeScreen> {
       width: 280,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F5F1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+        ],
+        border: Border.all(color: const Color(0xFFF3F4F6)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,7 +754,18 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Join Challenge'),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Join Challenge'),
+              IconButton(
+                icon: const Icon(Icons.close),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -716,8 +891,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 24, offset: const Offset(0, 12)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -866,6 +1044,70 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Filters', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              const Text('Distance', style: TextStyle(fontWeight: FontWeight.bold)),
+              Slider(value: 5, min: 1, max: 20, onChanged: (val) {}),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF166534),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Apply Filters', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showJoinMatchDialog(BuildContext context, Map<String, dynamic> match) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Join Match?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: Text('Do you want to join the match between ${match['t1Name']} and ${match['t2Name']}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Successfully Joined Match!')));
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534)),
+              child: const Text('Confirm', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 }
