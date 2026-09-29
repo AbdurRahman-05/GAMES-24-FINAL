@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/challenge_manager.dart';
 
 class BookingScreen extends StatefulWidget {
   final String turfName;
@@ -24,6 +25,14 @@ class _BookingScreenState extends State<BookingScreen> {
   int _selectedDateIndex = 1; // Default to 'Sat 11'
   String _selectedSport = 'Football';
   String _selectedTimeSlot = '05:00 PM';
+  bool _isOpenForChallenge = false;
+  final TextEditingController _teamNameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _teamNameController.dispose();
+    super.dispose();
+  }
 
   final List<Map<String, String>> _dates = [
     {'day': 'Fri', 'date': '10'},
@@ -100,6 +109,8 @@ class _BookingScreenState extends State<BookingScreen> {
             _buildSportSelector(),
             const SizedBox(height: 24),
             _buildTimeSlots(),
+            const SizedBox(height: 24),
+            _buildChallengeOption(),
             const SizedBox(height: 32),
             _buildBookingSummary(),
             const SizedBox(height: 100), // Space for bottom button
@@ -433,6 +444,81 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  Widget _buildChallengeOption() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFBE123C).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.sports_kabaddi, color: Color(0xFFBE123C), size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Open for Team Challenge',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Let other teams challenge you',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _isOpenForChallenge,
+                  activeColor: const Color(0xFF166534),
+                  onChanged: (val) {
+                    setState(() {
+                      _isOpenForChallenge = val;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
+          if (_isOpenForChallenge) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: TextField(
+                controller: _teamNameController,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Enter Your Team Name',
+                  hintStyle: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildBookingSummary() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -553,7 +639,34 @@ class _BookingScreenState extends State<BookingScreen> {
           height: 56,
           child: ElevatedButton(
             onPressed: () {
-              // Confirm Booking
+              if (_isOpenForChallenge) {
+                if (_teamNameController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter your team name')),
+                  );
+                  return;
+                }
+                final dateStr = _dates[_selectedDateIndex];
+                final teamName = _teamNameController.text.trim();
+                final initials = teamName.length >= 2 ? teamName.substring(0, 2).toUpperCase() : teamName.toUpperCase();
+                ChallengeManager().addChallenge(
+                  Challenge(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    turfName: widget.turfName,
+                    date: '${dateStr['day']}, Oct ${dateStr['date']}',
+                    time: _selectedTimeSlot,
+                    sport: _selectedSport,
+                    challengerName: teamName,
+                    challengerTeamInitials: initials,
+                    challengerColor: const Color(0xFF166534),
+                    isCreator: true,
+                  ),
+                );
+              }
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Booking Confirmed!')),
+              );
+              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF166534), // Dark Green

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:games24_player_app/booking_screen.dart';
-
-class HomeScreen extends StatefulWidget {
+import 'package:games24_player_app/challenge_manager.dart';class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
 
   const HomeScreen({super.key, this.onExploreTap});
@@ -47,6 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: _buildActiveBookings(),
           ),
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: _buildSectionHeader('Join Team / Open Challenges', 'View All'),
+          ),
+          const SizedBox(height: 16),
+          _buildOpenChallenges(),
           const SizedBox(height: 32),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -402,6 +408,271 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOpenChallenges() {
+    return ValueListenableBuilder<List<Challenge>>(
+      valueListenable: ChallengeManager().challengesNotifier,
+      builder: (context, challenges, child) {
+        if (challenges.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('No open challenges available.'),
+          );
+        }
+        return SizedBox(
+          height: 160,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            itemCount: challenges.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              return _buildChallengeCard(challenges[index]);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChallengeCard(Challenge challenge) {
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F5F1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF166534).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  challenge.sport,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                ),
+              ),
+              Text(
+                '${challenge.date}, ${challenge.time}',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF4B5563)),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildTeamAvatar(challenge.challengerTeamInitials, challenge.challengerName, challenge.challengerColor),
+              const SizedBox(width: 16),
+              const Text('VS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const SizedBox(width: 16),
+              if (challenge.isJoined)
+                _buildTeamAvatar(
+                  challenge.opponentName != null && challenge.opponentName!.length >= 2 
+                      ? challenge.opponentName!.substring(0, 2).toUpperCase() 
+                      : 'VS', 
+                  challenge.opponentName ?? 'Opponent', 
+                  const Color(0xFFBE123C)
+                )
+              else
+                Column(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFD1D5DB), style: BorderStyle.solid),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.help_outline, color: Color(0xFF9CA3AF), size: 20),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text('Open Slot', style: TextStyle(fontSize: 10, color: Color(0xFF6B7280))),
+                  ],
+                ),
+            ],
+          ),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  challenge.turfName,
+                  style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (challenge.isJoined)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text('Matched', style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
+                )
+              else if (challenge.isCreator)
+                GestureDetector(
+                  onTap: () {
+                    if (challenge.joinRequests.isNotEmpty) {
+                      _showRequestsDialog(challenge);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No requests yet.')));
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: challenge.joinRequests.isNotEmpty ? const Color(0xFFBE123C) : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      challenge.joinRequests.isNotEmpty ? '${challenge.joinRequests.length} Requests' : 'Waiting',
+                      style: TextStyle(
+                        color: challenge.joinRequests.isNotEmpty ? Colors.white : Colors.black54,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                )
+              else if (challenge.userHasRequested)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text('Requested', style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold)),
+                )
+              else
+                GestureDetector(
+                  onTap: () {
+                    _showJoinChallengeDialog(challenge);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF166534),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text('Join', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showJoinChallengeDialog(Challenge challenge) {
+    final teamNameCtrl = TextEditingController();
+    final contactCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Join Challenge'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: teamNameCtrl,
+                decoration: const InputDecoration(labelText: 'Your Team Name'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: contactCtrl,
+                decoration: const InputDecoration(labelText: 'Contact Details (Phone/Email)'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (teamNameCtrl.text.trim().isEmpty || contactCtrl.text.trim().isEmpty) return;
+                ChallengeManager().requestToJoin(
+                  challenge.id,
+                  teamNameCtrl.text.trim(),
+                  contactCtrl.text.trim(),
+                );
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Join request sent!')));
+              },
+              child: const Text('Send Request'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showRequestsDialog(Challenge challenge) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Join Requests'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: challenge.joinRequests.length,
+              separatorBuilder: (context, index) => const Divider(),
+              itemBuilder: (context, index) {
+                final req = challenge.joinRequests[index];
+                return ListTile(
+                  title: Text(req.teamName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('Contact: ${req.contactDetails}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.check_circle, color: Colors.green),
+                        onPressed: () {
+                          ChallengeManager().acceptRequest(challenge.id, req);
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Accepted ${req.teamName}!')));
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.cancel, color: Colors.red),
+                        onPressed: () {
+                          ChallengeManager().rejectRequest(challenge.id, req.id);
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request rejected.')));
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
