@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/sports_data.dart';
@@ -29,9 +30,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
 
   void _onCreateTeam() {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your team name.')),
-      );
+      ToastUtils.showError(context, "Please enter your team name.");
       return;
     }
 
@@ -52,9 +51,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
 
     ref.read(teamsProvider.notifier).addTeam(newTeam);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Team created successfully!')),
-    );
+    ToastUtils.showSuccess(context, "Team created successfully!");
 
     context.pop();
   }

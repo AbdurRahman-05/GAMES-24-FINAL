@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -145,9 +146,7 @@ class TeamDetailsScreen extends ConsumerWidget {
               text: 'Challenge ${team.name}',
               icon: Icons.flash_on_rounded,
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Challenge sent to ${team.name}!')),
-                );
+                ToastUtils.showSuccess(context, "Challenge sent to ${team.name}!");
               },
             ),
           ],

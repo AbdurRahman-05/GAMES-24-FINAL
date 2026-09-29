@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -229,9 +230,7 @@ class _SuperAdminDashboardScreenState
                                         partner.id,
                                         AccountStatus.active,
                                       );
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('${partner.turfName} Approved!')),
-                                  );
+                                  ToastUtils.showSuccess(context, "${partner.turfName} Approved!");
                                 },
                               ),
                             ),
@@ -399,12 +398,7 @@ class _SuperAdminDashboardScreenState
             text: 'Send Broadcast Push Notification',
             icon: Icons.send_rounded,
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Broadcast push sent to 4,820 Madurai users!'),
-                  backgroundColor: AppColors.primary,
-                ),
-              );
+              ToastUtils.showSuccess(context, "Broadcast push sent to 4,820 Madurai users!");
               _broadcastController.clear();
             },
           ),
@@ -448,9 +442,7 @@ class _SuperAdminDashboardScreenState
                   text: 'Update Commission Rule',
                   height: 40,
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Platform commission updated to ${_platformCommission.toInt()}%')),
-                    );
+                    ToastUtils.showSuccess(context, "Platform commission updated to ${_platformCommission.toInt()}%");
                   },
                 ),
               ],

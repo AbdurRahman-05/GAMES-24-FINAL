@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -570,9 +571,7 @@ class _SuperAdminWebPortalScreenState
                                       partner.id,
                                       AccountStatus.active,
                                     );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('${partner.turfName} Approved!')),
-                                );
+                                ToastUtils.showSuccess(context, "${partner.turfName} Approved!");
                               },
                             ),
                           ),
@@ -719,9 +718,7 @@ class _SuperAdminWebPortalScreenState
           text: 'Send Web Broadcast Push Notification',
           icon: Icons.send_rounded,
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Broadcast push sent to 4,820 Madurai users!'), backgroundColor: AppColors.primary),
-            );
+            ToastUtils.showSuccess(context, "Broadcast push sent to 4,820 Madurai users!");
             _broadcastController.clear();
           },
         ),
@@ -760,9 +757,7 @@ class _SuperAdminWebPortalScreenState
                 text: 'Save Web Commission Rules',
                 height: 42,
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Platform commission updated to ${_platformCommission.toInt()}%')),
-                  );
+                  ToastUtils.showSuccess(context, "Platform commission updated to ${_platformCommission.toInt()}%");
                 },
               ),
               const Divider(height: 32),
@@ -774,9 +769,7 @@ class _SuperAdminWebPortalScreenState
                 text: 'Release Automated Weekly Payouts (₹2,23,650)',
                 icon: Icons.account_balance_wallet_rounded,
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Payouts disbursed to 18 turf owner bank accounts via UPI!'), backgroundColor: AppColors.success),
-                  );
+                  ToastUtils.showSuccess(context, "Payouts disbursed to 18 turf owner bank accounts via UPI!");
                 },
               ),
             ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -113,9 +114,7 @@ class _UserTournamentDetailsDialogState
                     icon: Icons.check_circle_rounded,
                     onPressed: () {
                       if (_teamNameCtrl.text.trim().isEmpty || _captainNameCtrl.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please fill Team & Captain Name.')),
-                        );
+                        ToastUtils.showError(context, "Please fill Team & Captain Name.");
                         return;
                       }
 

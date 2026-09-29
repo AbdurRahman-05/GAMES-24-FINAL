@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -176,12 +177,7 @@ class _TurfOwnerProfileScreenState
                     weekendRate: double.tryParse(weekendRateCtrl.text) ?? profile.weekendRate,
                   );
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Turf Profile updated successfully!'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
+              ToastUtils.showSuccess(context, "Turf Profile updated successfully!");
             },
             child: const Text('Save Changes'),
           ),
@@ -388,12 +384,7 @@ class _TurfOwnerProfileScreenState
                     );
                 ref.read(adminSlotProvider.notifier).updateOperatingHours(wkdayOpen, wkdayClose, wkendOpen, wkendClose);
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Weekday & Weekend timings updated!'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
+                ToastUtils.showSuccess(context, "Weekday & Weekend timings updated!");
               },
               child: const Text('Update Timings'),
             ),
@@ -539,12 +530,7 @@ class _TurfOwnerProfileScreenState
                       ),
                     );
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Added $sportName with custom sport rates!'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
+                ToastUtils.showSuccess(context, "Added $sportName with custom sport rates!");
               },
               child: const Text('Add Sport'),
             ),
@@ -642,12 +628,7 @@ class _TurfOwnerProfileScreenState
                     nightRate: double.tryParse(nightRateCtrl.text) ?? sport.nightRate,
                   );
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Updated rates for ${sport.name}!'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
+              ToastUtils.showSuccess(context, "Updated rates for ${sport.name}!");
             },
             child: const Text('Save Sport Rates'),
           ),
@@ -769,12 +750,7 @@ class _TurfOwnerProfileScreenState
 
                 ref.read(turfProfileProvider.notifier).addCourtVenue(newCourt);
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Added new court: $courtName'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
+                ToastUtils.showSuccess(context, "Added new court: $courtName");
               },
               child: const Text('Save Venue Court'),
             ),
@@ -874,12 +850,7 @@ class _TurfOwnerProfileScreenState
                         onPressed: () {
                           Navigator.pop(ctx);
                           ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Removed court: ${court.name}'),
-                              backgroundColor: AppColors.error,
-                            ),
-                          );
+                          ToastUtils.showSuccess(context, "Removed court: ${court.name}");
                         },
                       ),
                       IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(ctx)),
@@ -1138,12 +1109,7 @@ class _TurfOwnerProfileScreenState
 
                             ref.read(turfProfileProvider.notifier).updateCourtVenue(updatedCourt);
                             Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Updated court: $courtName'),
-                                backgroundColor: AppColors.success,
-                              ),
-                            );
+                            ToastUtils.showSuccess(context, "Updated court: $courtName");
                           },
                         ),
                       ),
@@ -1394,7 +1360,7 @@ class _TurfOwnerProfileScreenState
                           ),
                           onPressed: () {
                             Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Turf details updated successfully!'), backgroundColor: AppColors.success));
+                            ToastUtils.showSuccess(context, "Turf details updated successfully!");
                           },
                         ),
                       ),
@@ -2027,12 +1993,7 @@ class _TurfOwnerProfileScreenState
                             ),
                             onPressed: () {
                               ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Removed court: ${court.name}'),
-                                  backgroundColor: AppColors.error,
-                                ),
-                              );
+                              ToastUtils.showSuccess(context, "Removed court: ${court.name}");
                             },
                           ),
                         ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -10,11 +12,18 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   // State variables
   int _currentStep = 1;
-  String _selectedVerification = 'whatsapp';
+  String _selectedCountryCode = '+91';
+  final List<String> _countryCodes = ['+91', '+1', '+44', '+61'];
   
   // Password step states
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
+  
+  // Controllers
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   
   // OTP logic state
   final List<TextEditingController> _otpControllers = List.generate(4, (index) => TextEditingController());
@@ -22,6 +31,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   void dispose() {
+    _mobileController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     for (var controller in _otpControllers) {
       controller.dispose();
     }
@@ -31,21 +43,110 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _nextStep() {
-    if (_currentStep < 3) {
-      setState(() {
-        _currentStep++;
-      });
-    } else {
-      // Step 3 finished -> Reset complete, return to login
-      Navigator.pop(context);
-      // Optional: show a success snackbar here
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Password updated successfully!'),
-          backgroundColor: Colors.green.shade600,
-        ),
+  Future<void> _sendOtp() async {
+    final mobileRaw = _mobileController.text.trim();
+    if (mobileRaw.isEmpty) {
+      ToastUtils.showError(context, 'Please enter your mobile number');
+      return;
+    }
+    setState(() => _isLoading = true);
+    final mobile = '$_selectedCountryCode$mobileRaw';
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/send-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'mobileNumber': mobile}),
       );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _currentStep = 2;
+        });
+        ToastUtils.showSuccess(context, 'OTP sent successfully');
+      } else {
+        ToastUtils.showError(context, 'Failed to send OTP');
+      }
+    } catch (e) {
+      ToastUtils.showError(context, 'Error occurred');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _verifyOtpAndNext() async {
+    final otp = _otpControllers.map((e) => e.text).join();
+    if (otp.length != 4) {
+      ToastUtils.showError(context, 'Please enter a valid 4-digit OTP');
+      return;
+    }
+    setState(() => _isLoading = true);
+    final mobileRaw = _mobileController.text.trim();
+    final mobile = '$_selectedCountryCode$mobileRaw';
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/verify-reset-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'mobileNumber': mobile,
+          'otp': otp,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _currentStep = 3;
+        });
+      } else {
+        ToastUtils.showError(context, 'Invalid or expired OTP');
+      }
+    } catch (e) {
+      ToastUtils.showError(context, 'Error verifying OTP');
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    final newPassword = _newPasswordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+    
+    if (newPassword.isEmpty || confirmPassword.isEmpty) {
+      ToastUtils.showError(context, 'Please enter all fields');
+      return;
+    }
+    
+    if (newPassword != confirmPassword) {
+      ToastUtils.showError(context, 'Passwords do not match');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    final mobileRaw = _mobileController.text.trim();
+    final mobile = '$_selectedCountryCode$mobileRaw';
+    final otp = _otpControllers.map((e) => e.text).join();
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/reset-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'mobileNumber': mobile,
+          'otp': otp,
+          'newPassword': newPassword,
+        }),
+      );
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        Navigator.pop(context);
+        ToastUtils.showSuccess(context, "Password updated successfully!");
+      } else {
+        final body = jsonDecode(response.body);
+        ToastUtils.showError(context, body['message'] ?? 'Failed to reset password');
+      }
+    } catch (e) {
+      ToastUtils.showError(context, 'Error occurred');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -340,7 +441,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
         // Input Field
         const Text(
-          'Registered Email or Mobile Number',
+          'Registered Mobile Number',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -348,61 +449,73 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
-          decoration: InputDecoration(
-            hintText: 'striker99@mail.com',
-            hintStyle: const TextStyle(color: Color(0xFF111827)),
-            prefixIcon: const Icon(Icons.alternate_email, color: Color(0xFF9CA3AF), size: 20),
-            filled: true,
-            fillColor: const Color(0xFFF9FAFB),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16),
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.green.shade500, width: 2),
-              borderRadius: BorderRadius.circular(12),
-            ),
+        Container(
+          height: 52,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedCountryCode,
+                    icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF9CA3AF)),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF374151),
+                    ),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _selectedCountryCode = newValue;
+                        });
+                      }
+                    },
+                    items: _countryCodes.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      left: BorderSide(color: Color(0xFFE5E7EB)),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: _mobileController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. 9876543210',
+                      hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
+
         const SizedBox(height: 24),
 
-        // Verification Options
-        const Text(
-          'Send verification via:',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF6B7280),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildRadioOption(
-                id: 'whatsapp',
-                icon: Icons.chat_outlined,
-                label: 'WhatsApp / SMS',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildRadioOption(
-                id: 'email',
-                icon: Icons.email_outlined,
-                label: 'Direct Email',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
+        // Button
 
         // Button
         _buildActionButton(
           label: 'Send Verification Code',
-          onPressed: _nextStep,
+          onPressed: _sendOtp,
         ),
       ],
     );
@@ -442,9 +555,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.4),
                       children: [
                         const TextSpan(text: 'Enter the 4-digit code sent to your '),
-                        TextSpan(
-                          text: _selectedVerification == 'whatsapp' ? 'WhatsApp/SMS' : 'Email',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                        const TextSpan(
+                          text: 'Mobile Number',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF111827)),
                         ),
                       ],
                     ),
@@ -520,7 +633,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Button
         _buildActionButton(
           label: 'Verify Code',
-          onPressed: _nextStep,
+          onPressed: _verifyOtpAndNext,
         ),
         const SizedBox(height: 16),
 
@@ -614,6 +727,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 8),
         _buildPasswordField(
+          controller: _newPasswordController,
           hintText: 'Enter new password',
           obscureText: _obscureNew,
           onToggle: () {
@@ -635,6 +749,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 8),
         _buildPasswordField(
+          controller: _confirmPasswordController,
           hintText: 'Confirm new password',
           obscureText: _obscureConfirm,
           onToggle: () {
@@ -648,18 +763,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         // Button
         _buildActionButton(
           label: 'Update Password',
-          onPressed: _nextStep,
+          onPressed: _resetPassword,
         ),
       ],
     );
   }
 
   Widget _buildPasswordField({
+    required TextEditingController controller,
     required String hintText,
     required bool obscureText,
     required VoidCallback onToggle,
   }) {
     return TextField(
+      controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
         hintText: hintText,
@@ -693,7 +810,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: _isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green.shade600,
           foregroundColor: Colors.white,
@@ -702,7 +819,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           elevation: 0,
         ),
-        child: Row(
+        child: _isLoading 
+            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+            : Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
@@ -791,65 +910,4 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildRadioOption({
-    required String id,
-    required IconData icon,
-    required String label,
-  }) {
-    final isSelected = _selectedVerification == id;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedVerification = id;
-        });
-      },
-      child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.green.withOpacity(0.02) : Colors.white,
-          border: Border.all(
-            color: isSelected ? Colors.green.shade600 : const Color(0xFFE5E7EB),
-            width: 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 16,
-              height: 16,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? Colors.green.shade600 : const Color(0xFF9CA3AF),
-                  width: isSelected ? 4 : 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected ? Colors.green.shade600 : const Color(0xFF6B7280),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected ? const Color(0xFF111827) : const Color(0xFF4B5563),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

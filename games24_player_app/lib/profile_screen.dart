@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/leaderboard_screen.dart';
+import 'package:games24_player_app/login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -89,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
               subtitle: 'Help center & live chat assistance',
             ),
             const SizedBox(height: 32),
-            _buildLogOutButton(),
+            _buildLogOutButton(context),
             const SizedBox(height: 32),
           ],
         ),
@@ -326,11 +327,15 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogOutButton() {
+  Widget _buildLogOutButton(BuildContext context) {
     return Center(
       child: GestureDetector(
         onTap: () {
-          // Handle Logout
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (route) => false,
+          );
         },
         child: Row(
           mainAxisSize: MainAxisSize.min,

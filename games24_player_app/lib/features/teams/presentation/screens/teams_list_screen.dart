@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -31,9 +32,7 @@ class TeamsListScreen extends ConsumerWidget {
               team: team,
               onTap: () => context.push('/team-details/${team.id}'),
               onChallengeTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Challenge sent to ${team.name}! Captain ${team.captainName} will be notified.')),
-                );
+                ToastUtils.showSuccess(context, "Challenge sent to ${team.name}! Captain ${team.captainName} will be notified.");
               },
             ),
           );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -136,9 +137,7 @@ class JoinMatchScreen extends ConsumerWidget {
                   ? null
                   : () {
                       ref.read(hostedMatchesProvider.notifier).joinMatch(match.id);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('You joined the match! Chat with players now.')),
-                      );
+                      ToastUtils.showSuccess(context, "You joined the match! Chat with players now.");
                       context.push('/chat');
                     },
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -65,9 +66,7 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
 
     ref.read(hostedMatchesProvider.notifier).addMatch(match);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Match hosted successfully! Players can now join.')),
-    );
+    ToastUtils.showSuccess(context, "Match hosted successfully! Players can now join.");
 
     context.go('/main');
   }

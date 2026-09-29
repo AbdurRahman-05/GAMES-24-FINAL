@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -81,9 +82,7 @@ class _AdminTournamentManagerScreenState
 
   void _submitCreateTournament() {
     if (_titleCtrl.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter Tournament Name')),
-      );
+      ToastUtils.showError(context, "Please enter Tournament Name");
       return;
     }
 
@@ -215,9 +214,7 @@ class _AdminTournamentManagerScreenState
                         _liveCommentaryCtrl.text.trim(),
                       );
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Live score updated on user app!'), backgroundColor: AppColors.success),
-                  );
+                  ToastUtils.showSuccess(context, "Live score updated on user app!");
                 },
               ),
             ),
@@ -461,9 +458,7 @@ class _AdminTournamentManagerScreenState
                         ref.read(adminTournamentProvider.notifier).addMatchEvent(t.id, fix.id, event);
                         playerCtrl.clear();
                         setDialogState(() {});
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Logged ${event.type} for ${event.playerName}!')),
-                        );
+                        ToastUtils.showSuccess(context, "Logged ${event.type} for ${event.playerName}!");
                       },
                     ),
 
@@ -779,9 +774,7 @@ class _AdminTournamentManagerScreenState
                             ),
                             onPressed: () {
                               ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Generated Knockout Fixtures for ${t.title}')),
-                              );
+                              ToastUtils.showSuccess(context, "Generated Knockout Fixtures for ${t.title}");
                             },
                           ),
                           IconButton(
@@ -1132,9 +1125,7 @@ class _AdminTournamentManagerScreenState
                         label: const Text('Seeded Knockout', style: TextStyle(fontSize: 10)),
                         onPressed: () {
                           ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Seeded Knockout');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Generated Top Seed Protection Bracket for ${t.title}')),
-                          );
+                          ToastUtils.showSuccess(context, "Generated Top Seed Protection Bracket for ${t.title}");
                         },
                       ),
                       ActionChip(
@@ -1142,9 +1133,7 @@ class _AdminTournamentManagerScreenState
                         label: const Text('Double Elimination', style: TextStyle(fontSize: 10)),
                         onPressed: () {
                           ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Double Elimination');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Generated Double Elimination (Winners & Losers Brackets) for ${t.title}')),
-                          );
+                          ToastUtils.showSuccess(context, "Generated Double Elimination (Winners & Losers Brackets) for ${t.title}");
                         },
                       ),
                       ActionChip(
@@ -1152,9 +1141,7 @@ class _AdminTournamentManagerScreenState
                         label: const Text('Group Stage + Knockout', style: TextStyle(fontSize: 10)),
                         onPressed: () {
                           ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Group Stage + Knockout');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Generated Group Stage + Knockout Hybrid Fixtures for ${t.title}')),
-                          );
+                          ToastUtils.showSuccess(context, "Generated Group Stage + Knockout Hybrid Fixtures for ${t.title}");
                         },
                       ),
                     ],
@@ -1166,9 +1153,7 @@ class _AdminTournamentManagerScreenState
                       label: const Text('Auto-Generate Fixtures & Brackets'),
                       onPressed: () {
                         ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Auto-generated Brackets & Bye rounds for ${t.title}')),
-                        );
+                        ToastUtils.showSuccess(context, "Auto-generated Brackets & Bye rounds for ${t.title}");
                       },
                     )
                   else ...[

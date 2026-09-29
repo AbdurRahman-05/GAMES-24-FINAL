@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -141,9 +142,7 @@ class UserProfileInspectorModal extends StatelessWidget {
                   icon: Icons.chat_rounded,
                   onPressed: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Direct push notification sent to ${user.name}')),
-                    );
+                    ToastUtils.showSuccess(context, "Direct push notification sent to ${user.name}");
                   },
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,12 +23,7 @@ class _SuperAdminLoginScreenState
       TextEditingController(text: '9999');
 
   void _onSuperAdminLogin() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Super Admin Master Login Granted! Welcome App Owner.'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+    ToastUtils.showSuccess(context, "Super Admin Master Login Granted! Welcome App Owner.");
     context.go('/super-admin/dashboard');
   }
 

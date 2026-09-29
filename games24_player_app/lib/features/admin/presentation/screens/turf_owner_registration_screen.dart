@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/sports_data.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -92,12 +93,7 @@ class _TurfOwnerRegistrationScreenState
 
   void _nextStep() {
     if (_currentStep == 1 && (!_isMobileVerified || !_isEmailVerified)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please verify both Mobile and Email OTP before proceeding.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
+      ToastUtils.showError(context, "Please verify both Mobile and Email OTP before proceeding.");
       return;
     }
 
@@ -377,9 +373,7 @@ class _TurfOwnerRegistrationScreenState
                         height: 48,
                         onPressed: () {
                           setState(() => _isMobileVerified = true);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Mobile Phone Number Verified ✅')),
-                          );
+                          ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
                         },
                       ),
                     ),
@@ -440,9 +434,7 @@ class _TurfOwnerRegistrationScreenState
                         height: 48,
                         onPressed: () {
                           setState(() => _isEmailVerified = true);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Email Address Verified ✅')),
-                          );
+                          ToastUtils.showSuccess(context, "Email Address Verified ✅");
                         },
                       ),
                     ),

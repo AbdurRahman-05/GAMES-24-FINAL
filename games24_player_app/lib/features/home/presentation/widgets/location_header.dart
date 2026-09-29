@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/sports_data.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -25,12 +26,7 @@ class _LocationHeaderState extends ConsumerState<LocationHeader> {
       if (mounted) {
         setState(() => _isAutoLocating = false);
         ref.read(selectedAreaProvider.notifier).setArea('KK Nagar');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Live Location Updated: KK Nagar, Madurai'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        ToastUtils.showSuccess(context, "Live Location Updated: KK Nagar, Madurai");
       }
     });
   }

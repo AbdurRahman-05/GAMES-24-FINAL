@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -26,19 +27,13 @@ class AdminDashboardScreen extends ConsumerWidget {
         originalTimeSlot: time,
         courtName: courtName,
         onRescheduled: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Booking $bookingId rescheduled successfully! Notification sent to $playerName.')),
-          );
+          ToastUtils.showSuccess(context, "Booking $bookingId rescheduled successfully! Notification sent to $playerName.");
         },
         onCancelled: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Booking $bookingId cancelled. Full refund initiated for $playerName.')),
-          );
+          ToastUtils.showSuccess(context, "Booking $bookingId cancelled. Full refund initiated for $playerName.");
         },
         onCheckedIn: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gate check-in confirmed for $playerName!')),
-          );
+          ToastUtils.showSuccess(context, "Gate check-in confirmed for $playerName!");
         },
       ),
     );

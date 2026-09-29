@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -22,12 +23,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
   void _onAdminLogin() {
     ref.read(isAdminModeProvider.notifier).setMode(true);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Venue Partner Login Successful! Welcome Madurai Turf Arena.'),
-        backgroundColor: AppColors.primary,
-      ),
-    );
+    ToastUtils.showSuccess(context, "Venue Partner Login Successful! Welcome Madurai Turf Arena.");
     context.go('/admin/dashboard');
   }
 

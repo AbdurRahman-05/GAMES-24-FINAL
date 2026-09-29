@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'core/utils/toast_utils.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 import 'main_layout.dart';
@@ -11,12 +14,28 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
   bool _isPasswordTab = true;
+  String _selectedCountryCode = '+91';
+  final List<String> _countryCodes = ['+91', '+1', '+44', '+61'];
+
+
   bool _obscurePassword = true;
   bool _rememberMe = true;
 
+
+  @override
+  void dispose() {
+    _mobileController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.green.withOpacity(0.06),
       body: SafeArea(
@@ -84,9 +103,63 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                _buildTextField(
-                  hintText: 'e.g. striker99@mail.com or 9876543210',
-                  prefixIcon: Icons.sports_soccer, // Closest to the icon in the image
+                Container(
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedCountryCode,
+                            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF9CA3AF)),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF374151),
+                            ),
+                            onChanged: (String? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  _selectedCountryCode = newValue;
+                                });
+                              }
+                            },
+                            items: _countryCodes.map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              left: BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _mobileController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              hintText: 'e.g. 9876543210',
+                              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 20),
 
@@ -94,6 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 _buildLabel('Password'),
                 const SizedBox(height: 8),
                 _buildTextField(
+                  controller: _passwordController,
                   hintText: 'Enter your security password',
                   prefixIcon: Icons.lock_outline,
                   obscureText: _obscurePassword,
@@ -168,12 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MainLayout()),
-                      );
-                    },
+                    onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
                       foregroundColor: Colors.white,
@@ -182,7 +251,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Row(
+                    child: _isLoading 
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
@@ -312,7 +383,50 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+
+  Future<void> _login() async {
+    final mobileRaw = _mobileController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (mobileRaw.isEmpty || password.isEmpty) {
+      ToastUtils.showError(context, 'Please enter mobile number and password');
+      return;
+    }
+
+    final mobile = '$_selectedCountryCode$mobileRaw';
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'mobileNumber': mobile,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainLayout()),
+        );
+      } else {
+        if (!mounted) return;
+        ToastUtils.showError(context, 'Invalid credentials');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ToastUtils.showError(context, 'Error: ');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Widget _buildTextField({
+    TextEditingController? controller,
     required String hintText,
     required IconData prefixIcon,
     bool obscureText = false,
@@ -321,7 +435,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return SizedBox(
       height: 52,
       child: TextField(
+        controller: controller,
         obscureText: obscureText,
+
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),

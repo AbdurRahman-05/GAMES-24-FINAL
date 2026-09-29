@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -31,9 +32,7 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
 
   void confirmBooking(VenueModel venue, double totalPrice) {
     if (_selectedSlot == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an available time slot.')),
-      );
+      ToastUtils.showError(context, "Please select an available time slot.");
       return;
     }
 

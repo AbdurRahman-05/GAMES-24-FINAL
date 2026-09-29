@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -81,9 +82,7 @@ class _VenueDetailsScreenState extends ConsumerState<VenueDetailsScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.share_rounded, color: Colors.white, size: 18),
                               onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Venue link copied to clipboard!')),
-                                );
+                                ToastUtils.showSuccess(context, "Venue link copied to clipboard!");
                               },
                             ),
                           ),
@@ -244,9 +243,7 @@ class _VenueDetailsScreenState extends ConsumerState<VenueDetailsScreen> {
                                   Text(venue.area, style: theme.textTheme.titleSmall),
                                   TextButton.icon(
                                     onPressed: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Opening Google Maps Directions...')),
-                                      );
+                                      ToastUtils.showSuccess(context, "Opening Google Maps Directions...");
                                     },
                                     icon: const Icon(Icons.directions_rounded, size: 18),
                                     label: const Text('Get Directions'),

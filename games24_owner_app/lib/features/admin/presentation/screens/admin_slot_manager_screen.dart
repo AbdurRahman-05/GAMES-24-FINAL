@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -380,12 +381,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         final dateKey = _getDateKey(_selectedDate);
                         ref.read(adminSlotProvider.notifier).toggleSlotDiscount(slot, newOffer, dateKey);
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Applied custom offer tag to $slot!'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        ToastUtils.showSuccess(context, "Applied custom offer tag to $slot!");
                       },
                       child: const Text('Apply Offer Tag', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
@@ -447,12 +443,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     final dateKey = _getDateKey(_selectedDate);
                     ref.read(adminSlotProvider.notifier).toggleSlotDiscount(slot, defaultOfferString, dateKey);
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Applied configurator offer preset to $slot.'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                    ToastUtils.showSuccess(context, "Applied configurator offer preset to $slot.");
                   },
                 ),
                 ListTile(
@@ -473,12 +464,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       final dateKey = _getDateKey(_selectedDate);
                       ref.read(adminSlotProvider.notifier).toggleSlotDiscount(slot, '', dateKey);
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Offer tag removed from $slot.'),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
+                      ToastUtils.showSuccess(context, "Offer tag removed from $slot.");
                     },
                   ),
                 ],
@@ -977,9 +963,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       child: GestureDetector(
                         onTap: isBooked
                             ? () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Slot $slot is booked by customer.')),
-                                );
+                                ToastUtils.showSuccess(context, "Slot $slot is booked by customer.");
                               }
                             : () {
                                 ref.read(adminSlotProvider.notifier).toggleBlockSlot(slot, dateKey);
