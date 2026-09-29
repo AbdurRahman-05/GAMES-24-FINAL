@@ -131,7 +131,7 @@ class JoinMatchScreen extends ConsumerWidget {
             const SizedBox(height: 36),
 
             AppButton(
-              text: match.isFull ? 'Match Full' : 'Join Match (Pay ₹${match.pricePerPlayer.toInt()})',
+              text: match.isFull ? 'Match Full' : 'Join the Match (Pay ₹${match.pricePerPlayer.toInt()})',
               icon: Icons.check_circle_rounded,
               onPressed: match.isFull
                   ? null

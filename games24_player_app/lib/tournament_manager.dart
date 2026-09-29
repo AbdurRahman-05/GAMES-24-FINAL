@@ -1,0 +1,188 @@
+import 'package:flutter/material.dart';
+
+enum TournamentStatus { ongoing, upcoming, completed, cancelled }
+
+class Tournament {
+  final String id;
+  final String title;
+  final String sport;
+  final TournamentStatus status;
+  final String date;
+  final String time;
+  final String venue;
+  final String location;
+  final String entryFee;
+  final String prizePool;
+  final String grandPrize;
+  final int maxTeams;
+  final int registeredTeams;
+  final String format;
+  final String imageUrl;
+  final String reportingTime;
+  final String matchDay;
+  final String tournamentProgress;
+  final List<Map<String, dynamic>> registeredUsers; // List of registered team data
+
+  Tournament({
+    required this.id,
+    required this.title,
+    required this.sport,
+    required this.status,
+    required this.date,
+    required this.time,
+    required this.venue,
+    required this.location,
+    required this.entryFee,
+    required this.prizePool,
+    required this.grandPrize,
+    required this.maxTeams,
+    required this.registeredTeams,
+    required this.format,
+    required this.imageUrl,
+    this.reportingTime = '30 minutes before match',
+    this.matchDay = 'Day 1',
+    this.tournamentProgress = 'Started',
+    this.registeredUsers = const [],
+  });
+
+  Tournament copyWith({
+    String? id,
+    String? title,
+    String? sport,
+    TournamentStatus? status,
+    String? date,
+    String? time,
+    String? venue,
+    String? location,
+    String? entryFee,
+    String? prizePool,
+    String? grandPrize,
+    int? maxTeams,
+    int? registeredTeams,
+    String? format,
+    String? imageUrl,
+    String? reportingTime,
+    String? matchDay,
+    String? tournamentProgress,
+    List<Map<String, dynamic>>? registeredUsers,
+  }) {
+    return Tournament(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      sport: sport ?? this.sport,
+      status: status ?? this.status,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      venue: venue ?? this.venue,
+      location: location ?? this.location,
+      entryFee: entryFee ?? this.entryFee,
+      prizePool: prizePool ?? this.prizePool,
+      grandPrize: grandPrize ?? this.grandPrize,
+      maxTeams: maxTeams ?? this.maxTeams,
+      registeredTeams: registeredTeams ?? this.registeredTeams,
+      format: format ?? this.format,
+      imageUrl: imageUrl ?? this.imageUrl,
+      reportingTime: reportingTime ?? this.reportingTime,
+      matchDay: matchDay ?? this.matchDay,
+      tournamentProgress: tournamentProgress ?? this.tournamentProgress,
+      registeredUsers: registeredUsers ?? this.registeredUsers,
+    );
+  }
+}
+
+class TournamentManager extends ChangeNotifier {
+  static final TournamentManager _instance = TournamentManager._internal();
+  factory TournamentManager() => _instance;
+  TournamentManager._internal();
+
+  List<Tournament> _tournaments = [
+    Tournament(
+      id: 't1',
+      title: 'City Apex Super Cup 2024',
+      sport: 'Football',
+      status: TournamentStatus.ongoing,
+      date: 'Oct 15 - Oct 20, 2024',
+      time: '18:00 - 22:00',
+      venue: 'Grand Royale Turf',
+      location: 'Sector 4, Downtown',
+      entryFee: '₹1,500',
+      prizePool: '₹50,000 + Trophy',
+      grandPrize: '₹30,000',
+      maxTeams: 16,
+      registeredTeams: 16,
+      format: 'Knockout',
+      imageUrl: 'https://picsum.photos/seed/tourn1/800/400',
+      matchDay: 'Day 2 of 4',
+      tournamentProgress: 'Quarter Finals',
+    ),
+    Tournament(
+      id: 't2',
+      title: 'Weekend Box Cricket League',
+      sport: 'Cricket',
+      status: TournamentStatus.ongoing,
+      date: 'Oct 16 - Oct 17, 2024',
+      time: '09:00 - 18:00',
+      venue: 'Urban Arena',
+      location: 'HSR Layout',
+      entryFee: '₹2,000',
+      prizePool: '₹25,000',
+      grandPrize: '₹15,000',
+      maxTeams: 12,
+      registeredTeams: 12,
+      format: 'League + Knockout',
+      imageUrl: 'https://picsum.photos/seed/tourn2/800/400',
+      matchDay: 'Day 1 of 2',
+      tournamentProgress: 'Group Stages',
+    ),
+    Tournament(
+      id: 't3',
+      title: 'Monsoon Kickoff Tournament',
+      sport: 'Football',
+      status: TournamentStatus.upcoming,
+      date: 'Nov 05 - Nov 10, 2024',
+      time: '17:00 - 23:00',
+      venue: 'Greenfield Sports Complex',
+      location: 'Whitefield',
+      entryFee: '₹1,200',
+      prizePool: '₹40,000',
+      grandPrize: '₹25,000',
+      maxTeams: 24,
+      registeredTeams: 10,
+      format: 'Group Stages + Knockout',
+      imageUrl: 'https://picsum.photos/seed/tourn3/800/400',
+    ),
+  ];
+
+  List<Tournament> get allTournaments => _tournaments;
+  List<Tournament> get ongoingTournaments => _tournaments.where((t) => t.status == TournamentStatus.ongoing).toList();
+  List<Tournament> get upcomingTournaments => _tournaments.where((t) => t.status == TournamentStatus.upcoming).toList();
+  List<Tournament> get myTournaments => _tournaments.where((t) => t.registeredUsers.isNotEmpty).toList();
+
+  void addTournament(Tournament tournament) {
+    _tournaments.add(tournament);
+    notifyListeners();
+  }
+
+  bool registerTeam(String tournamentId, Map<String, dynamic> registrationData) {
+    final index = _tournaments.indexWhere((t) => t.id == tournamentId);
+    if (index != -1) {
+      final tournament = _tournaments[index];
+      if (tournament.registeredTeams < tournament.maxTeams) {
+        // Prevent duplicate registration based on team name (simplistic check)
+        bool alreadyRegistered = tournament.registeredUsers.any((user) => user['teamName'] == registrationData['teamName']);
+        if (alreadyRegistered) {
+          return false;
+        }
+
+        final updatedUsers = List<Map<String, dynamic>>.from(tournament.registeredUsers)..add(registrationData);
+        _tournaments[index] = tournament.copyWith(
+          registeredTeams: tournament.registeredTeams + 1,
+          registeredUsers: updatedUsers,
+        );
+        notifyListeners();
+        return true;
+      }
+    }
+    return false;
+  }
+}

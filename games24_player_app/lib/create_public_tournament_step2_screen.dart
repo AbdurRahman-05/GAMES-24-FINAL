@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:games24_player_app/tournament_manager.dart';
 
 class CreatePublicTournamentStep2Screen extends StatefulWidget {
   const CreatePublicTournamentStep2Screen({super.key});
@@ -721,7 +722,28 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: _agreedToTerms ? () {} : null,
+        onPressed: _agreedToTerms ? () {
+          final newTourney = Tournament(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            title: 'Weekend Turf Clash Season 4', // Static from mockup
+            sport: 'Football',
+            status: TournamentStatus.upcoming,
+            date: 'Sat, Oct 26, 2024',
+            time: '09:00 - 18:00',
+            venue: 'Grand Arena Turf',
+            location: 'Downtown Sports Complex',
+            entryFee: '₹500',
+            prizePool: '₹10,000 + Trophy',
+            grandPrize: '₹10,000',
+            maxTeams: 16,
+            registeredTeams: 0,
+            format: '16 Teams Knockout',
+            imageUrl: 'https://picsum.photos/seed/turf1/800/400',
+          );
+          TournamentManager().addTournament(newTourney);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tournament Created Successfully!')));
+          Navigator.popUntil(context, (route) => route.isFirst); // Go back to main layout
+        } : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF166534), // Dark Green
           foregroundColor: Colors.white,
