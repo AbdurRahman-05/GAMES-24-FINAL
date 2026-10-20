@@ -27,6 +27,18 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
+    final bool isDisabled = onPressed == null && !isLoading;
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    Color textColor;
+    if (isDisabled) {
+      textColor = isDark ? Colors.white38 : Colors.grey[500]!;
+    } else if (type == AppButtonType.primary || type == AppButtonType.secondary) {
+      textColor = Colors.white;
+    } else {
+      textColor = AppColors.primary;
+    }
+
     Widget buttonContent = Row(
       mainAxisSize: isFullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -42,16 +54,14 @@ class AppButton extends StatelessWidget {
           ),
           const SizedBox(width: 8),
         ] else if (icon != null) ...[
-          Icon(icon, size: 18),
+          Icon(icon, size: 18, color: textColor),
           const SizedBox(width: 6),
         ],
         Flexible(
           child: Text(
             text,
             style: theme.textTheme.titleMedium?.copyWith(
-              color: type == AppButtonType.primary || type == AppButtonType.secondary
-                  ? Colors.white
-                  : AppColors.primary,
+              color: textColor,
               fontWeight: FontWeight.w600,
             ),
             maxLines: 1,
@@ -62,7 +72,15 @@ class AppButton extends StatelessWidget {
     );
 
     Decoration? decoration;
-    if (type == AppButtonType.primary) {
+    if (isDisabled) {
+      decoration = BoxDecoration(
+        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200],
+        borderRadius: BorderRadius.circular(20),
+        border: type == AppButtonType.outline
+            ? Border.all(color: isDark ? Colors.white12 : Colors.grey[300]!, width: 1.5)
+            : null,
+      );
+    } else if (type == AppButtonType.primary) {
       decoration = BoxDecoration(
         gradient: AppColors.primaryGradient,
         borderRadius: BorderRadius.circular(20),

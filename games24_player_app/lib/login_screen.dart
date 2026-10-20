@@ -5,6 +5,7 @@ import 'core/utils/toast_utils.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 import 'main_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -408,6 +409,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+        if (data['fullName'] != null) await prefs.setString('fullName', data['fullName']);
+        if (data['mobileNumber'] != null) await prefs.setString('mobileNumber', data['mobileNumber']);
+        if (data['preferredSport'] != null) await prefs.setString('preferredSport', data['preferredSport']);
+        else await prefs.setString('mobileNumber', mobile); // fallback
+
         if (!mounted) return;
         Navigator.pushReplacement(
           context,

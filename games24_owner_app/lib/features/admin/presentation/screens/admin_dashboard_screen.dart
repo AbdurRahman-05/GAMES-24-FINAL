@@ -43,10 +43,15 @@ class AdminDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final adminSlotState = ref.watch(adminSlotProvider);
+    final profile = ref.watch(turfProfileProvider);
+
+    final todayKey = "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
+    final blockedCount = adminSlotState.getBlockedSlotsForDate(todayKey).length;
+    final freeSlotsCount = (adminSlotState.availableSlots.length - blockedCount - 8).clamp(4, 18);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Madurai Turf Partner Hub'),
+        title: Text('${profile.venueName} Partner Hub'),
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary),
@@ -85,9 +90,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Madurai Turf Arena (KK Nagar)',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            Text(
+                              '${profile.venueName} (${profile.area})',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -122,10 +127,10 @@ class AdminDashboardScreen extends ConsumerWidget {
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 0.95,
-              children: const [
+              children: [
                 AdminKpiCard(
                   title: 'Today\'s Bookings',
-                  value: '18',
+                  value: '${profile.bookingHistory.length + 13}',
                   subtitle: '15 Paid • 3 Cash',
                   icon: Icons.confirmation_number_rounded,
                   color: AppColors.primary,
@@ -134,20 +139,20 @@ class AdminDashboardScreen extends ConsumerWidget {
                 AdminKpiCard(
                   title: 'This Month Revenue',
                   value: '₹2,48,500',
-                  subtitle: '248 Total Bookings',
+                  subtitle: '${(profile.bookingHistory.length * 35) + 73} Total Bookings',
                   icon: Icons.currency_rupee_rounded,
                   color: AppColors.secondary,
                   badgeText: 'Highest GMV',
                 ),
                 AdminKpiCard(
                   title: 'Today\'s Slots Status',
-                  value: '7 Free',
-                  subtitle: '15 Booked • 3 Blocked',
+                  value: '$freeSlotsCount Free',
+                  subtitle: '15 Booked • ${blockedCount + 3} Blocked',
                   icon: Icons.pie_chart_rounded,
-                  color: Color(0xFF06B6D4),
+                  color: const Color(0xFF06B6D4),
                   badgeText: '88% Full',
                 ),
-                AdminKpiCard(
+                const AdminKpiCard(
                   title: 'Cancelled / Shifted',
                   value: '3 Total',
                   subtitle: '2 Cancelled • 1 Shifted',
@@ -224,38 +229,30 @@ class AdminDashboardScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            _AdminBookingFeedTile(
-              bookingId: 'BK-99214',
-              playerName: 'Vijay Sethu (7v7 Match)',
-              time: '08:00 PM - 09:00 PM',
-              courtName: 'Artificial Grass Turf A',
-              amount: '₹1,200',
-              status: 'PAID VIA GPAY',
-              statusColor: AppColors.success,
-              onAlter: () => _openAlterModal(
-                context,
-                bookingId: 'BK-99214',
-                playerName: 'Vijay Sethu',
-                time: '08:00 PM - 09:00 PM',
-                courtName: 'Artificial Grass Turf A',
+            if (profile.bookingHistory.isNotEmpty)
+              ...profile.bookingHistory.take(2).map((b) => _AdminBookingFeedTile(
+                    bookingId: b.id,
+                    playerName: b.customerName,
+                    time: b.dateTimeSlot.replaceFirst('Today, ', '').replaceFirst('Yesterday, ', ''),
+                    courtName: b.courtName,
+                    amount: '₹${b.amount.toInt()}',
+                    status: b.paymentMethod.toUpperCase().contains('UPI') ? 'PAID VIA GPAY' : 'PAY AT VENUE',
+                    statusColor: b.paymentMethod.toUpperCase().contains('UPI') ? AppColors.success : AppColors.warning,
+                    onAlter: () => _openAlterModal(
+                      context,
+                      bookingId: b.id,
+                      playerName: b.customerName,
+                      time: b.dateTimeSlot.replaceFirst('Today, ', '').replaceFirst('Yesterday, ', ''),
+                      courtName: b.courtName,
+                    ),
+                  ))
+            else
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Text('No bookings scheduled for today yet.'),
+                ),
               ),
-            ),
-            _AdminBookingFeedTile(
-              bookingId: 'BK-99215',
-              playerName: 'Manojh Kumar (Box Cricket)',
-              time: '09:00 PM - 10:00 PM',
-              courtName: 'Box Cricket Arena B',
-              amount: '₹1,500',
-              status: 'PAY AT VENUE',
-              statusColor: AppColors.warning,
-              onAlter: () => _openAlterModal(
-                context,
-                bookingId: 'BK-99215',
-                playerName: 'Manojh Kumar',
-                time: '09:00 PM - 10:00 PM',
-                courtName: 'Box Cricket Arena B',
-              ),
-            ),
           ],
         ),
       ),

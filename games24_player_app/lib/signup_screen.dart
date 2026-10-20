@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'home_screen.dart';
 import 'main_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -392,6 +393,21 @@ class _SignupScreenState extends State<SignupScreen> {
     }
 
     try {
+      // First check if mobile already exists
+      final checkResponse = await http.post(
+        Uri.parse('http://localhost:3000/auth/check-mobile'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'mobileNumber': mobile}),
+      );
+      
+      if (checkResponse.statusCode == 200 || checkResponse.statusCode == 201) {
+        final checkData = jsonDecode(checkResponse.body);
+        if (checkData['exists'] == true) {
+          ToastUtils.showError(context, 'Number already registered. Please use a different number or login.');
+          return;
+        }
+      }
+
       final response = await http.post(
         Uri.parse('http://localhost:3000/auth/send-otp'),
         headers: {'Content-Type': 'application/json'},
@@ -456,6 +472,12 @@ class _SignupScreenState extends State<SignupScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('fullName', data['fullName'] ?? name);
+        await prefs.setString('mobileNumber', data['mobileNumber'] ?? mobile);
+        await prefs.setString('preferredSport', data['preferredSport'] ?? ['Football', 'Cricket', 'Badminton'][_selectedSportIndex]);
+
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
           context,

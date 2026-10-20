@@ -4,8 +4,47 @@ import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/leaderboard_screen.dart';
 import 'package:games24_player_app/login_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _fullName = 'Loading...';
+  String _mobileNumber = '';
+  String _preferredSport = 'Football';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _fullName = prefs.getString('fullName') ?? 'Unknown User';
+      _mobileNumber = prefs.getString('mobileNumber') ?? '';
+      _preferredSport = prefs.getString('preferredSport') ?? 'Football';
+    });
+  }
+
+  IconData _getSportIcon(String sport) {
+    switch (sport.toLowerCase()) {
+      case 'football':
+        return Icons.sports_soccer;
+      case 'cricket':
+        return Icons.sports_cricket;
+      case 'badminton':
+        return Icons.sports_tennis;
+      default:
+        return Icons.sports_baseball;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -156,9 +195,9 @@ class ProfileScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Alex Rivera',
-                      style: TextStyle(
+                    Text(
+                      _fullName,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF111827),
@@ -170,21 +209,18 @@ class ProfileScreen extends StatelessWidget {
                         color: const Color(0xFFBBE5CA),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Text(
-                        'Turf Master',
-                        style: TextStyle(
-                          color: Color(0xFF0F6D38),
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Icon(
+                        _getSportIcon(_preferredSport),
+                        color: const Color(0xFF0F6D38),
+                        size: 16,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'Member since Oct 2023 • Delhi NCR',
-                  style: TextStyle(
+                Text(
+                  _mobileNumber,
+                  style: const TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 12,
                   ),

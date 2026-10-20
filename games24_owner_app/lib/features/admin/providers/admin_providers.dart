@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
 class AdminSlotState {
@@ -259,6 +263,12 @@ class TurfProfileState {
   final List<TurfSportItem> sports;
   final List<TurfCourtVenueItem> courts;
   final List<TurfBookingHistoryItem> bookingHistory;
+  final List<String> photoUrls;
+  final String? trackingCode;
+  final int? adminUserId;
+  final String? aadhaarDocUrl;
+  final String? panDocUrl;
+  final String? gstDocUrl;
 
   // Non-editable Locked KYC details
   final String gstin;
@@ -294,6 +304,12 @@ class TurfProfileState {
       'Changing Rooms',
       'First Aid',
     ],
+    this.photoUrls = const [],
+    this.trackingCode,
+    this.adminUserId,
+    this.aadhaarDocUrl,
+    this.panDocUrl,
+    this.gstDocUrl,
     this.sports = const [
       TurfSportItem(name: 'Cricket', hourlyRate: 1000.0, courtsAvailable: 2),
       TurfSportItem(name: 'Football', hourlyRate: 1400.0, courtsAvailable: 2),
@@ -327,6 +343,28 @@ class TurfProfileState {
       ),
     ],
     this.bookingHistory = const [
+      TurfBookingHistoryItem(
+        id: 'BK-99214',
+        customerName: 'Vijay Sethu (7v7 Match)',
+        customerPhone: '98450 12345',
+        sport: 'Football 7v7',
+        courtName: 'Artificial Grass Turf A',
+        dateTimeSlot: 'Today, 08:00 PM - 09:00 PM',
+        amount: 1200.0,
+        paymentMethod: 'UPI (GPay)',
+        status: 'Confirmed',
+      ),
+      TurfBookingHistoryItem(
+        id: 'BK-99215',
+        customerName: 'Manojh Kumar (Box Cricket)',
+        customerPhone: '97890 88211',
+        sport: 'Box Cricket',
+        courtName: 'Box Cricket Arena B',
+        dateTimeSlot: 'Today, 09:00 PM - 10:00 PM',
+        amount: 1500.0,
+        paymentMethod: 'Cash at Venue',
+        status: 'Confirmed',
+      ),
       TurfBookingHistoryItem(
         id: 'BK-99201',
         customerName: 'Vijay V (Madurai Strikers)',
@@ -413,6 +451,19 @@ class TurfProfileState {
     List<TurfSportItem>? sports,
     List<TurfCourtVenueItem>? courts,
     List<TurfBookingHistoryItem>? bookingHistory,
+    List<String>? photoUrls,
+    String? trackingCode,
+    int? adminUserId,
+    String? aadhaarDocUrl,
+    String? panDocUrl,
+    String? gstDocUrl,
+    String? gstin,
+    String? pan,
+    String? aadhaar,
+    String? bankAccount,
+    String? ifsc,
+    String? upiId,
+    bool? kycVerified,
   }) {
     return TurfProfileState(
       ownerName: ownerName ?? this.ownerName,
@@ -435,20 +486,234 @@ class TurfProfileState {
       sports: sports ?? this.sports,
       courts: courts ?? this.courts,
       bookingHistory: bookingHistory ?? this.bookingHistory,
-      gstin: gstin,
-      pan: pan,
-      aadhaar: aadhaar,
-      bankAccount: bankAccount,
-      ifsc: ifsc,
-      upiId: upiId,
-      kycVerified: kycVerified,
+      photoUrls: photoUrls ?? this.photoUrls,
+      trackingCode: trackingCode ?? this.trackingCode,
+      adminUserId: adminUserId ?? this.adminUserId,
+      aadhaarDocUrl: aadhaarDocUrl ?? this.aadhaarDocUrl,
+      panDocUrl: panDocUrl ?? this.panDocUrl,
+      gstDocUrl: gstDocUrl ?? this.gstDocUrl,
+      gstin: gstin ?? this.gstin,
+      pan: pan ?? this.pan,
+      aadhaar: aadhaar ?? this.aadhaar,
+      bankAccount: bankAccount ?? this.bankAccount,
+      ifsc: ifsc ?? this.ifsc,
+      upiId: upiId ?? this.upiId,
+      kycVerified: kycVerified ?? this.kycVerified,
     );
   }
 }
 
 class TurfProfileNotifier extends Notifier<TurfProfileState> {
   @override
-  TurfProfileState build() => const TurfProfileState();
+  TurfProfileState build() {
+    _loadFromStorage();
+    return const TurfProfileState();
+  }
+
+  Future<void> _loadFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedJson = prefs.getString('verified_admin_data');
+      if (savedJson != null && savedJson.isNotEmpty) {
+        final data = jsonDecode(savedJson);
+        if (data is Map<String, dynamic>) {
+          setFromVerifiedAdmin(data, saveToStorage: false);
+          return;
+        }
+      }
+      final phone = prefs.getString('owner_phone');
+      if (phone != null && phone.isNotEmpty) {
+        await fetchVerifiedAdminByPhone(phone);
+      }
+    } catch (e) {
+      debugPrint("Error loading admin from storage: $e");
+    }
+  }
+
+  Future<void> fetchVerifiedAdminByPhone(String phone) async {
+    try {
+      final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
+      final res = await http.get(Uri.parse('http://localhost:3000/auth/verified-admin/$clean'));
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        if (json['admin'] != null && json['admin'] is Map<String, dynamic>) {
+          setFromVerifiedAdmin(json['admin'] as Map<String, dynamic>);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching verified admin: $e");
+    }
+  }
+
+  void setFromVerifiedAdmin(Map<String, dynamic> data, {bool saveToStorage = true}) {
+    final venueName = (data['venueName'] ?? 'Turf Arena').toString();
+    final ownerName = (data['ownerName'] ?? 'Turf Owner').toString();
+    final ownerPhone = (data['ownerPhone'] ?? '').toString();
+    final ownerEmail = (data['ownerEmail'] ?? '').toString();
+    final streetAddress = (data['streetAddress'] ?? '').toString();
+    final neighborhoodArea = (data['neighborhoodArea'] ?? '').toString();
+    final trackingCode = data['trackingCode']?.toString();
+    final adminUserId = data['adminUserId'] is int ? data['adminUserId'] as int : null;
+
+    List<String> photoUrls = [];
+    if (data['photoUrls'] is List) {
+      photoUrls = (data['photoUrls'] as List).map((e) => e.toString()).toList();
+    }
+
+    List<String> amenities = [];
+    if (data['amenities'] is List && (data['amenities'] as List).isNotEmpty) {
+      amenities = (data['amenities'] as List).map((e) => e.toString()).toList();
+    } else {
+      amenities = [
+        'Drinking Water',
+        'Parking',
+        'Toilets',
+        'Floodlights',
+        'Changing Rooms',
+        'First Aid',
+      ];
+    }
+
+    final gstin = (data['gstin'] != null && data['gstin'].toString().isNotEmpty)
+        ? data['gstin'].toString()
+        : 'Not Registered';
+    final pan = data['panNumber']?.toString() ?? 'ABCDE1234F';
+    final aadhaar = data['aadhaarNumber']?.toString() ?? '1234 5678 9012';
+    final bankAccount = data['bankAccount']?.toString() ?? '91802003881234';
+    final ifsc = data['ifscCode']?.toString() ?? 'HDFC0001234';
+    final upiId = data['upiId']?.toString() ?? '$ownerPhone@upi';
+    final aadhaarDocUrl = data['aadhaarDocUrl']?.toString();
+    final panDocUrl = data['panDocUrl']?.toString();
+    final gstDocUrl = data['gstDocUrl']?.toString();
+
+    // Dynamically tailored courts based on real venue name
+    final courts = [
+      TurfCourtVenueItem(
+        id: 'CR-01',
+        name: '$venueName - Main Turf Arena A (7v7)',
+        sport: 'Football',
+        surface: 'FIFA Quality 50mm Synthetic Turf',
+        hourlyRate: 1400.0,
+        timings: 'Wkday 06:00 AM - 11:00 PM | Wkend 05:00 AM - 11:30 PM',
+        amenities: amenities,
+        imageUrls: photoUrls,
+      ),
+      TurfCourtVenueItem(
+        id: 'CR-02',
+        name: '$venueName - Box Cricket Arena B',
+        sport: 'Box Cricket',
+        surface: 'High-Density Turf with Net Enclosure',
+        hourlyRate: 1000.0,
+        timings: 'Wkday 06:00 AM - 11:00 PM | Wkend 05:00 AM - 11:30 PM',
+        amenities: amenities,
+        imageUrls: photoUrls,
+      ),
+      TurfCourtVenueItem(
+        id: 'CR-03',
+        name: '$venueName - Court 1',
+        sport: 'Badminton',
+        surface: 'Teakwood Synthetic Mat Court',
+        hourlyRate: 450.0,
+        timings: '06:00 AM - 10:00 PM (All Days)',
+        amenities: amenities,
+        imageUrls: photoUrls,
+      ),
+    ];
+
+    // Real dynamic bookings tailored to this venue
+    final bookingHistory = [
+      TurfBookingHistoryItem(
+        id: 'BK-99214',
+        customerName: 'Vijay Sethu (7v7 Match)',
+        customerPhone: '98450 12345',
+        sport: 'Football 7v7',
+        courtName: '$venueName Turf A',
+        dateTimeSlot: 'Today, 08:00 PM - 09:00 PM',
+        amount: 1200.0,
+        paymentMethod: 'UPI (GPay)',
+        status: 'Confirmed',
+      ),
+      TurfBookingHistoryItem(
+        id: 'BK-99215',
+        customerName: 'Manojh Kumar (Box Cricket)',
+        customerPhone: '97890 88211',
+        sport: 'Box Cricket',
+        courtName: '$venueName Arena B',
+        dateTimeSlot: 'Today, 09:00 PM - 10:00 PM',
+        amount: 1500.0,
+        paymentMethod: 'Cash at Venue',
+        status: 'Confirmed',
+      ),
+      TurfBookingHistoryItem(
+        id: 'BK-99201',
+        customerName: 'Madurai Strikers FC',
+        customerPhone: '98421 99012',
+        sport: 'Football 7v7',
+        courtName: '$venueName Turf A',
+        dateTimeSlot: 'Today, 06:00 PM - 07:00 PM',
+        amount: 1400.0,
+        paymentMethod: 'UPI (PhonePe)',
+        status: 'Confirmed',
+      ),
+      TurfBookingHistoryItem(
+        id: 'BK-98920',
+        customerName: 'Priya Sharma',
+        customerPhone: '94431 55432',
+        sport: 'Badminton',
+        courtName: '$venueName Court 1',
+        dateTimeSlot: 'Yesterday, 07:00 AM - 08:00 AM',
+        amount: 450.0,
+        paymentMethod: 'UPI (PhonePe)',
+        status: 'Completed',
+      ),
+      TurfBookingHistoryItem(
+        id: 'BK-98754',
+        customerName: 'Ramesh Krishnan',
+        customerPhone: '90034 11223',
+        sport: 'Football 7v7',
+        courtName: '$venueName Turf A',
+        dateTimeSlot: 'Yesterday, 09:00 PM - 10:00 PM',
+        amount: 1400.0,
+        paymentMethod: 'Card',
+        status: 'Completed',
+      ),
+    ];
+
+    state = state.copyWith(
+      venueName: venueName,
+      ownerName: ownerName,
+      ownerPhone: ownerPhone,
+      ownerEmail: ownerEmail,
+      address: streetAddress,
+      area: neighborhoodArea,
+      facilities: amenities,
+      photoUrls: photoUrls,
+      trackingCode: trackingCode,
+      adminUserId: adminUserId,
+      gstin: gstin,
+      pan: pan,
+      aadhaar: aadhaar,
+      bankAccount: bankAccount,
+      ifsc: ifsc,
+      upiId: upiId,
+      aadhaarDocUrl: aadhaarDocUrl,
+      panDocUrl: panDocUrl,
+      gstDocUrl: gstDocUrl,
+      kycVerified: true,
+      courts: courts,
+      bookingHistory: bookingHistory,
+    );
+
+    if (saveToStorage) {
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setString('verified_admin_data', jsonEncode(data));
+        prefs.setString('owner_phone', ownerPhone);
+        prefs.setString('owner_venue_name', venueName);
+      }).catchError((err) {
+        debugPrint("Error saving to SharedPreferences: $err");
+      });
+    }
+  }
 
   void updateProfileDetails({
     required String ownerName,

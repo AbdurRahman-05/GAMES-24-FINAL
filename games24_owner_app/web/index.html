@@ -17,6 +17,14 @@
 
   <title>Games24 Owner Partner Hub</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    // Gracefully handle web engine font fallback fetch failures
+    window.addEventListener('unhandledrejection', function(event) {
+      if (event.reason && String(event.reason).includes('Failed to fetch') && String(event.reason).includes('notocoloremoji')) {
+        event.preventDefault();
+      }
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

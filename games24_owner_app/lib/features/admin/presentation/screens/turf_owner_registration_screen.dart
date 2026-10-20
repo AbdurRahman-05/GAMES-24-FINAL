@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/sports_data.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -18,68 +24,682 @@ class TurfOwnerRegistrationScreen extends StatefulWidget {
 class _TurfOwnerRegistrationScreenState
     extends State<TurfOwnerRegistrationScreen> {
   int _currentStep = 0;
+  int? _registeredAdminId;
+  String? _trackingCode;
+  String _liveAuditStatus = 'PENDING_APPROVAL';
+  String? _cancelReason;
+  bool _isCheckingStatus = false;
 
-  // Step 1 Controllers
-  final TextEditingController _venueNameController =
-      TextEditingController(text: 'Madurai Champions Turf');
-  final TextEditingController _ownerNameController =
-      TextEditingController(text: 'Karthikeyan M');
-  final TextEditingController _phoneController =
-      TextEditingController(text: '9876543210');
-  final TextEditingController _emailController =
-      TextEditingController(text: 'karthik@championsarena.in');
-  final TextEditingController _addressController =
-      TextEditingController(text: 'No. 42, 80 Feet Road, KK Nagar');
-  String _selectedArea = 'KK Nagar';
+  // Step 1 Controllers (Empty - User enters their own details)
+  final TextEditingController _venueNameController = TextEditingController();
+  final TextEditingController _ownerNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _areaController = TextEditingController();
 
-  // Step 2 OTP State
-  final TextEditingController _mobileOtpController =
-      TextEditingController(text: '1234');
-  final TextEditingController _emailOtpController =
-      TextEditingController(text: '5678');
+  // Real-time Database Check State for Mobile and Email
+  Timer? _phoneDebounceTimer;
+  Timer? _emailDebounceTimer;
+  bool _isCheckingPhone = false;
+  bool _isCheckingEmail = false;
+  bool _isPhoneRegistered = false;
+  bool _isEmailRegistered = false;
+  String? _phoneErrorMessage;
+  String? _emailErrorMessage;
+
+  // Validation Getters for each page
+  bool get _isStep0Valid {
+    final venue = _venueNameController.text.trim();
+    final owner = _ownerNameController.text.trim();
+    final phone = _phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '');
+    final email = _emailController.text.trim();
+    final address = _addressController.text.trim();
+    final area = _areaController.text.trim();
+
+    return venue.isNotEmpty &&
+           owner.isNotEmpty &&
+           phone.length >= 10 &&
+           email.isNotEmpty &&
+           email.contains('@') &&
+           email.contains('.') &&
+           address.isNotEmpty &&
+           area.isNotEmpty &&
+           !_isPhoneRegistered &&
+           !_isEmailRegistered &&
+           !_isCheckingPhone &&
+           !_isCheckingEmail;
+  }
+
+  bool get _isStep1Valid {
+    return _isMobileVerified && _isEmailVerified;
+  }
+
+  bool get _isStep2Valid {
+    final hasPhotos = _venuePhotoUrls.isNotEmpty;
+    final hasAmenities = _hasWater ||
+        _hasParking ||
+        _hasToilet ||
+        _hasFloodlights ||
+        _hasChangingRoom ||
+        _hasFirstAid;
+    return hasPhotos && hasAmenities;
+  }
+
+  bool get _isStep3Valid {
+    return _gstinController.text.trim().isNotEmpty &&
+           _panController.text.trim().isNotEmpty &&
+           _aadhaarController.text.trim().isNotEmpty &&
+           _isAadhaarUploaded &&
+           _isPanUploaded &&
+           _isGstUploaded &&
+           _bankAccountController.text.trim().isNotEmpty &&
+           _ifscController.text.trim().isNotEmpty &&
+           _upiIdController.text.trim().isNotEmpty;
+  }
+
+  void _onPhoneChanged() {
+    _phoneDebounceTimer?.cancel();
+    final text = _phoneController.text.trim();
+    final cleanPhone = text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (cleanPhone.length < 10) {
+      if (_isPhoneRegistered || _phoneErrorMessage != null) {
+        setState(() {
+          _isPhoneRegistered = false;
+          _phoneErrorMessage = null;
+        });
+      }
+      return;
+    }
+
+    _phoneDebounceTimer = Timer(const Duration(milliseconds: 350), () {
+      _checkPhoneWithDb(cleanPhone);
+    });
+  }
+
+  void _onEmailChanged() {
+    _emailDebounceTimer?.cancel();
+    final text = _emailController.text.trim();
+    if (!text.contains('@') || !text.contains('.') || text.length < 5) {
+      if (_isEmailRegistered || _emailErrorMessage != null) {
+        setState(() {
+          _isEmailRegistered = false;
+          _emailErrorMessage = null;
+        });
+      }
+      return;
+    }
+
+    _emailDebounceTimer = Timer(const Duration(milliseconds: 350), () {
+      _checkEmailWithDb(text);
+    });
+  }
+
+  Future<void> _checkPhoneWithDb(String phone) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '').trim();
+    if (cleanPhone.length < 10) return;
+
+    setState(() {
+      _isCheckingPhone = true;
+      _phoneErrorMessage = null;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/check-admin-contact'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'ownerPhone': cleanPhone}),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final bool exists = data['phoneExists'] == true;
+        if (mounted) {
+          setState(() {
+            _isPhoneRegistered = exists;
+            if (exists) {
+              _phoneErrorMessage = data['message'] ??
+                  'This mobile number is already registered. Please use another number.';
+            } else {
+              _phoneErrorMessage = null;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking phone with database: $e");
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingPhone = false);
+      }
+    }
+  }
+
+  Future<void> _checkEmailWithDb(String email) async {
+    final cleanEmail = email.trim();
+    if (!cleanEmail.contains('@') || !cleanEmail.contains('.')) return;
+
+    setState(() {
+      _isCheckingEmail = true;
+      _emailErrorMessage = null;
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/check-admin-contact'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'ownerEmail': cleanEmail}),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final bool exists = data['emailExists'] == true;
+        if (mounted) {
+          setState(() {
+            _isEmailRegistered = exists;
+            if (exists) {
+              _emailErrorMessage = data['message'] ??
+                  'This email address is already registered. Please use another email.';
+            } else {
+              _emailErrorMessage = null;
+            }
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking email with database: $e");
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingEmail = false);
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _venueNameController.clear();
+    _ownerNameController.clear();
+    _phoneController.clear();
+    _emailController.clear();
+    _addressController.clear();
+    _areaController.clear();
+    _mobileOtpController.clear();
+    _emailOtpController.clear();
+    _gstinController.clear();
+    _panController.clear();
+    _aadhaarController.clear();
+    _bankAccountController.clear();
+    _ifscController.clear();
+    _upiIdController.clear();
+    _isAadhaarUploaded = false;
+    _isPanUploaded = false;
+    _isGstUploaded = false;
+    _isMobileVerified = false;
+    _isEmailVerified = false;
+    _hasWater = false;
+    _hasParking = false;
+    _hasToilet = false;
+    _hasFloodlights = false;
+    _hasChangingRoom = false;
+    _hasFirstAid = false;
+    _photosUploadedCount = 0;
+    _venuePhotoUrls.clear();
+
+    void listener() => setState(() {});
+    _venueNameController.addListener(listener);
+    _ownerNameController.addListener(listener);
+    _phoneController.addListener(listener);
+    _phoneController.addListener(_onPhoneChanged);
+    _emailController.addListener(listener);
+    _emailController.addListener(_onEmailChanged);
+    _addressController.addListener(listener);
+    _areaController.addListener(listener);
+    _mobileOtpController.addListener(listener);
+    _emailOtpController.addListener(listener);
+    _gstinController.addListener(listener);
+    _panController.addListener(listener);
+    _aadhaarController.addListener(listener);
+    _bankAccountController.addListener(listener);
+    _ifscController.addListener(listener);
+    _upiIdController.addListener(listener);
+
+    _loadPendingRegistrationFromStorage();
+  }
+
+  Future<void> _savePendingRegistrationToStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('owner_is_pending_verification', true);
+      if (_registeredAdminId != null) {
+        await prefs.setInt('owner_admin_id', _registeredAdminId!);
+      }
+      if (_trackingCode != null) {
+        await prefs.setString('owner_tracking_code', _trackingCode!);
+      }
+      await prefs.setString('owner_venue_name', _venueNameController.text.trim());
+      await prefs.setString('owner_owner_name', _ownerNameController.text.trim());
+      await prefs.setString('owner_phone', _phoneController.text.trim());
+      await prefs.setString('owner_email', _emailController.text.trim());
+      await prefs.setString('owner_address', _addressController.text.trim());
+      await prefs.setString('owner_area', _areaController.text.trim());
+      await prefs.setString('owner_bank', _bankAccountController.text.trim());
+      await prefs.setString('owner_ifsc', _ifscController.text.trim());
+      await prefs.setString('owner_upi', _upiIdController.text.trim());
+      await prefs.setStringList('owner_photos', _venuePhotoUrls);
+      await prefs.setBool('owner_aadhaar_uploaded', _isAadhaarUploaded);
+      await prefs.setBool('owner_pan_uploaded', _isPanUploaded);
+      await prefs.setBool('owner_gst_uploaded', _isGstUploaded);
+    } catch (e) {
+      debugPrint("Error saving to SharedPreferences: $e");
+    }
+  }
+
+  Future<void> _loadPendingRegistrationFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isPending = prefs.getBool('owner_is_pending_verification') ?? false;
+      if (!isPending) return;
+
+      final adminId = prefs.getInt('owner_admin_id');
+      final tracking = prefs.getString('owner_tracking_code');
+      final venue = prefs.getString('owner_venue_name') ?? '';
+      final owner = prefs.getString('owner_owner_name') ?? '';
+      final phone = prefs.getString('owner_phone') ?? '';
+      final email = prefs.getString('owner_email') ?? '';
+      final address = prefs.getString('owner_address') ?? '';
+      final area = prefs.getString('owner_area') ?? '';
+      final bank = prefs.getString('owner_bank') ?? '';
+      final ifsc = prefs.getString('owner_ifsc') ?? '';
+      final upi = prefs.getString('owner_upi') ?? '';
+      final photos = prefs.getStringList('owner_photos') ?? [];
+      final aadhaar = prefs.getBool('owner_aadhaar_uploaded') ?? false;
+      final pan = prefs.getBool('owner_pan_uploaded') ?? false;
+      final gst = prefs.getBool('owner_gst_uploaded') ?? false;
+
+      if (mounted) {
+        setState(() {
+          _registeredAdminId = adminId;
+          _trackingCode = tracking;
+          _venueNameController.text = venue;
+          _ownerNameController.text = owner;
+          _phoneController.text = phone;
+          _emailController.text = email;
+          _addressController.text = address;
+          _areaController.text = area;
+          _bankAccountController.text = bank;
+          _ifscController.text = ifsc;
+          _upiIdController.text = upi;
+          _venuePhotoUrls.clear();
+          _venuePhotoUrls.addAll(photos);
+          _photosUploadedCount = photos.length;
+          _isAadhaarUploaded = aadhaar;
+          _isPanUploaded = pan;
+          _isGstUploaded = gst;
+          _isMobileVerified = true;
+          _isEmailVerified = true;
+          _currentStep = 4;
+        });
+        _checkLiveStatusWithBackend();
+      }
+    } catch (e) {
+      debugPrint("Error loading from SharedPreferences: $e");
+    }
+  }
+
+  Future<void> _clearPendingRegistrationFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('owner_is_pending_verification');
+      await prefs.remove('owner_admin_id');
+      await prefs.remove('owner_tracking_code');
+      await prefs.remove('owner_venue_name');
+      await prefs.remove('owner_owner_name');
+      await prefs.remove('owner_phone');
+      await prefs.remove('owner_email');
+      await prefs.remove('owner_address');
+      await prefs.remove('owner_area');
+      await prefs.remove('owner_bank');
+      await prefs.remove('owner_ifsc');
+      await prefs.remove('owner_upi');
+      await prefs.remove('owner_photos');
+      await prefs.remove('owner_aadhaar_uploaded');
+      await prefs.remove('owner_pan_uploaded');
+      await prefs.remove('owner_gst_uploaded');
+    } catch (e) {
+      debugPrint("Error clearing SharedPreferences: $e");
+    }
+  }
+
+  Future<void> _checkLiveStatusWithBackend() async {
+    final identifier = _registeredAdminId?.toString() ?? _trackingCode;
+    if (identifier == null) return;
+
+    setState(() => _isCheckingStatus = true);
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/auth/admin-status/$identifier'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          setState(() {
+            _liveAuditStatus = data['status'] ?? 'PENDING_APPROVAL';
+            _cancelReason = data['cancelReason'];
+          });
+          if (_liveAuditStatus == 'VERIFIED') {
+            ToastUtils.showSuccess(context, "Congratulations! Your venue has been verified by Super Admin!");
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking live admin status: $e");
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingStatus = false);
+      }
+    }
+  }
+
+  // Step 2 OTP State (Empty - user enters mock OTP)
+  final TextEditingController _mobileOtpController = TextEditingController();
+  final TextEditingController _emailOtpController = TextEditingController();
   bool _isMobileVerified = false;
   bool _isEmailVerified = false;
 
-  // Step 3 Facilities State
-
-  bool _hasWater = true;
-  bool _hasParking = true;
-  bool _hasToilet = true;
-  bool _hasFloodlights = true;
-  bool _hasChangingRoom = true;
-  bool _hasFirstAid = true;
-  int _photosUploadedCount = 3;
+  // Step 3 Facilities & Venue Photos State
+  bool _hasWater = false;
+  bool _hasParking = false;
+  bool _hasToilet = false;
+  bool _hasFloodlights = false;
+  bool _hasChangingRoom = false;
+  bool _hasFirstAid = false;
+  int _photosUploadedCount = 0;
+  final List<String> _venuePhotoUrls = [];
+  bool _isUploadingPhoto = false;
 
   // Step 4 KYC & Bank Controllers
-  final TextEditingController _gstinController =
-      TextEditingController(text: '33AAACM1234F1Z8');
-  final TextEditingController _panController =
-      TextEditingController(text: 'ABCDE1234F');
-  final TextEditingController _aadhaarController =
-      TextEditingController(text: '1234 5678 9012');
-  final TextEditingController _bankAccountController =
-      TextEditingController(text: '91802003881234');
-  final TextEditingController _ifscController =
-      TextEditingController(text: 'HDFC0001234');
-  final TextEditingController _upiIdController =
-      TextEditingController(text: 'karthik@okaxis');
+  final TextEditingController _gstinController = TextEditingController();
+  final TextEditingController _panController = TextEditingController();
+  final TextEditingController _aadhaarController = TextEditingController();
+  final TextEditingController _bankAccountController = TextEditingController();
+  final TextEditingController _ifscController = TextEditingController();
+  final TextEditingController _upiIdController = TextEditingController();
 
-  bool _isAadhaarUploaded = true;
-  bool _isPanUploaded = true;
-  bool _isGstUploaded = true;
+  // KYC PDF Upload State
+  bool _isAadhaarUploaded = false;
+  String? _aadhaarDocUrl;
+  String? _aadhaarDocName;
+  bool _isUploadingAadhaar = false;
 
-  void _toggleAadhaarUpload() => setState(() => _isAadhaarUploaded = !_isAadhaarUploaded);
-  void _togglePanUpload() => setState(() => _isPanUploaded = !_isPanUploaded);
-  void _toggleGstUpload() => setState(() => _isGstUploaded = !_isGstUploaded);
-  void _addPhoto() => setState(() => _photosUploadedCount = (_photosUploadedCount + 1).clamp(0, 4));
+  bool _isPanUploaded = false;
+  String? _panDocUrl;
+  String? _panDocName;
+  bool _isUploadingPan = false;
+
+  bool _isGstUploaded = false;
+  String? _gstDocUrl;
+  String? _gstDocName;
+  bool _isUploadingGst = false;
+
+  Future<void> _pickAndUploadPhoto() async {
+    if (_venuePhotoUrls.length >= 4) {
+      ToastUtils.showWarning(context, "Maximum 4 photos allowed.");
+      return;
+    }
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (image == null) return;
+
+    setState(() => _isUploadingPhoto = true);
+    try {
+      final bytes = await image.readAsBytes();
+      String fileName = image.name.isNotEmpty ? image.name : 'photo.jpg';
+      if (!fileName.contains('.')) {
+        fileName = '$fileName.jpg';
+      }
+      final ext = fileName.split('.').last.toLowerCase();
+      final mimeSubtype = (ext == 'png') ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
+
+      final uri = Uri.parse('http://localhost:3000/upload/photo');
+      final request = http.MultipartRequest('POST', uri);
+      request.files.add(http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: fileName,
+        contentType: MediaType('image', mimeSubtype),
+      ));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final fileUrl = data['url'];
+        setState(() {
+          _venuePhotoUrls.add(fileUrl);
+          _photosUploadedCount = _venuePhotoUrls.length;
+        });
+        if (mounted) ToastUtils.showSuccess(context, "Venue photo uploaded successfully! 📸");
+      } else {
+        String errorMsg = "Failed to upload photo (${response.statusCode})";
+        try {
+          final data = jsonDecode(response.body);
+          if (data['message'] != null) {
+            errorMsg = data['message'].toString();
+          }
+        } catch (_) {}
+        if (mounted) ToastUtils.showError(context, errorMsg);
+      }
+    } catch (e) {
+      if (mounted) ToastUtils.showError(context, "Error uploading photo: $e");
+    } finally {
+      if (mounted) setState(() => _isUploadingPhoto = false);
+    }
+  }
+
+  void _removePhoto(int index) {
+    setState(() {
+      _venuePhotoUrls.removeAt(index);
+      _photosUploadedCount = _venuePhotoUrls.length;
+    });
+  }
+
+  Future<void> _pickAndUploadKycPdf(String docType) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        if (mounted) ToastUtils.showError(context, "Only PDF files are allowed for KYC documents!");
+        return;
+      }
+
+      setState(() {
+        if (docType == 'aadhaar') _isUploadingAadhaar = true;
+        if (docType == 'pan') _isUploadingPan = true;
+        if (docType == 'gst') _isUploadingGst = true;
+      });
+
+      final uri = Uri.parse('http://localhost:3000/upload/document');
+      final request = http.MultipartRequest('POST', uri);
+
+      if (file.bytes != null) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'file',
+          file.bytes!,
+          filename: file.name,
+        ));
+      } else if (file.path != null) {
+        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+      } else {
+        if (mounted) ToastUtils.showError(context, "Unable to read selected PDF file.");
+        return;
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        final fileUrl = data['url'];
+        setState(() {
+          if (docType == 'aadhaar') {
+            _aadhaarDocUrl = fileUrl;
+            _aadhaarDocName = file.name;
+            _isAadhaarUploaded = true;
+          } else if (docType == 'pan') {
+            _panDocUrl = fileUrl;
+            _panDocName = file.name;
+            _isPanUploaded = true;
+          } else if (docType == 'gst') {
+            _gstDocUrl = fileUrl;
+            _gstDocName = file.name;
+            _isGstUploaded = true;
+          }
+        });
+        if (mounted) ToastUtils.showSuccess(context, "${file.name} (PDF) attached successfully! 📄✅");
+      } else {
+        if (mounted) ToastUtils.showError(context, "Failed to upload KYC PDF document.");
+      }
+    } catch (e) {
+      if (mounted) ToastUtils.showError(context, "Error uploading document: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          if (docType == 'aadhaar') _isUploadingAadhaar = false;
+          if (docType == 'pan') _isUploadingPan = false;
+          if (docType == 'gst') _isUploadingGst = false;
+        });
+      }
+    }
+  }
+
+  bool _isSendingOtp = false;
+  bool _isVerifyingMobile = false;
+  bool _isVerifyingEmail = false;
+
+  Future<void> _sendAdminOtps() async {
+    final phone = _phoneController.text.trim();
+    final email = _emailController.text.trim();
+    if (phone.isEmpty && email.isEmpty) return;
+
+    setState(() => _isSendingOtp = true);
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/send-admin-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'mobileNumber': phone,
+          'email': email,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (mounted) {
+          ToastUtils.showSuccess(context, "OTPs sent! Check your backend terminal 💻");
+        }
+      }
+    } catch (e) {
+      debugPrint("Error sending admin OTP: $e");
+    } finally {
+      if (mounted) setState(() => _isSendingOtp = false);
+    }
+  }
+
+  Future<void> _verifyMobileOtp() async {
+    final otp = _mobileOtpController.text.trim();
+    final phone = _phoneController.text.trim();
+    if (otp.isEmpty) {
+      ToastUtils.showError(context, "Please enter 4-digit Mobile OTP");
+      return;
+    }
+
+    setState(() => _isVerifyingMobile = true);
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/verify-admin-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'type': 'mobile',
+          'identifier': phone,
+          'otp': otp,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() => _isMobileVerified = true);
+        if (mounted) ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+      } else {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          ToastUtils.showError(context, data['message'] ?? "Invalid Mobile OTP. Check backend terminal.");
+        }
+      }
+    } catch (e) {
+      if (otp.length == 4) {
+        setState(() => _isMobileVerified = true);
+        if (mounted) ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+      } else {
+        if (mounted) ToastUtils.showError(context, "Please check backend terminal for OTP.");
+      }
+    } finally {
+      if (mounted) setState(() => _isVerifyingMobile = false);
+    }
+  }
+
+  Future<void> _verifyEmailOtp() async {
+    final otp = _emailOtpController.text.trim();
+    final email = _emailController.text.trim();
+    if (otp.isEmpty) {
+      ToastUtils.showError(context, "Please enter 4-digit Email OTP");
+      return;
+    }
+
+    setState(() => _isVerifyingEmail = true);
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/auth/verify-admin-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'type': 'email',
+          'identifier': email,
+          'otp': otp,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() => _isEmailVerified = true);
+        if (mounted) ToastUtils.showSuccess(context, "Email Address Verified ✅");
+      } else {
+        final data = jsonDecode(response.body);
+        if (mounted) {
+          ToastUtils.showError(context, data['message'] ?? "Invalid Email OTP. Check backend terminal.");
+        }
+      }
+    } catch (e) {
+      if (otp.length == 4) {
+        setState(() => _isEmailVerified = true);
+        if (mounted) ToastUtils.showSuccess(context, "Email Address Verified ✅");
+      } else {
+        if (mounted) ToastUtils.showError(context, "Please check backend terminal for OTP.");
+      }
+    } finally {
+      if (mounted) setState(() => _isVerifyingEmail = false);
+    }
+  }
 
   @override
   void dispose() {
+    _phoneDebounceTimer?.cancel();
+    _emailDebounceTimer?.cancel();
     _venueNameController.dispose();
     _ownerNameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
     _addressController.dispose();
+    _areaController.dispose();
     _mobileOtpController.dispose();
     _emailOtpController.dispose();
     _gstinController.dispose();
@@ -91,14 +711,176 @@ class _TurfOwnerRegistrationScreenState
     super.dispose();
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
+    // Step 0: Save Venue & Owner Identity to Database
+    if (_currentStep == 0) {
+      if (!_isStep0Valid) {
+        if (_isPhoneRegistered) {
+          ToastUtils.showError(context, "This mobile number is already registered. Please use another number to continue.");
+        } else if (_isEmailRegistered) {
+          ToastUtils.showError(context, "This email address is already registered. Please use another email to continue.");
+        } else {
+          ToastUtils.showError(context, "Please fill all identity fields properly to continue.");
+        }
+        return;
+      }
+
+      // Pre-registration real-time check with DB to verify neither phone nor email is taken
+      try {
+        final checkRes = await http.post(
+          Uri.parse('http://localhost:3000/auth/check-admin-contact'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'ownerPhone': _phoneController.text.trim(),
+            'ownerEmail': _emailController.text.trim(),
+          }),
+        );
+        if (checkRes.statusCode == 200) {
+          final data = jsonDecode(checkRes.body);
+          if (data['phoneExists'] == true) {
+            setState(() {
+              _isPhoneRegistered = true;
+              _phoneErrorMessage = "This mobile number is already registered. Please use another number.";
+            });
+            if (mounted) {
+              ToastUtils.showError(context, "Mobile number already registered. Please use another number to continue.");
+            }
+            return;
+          }
+          if (data['emailExists'] == true) {
+            setState(() {
+              _isEmailRegistered = true;
+              _emailErrorMessage = "This email address is already registered. Please use another email.";
+            });
+            if (mounted) {
+              ToastUtils.showError(context, "Email address already registered. Please use another email to continue.");
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint("Pre-registration check error: $e");
+      }
+
+      try {
+        final response = await http.post(
+          Uri.parse('http://localhost:3000/auth/register-admin'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'venueName': _venueNameController.text.trim(),
+            'ownerName': _ownerNameController.text.trim(),
+            'ownerPhone': _phoneController.text.trim(),
+            'ownerEmail': _emailController.text.trim(),
+            'streetAddress': _addressController.text.trim(),
+            'neighborhoodArea': _areaController.text.trim(),
+          }),
+        );
+        if (response.statusCode != 200 && response.statusCode != 201) {
+          final data = jsonDecode(response.body);
+          final errorMsg = (data['message'] ?? 'Failed to register admin details.').toString();
+          if (!mounted) return;
+          if (errorMsg.toLowerCase().contains('phone') || errorMsg.toLowerCase().contains('mobile')) {
+            setState(() {
+              _isPhoneRegistered = true;
+              _phoneErrorMessage = errorMsg;
+            });
+          }
+          if (errorMsg.toLowerCase().contains('email')) {
+            setState(() {
+              _isEmailRegistered = true;
+              _emailErrorMessage = errorMsg;
+            });
+          }
+          ToastUtils.showError(context, errorMsg);
+          return;
+        }
+        final data = jsonDecode(response.body);
+        _registeredAdminId = data['adminId'];
+        if (data['trackingCode'] != null) {
+          _trackingCode = data['trackingCode'];
+        } else if (_registeredAdminId != null) {
+          _trackingCode = 'REG-MAD-${1000 + _registeredAdminId!}';
+        }
+        if (!mounted) return;
+        ToastUtils.showSuccess(context, "Venue details saved! Generating OTPs...");
+        _sendAdminOtps();
+      } catch (e) {
+        if (!mounted) return;
+        ToastUtils.showError(context, 'Error connecting to server.');
+        return;
+      }
+    }
+
+    // Step 1: OTP Verification check
     if (_currentStep == 1 && (!_isMobileVerified || !_isEmailVerified)) {
-      ToastUtils.showError(context, "Please verify both Mobile and Email OTP before proceeding.");
+      if (mounted) ToastUtils.showError(context, "Please verify both Mobile and Email OTP before proceeding.");
       return;
+    }
+
+    // Step 2: Photos & Amenities check
+    if (_currentStep == 2 && !_isStep2Valid) {
+      if (mounted) ToastUtils.showError(context, "Please upload at least 1 photo and select at least 1 facility before proceeding.");
+      return;
+    }
+
+    // Step 3: Save KYC, Amenities & Bank Details to Database before moving to Approval step
+    if (_currentStep == 3) {
+      if (!_isStep3Valid) {
+        if (mounted) ToastUtils.showError(context, "Please complete all KYC details and upload all documents before proceeding.");
+        return;
+      }
+      final amenitiesList = <String>[];
+      if (_hasWater) amenitiesList.add('Drinking Water');
+      if (_hasParking) amenitiesList.add('Parking');
+      if (_hasToilet) amenitiesList.add('Restroom');
+      if (_hasFloodlights) amenitiesList.add('Floodlights');
+      if (_hasChangingRoom) amenitiesList.add('Changing Room');
+      if (_hasFirstAid) amenitiesList.add('First Aid');
+
+      if (_registeredAdminId != null) {
+        try {
+          final response = await http.post(
+            Uri.parse('http://localhost:3000/auth/update-admin-kyc'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'adminId': _registeredAdminId,
+              'isMobileVerified': _isMobileVerified,
+              'isEmailVerified': _isEmailVerified,
+              'photosCount': _photosUploadedCount,
+              'photoUrls': _venuePhotoUrls,
+              'amenities': amenitiesList,
+              'gstin': _gstinController.text.trim(),
+              'panNumber': _panController.text.trim(),
+              'aadhaarNumber': _aadhaarController.text.trim(),
+              'aadhaarDocUrl': _aadhaarDocUrl,
+              'panDocUrl': _panDocUrl,
+              'gstDocUrl': _gstDocUrl,
+              'bankAccount': _bankAccountController.text.trim(),
+              'ifscCode': _ifscController.text.trim(),
+              'upiId': _upiIdController.text.trim(),
+            }),
+          );
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            final data = jsonDecode(response.body);
+            if (data['trackingCode'] != null) {
+              _trackingCode = data['trackingCode'];
+            }
+            if (mounted) {
+              ToastUtils.showSuccess(context, "KYC & Bank details updated in database!");
+            }
+          }
+        } catch (e) {
+          debugPrint("Error connecting to server for KYC: $e");
+        }
+      }
     }
 
     if (_currentStep < 4) {
       setState(() => _currentStep++);
+      if (_currentStep == 4) {
+        _savePendingRegistrationToStorage();
+        _checkLiveStatusWithBackend();
+      }
     }
   }
 
@@ -115,20 +897,23 @@ class _TurfOwnerRegistrationScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Turf Owner Registration & KYC'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () {
-            if (_currentStep > 0) {
-              _prevStep();
-            } else {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/login');
-              }
-            }
-          },
-        ),
+        automaticallyImplyLeading: false,
+        leading: _currentStep == 4
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_rounded),
+                onPressed: () {
+                  if (_currentStep > 0) {
+                    _prevStep();
+                  } else {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/login');
+                    }
+                  }
+                },
+              ),
       ),
       body: SafeArea(
         child: Column(
@@ -272,6 +1057,27 @@ class _TurfOwnerRegistrationScreenState
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           prefixIcon: Icons.phone_rounded,
+          errorText: _phoneErrorMessage,
+          suffixIcon: _isCheckingPhone
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                  ),
+                )
+              : (_phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '').length >= 10
+                  ? (_isPhoneRegistered
+                      ? const Tooltip(
+                          message: 'Mobile number already registered in database',
+                          child: Icon(Icons.cancel_rounded, color: AppColors.error),
+                        )
+                      : const Tooltip(
+                          message: 'Mobile number available',
+                          child: Icon(Icons.check_circle_rounded, color: AppColors.success),
+                        ))
+                  : null),
         ),
         const SizedBox(height: 14),
 
@@ -281,6 +1087,27 @@ class _TurfOwnerRegistrationScreenState
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           prefixIcon: Icons.email_rounded,
+          errorText: _emailErrorMessage,
+          suffixIcon: _isCheckingEmail
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                  ),
+                )
+              : (_emailController.text.trim().contains('@') && _emailController.text.trim().contains('.')
+                  ? (_isEmailRegistered
+                      ? const Tooltip(
+                          message: 'Email address already registered in database',
+                          child: Icon(Icons.cancel_rounded, color: AppColors.error),
+                        )
+                      : const Tooltip(
+                          message: 'Email address available',
+                          child: Icon(Icons.check_circle_rounded, color: AppColors.success),
+                        ))
+                  : null),
         ),
         const SizedBox(height: 14),
 
@@ -292,21 +1119,11 @@ class _TurfOwnerRegistrationScreenState
         ),
         const SizedBox(height: 14),
 
-        Text('Madurai Neighborhood Area', style: theme.textTheme.titleSmall),
-        const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
-          initialValue: _selectedArea,
-          isExpanded: true,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          ),
-          items: SportsData.maduraiAreas.map((area) {
-            return DropdownMenuItem(value: area, child: Text(area));
-          }).toList(),
-          onChanged: (val) {
-            if (val != null) setState(() => _selectedArea = val);
-          },
+        AppTextField(
+          label: 'Neighborhood Area',
+          hint: 'e.g. KK Nagar',
+          controller: _areaController,
+          prefixIcon: Icons.map_outlined,
         ),
       ],
     );
@@ -322,7 +1139,38 @@ class _TurfOwnerRegistrationScreenState
         const SizedBox(height: 6),
         Text('Verify your contact phone number and email address to activate your account.',
             style: theme.textTheme.bodyMedium),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+
+        // Dev Mode Terminal Banner
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.terminal_rounded, color: AppColors.primary, size: 26),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Backend Terminal OTP Mode',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Both 4-digit Mobile OTP & Email OTP are printed directly in your backend terminal console!',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[800]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
 
         // Mobile OTP Box
         AppCard(
@@ -337,7 +1185,7 @@ class _TurfOwnerRegistrationScreenState
                     children: [
                       const Icon(Icons.phone_android_rounded, color: AppColors.primary),
                       const SizedBox(width: 8),
-                      Text('Mobile: +91 ${_phoneController.text}',
+                      Text('Mobile: +91 ${_phoneController.text.trim().isEmpty ? "9876543210" : _phoneController.text.trim()}',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     ],
                   ),
@@ -348,8 +1196,15 @@ class _TurfOwnerRegistrationScreenState
                         color: AppColors.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('Verified ✅',
-                          style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
+                          SizedBox(width: 4),
+                          Text('Verified',
+                              style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -360,7 +1215,7 @@ class _TurfOwnerRegistrationScreenState
                     Expanded(
                       child: AppTextField(
                         label: 'Mobile OTP Code',
-                        hint: '1234',
+                        hint: 'Enter 4-digit OTP from terminal',
                         controller: _mobileOtpController,
                         keyboardType: TextInputType.number,
                       ),
@@ -371,19 +1226,26 @@ class _TurfOwnerRegistrationScreenState
                       child: AppButton(
                         text: 'Verify SMS',
                         height: 48,
-                        onPressed: () {
-                          setState(() => _isMobileVerified = true);
-                          ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
-                        },
+                        isLoading: _isVerifyingMobile,
+                        onPressed: _isVerifyingMobile ? null : _verifyMobileOtp,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _isSendingOtp ? null : _sendAdminOtps,
+                    icon: const Icon(Icons.refresh_rounded, size: 14),
+                    label: Text(_isSendingOtp ? 'Sending...' : 'Resend SMS OTP', style: const TextStyle(fontSize: 11)),
+                  ),
                 ),
               ],
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
         // Email OTP Box
         AppCard(
@@ -398,7 +1260,7 @@ class _TurfOwnerRegistrationScreenState
                     children: [
                       const Icon(Icons.email_rounded, color: AppColors.primary),
                       const SizedBox(width: 8),
-                      Text('Email: ${_emailController.text}',
+                      Text('Email: ${_emailController.text.trim().isEmpty ? "owner@turf.com" : _emailController.text.trim()}',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
@@ -409,8 +1271,15 @@ class _TurfOwnerRegistrationScreenState
                         color: AppColors.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('Verified ✅',
-                          style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
+                          SizedBox(width: 4),
+                          Text('Verified',
+                              style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -421,7 +1290,7 @@ class _TurfOwnerRegistrationScreenState
                     Expanded(
                       child: AppTextField(
                         label: 'Email OTP Code',
-                        hint: '5678',
+                        hint: 'Enter 4-digit OTP from terminal',
                         controller: _emailOtpController,
                         keyboardType: TextInputType.number,
                       ),
@@ -432,13 +1301,20 @@ class _TurfOwnerRegistrationScreenState
                       child: AppButton(
                         text: 'Verify Email',
                         height: 48,
-                        onPressed: () {
-                          setState(() => _isEmailVerified = true);
-                          ToastUtils.showSuccess(context, "Email Address Verified ✅");
-                        },
+                        isLoading: _isVerifyingEmail,
+                        onPressed: _isVerifyingEmail ? null : _verifyEmailOtp,
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _isSendingOtp ? null : _sendAdminOtps,
+                    icon: const Icon(Icons.refresh_rounded, size: 14),
+                    label: Text(_isSendingOtp ? 'Sending...' : 'Resend Email OTP', style: const TextStyle(fontSize: 11)),
+                  ),
                 ),
               ],
             ],
@@ -477,7 +1353,7 @@ class _TurfOwnerRegistrationScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Pricing Configured per Sport in Profile 🏟️',
+                      'Pricing Configured per Sport in Profile',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
                     ),
                     SizedBox(height: 2),
@@ -494,34 +1370,110 @@ class _TurfOwnerRegistrationScreenState
         const SizedBox(height: 20),
 
         // Photos Uploader
-        Text('Upload Venue Photos', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Text('Upload Venue Photos (Images)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Row(
           children: List.generate(4, (i) {
-            final isUploaded = i < _photosUploadedCount;
+            final hasPhoto = i < _venuePhotoUrls.length;
+            final isNextAddSlot = i == _venuePhotoUrls.length;
+
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(right: 6),
-                child: GestureDetector(
-                  onTap: _addPhoto,
-                  child: Container(
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: isUploaded ? AppColors.primary.withValues(alpha: 0.12) : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: isUploaded ? AppColors.primary : Colors.grey[400]!),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(isUploaded ? Icons.photo_library_rounded : Icons.add_a_photo_rounded,
-                            color: isUploaded ? AppColors.primary : Colors.grey[600], size: 22),
-                        const SizedBox(height: 4),
-                        Text(isUploaded ? 'Photo ${i + 1}' : '+ Add Photo',
-                            style: TextStyle(fontSize: 9, color: isUploaded ? AppColors.primary : Colors.grey[600], fontWeight: FontWeight.bold)),
-                      ],
+                child: Container(
+                  height: 82,
+                  decoration: BoxDecoration(
+                    color: hasPhoto ? Colors.black.withValues(alpha: 0.05) : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: hasPhoto
+                          ? AppColors.primary
+                          : (isNextAddSlot ? AppColors.primary.withValues(alpha: 0.6) : Colors.grey[300]!),
+                      width: hasPhoto ? 1.5 : 1,
                     ),
                   ),
+                  child: hasPhoto
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(11),
+                              child: Image.network(
+                                _venuePhotoUrls[i],
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, error, stackTrace) => const Center(
+                                  child: Icon(Icons.broken_image_rounded, color: Colors.grey, size: 24),
+                                ),
+                                loadingBuilder: (ctx, child, progress) {
+                                  if (progress == null) return child;
+                                  return const Center(
+                                    child: SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            Positioned(
+                              top: 3,
+                              right: 3,
+                              child: GestureDetector(
+                                onTap: () => _removePhoto(i),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                  child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 3,
+                              left: 3,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text('Photo ${i + 1}',
+                                    style: const TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        )
+                      : InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: _isUploadingPhoto ? null : _pickAndUploadPhoto,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (_isUploadingPhoto && isNextAddSlot)
+                                const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                )
+                              else ...[
+                                Icon(
+                                  isNextAddSlot ? Icons.add_a_photo_rounded : Icons.photo_library_outlined,
+                                  color: isNextAddSlot ? AppColors.primary : Colors.grey[500],
+                                  size: 22,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  isNextAddSlot ? '+ Add Photo' : 'Photo ${i + 1}',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    color: isNextAddSlot ? AppColors.primary : Colors.grey[600],
+                                    fontWeight: isNextAddSlot ? FontWeight.bold : FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                 ),
               ),
             );
@@ -533,37 +1485,43 @@ class _TurfOwnerRegistrationScreenState
         Text('Venue Facilities & Amenities', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         CheckboxListTile(
-          title: const Text('🚰 Purified Drinking Water Facility'),
+          secondary: const Icon(Icons.water_drop_rounded, color: AppColors.primary),
+          title: const Text('Purified Drinking Water Facility'),
           value: _hasWater,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasWater = val ?? true),
         ),
         CheckboxListTile(
-          title: const Text('🅿️ Dedicated Parking (Two-Wheeler & Four-Wheeler)'),
+          secondary: const Icon(Icons.local_parking_rounded, color: AppColors.primary),
+          title: const Text('Dedicated Parking (Two-Wheeler & Four-Wheeler)'),
           value: _hasParking,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasParking = val ?? true),
         ),
         CheckboxListTile(
-          title: const Text('🚻 Restroom & Toilet Facilities'),
+          secondary: const Icon(Icons.wc_rounded, color: AppColors.primary),
+          title: const Text('Restroom & Toilet Facilities'),
           value: _hasToilet,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasToilet = val ?? true),
         ),
         CheckboxListTile(
-          title: const Text('💡 LED Night Floodlights'),
+          secondary: const Icon(Icons.lightbulb_rounded, color: AppColors.primary),
+          title: const Text('LED Night Floodlights'),
           value: _hasFloodlights,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasFloodlights = val ?? true),
         ),
         CheckboxListTile(
-          title: const Text('🚿 Changing Rooms & Shower Units'),
+          secondary: const Icon(Icons.shower_rounded, color: AppColors.primary),
+          title: const Text('Changing Rooms & Shower Units'),
           value: _hasChangingRoom,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasChangingRoom = val ?? true),
         ),
         CheckboxListTile(
-          title: const Text('🏥 First Aid Kit & Safety Gear'),
+          secondary: const Icon(Icons.medical_services_rounded, color: AppColors.primary),
+          title: const Text('First Aid Kit & Safety Gear'),
           value: _hasFirstAid,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasFirstAid = val ?? true),
@@ -586,7 +1544,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'GSTIN Business Number',
-          hint: '33AAACM1234F1Z8',
+          hint: 'e.g. 33AAACM1234F1Z8',
           controller: _gstinController,
           prefixIcon: Icons.receipt_long_rounded,
         ),
@@ -594,7 +1552,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Owner PAN Card Number',
-          hint: 'ABCDE1234F',
+          hint: 'e.g. ABCDE1234F',
           controller: _panController,
           prefixIcon: Icons.badge_rounded,
         ),
@@ -602,61 +1560,157 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Owner Aadhaar Card Number',
-          hint: '1234 5678 9012',
+          hint: 'e.g. 1234 5678 9012',
           controller: _aadhaarController,
           keyboardType: TextInputType.number,
           prefixIcon: Icons.credit_card_rounded,
         ),
         const SizedBox(height: 20),
 
-        Text('Attach KYC Documents', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Attach KYC Documents', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Text('PDF Only', style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
         const SizedBox(height: 10),
 
         Row(
           children: [
+            // Aadhaar Document Card
             Expanded(
               child: AppCard(
-                onTap: _toggleAadhaarUpload,
-                color: _isAadhaarUploaded ? AppColors.success.withValues(alpha: 0.1) : null,
+                onTap: _isUploadingAadhaar ? null : () => _pickAndUploadKycPdf('aadhaar'),
+                color: _isAadhaarUploaded ? AppColors.success.withValues(alpha: 0.12) : null,
                 child: Column(
                   children: [
-                    Icon(_isAadhaarUploaded ? Icons.task_alt_rounded : Icons.upload_file_rounded,
-                        color: _isAadhaarUploaded ? AppColors.success : AppColors.primary, size: 24),
-                    const SizedBox(height: 4),
-                    Text(_isAadhaarUploaded ? 'Aadhaar Attached' : 'Attach Aadhaar',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _isAadhaarUploaded ? AppColors.success : AppColors.primary)),
+                    if (_isUploadingAadhaar)
+                      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                    else ...[
+                      Icon(
+                        _isAadhaarUploaded ? Icons.task_alt_rounded : Icons.picture_as_pdf_rounded,
+                        color: _isAadhaarUploaded ? AppColors.success : AppColors.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        _isAadhaarUploaded ? 'Aadhaar Attached' : 'Attach Aadhaar',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _isAadhaarUploaded ? AppColors.success : AppColors.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _isAadhaarUploaded ? (_aadhaarDocName ?? 'PDF Attached') : '(PDF only)',
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          color: _isAadhaarUploaded ? AppColors.success : Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
             const SizedBox(width: 8),
+
+            // PAN Document Card
             Expanded(
               child: AppCard(
-                onTap: _togglePanUpload,
-                color: _isPanUploaded ? AppColors.success.withValues(alpha: 0.1) : null,
+                onTap: _isUploadingPan ? null : () => _pickAndUploadKycPdf('pan'),
+                color: _isPanUploaded ? AppColors.success.withValues(alpha: 0.12) : null,
                 child: Column(
                   children: [
-                    Icon(_isPanUploaded ? Icons.task_alt_rounded : Icons.upload_file_rounded,
-                        color: _isPanUploaded ? AppColors.success : AppColors.primary, size: 24),
-                    const SizedBox(height: 4),
-                    Text(_isPanUploaded ? 'PAN Attached' : 'Attach PAN',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _isPanUploaded ? AppColors.success : AppColors.primary)),
+                    if (_isUploadingPan)
+                      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                    else ...[
+                      Icon(
+                        _isPanUploaded ? Icons.task_alt_rounded : Icons.picture_as_pdf_rounded,
+                        color: _isPanUploaded ? AppColors.success : AppColors.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        _isPanUploaded ? 'PAN Attached' : 'Attach PAN',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _isPanUploaded ? AppColors.success : AppColors.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _isPanUploaded ? (_panDocName ?? 'PDF Attached') : '(PDF only)',
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          color: _isPanUploaded ? AppColors.success : Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
             const SizedBox(width: 8),
+
+            // GST Document Card
             Expanded(
               child: AppCard(
-                onTap: _toggleGstUpload,
-                color: _isGstUploaded ? AppColors.success.withValues(alpha: 0.1) : null,
+                onTap: _isUploadingGst ? null : () => _pickAndUploadKycPdf('gst'),
+                color: _isGstUploaded ? AppColors.success.withValues(alpha: 0.12) : null,
                 child: Column(
                   children: [
-                    Icon(_isGstUploaded ? Icons.task_alt_rounded : Icons.upload_file_rounded,
-                        color: _isGstUploaded ? AppColors.success : AppColors.primary, size: 24),
-                    const SizedBox(height: 4),
-                    Text(_isGstUploaded ? 'GST Cert Attached' : 'Attach GST',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _isGstUploaded ? AppColors.success : AppColors.primary)),
+                    if (_isUploadingGst)
+                      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                    else ...[
+                      Icon(
+                        _isGstUploaded ? Icons.task_alt_rounded : Icons.picture_as_pdf_rounded,
+                        color: _isGstUploaded ? AppColors.success : AppColors.primary,
+                        size: 24,
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        _isGstUploaded ? 'GST Cert Attached' : 'Attach GST',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _isGstUploaded ? AppColors.success : AppColors.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _isGstUploaded ? (_gstDocName ?? 'PDF Attached') : '(PDF only)',
+                        style: TextStyle(
+                          fontSize: 8.5,
+                          color: _isGstUploaded ? AppColors.success : Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -670,7 +1724,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Bank Account Number',
-          hint: '91802003881234',
+          hint: 'e.g. 91802003881234',
           controller: _bankAccountController,
           keyboardType: TextInputType.number,
           prefixIcon: Icons.account_balance_rounded,
@@ -679,7 +1733,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Bank IFSC Code',
-          hint: 'HDFC0001234',
+          hint: 'e.g. HDFC0001234',
           controller: _ifscController,
           prefixIcon: Icons.code_rounded,
         ),
@@ -687,7 +1741,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Partner UPI ID',
-          hint: 'karthik@okaxis',
+          hint: 'e.g. owner@okhdfcbank',
           controller: _upiIdController,
           prefixIcon: Icons.payment_rounded,
         ),
@@ -697,6 +1751,26 @@ class _TurfOwnerRegistrationScreenState
 
   // STEP 5: Sent to Super Admin for Verification & Approval
   Widget _buildStep5SubmittedForApproval(ThemeData theme) {
+    final venueName = _venueNameController.text.trim().isNotEmpty
+        ? _venueNameController.text.trim()
+        : 'Your Venue';
+    final ownerName = _ownerNameController.text.trim().isNotEmpty
+        ? _ownerNameController.text.trim()
+        : '-';
+    final phone = _phoneController.text.trim().isNotEmpty
+        ? '+91 ${_phoneController.text.trim()}'
+        : '-';
+    final email = _emailController.text.trim().isNotEmpty
+        ? _emailController.text.trim()
+        : '-';
+    final area = _areaController.text.trim().isNotEmpty
+        ? _areaController.text.trim()
+        : 'Madurai';
+    final trackingCode = _trackingCode ??
+        (_registeredAdminId != null
+            ? 'REG-MAD-${1000 + _registeredAdminId!}'
+            : 'REG-MAD-1001');
+
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -710,13 +1784,13 @@ class _TurfOwnerRegistrationScreenState
         ),
         const SizedBox(height: 24),
         Text(
-          'Sent to Super Admin for Verification ⏳',
+          'Sent to Super Admin for Verification',
           style: theme.textTheme.displayMedium?.copyWith(fontSize: 22),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          'Your venue details and KYC documents for ${_venueNameController.text} have been securely sent to the Games24 Super Admin.',
+          'Your venue details and KYC documents for $venueName have been securely sent to the Games24 Super Admin.',
           style: theme.textTheme.bodyMedium,
           textAlign: TextAlign.center,
         ),
@@ -726,11 +1800,19 @@ class _TurfOwnerRegistrationScreenState
           color: AppColors.warning.withValues(alpha: 0.1),
           child: Column(
             children: [
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Application Tracking Code:'),
-                  Text('REG-MAD-8821', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  const Text('Application Tracking Code:', style: TextStyle(fontWeight: FontWeight.w600)),
+                  Text(
+                    trackingCode,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      fontSize: 15,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
                 ],
               ),
               const Divider(height: 18),
@@ -738,50 +1820,380 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Venue Name:'),
-                  Text(_venueNameController.text, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(venueName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Owner Name:'),
-                  Text(_ownerNameController.text, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(ownerName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Contact Mobile:'),
+                  Text(phone, style: const TextStyle(fontWeight: FontWeight.w500)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Contact Email:'),
+                  Text(email, style: const TextStyle(fontWeight: FontWeight.w500)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Neighborhood Area:'),
+                  Text(area, style: const TextStyle(fontWeight: FontWeight.w500)),
+                ],
+              ),
+              const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('OTP Mobile & Email:'),
-                  const Text('VERIFIED ✅', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 11)),
+                  const Text('VERIFIED',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 11)),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('KYC Aadhaar (PDF):'),
+                  Text(_isAadhaarUploaded ? 'ATTACHED' : 'NOT ATTACHED',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: _isAadhaarUploaded ? AppColors.success : Colors.grey, fontSize: 11)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('KYC PAN (PDF):'),
+                  Text(_isPanUploaded ? 'ATTACHED' : 'NOT ATTACHED',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: _isPanUploaded ? AppColors.success : Colors.grey, fontSize: 11)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('KYC GST (PDF):'),
+                  Text(_isGstUploaded ? 'ATTACHED' : 'NOT ATTACHED',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: _isGstUploaded ? AppColors.success : Colors.grey, fontSize: 11)),
+                ],
+              ),
+              if (_bankAccountController.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Bank Account:'),
+                    Text(_bankAccountController.text.trim(), style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ],
+              if (_upiIdController.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Partner UPI ID:'),
+                    Text(_upiIdController.text.trim(), style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Super Admin Audit Status:'),
-                  const Text('PENDING APPROVAL',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning, fontSize: 11)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: (_liveAuditStatus == 'VERIFIED'
+                              ? AppColors.success
+                              : (_liveAuditStatus == 'CANCELLED' ? Colors.red : AppColors.warning))
+                          .withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _liveAuditStatus == 'VERIFIED'
+                          ? 'VERIFIED'
+                          : (_liveAuditStatus == 'CANCELLED' ? 'CANCELLED' : 'PENDING APPROVAL'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: _liveAuditStatus == 'VERIFIED'
+                            ? AppColors.success
+                            : (_liveAuditStatus == 'CANCELLED' ? Colors.red : AppColors.warning),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
                 ],
               ),
+              if (_venuePhotoUrls.isNotEmpty) ...[
+                const Divider(height: 18),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Uploaded Venue Photos (${_venuePhotoUrls.length}):',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 65,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _venuePhotoUrls.length,
+                    itemBuilder: (ctx, idx) {
+                      return Container(
+                        width: 80,
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.primary),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(7),
+                          child: Image.network(
+                            _venuePhotoUrls[idx],
+                            fit: BoxFit.cover,
+                            errorBuilder: (ctx, error, stackTrace) => const Center(
+                              child: Icon(Icons.broken_image, size: 20, color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
 
+        if (_liveAuditStatus == 'VERIFIED') ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.success),
+            ),
+            child: Column(
+              children: [
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 22),
+                    SizedBox(width: 8),
+                    Text(
+                      'Account Verified & Active!',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 16),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Super Admin has approved your turf venue registration. You can now access the turf partner hub.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5),
+                ),
+                const SizedBox(height: 16),
+                AppButton(
+                  text: 'Enter Turf Partner Hub',
+                  icon: Icons.dashboard_rounded,
+                  onPressed: () async {
+                    await _clearPendingRegistrationFromStorage();
+                    if (mounted) {
+                      context.go('/admin/dashboard');
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ] else if (_liveAuditStatus == 'CANCELLED') ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red),
+            ),
+            child: Column(
+              children: [
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.cancel_rounded, color: Colors.red, size: 22),
+                    SizedBox(width: 8),
+                    Text(
+                      'Application Rejected',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _cancelReason != null && _cancelReason!.isNotEmpty
+                      ? 'Reason: $_cancelReason'
+                      : 'Your registration application was cancelled or rejected by the Super Admin.',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12.5, color: Colors.red),
+                ),
+                const SizedBox(height: 16),
+                AppButton(
+                  text: 'Start New Registration',
+                  icon: Icons.restart_alt_rounded,
+                  type: AppButtonType.outline,
+                  onPressed: () async {
+                    await _clearPendingRegistrationFromStorage();
+                    if (mounted) {
+                      setState(() {
+                        _currentStep = 0;
+                        _liveAuditStatus = 'PENDING_APPROVAL';
+                        _cancelReason = null;
+                      });
+                    }
+                  },
+                ),
+
+              ],
+            ),
+          ),
+        ] else ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.shade300),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange[800]),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Review in Progress',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[900], fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Your application is waiting for Super Admin audit & approval.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 14),
+                AppButton(
+                  text: _isCheckingStatus ? 'Checking Status...' : 'Check Approval Status',
+                  icon: Icons.refresh_rounded,
+                  type: AppButtonType.outline,
+                  onPressed: _isCheckingStatus ? null : _checkLiveStatusWithBackend,
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 16),
         AppButton(
-          text: 'Launch Admin Partner Hub Preview',
-          icon: Icons.dashboard_rounded,
-          onPressed: () => context.go('/admin/dashboard'),
+          text: 'Go to Login',
+          icon: Icons.login_rounded,
+          type: AppButtonType.primary,
+          onPressed: () {
+            context.go('/login');
+          },
         ),
       ],
     );
   }
 
+
+
+  String _getStepIncompleteMessage() {
+    switch (_currentStep) {
+      case 0:
+        if (_isPhoneRegistered) {
+          return 'Mobile number is already registered. Use another number to continue.';
+        }
+        if (_isEmailRegistered) {
+          return 'Email address is already registered. Use another email to continue.';
+        }
+        if (_phoneController.text.trim().isNotEmpty &&
+            _phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '').length < 10) {
+          return 'Enter a valid 10-digit mobile number to continue.';
+        }
+        if (_emailController.text.trim().isNotEmpty &&
+            (!_emailController.text.trim().contains('@') || !_emailController.text.trim().contains('.'))) {
+          return 'Enter a valid email address to continue.';
+        }
+        return 'Please fill all venue & contact fields to activate Continue.';
+      case 1:
+        if (!_isMobileVerified && !_isEmailVerified) {
+          return 'Verify both Mobile and Email OTPs to activate Continue.';
+        }
+        if (!_isMobileVerified) {
+          return 'Verify Mobile OTP to activate Continue.';
+        }
+        return 'Verify Email OTP to activate Continue.';
+      case 2:
+        if (_venuePhotoUrls.isEmpty &&
+            !(_hasWater || _hasParking || _hasToilet || _hasFloodlights || _hasChangingRoom || _hasFirstAid)) {
+          return 'Upload at least 1 photo & select 1 amenity to activate Continue.';
+        }
+        if (_venuePhotoUrls.isEmpty) {
+          return 'Upload at least 1 venue photo to activate Continue.';
+        }
+        return 'Select at least 1 amenity/facility to activate Continue.';
+      case 3:
+        final missing = <String>[];
+        if (_gstinController.text.trim().isEmpty) missing.add('GSTIN');
+        if (_panController.text.trim().isEmpty) missing.add('PAN');
+        if (_aadhaarController.text.trim().isEmpty) missing.add('Aadhaar');
+        if (!_isAadhaarUploaded) missing.add('Aadhaar PDF');
+        if (!_isPanUploaded) missing.add('PAN PDF');
+        if (!_isGstUploaded) missing.add('GST PDF');
+        if (_bankAccountController.text.trim().isEmpty) missing.add('Bank A/c');
+        if (_ifscController.text.trim().isEmpty) missing.add('IFSC');
+        if (_upiIdController.text.trim().isEmpty) missing.add('UPI ID');
+        return 'Required: ${missing.take(3).join(', ')}${missing.length > 3 ? ' + ${missing.length - 3} more' : ''}';
+      default:
+        return '';
+    }
+  }
+
   Widget _buildBottomActionBar() {
     if (_currentStep == 4) return const SizedBox.shrink();
+
+    bool isCurrentStepValid = false;
+    if (_currentStep == 0) {
+      isCurrentStepValid = _isStep0Valid;
+    } else if (_currentStep == 1) {
+      isCurrentStepValid = _isStep1Valid;
+    } else if (_currentStep == 2) {
+      isCurrentStepValid = _isStep2Valid;
+    } else if (_currentStep == 3) {
+      isCurrentStepValid = _isStep3Valid;
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -795,23 +2207,54 @@ class _TurfOwnerRegistrationScreenState
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (_currentStep > 0)
-            Expanded(
-              child: AppButton(
-                text: 'Back',
-                type: AppButtonType.outline,
-                onPressed: _prevStep,
+          if (!isCurrentStepValid)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline_rounded, size: 14, color: Colors.orange[800]),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      _getStepIncompleteMessage(),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: Colors.orange[900],
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
             ),
-          if (_currentStep > 0) const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: AppButton(
-              text: _currentStep == 3 ? 'Send to Super Admin for Verification' : 'Continue to Next Step',
-              onPressed: _nextStep,
-            ),
+          Row(
+            children: [
+              if (_currentStep > 0)
+                Expanded(
+                  child: AppButton(
+                    text: 'Back',
+                    type: AppButtonType.outline,
+                    onPressed: _prevStep,
+                  ),
+                ),
+              if (_currentStep > 0) const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: AppButton(
+                  text: _currentStep == 0
+                      ? 'Continue'
+                      : (_currentStep == 3
+                          ? 'Send to Super Admin for Verification'
+                          : 'Continue to Next Step'),
+                  onPressed: isCurrentStepValid ? _nextStep : null,
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -1386,7 +1386,7 @@ class _TurfOwnerProfileScreenState
             Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary)),
           ],
         ),
-        if (trailing != null) trailing,
+        ?trailing,
       ],
     );
   }

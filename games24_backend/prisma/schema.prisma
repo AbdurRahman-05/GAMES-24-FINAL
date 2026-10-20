@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  fullName       String
+  mobileNumber   String   @unique
+  password       String
+  preferredSport String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Otp {
+  id           Int      @id @default(autoincrement())
+  mobileNumber String
+  otp          String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model AdminUser {
+  id                 Int      @id @default(autoincrement())
+  trackingCode       String?  @unique
+  venueName          String
+  ownerName          String
+  ownerPhone         String
+  ownerEmail         String
+  streetAddress      String
+  neighborhoodArea   String
+  isMobileVerified   Boolean  @default(false)
+  isEmailVerified    Boolean  @default(false)
+  photosCount        Int      @default(0)
+  photoUrls          String[] @default([])
+  amenities          String[] @default([])
+  gstin              String?
+  panNumber          String?
+  aadhaarNumber      String?
+  aadhaarDocUrl      String?
+  panDocUrl          String?
+  gstDocUrl          String?
+  bankAccount        String?
+  ifscCode           String?
+  upiId              String?
+  status             String   @default("PENDING_APPROVAL")
+  cancelReason       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model VerifiedAdmin {
+  id                 Int      @id @default(autoincrement())
+  adminUserId        Int      @unique
+  trackingCode       String?
+  venueName          String
+  ownerName          String
+  ownerPhone         String
+  ownerEmail         String
+  streetAddress      String
+  neighborhoodArea   String
+  isMobileVerified   Boolean  @default(true)
+  isEmailVerified    Boolean  @default(true)
+  photosCount        Int      @default(0)
+  photoUrls          String[] @default([])
+  amenities          String[] @default([])
+  gstin              String?
+  panNumber          String?
+  aadhaarNumber      String?
+  aadhaarDocUrl      String?
+  panDocUrl          String?
+  gstDocUrl          String?
+  bankAccount        String?
+  ifscCode           String?
+  upiId              String?
+  status             String   @default("VERIFIED")
+  verifiedAt         DateTime @default(now())
+  verifiedBy         String   @default("Super Admin")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

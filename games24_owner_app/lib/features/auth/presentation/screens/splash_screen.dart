@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/sports_loading_indicator.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -14,11 +16,26 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2, milliseconds: 200), () {
+    _checkInitialRoute();
+  }
+
+  Future<void> _checkInitialRoute() async {
+    await Future.delayed(const Duration(seconds: 1, milliseconds: 500));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isPending = prefs.getBool('owner_is_pending_verification') ?? false;
+      if (mounted) {
+        if (isPending) {
+          context.go('/register');
+        } else {
+          context.go('/login');
+        }
+      }
+    } catch (e) {
       if (mounted) {
         context.go('/login');
       }
-    });
+    }
   }
 
   @override
