@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 
 class AdminSlotState {
   final Map<String, Set<String>> blockedSlotsByDate;
+  final Map<String, Set<String>> bookedSlotsByDate;
   final Map<String, Map<String, String>> discountedSlotsByDate;
   final String weekdayOpeningTime;
   final String weekdayClosingTime;
@@ -25,28 +26,22 @@ class AdminSlotState {
 
   AdminSlotState({
     Map<String, Set<String>>? blockedSlotsByDate,
+    Map<String, Set<String>>? bookedSlotsByDate,
     Map<String, Map<String, String>>? discountedSlotsByDate,
-    this.weekdayOpeningTime = '05:00 AM',
-    this.weekdayClosingTime = '11:00 PM',
-    this.weekendOpeningTime = '05:00 AM',
-    this.weekendClosingTime = '11:30 PM',
-  })  : blockedSlotsByDate = blockedSlotsByDate ?? {
-          _getTodayKey(): {'02:00 PM - 03:00 PM'},
-        },
-        discountedSlotsByDate = discountedSlotsByDate ?? {
-          _getTodayKey(): {
-            '01:00 PM - 02:00 PM': 'PERCENT|20|Happy Hour',
-            '03:00 PM - 04:00 PM': 'PRICE|1000|800',
-          },
-        };
-
-  static String _getTodayKey() {
-    final now = DateTime.now();
-    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-  }
+    this.weekdayOpeningTime = '06:00 AM',
+    this.weekdayClosingTime = '10:00 PM',
+    this.weekendOpeningTime = '06:00 AM',
+    this.weekendClosingTime = '10:00 PM',
+  })  : blockedSlotsByDate = blockedSlotsByDate ?? {},
+        bookedSlotsByDate = bookedSlotsByDate ?? {},
+        discountedSlotsByDate = discountedSlotsByDate ?? {};
 
   Set<String> getBlockedSlotsForDate(String dateKey) {
     return blockedSlotsByDate[dateKey] ?? {};
+  }
+
+  Set<String> getBookedSlotsForDate(String dateKey) {
+    return bookedSlotsByDate[dateKey] ?? {};
   }
 
   Map<String, String> getDiscountedSlotsForDate(String dateKey) {
@@ -55,6 +50,7 @@ class AdminSlotState {
 
   AdminSlotState copyWith({
     Map<String, Set<String>>? blockedSlotsByDate,
+    Map<String, Set<String>>? bookedSlotsByDate,
     Map<String, Map<String, String>>? discountedSlotsByDate,
     String? weekdayOpeningTime,
     String? weekdayClosingTime,
@@ -63,6 +59,7 @@ class AdminSlotState {
   }) {
     return AdminSlotState(
       blockedSlotsByDate: blockedSlotsByDate ?? this.blockedSlotsByDate,
+      bookedSlotsByDate: bookedSlotsByDate ?? this.bookedSlotsByDate,
       discountedSlotsByDate: discountedSlotsByDate ?? this.discountedSlotsByDate,
       weekdayOpeningTime: weekdayOpeningTime ?? this.weekdayOpeningTime,
       weekdayClosingTime: weekdayClosingTime ?? this.weekdayClosingTime,
@@ -75,6 +72,69 @@ class AdminSlotState {
 class AdminSlotNotifier extends Notifier<AdminSlotState> {
   @override
   AdminSlotState build() => AdminSlotState();
+
+  void setSlotsForDate(String dateKey, {Set<String>? booked, Set<String>? blocked}) {
+    final currentBooked = Map<String, Set<String>>.from(state.bookedSlotsByDate);
+    final currentBlocked = Map<String, Set<String>>.from(state.blockedSlotsByDate);
+    if (booked != null) currentBooked[dateKey] = booked;
+    if (blocked != null) currentBlocked[dateKey] = blocked;
+    state = state.copyWith(
+      bookedSlotsByDate: currentBooked,
+      blockedSlotsByDate: currentBlocked,
+    );
+  }
+
+  Future<void> fetchSlotsForDate(int adminId, String dateKey) async {
+    try {
+      final res = await http.get(Uri.parse('http://localhost:3000/turfs/$adminId/slots?date=$dateKey&role=owner'));
+      if (res.statusCode == 200) {
+        final json = jsonDecode(res.body);
+        if (json['slots'] is List) {
+          final booked = <String>{};
+          final blocked = <String>{};
+          for (final s in json['slots']) {
+            final slotStr = (s['slot'] ?? s['time'])?.toString() ?? '';
+            final status = s['status']?.toString();
+            if (status == 'booked') booked.add(slotStr);
+            if (status == 'blocked') blocked.add(slotStr);
+          }
+          setSlotsForDate(dateKey, booked: booked, blocked: blocked);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching realtime slots: $e");
+    }
+  }
+
+  Future<bool> toggleBlockSlotRealtime(int adminId, String slot, String dateKey) async {
+    if (state.getBookedSlotsForDate(dateKey).contains(slot)) {
+      debugPrint("Cannot block slot $slot: already booked by customer.");
+      return false;
+    }
+
+    toggleBlockSlot(slot, dateKey);
+    try {
+      final res = await http.post(
+        Uri.parse('http://localhost:3000/turfs/$adminId/toggle-block'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'date': dateKey,
+          'timeSlot': slot,
+          'reason': 'Blocked by Turf Owner',
+        }),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return true;
+      } else {
+        toggleBlockSlot(slot, dateKey);
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Error toggling block slot in DB: $e");
+      toggleBlockSlot(slot, dateKey);
+      return false;
+    }
+  }
 
   void toggleBlockSlot(String timeSlot, String dateKey) {
     final currentBlockedMap = Map<String, Set<String>>.from(state.blockedSlotsByDate);
@@ -266,6 +326,7 @@ class TurfProfileState {
   final List<String> photoUrls;
   final String? trackingCode;
   final int? adminUserId;
+  final int? verifiedAdminId;
   final String? aadhaarDocUrl;
   final String? panDocUrl;
   final String? gstDocUrl;
@@ -278,6 +339,23 @@ class TurfProfileState {
   final String ifsc;
   final String upiId;
   final bool kycVerified;
+
+  // Realtime Venue Performance KPIs from VerifiedAdmin Database Table
+  final int todayBookingsCount;
+  final int todayPaidBookings;
+  final int todayCashBookings;
+  final String todayBookingsGrowth;
+  final double monthRevenue;
+  final int monthTotalBookings;
+  final String revenueBadge;
+  final int freeSlotsCount;
+  final int bookedSlotsCount;
+  final int blockedSlotsCount;
+  final String slotsBadge;
+  final int cancelledTotal;
+  final int cancelledCount;
+  final int shiftedCount;
+  final String cancelledBadge;
 
   const TurfProfileState({
     this.ownerName = 'Karthikeyan M',
@@ -307,6 +385,7 @@ class TurfProfileState {
     this.photoUrls = const [],
     this.trackingCode,
     this.adminUserId,
+    this.verifiedAdminId = 1,
     this.aadhaarDocUrl,
     this.panDocUrl,
     this.gstDocUrl,
@@ -428,6 +507,21 @@ class TurfProfileState {
     this.ifsc = 'HDFC0001234',
     this.upiId = 'karthik@okaxis',
     this.kycVerified = true,
+    this.todayBookingsCount = 0,
+    this.todayPaidBookings = 0,
+    this.todayCashBookings = 0,
+    this.todayBookingsGrowth = '0% Today',
+    this.monthRevenue = 0.0,
+    this.monthTotalBookings = 0,
+    this.revenueBadge = '₹0 GMV',
+    this.freeSlotsCount = 0,
+    this.bookedSlotsCount = 0,
+    this.blockedSlotsCount = 0,
+    this.slotsBadge = '0% Full',
+    this.cancelledTotal = 0,
+    this.cancelledCount = 0,
+    this.shiftedCount = 0,
+    this.cancelledBadge = 'Tracked',
   });
 
   TurfProfileState copyWith({
@@ -454,6 +548,7 @@ class TurfProfileState {
     List<String>? photoUrls,
     String? trackingCode,
     int? adminUserId,
+    int? verifiedAdminId,
     String? aadhaarDocUrl,
     String? panDocUrl,
     String? gstDocUrl,
@@ -464,6 +559,21 @@ class TurfProfileState {
     String? ifsc,
     String? upiId,
     bool? kycVerified,
+    int? todayBookingsCount,
+    int? todayPaidBookings,
+    int? todayCashBookings,
+    String? todayBookingsGrowth,
+    double? monthRevenue,
+    int? monthTotalBookings,
+    String? revenueBadge,
+    int? freeSlotsCount,
+    int? bookedSlotsCount,
+    int? blockedSlotsCount,
+    String? slotsBadge,
+    int? cancelledTotal,
+    int? cancelledCount,
+    int? shiftedCount,
+    String? cancelledBadge,
   }) {
     return TurfProfileState(
       ownerName: ownerName ?? this.ownerName,
@@ -489,6 +599,7 @@ class TurfProfileState {
       photoUrls: photoUrls ?? this.photoUrls,
       trackingCode: trackingCode ?? this.trackingCode,
       adminUserId: adminUserId ?? this.adminUserId,
+      verifiedAdminId: verifiedAdminId ?? this.verifiedAdminId,
       aadhaarDocUrl: aadhaarDocUrl ?? this.aadhaarDocUrl,
       panDocUrl: panDocUrl ?? this.panDocUrl,
       gstDocUrl: gstDocUrl ?? this.gstDocUrl,
@@ -499,6 +610,21 @@ class TurfProfileState {
       ifsc: ifsc ?? this.ifsc,
       upiId: upiId ?? this.upiId,
       kycVerified: kycVerified ?? this.kycVerified,
+      todayBookingsCount: todayBookingsCount ?? this.todayBookingsCount,
+      todayPaidBookings: todayPaidBookings ?? this.todayPaidBookings,
+      todayCashBookings: todayCashBookings ?? this.todayCashBookings,
+      todayBookingsGrowth: todayBookingsGrowth ?? this.todayBookingsGrowth,
+      monthRevenue: monthRevenue ?? this.monthRevenue,
+      monthTotalBookings: monthTotalBookings ?? this.monthTotalBookings,
+      revenueBadge: revenueBadge ?? this.revenueBadge,
+      freeSlotsCount: freeSlotsCount ?? this.freeSlotsCount,
+      bookedSlotsCount: bookedSlotsCount ?? this.bookedSlotsCount,
+      blockedSlotsCount: blockedSlotsCount ?? this.blockedSlotsCount,
+      slotsBadge: slotsBadge ?? this.slotsBadge,
+      cancelledTotal: cancelledTotal ?? this.cancelledTotal,
+      cancelledCount: cancelledCount ?? this.cancelledCount,
+      shiftedCount: shiftedCount ?? this.shiftedCount,
+      cancelledBadge: cancelledBadge ?? this.cancelledBadge,
     );
   }
 }
@@ -553,7 +679,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     final streetAddress = (data['streetAddress'] ?? '').toString();
     final neighborhoodArea = (data['neighborhoodArea'] ?? '').toString();
     final trackingCode = data['trackingCode']?.toString();
-    final adminUserId = data['adminUserId'] is int ? data['adminUserId'] as int : null;
+    final verifiedAdminId = (data['id'] is int)
+        ? data['id'] as int
+        : (int.tryParse(data['id']?.toString() ?? '') ?? 1);
+    final adminUserId = data['adminUserId'] is int ? data['adminUserId'] as int : verifiedAdminId;
 
     List<String> photoUrls = [];
     if (data['photoUrls'] is List) {
@@ -620,64 +749,103 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       ),
     ];
 
-    // Real dynamic bookings tailored to this venue
-    final bookingHistory = [
-      TurfBookingHistoryItem(
-        id: 'BK-99214',
-        customerName: 'Vijay Sethu (7v7 Match)',
-        customerPhone: '98450 12345',
-        sport: 'Football 7v7',
-        courtName: '$venueName Turf A',
-        dateTimeSlot: 'Today, 08:00 PM - 09:00 PM',
-        amount: 1200.0,
-        paymentMethod: 'UPI (GPay)',
-        status: 'Confirmed',
-      ),
-      TurfBookingHistoryItem(
-        id: 'BK-99215',
-        customerName: 'Manojh Kumar (Box Cricket)',
-        customerPhone: '97890 88211',
-        sport: 'Box Cricket',
-        courtName: '$venueName Arena B',
-        dateTimeSlot: 'Today, 09:00 PM - 10:00 PM',
-        amount: 1500.0,
-        paymentMethod: 'Cash at Venue',
-        status: 'Confirmed',
-      ),
-      TurfBookingHistoryItem(
-        id: 'BK-99201',
-        customerName: 'Madurai Strikers FC',
-        customerPhone: '98421 99012',
-        sport: 'Football 7v7',
-        courtName: '$venueName Turf A',
-        dateTimeSlot: 'Today, 06:00 PM - 07:00 PM',
-        amount: 1400.0,
-        paymentMethod: 'UPI (PhonePe)',
-        status: 'Confirmed',
-      ),
-      TurfBookingHistoryItem(
-        id: 'BK-98920',
-        customerName: 'Priya Sharma',
-        customerPhone: '94431 55432',
-        sport: 'Badminton',
-        courtName: '$venueName Court 1',
-        dateTimeSlot: 'Yesterday, 07:00 AM - 08:00 AM',
-        amount: 450.0,
-        paymentMethod: 'UPI (PhonePe)',
-        status: 'Completed',
-      ),
-      TurfBookingHistoryItem(
-        id: 'BK-98754',
-        customerName: 'Ramesh Krishnan',
-        customerPhone: '90034 11223',
-        sport: 'Football 7v7',
-        courtName: '$venueName Turf A',
-        dateTimeSlot: 'Yesterday, 09:00 PM - 10:00 PM',
-        amount: 1400.0,
-        paymentMethod: 'Card',
-        status: 'Completed',
-      ),
-    ];
+    // Real dynamic bookings from database if available, else fallback
+    List<TurfBookingHistoryItem> bookingHistory = [];
+    if (data['bookings'] is List && (data['bookings'] as List).isNotEmpty) {
+      bookingHistory = (data['bookings'] as List).map((b) {
+        final amt = (b['amount'] is num) ? (b['amount'] as num).toDouble() : 1000.0;
+        return TurfBookingHistoryItem(
+          id: 'BK-${b['id']}',
+          customerName: b['customerName']?.toString() ?? 'Player Customer',
+          customerPhone: b['customerPhone']?.toString() ?? '',
+          sport: b['sport']?.toString() ?? 'Football',
+          courtName: b['courtName']?.toString() ?? venueName,
+          dateTimeSlot: "${b['date']}, ${b['timeSlot']}",
+          amount: amt,
+          paymentMethod: b['paymentMethod']?.toString() ?? 'UPI (GPay)',
+          status: b['status']?.toString() ?? 'Confirmed',
+        );
+      }).toList();
+    } else {
+      bookingHistory = [
+        TurfBookingHistoryItem(
+          id: 'BK-99214',
+          customerName: 'Vijay Sethu (7v7 Match)',
+          customerPhone: '98450 12345',
+          sport: 'Football 7v7',
+          courtName: '$venueName Turf A',
+          dateTimeSlot: 'Today, 08:00 PM - 09:00 PM',
+          amount: 1200.0,
+          paymentMethod: 'UPI (GPay)',
+          status: 'Confirmed',
+        ),
+        TurfBookingHistoryItem(
+          id: 'BK-99215',
+          customerName: 'Manojh Kumar (Box Cricket)',
+          customerPhone: '97890 88211',
+          sport: 'Box Cricket',
+          courtName: '$venueName Arena B',
+          dateTimeSlot: 'Today, 09:00 PM - 10:00 PM',
+          amount: 1500.0,
+          paymentMethod: 'Cash at Venue',
+          status: 'Confirmed',
+        ),
+        TurfBookingHistoryItem(
+          id: 'BK-99201',
+          customerName: 'Madurai Strikers FC',
+          customerPhone: '98421 99012',
+          sport: 'Football 7v7',
+          courtName: '$venueName Turf A',
+          dateTimeSlot: 'Today, 06:00 PM - 07:00 PM',
+          amount: 1400.0,
+          paymentMethod: 'UPI (PhonePe)',
+          status: 'Confirmed',
+        ),
+        TurfBookingHistoryItem(
+          id: 'BK-98920',
+          customerName: 'Priya Sharma',
+          customerPhone: '94431 55432',
+          sport: 'Badminton',
+          courtName: '$venueName Court 1',
+          dateTimeSlot: 'Yesterday, 07:00 AM - 08:00 AM',
+          amount: 450.0,
+          paymentMethod: 'UPI (PhonePe)',
+          status: 'Completed',
+        ),
+        TurfBookingHistoryItem(
+          id: 'BK-98754',
+          customerName: 'Ramesh Krishnan',
+          customerPhone: '90034 11223',
+          sport: 'Football 7v7',
+          courtName: '$venueName Turf A',
+          dateTimeSlot: 'Yesterday, 09:00 PM - 10:00 PM',
+          amount: 1400.0,
+          paymentMethod: 'Card',
+          status: 'Completed',
+        ),
+      ];
+    }
+
+    final dash = (data['dashboard'] is Map<String, dynamic>)
+        ? data['dashboard'] as Map<String, dynamic>
+        : data;
+
+    final openingTime = (dash['openingTime'] ?? data['openingTime'])?.toString() ?? '05:00 AM';
+    final closingTime = (dash['closingTime'] ?? data['closingTime'])?.toString() ?? '11:00 PM';
+
+    final todayBookingsCount = int.tryParse((dash['todayBookingsCount'] ?? data['todayBookingsCount'])?.toString() ?? '') ?? 0;
+    int todayPaidBookings = int.tryParse((dash['todayPaidBookings'] ?? data['todayPaidBookings'])?.toString() ?? '') ?? 0;
+    int todayCashBookings = int.tryParse((dash['todayCashBookings'] ?? data['todayCashBookings'])?.toString() ?? '') ?? 0;
+    int monthTotalBookings = int.tryParse((dash['monthTotalBookings'] ?? data['monthTotalBookings'])?.toString() ?? '') ?? 0;
+
+    // Safety guard: paid + cash cannot exceed total bookings
+    if (todayPaidBookings + todayCashBookings > todayBookingsCount && todayBookingsCount > 0) {
+      todayPaidBookings = todayBookingsCount - todayCashBookings;
+      if (todayPaidBookings < 0) todayPaidBookings = 0;
+    }
+    if (monthTotalBookings < todayBookingsCount) {
+      monthTotalBookings = todayBookingsCount;
+    }
 
     state = state.copyWith(
       venueName: venueName,
@@ -686,10 +854,17 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       ownerEmail: ownerEmail,
       address: streetAddress,
       area: neighborhoodArea,
+      openingTime: openingTime,
+      closingTime: closingTime,
+      weekdayOpeningTime: openingTime,
+      weekdayClosingTime: closingTime,
+      weekendOpeningTime: openingTime,
+      weekendClosingTime: closingTime,
       facilities: amenities,
       photoUrls: photoUrls,
       trackingCode: trackingCode,
       adminUserId: adminUserId,
+      verifiedAdminId: verifiedAdminId,
       gstin: gstin,
       pan: pan,
       aadhaar: aadhaar,
@@ -699,9 +874,36 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       aadhaarDocUrl: aadhaarDocUrl,
       panDocUrl: panDocUrl,
       gstDocUrl: gstDocUrl,
+      dayRate: double.tryParse(data['dayRate']?.toString() ?? '') ?? state.dayRate,
+      nightRate: double.tryParse(data['nightRate']?.toString() ?? '') ?? state.nightRate,
+      weekdayRate: double.tryParse(data['weekdayRate']?.toString() ?? '') ?? state.weekdayRate,
+      weekendRate: double.tryParse(data['weekendRate']?.toString() ?? '') ?? state.weekendRate,
       kycVerified: true,
       courts: courts,
       bookingHistory: bookingHistory,
+      todayBookingsCount: todayBookingsCount,
+      todayPaidBookings: todayPaidBookings,
+      todayCashBookings: todayCashBookings,
+      todayBookingsGrowth: (dash['todayBookingsGrowth'] ?? data['todayBookingsGrowth'])?.toString() ?? '0% Today',
+      monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
+      monthTotalBookings: monthTotalBookings,
+      revenueBadge: (dash['revenueBadge'] ?? data['revenueBadge'])?.toString() ?? '₹0 GMV',
+      freeSlotsCount: int.tryParse((dash['freeSlotsCount'] ?? data['freeSlotsCount'])?.toString() ?? '') ?? 0,
+      bookedSlotsCount: int.tryParse((dash['bookedSlotsCount'] ?? data['bookedSlotsCount'])?.toString() ?? '') ?? 0,
+      blockedSlotsCount: int.tryParse((dash['blockedSlotsCount'] ?? data['blockedSlotsCount'])?.toString() ?? '') ?? 0,
+      slotsBadge: (dash['slotsBadge'] ?? data['slotsBadge'])?.toString() ?? '0% Full',
+      cancelledTotal: int.tryParse((dash['cancelledTotal'] ?? data['cancelledTotal'])?.toString() ?? '') ?? 0,
+      cancelledCount: int.tryParse((dash['cancelledCount'] ?? data['cancelledCount'])?.toString() ?? '') ?? 0,
+      shiftedCount: int.tryParse((dash['shiftedCount'] ?? data['shiftedCount'])?.toString() ?? '') ?? 0,
+      cancelledBadge: (dash['cancelledBadge'] ?? data['cancelledBadge'])?.toString() ?? 'Tracked',
+    );
+
+    // Sync operating schedule with AdminSlotNotifier immediately so slots auto-split
+    ref.read(adminSlotProvider.notifier).updateOperatingHours(
+      openingTime,
+      closingTime,
+      openingTime,
+      closingTime,
     );
 
     if (saveToStorage) {
@@ -715,7 +917,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     }
   }
 
-  void updateProfileDetails({
+  Future<bool> updateProfileDetails({
     required String ownerName,
     required String ownerPhone,
     required String ownerEmail,
@@ -726,7 +928,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     required double nightRate,
     required double weekdayRate,
     required double weekendRate,
-  }) {
+  }) async {
     state = state.copyWith(
       ownerName: ownerName,
       ownerPhone: ownerPhone,
@@ -739,6 +941,33 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       weekdayRate: weekdayRate,
       weekendRate: weekendRate,
     );
+
+    try {
+      final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
+      final res = await http.patch(
+        Uri.parse('http://localhost:3000/auth/verified-admin/$id/profile'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'ownerName': ownerName,
+          'ownerPhone': ownerPhone,
+          'ownerEmail': ownerEmail,
+          'venueName': venueName,
+          'streetAddress': address,
+          'neighborhoodArea': area,
+          'dayRate': dayRate,
+          'nightRate': nightRate,
+          'weekdayRate': weekdayRate,
+          'weekendRate': weekendRate,
+        }),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        debugPrint("Turf Profile & Hourly Rates saved to database successfully.");
+        return true;
+      }
+    } catch (e) {
+      debugPrint("Error updating profile in DB: $e");
+    }
+    return false;
   }
 
   void updateOperatingHours({
@@ -798,6 +1027,114 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   void removeCourtVenue(String courtId) {
     final updatedCourts = state.courts.where((c) => c.id != courtId).toList();
     state = state.copyWith(courts: updatedCourts);
+  }
+
+  Future<bool> updateOperatingSchedule({
+    required String openingTime,
+    required String closingTime,
+  }) async {
+    try {
+      // 1. Update local TurfProfileState
+      state = state.copyWith(
+        openingTime: openingTime,
+        closingTime: closingTime,
+        weekdayOpeningTime: openingTime,
+        weekdayClosingTime: closingTime,
+        weekendOpeningTime: openingTime,
+        weekendClosingTime: closingTime,
+      );
+
+      // 2. Update AdminSlotNotifier so slots auto-split into 1-hour slots immediately
+      ref.read(adminSlotProvider.notifier).updateOperatingHours(
+        openingTime,
+        closingTime,
+        openingTime,
+        closingTime,
+      );
+
+      // 3. Persist to AdminDashboard table in backend database
+      final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
+      final payload = <String, dynamic>{
+        'openingTime': openingTime,
+        'closingTime': closingTime,
+      };
+
+      final res = await http.patch(
+        Uri.parse('http://localhost:3000/auth/verified-admin/$id/metrics'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final json = jsonDecode(res.body);
+        if (json['admin'] != null && json['admin'] is Map<String, dynamic>) {
+          setFromVerifiedAdmin(json['admin'] as Map<String, dynamic>);
+          return true;
+        }
+      }
+      return true;
+    } catch (e) {
+      debugPrint("Error updating operating schedule: $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateVenueKpiMetrics({
+    String? openingTime,
+    String? closingTime,
+    int? todayBookingsCount,
+    int? todayPaidBookings,
+    int? todayCashBookings,
+    String? todayBookingsGrowth,
+    double? monthRevenue,
+    int? monthTotalBookings,
+    String? revenueBadge,
+    int? freeSlotsCount,
+    int? bookedSlotsCount,
+    int? blockedSlotsCount,
+    String? slotsBadge,
+    int? cancelledTotal,
+    int? cancelledCount,
+    int? shiftedCount,
+    String? cancelledBadge,
+  }) async {
+    try {
+      final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
+      final payload = <String, dynamic>{};
+      if (openingTime != null) payload['openingTime'] = openingTime;
+      if (closingTime != null) payload['closingTime'] = closingTime;
+      if (todayBookingsCount != null) payload['todayBookingsCount'] = todayBookingsCount;
+      if (todayPaidBookings != null) payload['todayPaidBookings'] = todayPaidBookings;
+      if (todayCashBookings != null) payload['todayCashBookings'] = todayCashBookings;
+      if (todayBookingsGrowth != null) payload['todayBookingsGrowth'] = todayBookingsGrowth;
+      if (monthRevenue != null) payload['monthRevenue'] = monthRevenue;
+      if (monthTotalBookings != null) payload['monthTotalBookings'] = monthTotalBookings;
+      if (revenueBadge != null) payload['revenueBadge'] = revenueBadge;
+      if (freeSlotsCount != null) payload['freeSlotsCount'] = freeSlotsCount;
+      if (bookedSlotsCount != null) payload['bookedSlotsCount'] = bookedSlotsCount;
+      if (blockedSlotsCount != null) payload['blockedSlotsCount'] = blockedSlotsCount;
+      if (slotsBadge != null) payload['slotsBadge'] = slotsBadge;
+      if (cancelledTotal != null) payload['cancelledTotal'] = cancelledTotal;
+      if (cancelledCount != null) payload['cancelledCount'] = cancelledCount;
+      if (shiftedCount != null) payload['shiftedCount'] = shiftedCount;
+      if (cancelledBadge != null) payload['cancelledBadge'] = cancelledBadge;
+
+      final res = await http.patch(
+        Uri.parse('http://localhost:3000/auth/verified-admin/$id/metrics'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        final json = jsonDecode(res.body);
+        if (json['admin'] != null && json['admin'] is Map<String, dynamic>) {
+          setFromVerifiedAdmin(json['admin'] as Map<String, dynamic>);
+          return true;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error updating venue metrics: $e");
+    }
+    return false;
   }
 }
 

@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:games24_player_app/booking_screen.dart';
 import 'package:games24_player_app/challenge_manager.dart';
 import 'package:games24_player_app/tournaments_screen.dart';
 import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
+import 'package:games24_player_app/booking_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
@@ -15,38 +18,36 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Map<String, dynamic>> _allTurfs = [
-    {
-      'name': 'Apex Sports Club',
-      'price': '₹1,200',
-      'location': 'Koramangala • 1.2 km away',
-      'imageUrl': 'https://picsum.photos/seed/turf1/800/400',
-      'rating': '4.9',
-      'reviews': '128',
-      'sports': 'Football • Cricket',
-      'tags': ['Floodlights', 'Parking', 'Changing Room'],
-    },
-    {
-      'name': 'Metro Arena Indoor',
-      'price': '₹950',
-      'location': 'Indiranagar • 2.5 km away',
-      'imageUrl': 'https://picsum.photos/seed/turf2/800/400',
-      'rating': '4.7',
-      'reviews': '94',
-      'sports': 'Badminton • Tennis',
-      'tags': ['Indoor AC', 'Cafeteria'],
-    },
-    {
-      'name': 'Green Valley Arena',
-      'price': '₹1,500',
-      'location': 'HSR Layout • 3.0 km away',
-      'imageUrl': 'https://picsum.photos/seed/turf3/800/400',
-      'rating': '4.8',
-      'reviews': '210',
-      'sports': 'Football • Basketball',
-      'tags': ['Synthetic Grass', 'Washrooms'],
-    },
-  ];
+  List<Map<String, dynamic>> _allTurfs = [];
+  bool _isLoadingTurfs = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTurfs();
+    BookingManager().fetchBookings();
+  }
+
+  Future<void> _fetchTurfs() async {
+    try {
+      final res = await http.get(Uri.parse('http://localhost:3000/turfs'));
+      if (res.statusCode == 200) {
+        final List list = jsonDecode(res.body);
+        if (mounted) {
+          setState(() {
+            _allTurfs = list.map((e) => Map<String, dynamic>.from(e)).toList();
+            _isLoadingTurfs = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching turfs in home_screen: $e");
+    }
+    if (mounted) {
+      setState(() => _isLoadingTurfs = false);
+    }
+  }
 
   final List<Map<String, dynamic>> _categories = [
     {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': true},
@@ -60,79 +61,105 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Container(
       color: const Color(0xFFFAFAFA),
-      child: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSearchBar(),
-          ),
+      child: RefreshIndicator(
+        color: const Color(0xFF166534),
+        onRefresh: () async {
+          await Future.wait([
+            _fetchTurfs(),
+            BookingManager().fetchBookings(),
+          ]);
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ValueListenableBuilder<List<Map<String, dynamic>>>(
+            valueListenable: BookingManager().bookingsNotifier,
+            builder: (context, _, __) {
+              final activeBookings = BookingManager().activeBookings;
 
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader('Categories', ''),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildSearchBar(),
+                  ),
+
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildSectionHeader('Categories', ''),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCategories(),
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildSectionHeader(
+                      'Upcoming Matches', 
+                      'View Schedule', 
+                      hasLiveBadge: true,
+                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TournamentsScreen())),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildUpcomingMatches(),
+
+                  // Red circled section: Only shown if the user has an active booking. If no active bookings, completely removed with no extra blank space.
+                  if (activeBookings.isNotEmpty) ...[
+                    const SizedBox(height: 32),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildSectionHeader(
+                        'Your Active Bookings', 
+                        'History',
+                        onActionTap: () => Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+                        ).then((_) => BookingManager().fetchBookings()),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildActiveBookings(activeBookings),
+                    ),
+                  ],
+
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildSectionHeader(
+                      'Join Team / Open Challenges', 
+                      'View All',
+                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TeamsHubScreen())),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildOpenChallenges(),
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildSectionHeader(
+                      'Nearby Turfs',
+                      'See all',
+                      trailingIcon: Icons.near_me_outlined,
+                      onActionTap: widget.onExploreTap,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildNearbyTurfs(),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 16),
-          _buildCategories(),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader(
-              'Upcoming Matches', 
-              'View Schedule', 
-              hasLiveBadge: true,
-              onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TournamentsScreen())),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildUpcomingMatches(),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader(
-              'Your Active Bookings', 
-              'History',
-              onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const MyBookingsScreen())),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildActiveBookings(),
-          ),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader(
-              'Join Team / Open Challenges', 
-              'View All',
-              onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TeamsHubScreen())),
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildOpenChallenges(),
-          const SizedBox(height: 32),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildSectionHeader(
-              'Nearby Turfs',
-              'See all',
-              trailingIcon: Icons.near_me_outlined,
-              onActionTap: widget.onExploreTap,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: _buildNearbyTurfs(),
-          ),
-          const SizedBox(height: 24),
-        ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildSearchBar() {
@@ -172,15 +199,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     displayStringForOption: (option) => option['name'],
                     onSelected: (option) {
+                      final int? tId = option['id'] is int ? option['id'] as int : int.tryParse(option['id']?.toString() ?? '');
+                      final List<String> sportsList = (option['sports'] is List)
+                          ? (option['sports'] as List).map((e) => e.toString()).toList()
+                          : (option['sports']?.toString().split(' • ') ?? ['Football', 'Box Cricket']);
+                      final List<String> photoUrls = (option['photoUrls'] is List)
+                          ? (option['photoUrls'] as List).map((e) => e.toString()).toList()
+                          : [option['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
+                      final List<String> amenities = (option['amenities'] is List)
+                          ? (option['amenities'] as List).map((e) => e.toString()).toList()
+                          : ['Floodlights', 'Parking', 'Restroom'];
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => BookingScreen(
-                            turfName: option['name'],
-                            imageUrl: option['imageUrl'],
-                            price: option['price'],
-                            location: option['location'],
-                            sports: (option['sports'] as String).split(' • '),
+                            turfId: tId,
+                            turfName: option['venueName'] ?? option['name'] ?? 'Turf Arena',
+                            imageUrl: option['imageUrl'] ?? photoUrls.first,
+                            photoUrls: photoUrls,
+                            amenities: amenities,
+                            openingTime: option['openingTime'] ?? '06:00 AM',
+                            closingTime: option['closingTime'] ?? '10:00 PM',
+                            price: option['price'] ?? '₹1,200',
+                            location: option['location'] ?? 'Madurai',
+                            sports: sportsList,
                           ),
                         ),
                       );
@@ -504,71 +547,146 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActiveBookings() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
-        ],
-        border: Border.all(color: const Color(0xFFF3F4F6)),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              'https://picsum.photos/seed/booking/250/250',
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
+  String _formatBookingDate(String? dateStr, String? timeSlot) {
+    if (dateStr == null || dateStr.isEmpty) return timeSlot ?? '';
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final parts = dateStr.split('-');
+      if (parts.length == 3) {
+        final bDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        final diff = bDate.difference(today).inDays;
+        final slotText = (timeSlot != null && timeSlot.isNotEmpty) ? ', $timeSlot' : '';
+        if (diff == 0) {
+          return 'Today$slotText';
+        } else if (diff == 1) {
+          return 'Tomorrow$slotText';
+        } else {
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return '${bDate.day} ${months[bDate.month - 1]}$slotText';
+        }
+      }
+    } catch (_) {}
+    return '$dateStr${timeSlot != null && timeSlot.isNotEmpty ? ', $timeSlot' : ''}';
+  }
+
+  Widget _buildActiveBookings(List<Map<String, dynamic>> bookings) {
+    return Column(
+      children: bookings.map((booking) {
+        final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
+        final rawImg = (booking['imageUrl'] ?? '').toString();
+        final imgUrl = rawImg.isNotEmpty ? rawImg : 'https://picsum.photos/seed/${booking['id'] ?? 'booking'}/250/250';
+        final status = (booking['status'] ?? 'Confirmed').toString();
+        final dateStr = (booking['date'] ?? '').toString();
+        final timeSlot = (booking['timeSlot'] ?? '').toString();
+        final formattedDateTime = _formatBookingDate(dateStr, timeSlot);
+        final locationOrCourt = (booking['courtName'] ?? booking['location'] ?? 'Turf 1').toString();
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12.0),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(24),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+              ).then((_) => BookingManager().fetchBookings());
+            },
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+                ],
+                border: Border.all(color: const Color(0xFFF3F4F6)),
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      imgUrl,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.sports_soccer, color: Color(0xFF166534), size: 36),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                turfName,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                status,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.green.shade800,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          formattedDateTime,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF6B7280)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                locationOrCourt,
+                                style: const TextStyle(fontSize: 12, color: Color(0xFF111827)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Green Valley Arena',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.green.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Confirmed',
-                        style: TextStyle(fontSize: 10, color: Colors.green.shade800, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Today, 5:00 PM - 6:30 PM',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF6B7280)),
-                    const SizedBox(width: 4),
-                    const Text('Turf 1 (5v5)', style: TextStyle(fontSize: 12, color: Color(0xFF111827))),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
@@ -852,38 +970,87 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNearbyTurfs() {
+    if (_isLoadingTurfs) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: CircularProgressIndicator(color: Color(0xFF166534))),
+      );
+    }
+
+    if (_allTurfs.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: const Column(
+          children: [
+            Icon(Icons.sports_soccer_rounded, size: 44, color: Color(0xFF9CA3AF)),
+            SizedBox(height: 10),
+            Text(
+              'No verified turfs available yet',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Once an admin registers and Super Admin verifies, the turf appears here live!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
-      children: [
-        _buildTurfCard(
-          name: 'Apex Sports Club',
-          price: '₹1,200',
-          location: 'Koramangala • 1.2 km away',
-          imageUrl: 'https://picsum.photos/seed/turf1/800/400',
-          rating: '4.9',
-          reviews: '128',
-          sports: 'Football • Cricket',
-          tags: ['Floodlights', 'Parking', 'Changing Room'],
-        ),
-        const SizedBox(height: 20),
-        _buildTurfCard(
-          name: 'Metro Arena Indoor',
-          price: '₹950',
-          location: 'Indiranagar • 2.5 km away',
-          imageUrl: 'https://picsum.photos/seed/turf2/800/400', // badminton
-          rating: '4.7',
-          reviews: '94',
-          sports: 'Badminton • Tennis',
-          tags: ['Indoor AC', 'Cafeteria'],
-        ),
-      ],
+      children: _allTurfs.map((turf) {
+        final List<String> tags = (turf['amenities'] is List)
+            ? (turf['amenities'] as List).map((e) => e.toString()).toList()
+            : ['Floodlights', 'Parking', 'Restroom'];
+
+        final List<String> photoUrls = (turf['photoUrls'] is List)
+            ? (turf['photoUrls'] as List).map((e) => e.toString()).toList()
+            : [turf['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
+
+        final sportsStr = (turf['sports'] is List)
+            ? (turf['sports'] as List).join(' • ')
+            : (turf['sports']?.toString() ?? 'Football • Box Cricket');
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20.0),
+          child: _buildTurfCard(
+            turfId: turf['id'] is int ? turf['id'] as int : int.tryParse(turf['id']?.toString() ?? ''),
+            name: turf['venueName'] ?? turf['name'] ?? 'Turf Arena',
+            price: turf['price'] ?? '₹1,200',
+            location: turf['location'] ?? 'Madurai',
+            imageUrl: turf['imageUrl'] ?? photoUrls.first,
+            photoUrls: photoUrls,
+            amenities: tags,
+            openingTime: turf['openingTime'] ?? '06:00 AM',
+            closingTime: turf['closingTime'] ?? '10:00 PM',
+            rating: turf['rating']?.toString() ?? '4.9',
+            reviews: turf['reviews']?.toString() ?? '128',
+            sports: sportsStr,
+            tags: tags,
+          ),
+        );
+      }).toList(),
     );
   }
 
   Widget _buildTurfCard({
+    int? turfId,
     required String name,
     required String price,
     required String location,
     required String imageUrl,
+    List<String>? photoUrls,
+    List<String>? amenities,
+    String? openingTime,
+    String? closingTime,
     required String rating,
     required String reviews,
     required String sports,
@@ -910,6 +1077,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 180,
+                    color: Colors.grey.shade200,
+                    child: const Icon(Icons.sports_soccer, size: 48, color: Colors.grey),
+                  ),
                 ),
               ),
               Positioned(
@@ -964,9 +1136,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     Text(
                       price,
@@ -978,12 +1154,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF6B7280)),
-                        const SizedBox(width: 4),
-                        Text(location, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
-                      ],
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF6B7280)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              location,
+                              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const Text('/ hour', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
                   ],
@@ -996,7 +1181,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: tags.map((tag) => Container(
+                        children: tags.take(3).map((tag) => Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -1017,11 +1202,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => BookingScreen(
+                              turfId: turfId,
                               turfName: name,
                               imageUrl: imageUrl,
+                              photoUrls: photoUrls,
+                              amenities: amenities,
+                              openingTime: openingTime,
+                              closingTime: closingTime,
                               price: price,
                               location: location,
-                              sports: sports.split(' • '), // Convert string to list
+                              sports: sports.split(' • '),
                             ),
                           ),
                         );

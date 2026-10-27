@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +10,38 @@ import '../../providers/admin_providers.dart';
 import '../widgets/admin_kpi_card.dart';
 import '../widgets/alter_booking_dialog.dart';
 
-class AdminDashboardScreen extends ConsumerWidget {
+class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
+
+  @override
+  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
+  bool _isRefreshing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshRealtimeData();
+    });
+  }
+
+  Future<void> _refreshRealtimeData() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    try {
+      final profile = ref.read(turfProfileProvider);
+      if (profile.ownerPhone.isNotEmpty) {
+        await ref.read(turfProfileProvider.notifier).fetchVerifiedAdminByPhone(profile.ownerPhone);
+      }
+    } catch (e) {
+      debugPrint("Error refreshing realtime dashboard data: $e");
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
+  }
 
   void _openAlterModal(
     BuildContext context, {
@@ -26,28 +57,58 @@ class AdminDashboardScreen extends ConsumerWidget {
         playerName: playerName,
         originalTimeSlot: time,
         courtName: courtName,
-        onRescheduled: () {
-          ToastUtils.showSuccess(context, "Booking $bookingId rescheduled successfully! Notification sent to $playerName.");
+        onRescheduled: () async {
+          final p = ref.read(turfProfileProvider);
+          final newShifted = p.shiftedCount + 1;
+          final newCancelledTotal = p.cancelledCount + newShifted;
+          await ref.read(turfProfileProvider.notifier).updateVenueKpiMetrics(
+            shiftedCount: newShifted,
+            cancelledTotal: newCancelledTotal,
+            cancelledBadge: '$newCancelledTotal Tracked',
+          );
+          if (context.mounted) {
+            ToastUtils.showSuccess(context, "Booking $bookingId rescheduled successfully! Shifted count updated in database.");
+          }
         },
-        onCancelled: () {
-          ToastUtils.showSuccess(context, "Booking $bookingId cancelled. Full refund initiated for $playerName.");
+        onCancelled: () async {
+          final p = ref.read(turfProfileProvider);
+          final newCancelled = p.cancelledCount + 1;
+          final newCancelledTotal = newCancelled + p.shiftedCount;
+          await ref.read(turfProfileProvider.notifier).updateVenueKpiMetrics(
+            cancelledCount: newCancelled,
+            cancelledTotal: newCancelledTotal,
+            cancelledBadge: '$newCancelledTotal Tracked',
+          );
+          if (context.mounted) {
+            ToastUtils.showSuccess(context, "Booking $bookingId cancelled. Cancellation recorded in database.");
+          }
         },
-        onCheckedIn: () {
-          ToastUtils.showSuccess(context, "Gate check-in confirmed for $playerName!");
+        onCheckedIn: () async {
+          final p = ref.read(turfProfileProvider);
+          final newTodayBookings = p.todayBookingsCount + 1;
+          final newPaidBookings = p.todayPaidBookings + 1;
+          final newMonthBookings = p.monthTotalBookings + 1;
+          final newMonthRev = p.monthRevenue + 1200.0;
+          await ref.read(turfProfileProvider.notifier).updateVenueKpiMetrics(
+            todayBookingsCount: newTodayBookings,
+            todayPaidBookings: newPaidBookings,
+            todayBookingsGrowth: '+$newTodayBookings Today',
+            monthTotalBookings: newMonthBookings,
+            monthRevenue: newMonthRev,
+            revenueBadge: '₹${newMonthRev.toInt()} GMV',
+          );
+          if (context.mounted) {
+            ToastUtils.showSuccess(context, "Gate check-in confirmed for $playerName! Metrics updated in database.");
+          }
         },
       ),
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final adminSlotState = ref.watch(adminSlotProvider);
     final profile = ref.watch(turfProfileProvider);
-
-    final todayKey = "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
-    final blockedCount = adminSlotState.getBlockedSlotsForDate(todayKey).length;
-    final freeSlotsCount = (adminSlotState.availableSlots.length - blockedCount - 8).clamp(4, 18);
 
     return Scaffold(
       appBar: AppBar(
@@ -65,195 +126,155 @@ class AdminDashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Venue Owner Profile Banner with Operating Hours
-            AppCard(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              child: Column(
+      body: RefreshIndicator(
+        onRefresh: _refreshRealtimeData,
+        color: AppColors.primary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // KPI Grid
+              Text('Today\'s & Monthly Venue Performance', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.95,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.stadium_rounded, color: Colors.white, size: 22),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${profile.venueName} (${profile.area})',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Hours: ${adminSlotState.weekdayOpeningTime} - ${adminSlotState.weekdayClosingTime} • Verified Partner ✅',
-                              style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => context.push('/admin/slots'),
-                        child: const Text('Edit Hours'),
-                      ),
-                    ],
+                  AdminKpiCard(
+                    title: 'Today\'s Bookings',
+                    value: '${profile.todayBookingsCount}',
+                    subtitle: '${profile.todayPaidBookings} Paid • ${profile.todayCashBookings} Cash',
+                    icon: Icons.confirmation_number_rounded,
+                    color: AppColors.primary,
+                    badgeText: profile.todayBookingsGrowth,
+                  ),
+                  AdminKpiCard(
+                    title: 'This Month Revenue',
+                    value: profile.monthRevenue > 0
+                        ? '₹${NumberFormat('#,##,###').format(profile.monthRevenue.toInt())}'
+                        : '₹0',
+                    subtitle: '${profile.monthTotalBookings} Total Bookings',
+                    icon: Icons.currency_rupee_rounded,
+                    color: AppColors.secondary,
+                    badgeText: profile.revenueBadge,
+                  ),
+                  AdminKpiCard(
+                    title: 'Today\'s Slots Status',
+                    value: '${profile.freeSlotsCount} Free',
+                    subtitle: '${profile.bookedSlotsCount} Booked • ${profile.blockedSlotsCount} Blocked',
+                    icon: Icons.pie_chart_rounded,
+                    color: const Color(0xFF06B6D4),
+                    badgeText: profile.slotsBadge,
+                  ),
+                  AdminKpiCard(
+                    title: 'Cancelled / Shifted',
+                    value: '${profile.cancelledTotal} Total',
+                    subtitle: '${profile.cancelledCount} Cancelled • ${profile.shiftedCount} Shifted',
+                    icon: Icons.published_with_changes_rounded,
+                    color: AppColors.warning,
+                    badgeText: profile.cancelledBadge,
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-            // KPI Grid
-            Text('Today\'s & Monthly Venue Performance', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.95,
-              children: [
-                AdminKpiCard(
-                  title: 'Today\'s Bookings',
-                  value: '${profile.bookingHistory.length + 13}',
-                  subtitle: '15 Paid • 3 Cash',
-                  icon: Icons.confirmation_number_rounded,
-                  color: AppColors.primary,
-                  badgeText: '+22% Today',
-                ),
-                AdminKpiCard(
-                  title: 'This Month Revenue',
-                  value: '₹2,48,500',
-                  subtitle: '${(profile.bookingHistory.length * 35) + 73} Total Bookings',
-                  icon: Icons.currency_rupee_rounded,
-                  color: AppColors.secondary,
-                  badgeText: 'Highest GMV',
-                ),
-                AdminKpiCard(
-                  title: 'Today\'s Slots Status',
-                  value: '$freeSlotsCount Free',
-                  subtitle: '15 Booked • ${blockedCount + 3} Blocked',
-                  icon: Icons.pie_chart_rounded,
-                  color: const Color(0xFF06B6D4),
-                  badgeText: '88% Full',
-                ),
-                const AdminKpiCard(
-                  title: 'Cancelled / Shifted',
-                  value: '3 Total',
-                  subtitle: '2 Cancelled • 1 Shifted',
-                  icon: Icons.published_with_changes_rounded,
-                  color: AppColors.warning,
-                  badgeText: 'Tracked',
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Quick Admin Tools Grid
-            Text('Quick Court Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: AppCard(
-                    onTap: () => context.push('/admin/slots'),
-                    child: const Column(
-                      children: [
-                        Icon(Icons.edit_calendar_rounded, size: 28, color: AppColors.primary),
-                        SizedBox(height: 6),
-                        Text('Manage Slots & Offers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
-                        SizedBox(height: 2),
-                        Text('Block / Discounts', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ],
+              // Quick Admin Tools Grid
+              Text('Quick Court Actions', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppCard(
+                      onTap: () => context.push('/admin/slots'),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.edit_calendar_rounded, size: 28, color: AppColors.primary),
+                          SizedBox(height: 6),
+                          Text('Manage Slots & Offers', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
+                          SizedBox(height: 2),
+                          Text('Block / Discounts', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: AppCard(
-                    onTap: () => context.push('/admin/qr-scanner'),
-                    child: const Column(
-                      children: [
-                        Icon(Icons.qr_code_scanner_rounded, size: 28, color: AppColors.secondary),
-                        SizedBox(height: 6),
-                        Text('Gate Check-in', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
-                        SizedBox(height: 2),
-                        Text('Scan Player QR', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppCard(
+                      onTap: () => context.push('/admin/qr-scanner'),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.qr_code_scanner_rounded, size: 28, color: AppColors.secondary),
+                          SizedBox(height: 6),
+                          Text('Gate Check-in', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
+                          SizedBox(height: 2),
+                          Text('Scan Player QR', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: AppCard(
-                    onTap: () => context.go('/admin/tournaments'),
-                    child: const Column(
-                      children: [
-                        Icon(Icons.emoji_events_rounded, size: 28, color: AppColors.primary),
-                        SizedBox(height: 6),
-                        Text('Tournaments Hub', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
-                        SizedBox(height: 2),
-                        Text('Manage & Sync', style: TextStyle(fontSize: 9, color: Colors.grey)),
-                      ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppCard(
+                      onTap: () => context.go('/admin/tournaments'),
+                      child: const Column(
+                        children: [
+                          Icon(Icons.emoji_events_rounded, size: 28, color: AppColors.primary),
+                          SizedBox(height: 6),
+                          Text('Tournaments Hub', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11), textAlign: TextAlign.center),
+                          SizedBox(height: 2),
+                          Text('Manage & Sync', style: TextStyle(fontSize: 9, color: Colors.grey)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-            // Live Incoming Bookings Stream with Reschedule/Alter Option
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Live Customer Bookings', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                TextButton(
-                  onPressed: () => context.push('/admin/slots'),
-                  child: const Text('View All'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (profile.bookingHistory.isNotEmpty)
-              ...profile.bookingHistory.take(2).map((b) => _AdminBookingFeedTile(
-                    bookingId: b.id,
-                    playerName: b.customerName,
-                    time: b.dateTimeSlot.replaceFirst('Today, ', '').replaceFirst('Yesterday, ', ''),
-                    courtName: b.courtName,
-                    amount: '₹${b.amount.toInt()}',
-                    status: b.paymentMethod.toUpperCase().contains('UPI') ? 'PAID VIA GPAY' : 'PAY AT VENUE',
-                    statusColor: b.paymentMethod.toUpperCase().contains('UPI') ? AppColors.success : AppColors.warning,
-                    onAlter: () => _openAlterModal(
-                      context,
+              // Live Incoming Bookings Stream with Reschedule/Alter Option
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Live Customer Bookings', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: () => context.push('/admin/slots'),
+                    child: const Text('View All'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (profile.bookingHistory.isNotEmpty)
+                ...profile.bookingHistory.take(2).map((b) => _AdminBookingFeedTile(
                       bookingId: b.id,
                       playerName: b.customerName,
                       time: b.dateTimeSlot.replaceFirst('Today, ', '').replaceFirst('Yesterday, ', ''),
                       courtName: b.courtName,
-                    ),
-                  ))
-            else
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24.0),
-                  child: Text('No bookings scheduled for today yet.'),
+                      amount: '₹${b.amount.toInt()}',
+                      status: b.paymentMethod.toUpperCase().contains('UPI') ? 'PAID VIA GPAY' : 'PAY AT VENUE',
+                      statusColor: b.paymentMethod.toUpperCase().contains('UPI') ? AppColors.success : AppColors.warning,
+                      onAlter: () => _openAlterModal(
+                        context,
+                        bookingId: b.id,
+                        playerName: b.customerName,
+                        time: b.dateTimeSlot.replaceFirst('Today, ', '').replaceFirst('Yesterday, ', ''),
+                        courtName: b.courtName,
+                      ),
+                    ))
+              else
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: Text('No bookings scheduled for today yet.'),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

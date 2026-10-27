@@ -55,8 +55,48 @@ export interface VerifiedAdmin {
   ifscCode: string | null;
   upiId: string | null;
   status: string;
+  dashboard?: AdminDashboard | null;
+  todayBookingsCount?: number;
+  todayPaidBookings?: number;
+  todayCashBookings?: number;
+  todayBookingsGrowth?: string;
+  monthRevenue?: number;
+  monthTotalBookings?: number;
+  revenueBadge?: string;
+  freeSlotsCount?: number;
+  bookedSlotsCount?: number;
+  blockedSlotsCount?: number;
+  slotsBadge?: string;
+  cancelledTotal?: number;
+  cancelledCount?: number;
+  shiftedCount?: number;
+  cancelledBadge?: string;
   verifiedAt: string;
   verifiedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminDashboard {
+  id: number;
+  verifiedAdminId: number;
+  openingTime?: string;
+  closingTime?: string;
+  todayBookingsCount: number;
+  todayPaidBookings: number;
+  todayCashBookings: number;
+  todayBookingsGrowth: string;
+  monthRevenue: number;
+  monthTotalBookings: number;
+  revenueBadge: string;
+  freeSlotsCount: number;
+  bookedSlotsCount: number;
+  blockedSlotsCount: number;
+  slotsBadge: string;
+  cancelledTotal: number;
+  cancelledCount: number;
+  shiftedCount: number;
+  cancelledBadge: string;
   createdAt: string;
   updatedAt: string;
 }

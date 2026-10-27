@@ -163,8 +163,8 @@ class _TurfOwnerProfileScreenState
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
-            onPressed: () {
-              ref.read(turfProfileProvider.notifier).updateProfileDetails(
+            onPressed: () async {
+              await ref.read(turfProfileProvider.notifier).updateProfileDetails(
                     ownerName: ownerNameCtrl.text.trim(),
                     ownerPhone: phoneCtrl.text.trim(),
                     ownerEmail: emailCtrl.text.trim(),
@@ -176,8 +176,10 @@ class _TurfOwnerProfileScreenState
                     weekdayRate: double.tryParse(weekdayRateCtrl.text) ?? profile.weekdayRate,
                     weekendRate: double.tryParse(weekendRateCtrl.text) ?? profile.weekendRate,
                   );
-              Navigator.pop(ctx);
-              ToastUtils.showSuccess(context, "Turf Profile updated successfully!");
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (mounted) {
+                ToastUtils.showSuccess(context, "Turf Profile & Hourly Rates updated successfully in database!");
+              }
             },
             child: const Text('Save Changes'),
           ),

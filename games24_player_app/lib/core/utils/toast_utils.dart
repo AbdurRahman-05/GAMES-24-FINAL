@@ -41,8 +41,11 @@ class ToastUtils {
       duration: const Duration(seconds: 3),
     );
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(snackBar);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger != null) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(snackBar);
+    }
   }
 }

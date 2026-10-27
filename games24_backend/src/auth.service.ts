@@ -506,6 +506,12 @@ export class AuthService {
           { ownerPhone: { contains: cleanPhone } },
         ],
       },
+      include: {
+        dashboard: true,
+        bookings: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!verifiedAdmin) {
@@ -537,10 +543,67 @@ export class AuthService {
       );
     }
 
+    let dashboard = verifiedAdmin.dashboard;
+    if (!dashboard) {
+      dashboard = await this.prisma.adminDashboard.create({
+        data: { verifiedAdminId: verifiedAdmin.id },
+      });
+    }
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const activeBookings = (verifiedAdmin.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+    const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
+    const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
+
+    const todayBookingsCount = todayBookings.length;
+    const todayPaidBookings = todayBookings.filter((b: any) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const monthTotalBookings = monthBookings.length;
+    const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+    const bookedSlotsCount = todayBookings.length;
+    const growthBadge = todayBookingsCount > 0 ? `+${todayBookingsCount} Today` : '0% Today';
+    const revBadge = `₹${monthRevenue.toLocaleString('en-IN')} GMV`;
+
+    dashboard = {
+      ...dashboard,
+      todayBookingsCount,
+      todayPaidBookings,
+      todayCashBookings,
+      monthTotalBookings,
+      monthRevenue,
+      bookedSlotsCount,
+      todayBookingsGrowth: growthBadge,
+      revenueBadge: revBadge,
+    };
+
     return {
       success: true,
       message: `Login successful! Welcome back, ${verifiedAdmin.venueName}.`,
-      admin: verifiedAdmin,
+      admin: {
+        ...verifiedAdmin,
+        bookings: verifiedAdmin.bookings || [],
+        dashboard,
+        openingTime: dashboard.openingTime,
+        closingTime: dashboard.closingTime,
+        todayBookingsCount,
+        todayPaidBookings,
+        todayCashBookings,
+        todayBookingsGrowth: growthBadge,
+        monthRevenue,
+        monthTotalBookings,
+        revenueBadge: revBadge,
+        freeSlotsCount: dashboard.freeSlotsCount,
+        bookedSlotsCount,
+        blockedSlotsCount: dashboard.blockedSlotsCount,
+        slotsBadge: dashboard.slotsBadge,
+        cancelledTotal: dashboard.cancelledTotal,
+        cancelledCount: dashboard.cancelledCount,
+        shiftedCount: dashboard.shiftedCount,
+        cancelledBadge: dashboard.cancelledBadge,
+      },
     };
   }
 
@@ -553,15 +616,212 @@ export class AuthService {
           { ownerPhone: { contains: clean } },
         ],
       },
+      include: {
+        dashboard: true,
+        bookings: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!admin) {
       throw new BadRequestException('No verified admin found for this mobile number');
     }
 
+    let dashboard = admin.dashboard;
+    if (!dashboard) {
+      dashboard = await this.prisma.adminDashboard.create({
+        data: { verifiedAdminId: admin.id },
+      });
+    }
+
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const activeBookings = (admin.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+    const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
+    const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
+
+    const todayBookingsCount = todayBookings.length;
+    const todayPaidBookings = todayBookings.filter((b: any) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const monthTotalBookings = monthBookings.length;
+    const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+    const bookedSlotsCount = todayBookings.length;
+    const growthBadge = todayBookingsCount > 0 ? `+${todayBookingsCount} Today` : '0% Today';
+    const revBadge = `₹${monthRevenue.toLocaleString('en-IN')} GMV`;
+
+    dashboard = {
+      ...dashboard,
+      todayBookingsCount,
+      todayPaidBookings,
+      todayCashBookings,
+      monthTotalBookings,
+      monthRevenue,
+      bookedSlotsCount,
+      todayBookingsGrowth: growthBadge,
+      revenueBadge: revBadge,
+    };
+
     return {
       success: true,
-      admin,
+      admin: {
+        ...admin,
+        bookings: admin.bookings || [],
+        dashboard,
+        openingTime: dashboard.openingTime,
+        closingTime: dashboard.closingTime,
+        todayBookingsCount,
+        todayPaidBookings,
+        todayCashBookings,
+        todayBookingsGrowth: growthBadge,
+        monthRevenue,
+        monthTotalBookings,
+        revenueBadge: revBadge,
+        freeSlotsCount: dashboard.freeSlotsCount,
+        bookedSlotsCount,
+        blockedSlotsCount: dashboard.blockedSlotsCount,
+        slotsBadge: dashboard.slotsBadge,
+        cancelledTotal: dashboard.cancelledTotal,
+        cancelledCount: dashboard.cancelledCount,
+        shiftedCount: dashboard.shiftedCount,
+        cancelledBadge: dashboard.cancelledBadge,
+      },
+    };
+  }
+
+  async updateVerifiedAdminMetrics(id: number, metrics: any) {
+    let admin = await this.prisma.verifiedAdmin.findUnique({
+      where: { id },
+      include: { dashboard: true },
+    });
+    if (!admin) {
+      admin = await this.prisma.verifiedAdmin.findFirst({
+        where: { adminUserId: id },
+        include: { dashboard: true },
+      });
+    }
+    if (!admin) {
+      admin = await this.prisma.verifiedAdmin.findFirst({
+        orderBy: { id: 'asc' },
+        include: { dashboard: true },
+      });
+    }
+    if (!admin) {
+      throw new BadRequestException(`Verified admin with ID ${id} not found`);
+    }
+
+    const verifiedAdminId = admin.id;
+
+    const dataToUpdate: any = {};
+    if (metrics.openingTime !== undefined) dataToUpdate.openingTime = String(metrics.openingTime);
+    if (metrics.closingTime !== undefined) dataToUpdate.closingTime = String(metrics.closingTime);
+    if (metrics.todayBookingsCount !== undefined) dataToUpdate.todayBookingsCount = Number(metrics.todayBookingsCount);
+    if (metrics.todayPaidBookings !== undefined) dataToUpdate.todayPaidBookings = Number(metrics.todayPaidBookings);
+    if (metrics.todayCashBookings !== undefined) dataToUpdate.todayCashBookings = Number(metrics.todayCashBookings);
+    if (metrics.todayBookingsGrowth !== undefined) dataToUpdate.todayBookingsGrowth = String(metrics.todayBookingsGrowth);
+    if (metrics.monthRevenue !== undefined) dataToUpdate.monthRevenue = Number(metrics.monthRevenue);
+    if (metrics.monthTotalBookings !== undefined) dataToUpdate.monthTotalBookings = Number(metrics.monthTotalBookings);
+    if (metrics.revenueBadge !== undefined) dataToUpdate.revenueBadge = String(metrics.revenueBadge);
+    if (metrics.freeSlotsCount !== undefined) dataToUpdate.freeSlotsCount = Number(metrics.freeSlotsCount);
+    if (metrics.bookedSlotsCount !== undefined) dataToUpdate.bookedSlotsCount = Number(metrics.bookedSlotsCount);
+    if (metrics.blockedSlotsCount !== undefined) dataToUpdate.blockedSlotsCount = Number(metrics.blockedSlotsCount);
+    if (metrics.slotsBadge !== undefined) dataToUpdate.slotsBadge = String(metrics.slotsBadge);
+    if (metrics.cancelledTotal !== undefined) dataToUpdate.cancelledTotal = Number(metrics.cancelledTotal);
+    if (metrics.cancelledCount !== undefined) dataToUpdate.cancelledCount = Number(metrics.cancelledCount);
+    if (metrics.shiftedCount !== undefined) dataToUpdate.shiftedCount = Number(metrics.shiftedCount);
+    if (metrics.cancelledBadge !== undefined) dataToUpdate.cancelledBadge = String(metrics.cancelledBadge);
+
+    const dashboard = await this.prisma.adminDashboard.upsert({
+      where: { verifiedAdminId },
+      create: {
+        verifiedAdminId,
+        ...dataToUpdate,
+      },
+      update: dataToUpdate,
+    });
+
+    const updatedAdmin = await this.prisma.verifiedAdmin.findUnique({
+      where: { id: verifiedAdminId },
+      include: { dashboard: true },
+    });
+
+    return {
+      success: true,
+      message: 'Venue performance metrics updated successfully in AdminDashboard table',
+      dashboard,
+      admin: {
+        ...updatedAdmin,
+        dashboard,
+        openingTime: dashboard.openingTime,
+        closingTime: dashboard.closingTime,
+        todayBookingsCount: dashboard.todayBookingsCount,
+        todayPaidBookings: dashboard.todayPaidBookings,
+        todayCashBookings: dashboard.todayCashBookings,
+        todayBookingsGrowth: dashboard.todayBookingsGrowth,
+        monthRevenue: dashboard.monthRevenue,
+        monthTotalBookings: dashboard.monthTotalBookings,
+        revenueBadge: dashboard.revenueBadge,
+        freeSlotsCount: dashboard.freeSlotsCount,
+        bookedSlotsCount: dashboard.bookedSlotsCount,
+        blockedSlotsCount: dashboard.blockedSlotsCount,
+        slotsBadge: dashboard.slotsBadge,
+        cancelledTotal: dashboard.cancelledTotal,
+        cancelledCount: dashboard.cancelledCount,
+        shiftedCount: dashboard.shiftedCount,
+        cancelledBadge: dashboard.cancelledBadge,
+      },
+    };
+  }
+
+  async updateVerifiedAdminProfile(id: number, profileData: any) {
+    let admin = await this.prisma.verifiedAdmin.findUnique({
+      where: { id },
+    });
+    if (!admin) {
+      admin = await this.prisma.verifiedAdmin.findFirst({
+        where: { adminUserId: id },
+      });
+    }
+    if (!admin) {
+      admin = await this.prisma.verifiedAdmin.findFirst({
+        orderBy: { id: 'asc' },
+      });
+    }
+    if (!admin) {
+      throw new BadRequestException(`Verified admin with ID ${id} not found`);
+    }
+
+    const verifiedAdminId = admin.id;
+
+    const dataToUpdate: any = {};
+    if (profileData.venueName !== undefined) dataToUpdate.venueName = String(profileData.venueName);
+    if (profileData.ownerName !== undefined) dataToUpdate.ownerName = String(profileData.ownerName);
+    if (profileData.ownerPhone !== undefined) dataToUpdate.ownerPhone = String(profileData.ownerPhone);
+    if (profileData.ownerEmail !== undefined) dataToUpdate.ownerEmail = String(profileData.ownerEmail);
+    if (profileData.streetAddress !== undefined) dataToUpdate.streetAddress = String(profileData.streetAddress);
+    if (profileData.neighborhoodArea !== undefined) dataToUpdate.neighborhoodArea = String(profileData.neighborhoodArea);
+    if (profileData.dayRate !== undefined) dataToUpdate.dayRate = Number(profileData.dayRate);
+    if (profileData.nightRate !== undefined) dataToUpdate.nightRate = Number(profileData.nightRate);
+    if (profileData.weekdayRate !== undefined) dataToUpdate.weekdayRate = Number(profileData.weekdayRate);
+    if (profileData.weekendRate !== undefined) dataToUpdate.weekendRate = Number(profileData.weekendRate);
+
+    const updated = await this.prisma.verifiedAdmin.update({
+      where: { id: verifiedAdminId },
+      data: dataToUpdate,
+      include: { dashboard: true },
+    });
+
+    return {
+      success: true,
+      message: 'Turf Profile and Hourly Rates updated successfully in database',
+      admin: {
+        ...updated,
+        dashboard: updated.dashboard,
+        openingTime: updated.dashboard?.openingTime,
+        closingTime: updated.dashboard?.closingTime,
+      },
     };
   }
 }

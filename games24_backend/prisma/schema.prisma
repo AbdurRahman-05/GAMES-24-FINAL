@@ -78,9 +78,75 @@ model VerifiedAdmin {
   bankAccount        String?
   ifscCode           String?
   upiId              String?
-  status             String   @default("VERIFIED")
-  verifiedAt         DateTime @default(now())
-  verifiedBy         String   @default("Super Admin")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  status             String        @default("VERIFIED")
+  dayRate            Float         @default(1000.0)
+  nightRate          Float         @default(1400.0)
+  weekdayRate        Float         @default(1200.0)
+  weekendRate        Float         @default(1600.0)
+  dashboard          AdminDashboard?
+  bookings           TurfBooking[]
+  blockedSlots       BlockedSlot[]
+  verifiedAt         DateTime      @default(now())
+  verifiedBy         String        @default("Super Admin")
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model AdminDashboard {
+  id                  Int           @id @default(autoincrement())
+  verifiedAdminId     Int           @unique
+  verifiedAdmin       VerifiedAdmin @relation(fields: [verifiedAdminId], references: [id], onDelete: Cascade)
+
+  // Operating Schedule
+  openingTime         String        @default("05:00 AM")
+  closingTime         String        @default("11:00 PM")
+
+  // Realtime Venue Performance KPIs (Initially 0, increases as real venue activities occur)
+  todayBookingsCount  Int           @default(0)
+  todayPaidBookings   Int           @default(0)
+  todayCashBookings   Int           @default(0)
+  todayBookingsGrowth String        @default("0% Today")
+  monthRevenue        Float         @default(0.0)
+  monthTotalBookings  Int           @default(0)
+  revenueBadge        String        @default("₹0 GMV")
+  freeSlotsCount      Int           @default(0)
+  bookedSlotsCount    Int           @default(0)
+  blockedSlotsCount   Int           @default(0)
+  slotsBadge          String        @default("0% Full")
+  cancelledTotal      Int           @default(0)
+  cancelledCount      Int           @default(0)
+  shiftedCount        Int           @default(0)
+  cancelledBadge      String        @default("Tracked")
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model TurfBooking {
+  id              Int           @id @default(autoincrement())
+  verifiedAdminId Int
+  verifiedAdmin   VerifiedAdmin @relation(fields: [verifiedAdminId], references: [id], onDelete: Cascade)
+  customerName    String
+  customerPhone   String
+  sport           String        @default("Football")
+  courtName       String        @default("Main Arena")
+  date            String        // "YYYY-MM-DD"
+  timeSlot        String        // "06:00 AM - 07:00 AM"
+  amount          Float         @default(1200.0)
+  paymentMethod   String        @default("UPI")
+  status          String        @default("Confirmed")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model BlockedSlot {
+  id              Int           @id @default(autoincrement())
+  verifiedAdminId Int
+  verifiedAdmin   VerifiedAdmin @relation(fields: [verifiedAdminId], references: [id], onDelete: Cascade)
+  date            String        // "YYYY-MM-DD"
+  timeSlot        String        // "06:00 AM - 07:00 AM"
+  reason          String?       @default("Blocked by Owner")
+  createdAt       DateTime      @default(now())
+
+  @@unique([verifiedAdminId, date, timeSlot])
 }

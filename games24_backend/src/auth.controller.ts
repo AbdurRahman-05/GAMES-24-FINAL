@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 
 @Controller('auth')
@@ -78,6 +78,30 @@ export class AuthController {
   @Get('verified-admin/:phone')
   async getVerifiedAdmin(@Param('phone') phone: string) {
     return this.authService.getVerifiedAdminByPhone(phone);
+  }
+
+  @Patch('verified-admin/:id/metrics')
+  async updateVerifiedAdminMetrics(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.authService.updateVerifiedAdminMetrics(id, body);
+  }
+
+  @Patch('verified-admin/:id/profile')
+  async updateVerifiedAdminProfilePatch(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.authService.updateVerifiedAdminProfile(id, body);
+  }
+
+  @Post('verified-admin/:id/profile')
+  async updateVerifiedAdminProfilePost(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.authService.updateVerifiedAdminProfile(id, body);
   }
 }
 

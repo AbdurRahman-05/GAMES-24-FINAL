@@ -171,6 +171,13 @@ export class SuperAdminService {
       },
     });
 
+    // 3. Ensure AdminDashboard record is created with initial 0s
+    await this.prisma.adminDashboard.upsert({
+      where: { verifiedAdminId: verifiedAdmin.id },
+      create: { verifiedAdminId: verifiedAdmin.id },
+      update: {},
+    });
+
     return {
       success: true,
       message: 'Venue owner successfully verified and added to VerifiedAdmin',
@@ -236,6 +243,7 @@ export class SuperAdminService {
     const [items, totalCount] = await Promise.all([
       this.prisma.verifiedAdmin.findMany({
         where,
+        include: { dashboard: true },
         orderBy: { verifiedAt: 'desc' },
         skip,
         take: limit,
@@ -255,9 +263,16 @@ export class SuperAdminService {
   }
 
   async getVerifiedAdminById(id: number) {
-    const verifiedAdmin = await this.prisma.verifiedAdmin.findUnique({
+    let verifiedAdmin = await this.prisma.verifiedAdmin.findUnique({
       where: { id },
+      include: { dashboard: true },
     });
+    if (!verifiedAdmin) {
+      verifiedAdmin = await this.prisma.verifiedAdmin.findFirst({
+        where: { adminUserId: id },
+        include: { dashboard: true },
+      });
+    }
     if (!verifiedAdmin) {
       throw new NotFoundException(`Verified admin #${id} not found`);
     }

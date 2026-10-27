@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../providers/admin_providers.dart';
 
 class AdminSlotManagerScreen extends ConsumerStatefulWidget {
@@ -33,6 +34,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     _offerLabelController = TextEditingController(text: 'Happy Hour');
     _originalPriceController = TextEditingController(text: '1000');
     _discountedPriceController = TextEditingController(text: '800');
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadRealtimeSlots();
+    });
+  }
+
+  void _loadRealtimeSlots() {
+    final profile = ref.read(turfProfileProvider);
+    final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+    ref.read(adminSlotProvider.notifier).fetchSlotsForDate(adminId, _getDateKey(_selectedDate));
   }
 
   @override
@@ -476,6 +486,308 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     );
   }
 
+  static const List<String> _scheduleTimeOptions = [
+    '04:00 AM',
+    '05:00 AM',
+    '06:00 AM',
+    '07:00 AM',
+    '08:00 AM',
+    '09:00 AM',
+    '10:00 AM',
+    '11:00 AM',
+    '12:00 PM',
+    '01:00 PM',
+    '02:00 PM',
+    '03:00 PM',
+    '04:00 PM',
+    '05:00 PM',
+    '06:00 PM',
+    '07:00 PM',
+    '08:00 PM',
+    '09:00 PM',
+    '10:00 PM',
+    '11:00 PM',
+    '12:00 AM',
+  ];
+
+  void _openEditScheduleDialog(BuildContext context, String currentOpening, String currentClosing) {
+    String selectedStart = _scheduleTimeOptions.contains(currentOpening) ? currentOpening : '06:00 AM';
+    String selectedEnd = _scheduleTimeOptions.contains(currentClosing) ? currentClosing : '10:00 PM';
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalContext, setSheetState) {
+            final generatedSlots = AppConstants.generateTimeSlots(selectedStart, selectedEnd);
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.schedule_rounded, color: AppColors.primary, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Edit Operating Schedule',
+                              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              'Auto-splits into 1-hour slots & syncs with DB',
+                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      // Starting Time
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Starting Time',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey.shade300),
+                                color: Colors.grey.shade50,
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: selectedStart,
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                                  items: _scheduleTimeOptions.map((time) {
+                                    return DropdownMenuItem<String>(
+                                      value: time,
+                                      child: Text(time, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setSheetState(() => selectedStart = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Ending Time
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Ending Time',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey.shade300),
+                                color: Colors.grey.shade50,
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: selectedEnd,
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.primary),
+                                  items: _scheduleTimeOptions.map((time) {
+                                    return DropdownMenuItem<String>(
+                                      value: time,
+                                      child: Text(time, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setSheetState(() => selectedEnd = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Auto-generated 1-Hour Slots Preview
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.auto_awesome_rounded, color: AppColors.primary, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Auto-Split Preview (${generatedSlots.length} Slots of 1 Hour)',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxHeight: 120),
+                          child: SingleChildScrollView(
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              children: generatedSlots.map((slot) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: Text(
+                                    slot,
+                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.black87),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Save & Update Slots Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 1,
+                      ),
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                              setSheetState(() => isSaving = true);
+                              try {
+                                await ref
+                                    .read(turfProfileProvider.notifier)
+                                    .updateOperatingSchedule(
+                                      openingTime: selectedStart,
+                                      closingTime: selectedEnd,
+                                    );
+                                if (modalContext.mounted) {
+                                  Navigator.pop(ctx);
+                                  ToastUtils.showSuccess(
+                                    context,
+                                    'Operating schedule updated to $selectedStart - $selectedEnd! Slots re-split successfully.',
+                                  );
+                                }
+                              } catch (e) {
+                                setSheetState(() => isSaving = false);
+                                if (modalContext.mounted) {
+                                  ToastUtils.showError(context, 'Failed to update schedule: $e');
+                                }
+                              }
+                            },
+                      child: isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.check_circle_outline_rounded, size: 18),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Save & Update Slots',
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   String _getDateKey(DateTime date) {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
@@ -520,6 +832,43 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       ],
                     ),
                   ),
+                  InkWell(
+                    onTap: () => _openEditScheduleDialog(
+                      context,
+                      adminSlotState.weekdayOpeningTime,
+                      adminSlotState.weekdayClosingTime,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.25),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit_rounded, size: 13, color: Colors.white),
+                          SizedBox(width: 4),
+                          Text(
+                            'Edit',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -559,7 +908,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               runSpacing: 8,
               children: [
                 _StatusBadge(color: AppColors.success, label: 'Available'),
-                _StatusBadge(color: AppColors.primary, label: 'Booked'),
+                _StatusBadge(color: Color(0xFF6B7280), label: 'Booked'),
                 _StatusBadge(color: AppColors.warning, label: 'Blocked'),
                 _StatusBadge(color: AppColors.primary, label: 'Offer Tag'),
               ],
@@ -829,7 +1178,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               final dayStr = date.day.toString().padLeft(2, '0');
 
                               return GestureDetector(
-                                onTap: () => setState(() => _selectedDate = date),
+                                onTap: () {
+                                  setState(() => _selectedDate = date);
+                                  _loadRealtimeSlots();
+                                },
                                 child: Container(
                                   width: 46,
                                   margin: const EdgeInsets.only(right: 8),
@@ -902,6 +1254,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           );
                           if (picked != null) {
                             setState(() => _selectedDate = picked);
+                            _loadRealtimeSlots();
                           }
                         },
                       ),
@@ -937,7 +1290,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                   children: adminSlotState.getAvailableSlotsForDate(_selectedDate).map((slot) {
                     final dateKey = _getDateKey(_selectedDate);
                     final isBlocked = adminSlotState.getBlockedSlotsForDate(dateKey).contains(slot);
-                    final isBooked = slot == '06:00 PM - 07:00 PM' || slot == '07:00 PM - 08:00 PM';
+                    final isBooked = adminSlotState.getBookedSlotsForDate(dateKey).contains(slot);
                     final offerTag = adminSlotState.getDiscountedSlotsForDate(dateKey)[slot];
 
                     Color bgColor = Colors.white;
@@ -945,8 +1298,8 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     String statusLabel = 'Available';
 
                     if (isBooked) {
-                      bgColor = AppColors.primary.withValues(alpha: 0.12);
-                      textColor = AppColors.primary;
+                      bgColor = const Color(0xFFF3F4F6);
+                      textColor = const Color(0xFF6B7280);
                       statusLabel = 'Booked';
                     } else if (isBlocked) {
                       bgColor = AppColors.warning.withValues(alpha: 0.15);
@@ -963,18 +1316,29 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       child: GestureDetector(
                         onTap: isBooked
                             ? () {
-                                ToastUtils.showSuccess(context, "Slot $slot is booked by customer.");
-                              }
-                            : () {
-                                ref.read(adminSlotProvider.notifier).toggleBlockSlot(slot, dateKey);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      isBlocked ? 'Slot $slot unblocked' : 'Slot $slot blocked for maintenance',
-                                    ),
-                                    duration: const Duration(seconds: 1),
-                                  ),
+                                ToastUtils.showError(
+                                  context,
+                                  "Slot $slot is already booked by customer in realtime and cannot be blocked.",
                                 );
+                              }
+                            : () async {
+                                final profile = ref.read(turfProfileProvider);
+                                final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                                final success = await ref.read(adminSlotProvider.notifier).toggleBlockSlotRealtime(adminId, slot, dateKey);
+                                if (context.mounted) {
+                                  if (success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          isBlocked ? 'Slot $slot unblocked' : 'Slot $slot blocked for maintenance',
+                                        ),
+                                        duration: const Duration(seconds: 1),
+                                      ),
+                                    );
+                                  } else {
+                                    ToastUtils.showError(context, "Cannot block slot $slot (already booked or unavailable).");
+                                  }
+                                }
                               },
                         onLongPress: isBooked
                             ? null
@@ -985,9 +1349,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             color: bgColor,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: offerTag != null
-                                  ? AppColors.primary
-                                  : (isBlocked ? AppColors.warning : AppColors.borderLight),
+                              color: isBooked
+                                  ? const Color(0xFFE5E7EB)
+                                  : (offerTag != null
+                                      ? AppColors.primary
+                                      : (isBlocked ? AppColors.warning : AppColors.borderLight)),
                               width: (isBlocked || offerTag != null) ? 1.5 : 1,
                             ),
                           ),
@@ -999,7 +1365,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: textColor,
+                                  color: isBooked ? const Color(0xFF9CA3AF) : textColor,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1007,6 +1373,29 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               const SizedBox(height: 6),
                               if (offerTag != null)
                                 _buildOfferContent(offerTag, textColor)
+                              else if (isBooked)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF9CA3AF),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'Booked',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF6B7280),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                )
                               else
                                 Text(
                                   statusLabel,
