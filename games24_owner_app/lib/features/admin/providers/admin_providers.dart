@@ -73,14 +73,17 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
   @override
   AdminSlotState build() => AdminSlotState();
 
-  void setSlotsForDate(String dateKey, {Set<String>? booked, Set<String>? blocked}) {
+  void setSlotsForDate(String dateKey, {Set<String>? booked, Set<String>? blocked, Map<String, String>? offers}) {
     final currentBooked = Map<String, Set<String>>.from(state.bookedSlotsByDate);
     final currentBlocked = Map<String, Set<String>>.from(state.blockedSlotsByDate);
+    final currentOffers = Map<String, Map<String, String>>.from(state.discountedSlotsByDate);
     if (booked != null) currentBooked[dateKey] = booked;
     if (blocked != null) currentBlocked[dateKey] = blocked;
+    if (offers != null) currentOffers[dateKey] = offers;
     state = state.copyWith(
       bookedSlotsByDate: currentBooked,
       blockedSlotsByDate: currentBlocked,
+      discountedSlotsByDate: currentOffers,
     );
   }
 
@@ -92,17 +95,47 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
         if (json['slots'] is List) {
           final booked = <String>{};
           final blocked = <String>{};
+          final offers = <String, String>{};
           for (final s in json['slots']) {
             final slotStr = (s['slot'] ?? s['time'])?.toString() ?? '';
             final status = s['status']?.toString();
             if (status == 'booked') booked.add(slotStr);
             if (status == 'blocked') blocked.add(slotStr);
+            final offerTag = s['offerTag']?.toString();
+            if (offerTag != null && offerTag.isNotEmpty) {
+              offers[slotStr] = offerTag;
+            }
           }
-          setSlotsForDate(dateKey, booked: booked, blocked: blocked);
+          setSlotsForDate(dateKey, booked: booked, blocked: blocked, offers: offers);
         }
       }
     } catch (e) {
       debugPrint("Error fetching realtime slots: $e");
+    }
+  }
+
+  Future<bool> toggleSlotOfferRealtime(int adminId, String slot, String offerString, String dateKey) async {
+    toggleSlotDiscount(slot, offerString, dateKey);
+    try {
+      final res = await http.post(
+        Uri.parse('http://localhost:3000/turfs/$adminId/slot-offer'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'date': dateKey,
+          'timeSlot': slot,
+          'offerString': offerString,
+        }),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return true;
+      } else {
+        fetchSlotsForDate(adminId, dateKey);
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Error saving slot offer in DB: $e");
+      fetchSlotsForDate(adminId, dateKey);
+      return false;
     }
   }
 

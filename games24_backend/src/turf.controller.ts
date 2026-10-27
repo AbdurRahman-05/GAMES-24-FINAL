@@ -62,4 +62,12 @@ export class TurfController {
   ) {
     return this.turfService.toggleBlockSlot(id, body);
   }
+
+  @Post(':id/slot-offer')
+  async setSlotOffer(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.setSlotOffer(id, body);
+  }
 }

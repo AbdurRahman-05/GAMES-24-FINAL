@@ -266,6 +266,18 @@ export class TurfService {
       blockedSlotSet.add(bl.timeSlot);
     }
 
+    const offers = await this.prisma.slotOffer.findMany({
+      where: {
+        verifiedAdminId,
+        date: targetDate,
+      },
+    });
+
+    const offerMap = new Map<string, any>();
+    for (const off of offers) {
+      offerMap.set(off.timeSlot, off);
+    }
+
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const isOwner = role?.toLowerCase() === 'owner' || role?.toLowerCase() === 'admin';
 
@@ -346,15 +358,50 @@ export class TurfService {
         }
       }
 
+      const offerRecord = offerMap.get(slot);
+      let offer: any = null;
+      let finalPrice = price;
+
+      if (offerRecord) {
+        if (offerRecord.offerType === 'PERCENT') {
+          const disc = offerRecord.discountPercent ?? 20;
+          finalPrice = Math.round(price * (1 - disc / 100));
+          offer = {
+            id: offerRecord.id,
+            offerType: 'PERCENT',
+            discountPercent: disc,
+            tagLabel: offerRecord.tagLabel || `${disc}% OFF`,
+            originalPrice: price,
+            offerPrice: finalPrice,
+            rawOfferString: offerRecord.rawOfferString || `PERCENT|${disc}|${offerRecord.tagLabel || ''}`,
+          };
+        } else if (offerRecord.offerType === 'PRICE') {
+          finalPrice = offerRecord.offerPrice ?? Math.round(price * 0.8);
+          const orig = offerRecord.originalPrice ?? price;
+          offer = {
+            id: offerRecord.id,
+            offerType: 'PRICE',
+            discountPercent: orig > 0 ? Math.round(((orig - finalPrice) / orig) * 100) : 0,
+            tagLabel: offerRecord.tagLabel || 'Special Price',
+            originalPrice: orig,
+            offerPrice: finalPrice,
+            rawOfferString: offerRecord.rawOfferString || `PRICE|${orig}|${finalPrice}`,
+          };
+        }
+      }
+
       return {
         slot,
         time: slot,
         status,
-        price,
+        originalPrice: price,
+        price: finalPrice,
         rateType,
         isNight,
         isWeekend,
         booking: isBooked ? bookedSlotMap.get(slot) : null,
+        offer,
+        offerTag: offer ? offer.rawOfferString : null,
       };
     });
 
@@ -408,7 +455,25 @@ export class TurfService {
 
     const verifiedAdminId = turf.id;
 
-    const bookingAmount = Number(amount) || 1200.0;
+    // Check if slot has an active offer to calculate accurate offer price
+    const activeOffer = await this.prisma.slotOffer.findUnique({
+      where: {
+        verifiedAdminId_date_timeSlot: {
+          verifiedAdminId,
+          date,
+          timeSlot,
+        },
+      },
+    });
+
+    let bookingAmount = Number(amount);
+    if (!bookingAmount || isNaN(bookingAmount)) {
+      if (activeOffer?.offerPrice) {
+        bookingAmount = activeOffer.offerPrice;
+      } else {
+        bookingAmount = 1200.0;
+      }
+    }
 
     let booking: any;
     try {
@@ -629,6 +694,114 @@ export class TurfService {
       isBlocked,
       message: isBlocked ? `Slot ${cleanTimeSlot} blocked for maintenance` : `Slot ${cleanTimeSlot} unblocked and now available`,
       blockedCount,
+    };
+  }
+
+  async setSlotOffer(id: number, body: any) {
+    const { date, timeSlot, offerString, offerType, discountPercent, originalPrice, offerPrice, tagLabel, remove } = body || {};
+
+    if (!date || !timeSlot) {
+      throw new BadRequestException('Date and timeSlot are required to set slot offer');
+    }
+
+    const cleanDate = date.trim();
+    const cleanTimeSlot = timeSlot.trim();
+
+    const turf = await this.findVerifiedAdmin(id, false, false);
+    if (!turf) {
+      throw new NotFoundException(`Turf #${id} not found`);
+    }
+    const verifiedAdminId = turf.id;
+
+    // Check if user wants to remove the offer
+    if (remove === true || offerString === '' || (offerType === undefined && offerString === undefined && discountPercent === undefined && offerPrice === undefined)) {
+      await this.prisma.slotOffer.deleteMany({
+        where: {
+          verifiedAdminId,
+          date: cleanDate,
+          timeSlot: cleanTimeSlot,
+        },
+      });
+      return {
+        success: true,
+        message: `Offer removed from slot ${cleanTimeSlot}`,
+        offer: null,
+      };
+    }
+
+    let finalOfferType = 'PERCENT';
+    let finalDiscountPercent: number = 20;
+    let finalOriginalPrice: number = turf.dayRate || 1000;
+    let finalOfferPrice: number = Math.round(finalOriginalPrice * 0.8);
+    let finalTagLabel: string | null = null;
+    let rawOfferString = offerString || '';
+
+    if (offerString && typeof offerString === 'string' && offerString.includes('|')) {
+      const parts = offerString.split('|');
+      if (parts[0].toUpperCase() === 'PERCENT') {
+        finalOfferType = 'PERCENT';
+        finalDiscountPercent = parseFloat(parts[1]) || 20;
+        finalTagLabel = parts.length > 2 && parts[2].trim() ? parts[2].trim() : 'Happy Hour';
+        finalOriginalPrice = turf.dayRate || 1000;
+        finalOfferPrice = Math.round(finalOriginalPrice * (1 - finalDiscountPercent / 100));
+      } else if (parts[0].toUpperCase() === 'PRICE') {
+        finalOfferType = 'PRICE';
+        finalOriginalPrice = parseFloat(parts[1]) || (turf.dayRate || 1000);
+        finalOfferPrice = parseFloat(parts[2]) || Math.round(finalOriginalPrice * 0.8);
+        finalTagLabel = parts.length > 3 && parts[3].trim() ? parts[3].trim() : 'Special Price';
+        finalDiscountPercent = finalOriginalPrice > 0 ? Math.round(((finalOriginalPrice - finalOfferPrice) / finalOriginalPrice) * 100) : 0;
+      }
+    } else {
+      finalOfferType = (offerType || 'PERCENT').toUpperCase();
+      if (finalOfferType === 'PERCENT') {
+        finalDiscountPercent = Number(discountPercent) || 20;
+        finalTagLabel = tagLabel || 'Happy Hour';
+        finalOriginalPrice = Number(originalPrice) || turf.dayRate || 1000;
+        finalOfferPrice = Math.round(finalOriginalPrice * (1 - finalDiscountPercent / 100));
+        rawOfferString = `PERCENT|${finalDiscountPercent}|${finalTagLabel}`;
+      } else {
+        finalOfferType = 'PRICE';
+        finalOriginalPrice = Number(originalPrice) || turf.dayRate || 1000;
+        finalOfferPrice = Number(offerPrice) || Math.round(finalOriginalPrice * 0.8);
+        finalTagLabel = tagLabel || 'Special Price';
+        finalDiscountPercent = finalOriginalPrice > 0 ? Math.round(((finalOriginalPrice - finalOfferPrice) / finalOriginalPrice) * 100) : 0;
+        rawOfferString = `PRICE|${finalOriginalPrice}|${finalOfferPrice}`;
+      }
+    }
+
+    const offer = await this.prisma.slotOffer.upsert({
+      where: {
+        verifiedAdminId_date_timeSlot: {
+          verifiedAdminId,
+          date: cleanDate,
+          timeSlot: cleanTimeSlot,
+        },
+      },
+      create: {
+        verifiedAdminId,
+        date: cleanDate,
+        timeSlot: cleanTimeSlot,
+        offerType: finalOfferType,
+        discountPercent: finalDiscountPercent,
+        originalPrice: finalOriginalPrice,
+        offerPrice: finalOfferPrice,
+        tagLabel: finalTagLabel,
+        rawOfferString,
+      },
+      update: {
+        offerType: finalOfferType,
+        discountPercent: finalDiscountPercent,
+        originalPrice: finalOriginalPrice,
+        offerPrice: finalOfferPrice,
+        tagLabel: finalTagLabel,
+        rawOfferString,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Offer applied to slot ${cleanTimeSlot}`,
+      offer,
     };
   }
 

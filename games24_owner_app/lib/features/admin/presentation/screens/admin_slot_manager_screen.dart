@@ -17,7 +17,7 @@ class AdminSlotManagerScreen extends ConsumerStatefulWidget {
 class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen> {
   String? _selectedCourt;
 
-  String _offerType = 'percent'; // 'percent' or 'price'
+  final String _offerType = 'percent'; // 'percent' or 'price'
   DateTime _selectedDate = DateTime.now();
 
   final List<String> _weekdays = const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -389,7 +389,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       onPressed: () {
                         final newOffer = buildOfferString();
                         final dateKey = _getDateKey(_selectedDate);
-                        ref.read(adminSlotProvider.notifier).toggleSlotDiscount(slot, newOffer, dateKey);
+                        final profile = ref.read(turfProfileProvider);
+                        final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                        ref.read(adminSlotProvider.notifier).toggleSlotOfferRealtime(adminId, slot, newOffer, dateKey);
                         Navigator.pop(context);
                         ToastUtils.showSuccess(context, "Applied custom offer tag to $slot!");
                       },
@@ -451,7 +453,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                   subtitle: Text(defaultOfferDesc),
                   onTap: () {
                     final dateKey = _getDateKey(_selectedDate);
-                    ref.read(adminSlotProvider.notifier).toggleSlotDiscount(slot, defaultOfferString, dateKey);
+                    final profile = ref.read(turfProfileProvider);
+                    final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                    ref.read(adminSlotProvider.notifier).toggleSlotOfferRealtime(adminId, slot, defaultOfferString, dateKey);
                     Navigator.pop(context);
                     ToastUtils.showSuccess(context, "Applied configurator offer preset to $slot.");
                   },
@@ -472,7 +476,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     subtitle: const Text('Clear existing discount from this slot'),
                     onTap: () {
                       final dateKey = _getDateKey(_selectedDate);
-                      ref.read(adminSlotProvider.notifier).toggleSlotDiscount(slot, '', dateKey);
+                      final profile = ref.read(turfProfileProvider);
+                      final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                      ref.read(adminSlotProvider.notifier).toggleSlotOfferRealtime(adminId, slot, '', dateKey);
                       Navigator.pop(context);
                       ToastUtils.showSuccess(context, "Offer tag removed from $slot.");
                     },
@@ -912,216 +918,6 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                 _StatusBadge(color: AppColors.warning, label: 'Blocked'),
                 _StatusBadge(color: AppColors.primary, label: 'Offer Tag'),
               ],
-            ),
-            const SizedBox(height: 20),
-
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 1.5),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.local_offer_rounded, color: AppColors.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Custom Offer Configurator',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Configure an offer type below, then long-press any available slot to apply it.',
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 14),
-                  
-                  // Segmented Selector for Offer Type
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _offerType = 'percent'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: _offerType == 'percent'
-                                  ? AppColors.primary
-                                  : Colors.white,
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(8),
-                                bottomLeft: Radius.circular(8),
-                              ),
-                              border: Border.all(color: AppColors.primary),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Percentage (%)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _offerType == 'percent' ? Colors.white : AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _offerType = 'price'),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: _offerType == 'price'
-                                  ? AppColors.primary
-                                  : Colors.white,
-                              borderRadius: const BorderRadius.only(
-                                topRight: Radius.circular(8),
-                                bottomRight: Radius.circular(8),
-                              ),
-                              border: Border.all(color: AppColors.primary),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Price Cut (₹)',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: _offerType == 'price' ? Colors.white : AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Fields based on selected offer type
-                  if (_offerType == 'percent') ...[
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: TextFormField(
-                            controller: _discountPercentController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Discount %',
-                              prefixIcon: Icon(Icons.percent_rounded, size: 18),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            ),
-                            onChanged: (val) => setState(() {}),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 5,
-                          child: TextFormField(
-                            controller: _offerLabelController,
-                            decoration: const InputDecoration(
-                              labelText: 'Tag Label',
-                              prefixIcon: Icon(Icons.label_outline_rounded, size: 18),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            ),
-                            onChanged: (val) => setState(() {}),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _originalPriceController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Original Price (₹)',
-                              prefixIcon: Icon(Icons.money_off_rounded, size: 18),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            ),
-                            onChanged: (val) => setState(() {}),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _discountedPriceController,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Offer Price (₹)',
-                              prefixIcon: Icon(Icons.currency_rupee_rounded, size: 18),
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            ),
-                            onChanged: (val) => setState(() {}),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-
-                  // Live Preview Widget
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Wrap(
-                      spacing: 12,
-                      runSpacing: 8,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        const Text(
-                          'Live Preview:',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.primary, width: 1.5),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                '05:00 PM - 06:00 PM',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              _buildOfferContent(_buildConfiguredOfferString(), AppColors.primary),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
             const SizedBox(height: 20),
 

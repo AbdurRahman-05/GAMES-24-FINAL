@@ -86,6 +86,7 @@ model VerifiedAdmin {
   dashboard          AdminDashboard?
   bookings           TurfBooking[]
   blockedSlots       BlockedSlot[]
+  offers             SlotOffer[]
   verifiedAt         DateTime      @default(now())
   verifiedBy         String        @default("Super Admin")
   createdAt          DateTime      @default(now())
@@ -147,6 +148,24 @@ model BlockedSlot {
   timeSlot        String        // "06:00 AM - 07:00 AM"
   reason          String?       @default("Blocked by Owner")
   createdAt       DateTime      @default(now())
+
+  @@unique([verifiedAdminId, date, timeSlot])
+}
+
+model SlotOffer {
+  id              Int           @id @default(autoincrement())
+  verifiedAdminId Int
+  verifiedAdmin   VerifiedAdmin @relation(fields: [verifiedAdminId], references: [id], onDelete: Cascade)
+  date            String        // "YYYY-MM-DD"
+  timeSlot        String        // "06:00 AM - 07:00 AM"
+  offerType       String        // "PERCENT" or "PRICE"
+  discountPercent Float?        // e.g. 20
+  originalPrice   Float?        // e.g. 1000
+  offerPrice      Float?        // e.g. 800
+  tagLabel        String?       // e.g. "Happy Hour"
+  rawOfferString  String        // e.g. "PERCENT|20|Happy Hour" or "PRICE|1000|800"
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@unique([verifiedAdminId, date, timeSlot])
 }

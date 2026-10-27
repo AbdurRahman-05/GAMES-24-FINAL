@@ -131,8 +131,11 @@ class _BookingScreenState extends State<BookingScreen> {
                   'time': timeVal,
                   'status': map['status']?.toString() ?? 'available',
                   'price': map['price'] ?? rawPrice,
+                  'originalPrice': map['originalPrice'] ?? map['price'] ?? rawPrice,
                   'rateType': map['rateType']?.toString() ?? '',
                   'isNight': map['isNight'] == true,
+                  'offer': map['offer'],
+                  'offerTag': map['offerTag'],
                 };
               }).toList();
               _isLoadingSlots = false;
@@ -673,6 +676,27 @@ class _BookingScreenState extends State<BookingScreen> {
                 final isBlocked = slot['status'] == 'blocked';
                 final isSelected = _selectedTimeSlots.contains(slot['time']);
 
+                final offer = slot['offer'] is Map ? slot['offer'] as Map : null;
+                final offerTag = slot['offerTag']?.toString() ?? '';
+                final hasOffer = offer != null || offerTag.isNotEmpty;
+                final origPrice = (slot['originalPrice'] ?? slot['price'] ?? 1000);
+                final currentPrice = (slot['price'] ?? 1000);
+                final bool hasPriceDiscount = hasOffer && origPrice != currentPrice;
+
+                String badgeText = '';
+                if (offer != null) {
+                  if (offer['tagLabel'] != null && offer['tagLabel'].toString().isNotEmpty) {
+                    badgeText = offer['tagLabel'].toString();
+                  } else if (offer['discountPercent'] != null && (offer['discountPercent'] as num) > 0) {
+                    badgeText = '${offer['discountPercent']}% OFF';
+                  }
+                } else if (offerTag.startsWith('PERCENT|')) {
+                  final p = offerTag.split('|');
+                  badgeText = p.length > 2 && p[2].isNotEmpty ? p[2] : '${p[1]}% OFF';
+                } else if (offerTag.startsWith('PRICE|')) {
+                  badgeText = 'Special Price';
+                }
+
                 Color bgColor = const Color(0xFFF3F5F1);
                 Color textColor = const Color(0xFF111827);
                 Color borderColor = Colors.transparent;
@@ -688,6 +712,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   bgColor = const Color(0xFF0F6D38);
                   textColor = Colors.white;
                   borderColor = const Color(0xFF166534);
+                } else if (hasOffer) {
+                  bgColor = const Color(0xFFF0FDF4);
+                  borderColor = const Color(0xFF15803D).withValues(alpha: 0.35);
                 }
 
                 return SizedBox(
@@ -713,7 +740,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             });
                           },
                     child: Container(
-                      height: 52,
+                      height: (hasOffer && badgeText.isNotEmpty) ? 60 : 52,
                       decoration: BoxDecoration(
                         color: bgColor,
                         borderRadius: BorderRadius.circular(10),
@@ -743,6 +770,51 @@ class _BookingScreenState extends State<BookingScreen> {
                                 color: textColor,
                               ),
                             ),
+                          ] else if (hasPriceDiscount) ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '₹$origPrice',
+                                  style: TextStyle(
+                                    fontSize: 8.5,
+                                    decoration: TextDecoration.lineThrough,
+                                    decorationColor: isSelected ? Colors.white70 : const Color(0xFF9CA3AF),
+                                    color: isSelected ? Colors.white70 : const Color(0xFF9CA3AF),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '₹$currentPrice',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.white : const Color(0xFF166534),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (badgeText.isNotEmpty) ...[
+                              const SizedBox(height: 1),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  badgeText,
+                                  style: TextStyle(
+                                    fontSize: 7.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.white : const Color(0xFF15803D),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ] else ...[
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -765,6 +837,26 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                               ],
                             ),
+                            if (badgeText.isNotEmpty) ...[
+                              const SizedBox(height: 1),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  badgeText,
+                                  style: TextStyle(
+                                    fontSize: 7.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected ? Colors.white : const Color(0xFF15803D),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ],
                         ],
                       ),
