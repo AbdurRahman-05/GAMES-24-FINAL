@@ -102,6 +102,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
         }
         try {
           final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('owner_logged_in', true);
           await prefs.setString('owner_phone', phone);
           if (data['admin'] != null) {
             await prefs.setString('verified_admin_data', jsonEncode(data['admin']));

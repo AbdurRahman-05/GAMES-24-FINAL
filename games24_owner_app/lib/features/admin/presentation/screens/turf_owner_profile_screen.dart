@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -1495,9 +1496,16 @@ class _TurfOwnerProfileScreenState
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
             tooltip: 'Logout to Login Screen',
-            onPressed: () {
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('owner_logged_in', false);
+              await prefs.remove('owner_phone');
+              await prefs.remove('verified_admin_data');
+              await prefs.remove('owner_venue_name');
               ref.read(isAdminModeProvider.notifier).setMode(false);
-              context.go('/login');
+              if (context.mounted) {
+                context.go('/login');
+              }
             },
           ),
         ],

@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -161,7 +162,13 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               AppCard(
-                onTap: () => context.go('/login'),
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('is_logged_in', false);
+                  await prefs.remove('mobileNumber');
+                  await prefs.remove('fullName');
+                  if (context.mounted) context.go('/login');
+                },
                 color: AppColors.error.withValues(alpha: 0.08),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,

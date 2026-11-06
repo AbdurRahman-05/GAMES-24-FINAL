@@ -1,3 +1,4 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
@@ -121,7 +122,43 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            onPressed: () => context.go('/login'),
+            onPressed: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+                  content: const Text('Are you sure you want to log out of the Partner Hub?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text('Log Out'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm != true) return;
+
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('owner_logged_in', false);
+              await prefs.remove('owner_phone');
+              await prefs.remove('verified_admin_data');
+              await prefs.remove('owner_venue_name');
+              ref.read(isAdminModeProvider.notifier).setMode(false);
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
             tooltip: 'Logout',
           ),
         ],

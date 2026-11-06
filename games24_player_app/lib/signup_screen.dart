@@ -509,6 +509,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('is_logged_in', true);
         await prefs.setString('fullName', data['fullName'] ?? name);
         await prefs.setString('mobileNumber', data['mobileNumber'] ?? mobile);
         await prefs.setString(
