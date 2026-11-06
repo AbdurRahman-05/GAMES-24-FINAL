@@ -41,7 +41,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green.withValues(alpha: 0.06),
+      backgroundColor: const Color(0xFFF6FAF7),
 
       body: SingleChildScrollView(
         child: Padding(
@@ -609,7 +609,7 @@ class _SignupScreenState extends State<SignupScreen> {
         height: 72,
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.green.withValues(alpha: 0.05)
+              ? const Color(0xFFF0FDF4)
               : Colors.white,
           border: Border.all(
             color: isSelected ? Colors.green.shade600 : const Color(0xFFE5E7EB),
