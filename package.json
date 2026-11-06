@@ -6,8 +6,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "install:backend": "cd games24_backend && npm install",
-    "build": "cd games24_backend && npm install && npm run build",
+    "build": "cd games24_backend && npm install --include=dev && npm run build",
     "start": "cd games24_backend && npm run start:prod",
     "start:prod": "cd games24_backend && npm run start:prod"
   }
