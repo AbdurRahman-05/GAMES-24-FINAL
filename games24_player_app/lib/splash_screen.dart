@@ -149,110 +149,37 @@ class _SplashScreenState extends State<SplashScreen>
               children: [
                 const Spacer(flex: 3),
 
-                // Animated Logo Icon
+                // Animated Official Brand Logo
                 ScaleTransition(
                   scale: _scaleAnimation,
                   child: FadeTransition(
                     opacity: _fadeAnimation,
-                    child: Container(
-                      width: 110,
-                      height: 110,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF047857)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
-                            blurRadius: 32,
-                            spreadRadius: 4,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          width: 2,
-                        ),
-                      ),
-                      child: Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Icon(
-                              Icons.sports_soccer_rounded,
-                              size: 56,
-                              color: Colors.white.withValues(alpha: 0.95),
-                            ),
-                            Positioned(
-                              bottom: 12,
-                              right: 12,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFF59E0B),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.bolt_rounded,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                    child: Hero(
+                      tag: 'app_logo',
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        height: 150,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // Animated App Name
+                // Animated Tagline
                 SlideTransition(
                   position: _slideAnimation,
                   child: FadeTransition(
                     opacity: _fadeAnimation,
-                    child: Column(
-                      children: [
-                        RichText(
-                          text: const TextSpan(
-                            children: [
-                              TextSpan(
-                                text: 'GAMES',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 3.5,
-                                ),
-                              ),
-                              TextSpan(
-                                text: '24',
-                                style: TextStyle(
-                                  color: Color(0xFF10B981),
-                                  fontSize: 34,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'BOOK • PLAY • COMPETE',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.65),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 3.0,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      'BOOK • PLAY • COMPETE',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 4.0,
+                      ),
                     ),
                   ),
                 ),
@@ -296,3 +223,4 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
