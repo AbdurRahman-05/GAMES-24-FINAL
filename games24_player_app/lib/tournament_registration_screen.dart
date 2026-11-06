@@ -7,10 +7,12 @@ class TournamentRegistrationScreen extends StatefulWidget {
   const TournamentRegistrationScreen({super.key, required this.tournament});
 
   @override
-  State<TournamentRegistrationScreen> createState() => _TournamentRegistrationScreenState();
+  State<TournamentRegistrationScreen> createState() =>
+      _TournamentRegistrationScreenState();
 }
 
-class _TournamentRegistrationScreenState extends State<TournamentRegistrationScreen> {
+class _TournamentRegistrationScreenState
+    extends State<TournamentRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _teamNameCtrl = TextEditingController();
   final _captainNameCtrl = TextEditingController();
@@ -52,32 +54,43 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
             ),
             ElevatedButton(
               onPressed: () {
-                final success = TournamentManager().registerTeam(
-                  widget.tournament.id,
-                  {
-                    'teamName': _teamNameCtrl.text.trim(),
-                    'captainName': _captainNameCtrl.text.trim(),
-                    'contact': _contactCtrl.text.trim(),
-                    'email': _emailCtrl.text.trim(),
-                    'playersCount': _playersCountCtrl.text.trim(),
-                  },
-                );
+                final success = TournamentManager()
+                    .registerTeam(widget.tournament.id, {
+                      'teamName': _teamNameCtrl.text.trim(),
+                      'captainName': _captainNameCtrl.text.trim(),
+                      'contact': _contactCtrl.text.trim(),
+                      'email': _emailCtrl.text.trim(),
+                      'playersCount': _playersCountCtrl.text.trim(),
+                    });
 
                 Navigator.pop(context); // close dialog
 
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Registration Successful!'), backgroundColor: Colors.green),
+                    const SnackBar(
+                      content: Text('Registration Successful!'),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                   Navigator.pop(context); // close registration screen
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Registration Failed. Tournament might be full or team name exists.'), backgroundColor: Colors.red),
+                    const SnackBar(
+                      content: Text(
+                        'Registration Failed. Tournament might be full or team name exists.',
+                      ),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F6D38)),
-              child: const Text('Confirm', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F6D38),
+              ),
+              child: const Text(
+                'Confirm',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -98,7 +111,11 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
         ),
         title: const Text(
           'Register for Tournament',
-          style: TextStyle(color: Color(0xFF111827), fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -108,7 +125,10 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
           children: [
             _buildTournamentSummary(),
             const SizedBox(height: 24),
-            const Text('Team Registration Form', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Team Registration Form',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             _buildForm(),
           ],
@@ -119,7 +139,11 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
         decoration: BoxDecoration(
           color: Colors.white,
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
           ],
         ),
         child: SafeArea(
@@ -129,9 +153,14 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
               backgroundColor: const Color(0xFF0F6D38),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Confirm Registration', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Confirm Registration',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ),
@@ -149,15 +178,30 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.tournament.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            widget.tournament.title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           _summaryRow(Icons.sports_soccer, 'Sport', widget.tournament.sport),
           _summaryRow(Icons.calendar_today, 'Date', widget.tournament.date),
           _summaryRow(Icons.access_time, 'Time', widget.tournament.time),
           _summaryRow(Icons.location_on, 'Venue', widget.tournament.venue),
-          _summaryRow(Icons.monetization_on, 'Entry Fee', widget.tournament.entryFee),
-          _summaryRow(Icons.emoji_events, 'Prize Pool', widget.tournament.prizePool),
-          _summaryRow(Icons.group, 'Available Slots', '${widget.tournament.maxTeams - widget.tournament.registeredTeams} / ${widget.tournament.maxTeams}'),
+          _summaryRow(
+            Icons.monetization_on,
+            'Entry Fee',
+            widget.tournament.entryFee,
+          ),
+          _summaryRow(
+            Icons.emoji_events,
+            'Prize Pool',
+            widget.tournament.prizePool,
+          ),
+          _summaryRow(
+            Icons.group,
+            'Available Slots',
+            '${widget.tournament.maxTeams - widget.tournament.registeredTeams} / ${widget.tournament.maxTeams}',
+          ),
         ],
       ),
     );
@@ -170,8 +214,16 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
         children: [
           Icon(icon, size: 16, color: const Color(0xFF6B7280)),
           const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13))),
+          Text(
+            '$label: ',
+            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+            ),
+          ),
         ],
       ),
     );
@@ -185,20 +237,26 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
           _buildTextField(
             controller: _teamNameCtrl,
             label: 'Team Name',
-            validator: (value) => value == null || value.isEmpty ? 'Please enter team name' : null,
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter team name'
+                : null,
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _captainNameCtrl,
             label: 'Captain Name',
-            validator: (value) => value == null || value.isEmpty ? 'Please enter captain name' : null,
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter captain name'
+                : null,
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _contactCtrl,
             label: 'Contact Number',
             keyboardType: TextInputType.phone,
-            validator: (value) => value == null || value.isEmpty ? 'Please enter contact number' : null,
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter contact number'
+                : null,
           ),
           const SizedBox(height: 16),
           _buildTextField(
@@ -206,7 +264,9 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
             label: 'Email Address',
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
-              if (value == null || value.isEmpty) return 'Please enter email address';
+              if (value == null || value.isEmpty) {
+                return 'Please enter email address';
+              }
               if (!value.contains('@')) return 'Please enter valid email';
               return null;
             },
@@ -216,7 +276,9 @@ class _TournamentRegistrationScreenState extends State<TournamentRegistrationScr
             controller: _playersCountCtrl,
             label: 'Number of Players',
             keyboardType: TextInputType.number,
-            validator: (value) => value == null || value.isEmpty ? 'Please enter number of players' : null,
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter number of players'
+                : null,
           ),
         ],
       ),

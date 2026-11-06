@@ -333,15 +333,24 @@ class _TurfOwnerRegistrationScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.phone_android_rounded, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text('Mobile: +91 ${_phoneController.text}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.phone_android_rounded, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Mobile: +91 ${_phoneController.text}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  if (_isMobileVerified)
+                  if (_isMobileVerified) ...[
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -351,6 +360,7 @@ class _TurfOwnerRegistrationScreenState
                       child: const Text('Verified ✅',
                           style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
@@ -394,15 +404,24 @@ class _TurfOwnerRegistrationScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.email_rounded, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text('Email: ${_emailController.text}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.email_rounded, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Email: ${_emailController.text}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  if (_isEmailVerified)
+                  if (_isEmailVerified) ...[
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -412,6 +431,7 @@ class _TurfOwnerRegistrationScreenState
                       child: const Text('Verified ✅',
                           style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),

@@ -33,13 +33,10 @@ class _MainLayoutState extends State<MainLayout> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: _buildBottomNav(),
       // Add a global FAB specifically when on the Tournaments tab, matching design
-      floatingActionButton: _currentIndex == 1 
+      floatingActionButton: _currentIndex == 1
           ? FloatingActionButton.extended(
               onPressed: () {
                 showCreateTournamentDialog(context);
@@ -48,7 +45,10 @@ class _MainLayoutState extends State<MainLayout> {
               icon: const Icon(Icons.add, color: Colors.white, size: 20),
               label: const Text(
                 'Create Tournament',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             )
           : null,
@@ -68,17 +68,16 @@ class _MainLayoutState extends State<MainLayout> {
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
           shadows: [
-            Shadow(
-              color: Colors.black12,
-              offset: Offset(2, 2),
-              blurRadius: 4,
-            ),
+            Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 4),
           ],
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: Colors.black87),
+          icon: const Icon(
+            Icons.notifications_none_outlined,
+            color: Colors.black87,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: 8),
@@ -116,7 +115,7 @@ class _MainLayoutState extends State<MainLayout> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -129,7 +128,8 @@ class _MainLayoutState extends State<MainLayout> {
             // The pill width is a bit smaller than the full item width to look nice
             final double pillWidth = 64.0;
             // Calculate the exact center position for the pill for the current index
-            final double pillLeftPosition = (itemWidth * _currentIndex) + (itemWidth / 2) - (pillWidth / 2);
+            final double pillLeftPosition =
+                (itemWidth * _currentIndex) + (itemWidth / 2) - (pillWidth / 2);
 
             return Stack(
               clipBehavior: Clip.none,
@@ -144,7 +144,7 @@ class _MainLayoutState extends State<MainLayout> {
                     width: pillWidth,
                     height: 36, // Match the height of the icon container
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F6D38).withOpacity(0.1),
+                      color: const Color(0xFF0F6D38).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
@@ -153,10 +153,34 @@ class _MainLayoutState extends State<MainLayout> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildAnimatedNavItem(0, Icons.home_outlined, Icons.home, 'Home', itemWidth),
-                    _buildAnimatedNavItem(1, Icons.emoji_events_outlined, Icons.emoji_events, 'Tournaments', itemWidth),
-                    _buildAnimatedNavItem(2, Icons.explore_outlined, Icons.explore, 'Explore', itemWidth),
-                    _buildAnimatedNavItem(3, Icons.person_outline, Icons.person, 'Profile', itemWidth),
+                    _buildAnimatedNavItem(
+                      0,
+                      Icons.home_outlined,
+                      Icons.home,
+                      'Home',
+                      itemWidth,
+                    ),
+                    _buildAnimatedNavItem(
+                      1,
+                      Icons.emoji_events_outlined,
+                      Icons.emoji_events,
+                      'Tournaments',
+                      itemWidth,
+                    ),
+                    _buildAnimatedNavItem(
+                      2,
+                      Icons.explore_outlined,
+                      Icons.explore,
+                      'Explore',
+                      itemWidth,
+                    ),
+                    _buildAnimatedNavItem(
+                      3,
+                      Icons.person_outline,
+                      Icons.person,
+                      'Profile',
+                      itemWidth,
+                    ),
                   ],
                 ),
               ],
@@ -167,9 +191,15 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
-  Widget _buildAnimatedNavItem(int index, IconData outlineIcon, IconData solidIcon, String label, double width) {
+  Widget _buildAnimatedNavItem(
+    int index,
+    IconData outlineIcon,
+    IconData solidIcon,
+    String label,
+    double width,
+  ) {
     final isSelected = _currentIndex == index;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
@@ -183,16 +213,15 @@ class _MainLayoutState extends State<MainLayout> {
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(
-                    scale: animation,
-                    child: child,
-                  );
+                  return ScaleTransition(scale: animation, child: child);
                 },
                 child: Icon(
                   isSelected ? solidIcon : outlineIcon,
                   key: ValueKey<bool>(isSelected),
                   size: 24,
-                  color: isSelected ? const Color(0xFF0F6D38) : const Color(0xFF6B7280),
+                  color: isSelected
+                      ? const Color(0xFF0F6D38)
+                      : const Color(0xFF6B7280),
                 ),
               ),
             ),
@@ -202,7 +231,9 @@ class _MainLayoutState extends State<MainLayout> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? const Color(0xFF0F6D38) : const Color(0xFF6B7280),
+                color: isSelected
+                    ? const Color(0xFF0F6D38)
+                    : const Color(0xFF6B7280),
               ),
               child: Text(label),
             ),

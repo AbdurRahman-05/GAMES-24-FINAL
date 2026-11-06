@@ -40,7 +40,8 @@ class CreateTournamentDialog extends StatelessWidget {
             _buildTypeCard(
               context,
               title: 'Public Tournament',
-              description: 'Open to all teams, visible on leaderboard & discovery',
+              description:
+                  'Open to all teams, visible on leaderboard & discovery',
               icon: Icons.public,
               iconBgColor: const Color(0xFFBBE5CA),
               iconColor: const Color(0xFF0F6D38),
@@ -49,7 +50,9 @@ class CreateTournamentDialog extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreatePublicTournamentScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const CreatePublicTournamentScreen(),
+                  ),
                 );
               },
             ),
@@ -66,7 +69,9 @@ class CreateTournamentDialog extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const CreatePrivateTournamentScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const CreatePrivateTournamentScreen(),
+                  ),
                 );
               },
             ),
@@ -141,7 +146,7 @@ class CreateTournamentDialog extends StatelessWidget {
 void showCreateTournamentDialog(BuildContext context) {
   showDialog(
     context: context,
-    barrierColor: Colors.black.withOpacity(0.4),
+    barrierColor: Colors.black.withValues(alpha: 0.4),
     builder: (context) => const CreateTournamentDialog(),
   );
 }

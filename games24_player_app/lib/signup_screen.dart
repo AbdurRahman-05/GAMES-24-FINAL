@@ -5,9 +5,9 @@ import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'login_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'home_screen.dart';
 import 'main_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
@@ -27,6 +27,7 @@ class _SignupScreenState extends State<SignupScreen> {
     _passwordController.dispose();
     super.dispose();
   }
+
   int _selectedSportIndex = 0; // 0: Football, 1: Cricket, 2: Badminton
   bool _agreeToTerms = false;
   bool _isOtpVerified = false;
@@ -39,7 +40,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green.withOpacity(0.06),
+      backgroundColor: Colors.green.withValues(alpha: 0.06),
 
       body: SingleChildScrollView(
         child: Padding(
@@ -87,7 +88,7 @@ class _SignupScreenState extends State<SignupScreen> {
               _buildTextField(
                 hintText: 'e.g. Alex Hunter',
                 prefixIcon: Icons.person_outline,
-              controller: _nameController,
+                controller: _nameController,
               ),
               const SizedBox(height: 20),
 
@@ -108,7 +109,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedCountryCode,
-                          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF9CA3AF)),
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Color(0xFF9CA3AF),
+                          ),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -121,7 +125,9 @@ class _SignupScreenState extends State<SignupScreen> {
                               });
                             }
                           },
-                          items: _countryCodes.map<DropdownMenuItem<String>>((String value) {
+                          items: _countryCodes.map<DropdownMenuItem<String>>((
+                            String value,
+                          ) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
@@ -143,19 +149,28 @@ class _SignupScreenState extends State<SignupScreen> {
                           textAlignVertical: TextAlignVertical.center,
                           decoration: InputDecoration(
                             hintText: '98765 43210',
-                            hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                            hintStyle: const TextStyle(
+                              color: Color(0xFF9CA3AF),
+                            ),
                             suffixIcon: TextButton(
-                              onPressed: _isOtpVerified ? null : _sendOtpAndShowDialog,
+                              onPressed: _isOtpVerified
+                                  ? null
+                                  : _sendOtpAndShowDialog,
                               child: Text(
                                 _isOtpVerified ? 'Verified' : 'Verify',
                                 style: TextStyle(
-                                  color: _isOtpVerified ? Colors.green : Colors.blue,
+                                  color: _isOtpVerified
+                                      ? Colors.green
+                                      : Colors.blue,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
                           ),
                         ),
                       ),
@@ -188,7 +203,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 controller: _passwordController,
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    _obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
                     color: const Color(0xFF9CA3AF),
                     size: 20,
                   ),
@@ -235,7 +252,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           _agreeToTerms = value ?? false;
                         });
                       },
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                       side: const BorderSide(color: Color(0xFFD1D5DB)),
                       activeColor: Colors.green.shade600,
                     ),
@@ -253,12 +272,18 @@ class _SignupScreenState extends State<SignupScreen> {
                           const TextSpan(text: 'I agree to the '),
                           TextSpan(
                             text: 'Terms of Service',
-                            style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: Colors.green.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const TextSpan(text: ' and '),
                           TextSpan(
                             text: 'Privacy Policy',
-                            style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                              color: Colors.green.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const TextSpan(text: '.'),
                         ],
@@ -274,7 +299,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: (_agreeToTerms && _isOtpVerified) ? _register : null,
+                  onPressed: (_agreeToTerms && _isOtpVerified && !_isLoading)
+                      ? _register
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green.shade600,
                     foregroundColor: Colors.white,
@@ -283,7 +310,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Row(
+                  child: _isLoading ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
@@ -352,16 +379,15 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   const Text(
                     'Already have an account? ',
-                    style: TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 15,
-                    ),
+                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 15),
                   ),
                   GestureDetector(
                     onTap: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
                       );
                     },
                     child: Text(
@@ -383,7 +409,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  
   Future<void> _sendOtpAndShowDialog() async {
     final mobile = '$_selectedCountryCode${_mobileController.text.trim()}';
 
@@ -399,11 +424,15 @@ class _SignupScreenState extends State<SignupScreen> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': mobile}),
       );
-      
+
+      if (!mounted) return;
       if (checkResponse.statusCode == 200 || checkResponse.statusCode == 201) {
         final checkData = jsonDecode(checkResponse.body);
         if (checkData['exists'] == true) {
-          ToastUtils.showError(context, 'Number already registered. Please use a different number or login.');
+          ToastUtils.showError(
+            context,
+            'Number already registered. Please use a different number or login.',
+          );
           return;
         }
       }
@@ -414,6 +443,7 @@ class _SignupScreenState extends State<SignupScreen> {
         body: jsonEncode({'mobileNumber': mobile}),
       );
 
+      if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
         ToastUtils.showSuccess(context, 'Test OTP: ${data["otp"]}');
@@ -467,7 +497,11 @@ class _SignupScreenState extends State<SignupScreen> {
           'fullName': name,
           'mobileNumber': mobile,
           'password': password,
-          'preferredSport': ['Football', 'Cricket', 'Badminton'][_selectedSportIndex],
+          'preferredSport': [
+            'Football',
+            'Cricket',
+            'Badminton',
+          ][_selectedSportIndex],
         }),
       );
 
@@ -476,7 +510,11 @@ class _SignupScreenState extends State<SignupScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('fullName', data['fullName'] ?? name);
         await prefs.setString('mobileNumber', data['mobileNumber'] ?? mobile);
-        await prefs.setString('preferredSport', data['preferredSport'] ?? ['Football', 'Cricket', 'Badminton'][_selectedSportIndex]);
+        await prefs.setString(
+          'preferredSport',
+          data['preferredSport'] ??
+              ['Football', 'Cricket', 'Badminton'][_selectedSportIndex],
+        );
 
         if (!mounted) return;
         Navigator.pushAndRemoveUntil(
@@ -488,7 +526,10 @@ class _SignupScreenState extends State<SignupScreen> {
         if (!mounted) return;
         try {
           final data = jsonDecode(response.body);
-          ToastUtils.showError(context, data['message'] ?? 'Registration Failed');
+          ToastUtils.showError(
+            context,
+            data['message'] ?? 'Registration Failed',
+          );
         } catch (e) {
           ToastUtils.showError(context, 'Registration Failed');
         }
@@ -529,7 +570,11 @@ class _SignupScreenState extends State<SignupScreen> {
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
-          prefixIcon: Icon(prefixIcon, color: const Color(0xFF9CA3AF), size: 22),
+          prefixIcon: Icon(
+            prefixIcon,
+            color: const Color(0xFF9CA3AF),
+            size: 22,
+          ),
           suffixIcon: suffixIcon,
           filled: true,
           fillColor: Colors.white,
@@ -539,15 +584,16 @@ class _SignupScreenState extends State<SignupScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.greenAccent.shade400, width: 2),
+            borderSide: BorderSide(
+              color: Colors.greenAccent.shade400,
+              width: 2,
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
     );
   }
-
-
 
   Widget _buildSportCard(int index, IconData icon, String label) {
     final isSelected = _selectedSportIndex == index;
@@ -560,7 +606,9 @@ class _SignupScreenState extends State<SignupScreen> {
       child: Container(
         height: 72,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.green.withOpacity(0.05) : Colors.white,
+          color: isSelected
+              ? Colors.green.withValues(alpha: 0.05)
+              : Colors.white,
           border: Border.all(
             color: isSelected ? Colors.green.shade600 : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
@@ -572,7 +620,9 @@ class _SignupScreenState extends State<SignupScreen> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.green.shade600 : const Color(0xFF6B7280),
+              color: isSelected
+                  ? Colors.green.shade600
+                  : const Color(0xFF6B7280),
               size: 24,
             ),
             const SizedBox(height: 6),
@@ -581,7 +631,9 @@ class _SignupScreenState extends State<SignupScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.green.shade600 : const Color(0xFF4B5563),
+                color: isSelected
+                    ? Colors.green.shade600
+                    : const Color(0xFF4B5563),
               ),
             ),
           ],
@@ -590,7 +642,12 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Widget _buildSocialButton(String label, String imagePath, IconData fallbackIcon, Color iconColor) {
+  Widget _buildSocialButton(
+    String label,
+    String imagePath,
+    IconData fallbackIcon,
+    Color iconColor,
+  ) {
     return SizedBox(
       height: 48,
       child: OutlinedButton(
@@ -623,13 +680,15 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 }
 
-
-
 class ModernOtpDialog extends StatefulWidget {
   final String mobile;
   final VoidCallback onVerifySuccess;
 
-  const ModernOtpDialog({super.key, required this.mobile, required this.onVerifySuccess});
+  const ModernOtpDialog({
+    super.key,
+    required this.mobile,
+    required this.onVerifySuccess,
+  });
 
   @override
   State<ModernOtpDialog> createState() => _ModernOtpDialogState();
@@ -685,12 +744,9 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
       final res = await http.post(
         Uri.parse('http://localhost:3000/auth/verify-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'mobileNumber': widget.mobile,
-          'otp': otp,
-        }),
+        body: jsonEncode({'mobileNumber': widget.mobile, 'otp': otp}),
       );
-      
+
       if (res.statusCode == 200 || res.statusCode == 201) {
         setState(() {
           _status = 'success';
@@ -728,7 +784,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
       );
       final data = jsonDecode(response.body);
       if (mounted) {
-        ToastUtils.showSuccess(context, 'Test OTP: ');
+        ToastUtils.showSuccess(context, 'Test OTP: ${data["otp"]}');
       }
       _startTimer();
     } catch (e) {
@@ -742,45 +798,82 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 80, height: 80,
+            width: 80,
+            height: 80,
             decoration: const BoxDecoration(
               color: Color(0xFFFDE68A),
               shape: BoxShape.circle,
             ),
-            child: const Center(child: Icon(Icons.sentiment_very_satisfied, size: 50, color: Colors.orange)),
+            child: const Center(
+              child: Icon(
+                Icons.sentiment_very_satisfied,
+                size: 50,
+                color: Colors.orange,
+              ),
+            ),
           ),
           const SizedBox(height: 16),
-          const Text('Verified!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+          const Text(
+            'Verified!',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
           const SizedBox(height: 8),
-          const Text('Welcome!', style: TextStyle(fontSize: 16, color: Colors.black54)),
+          const Text(
+            'Welcome!',
+            style: TextStyle(fontSize: 16, color: Colors.black54),
+          ),
           const SizedBox(height: 24),
           Container(
-            width: 64, height: 64,
+            width: 64,
+            height: 64,
             decoration: const BoxDecoration(
               color: Colors.green,
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.check, color: Colors.white, size: 40),
-          )
+          ),
         ],
       );
     }
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 80, height: 80,
+          width: 80,
+          height: 80,
           decoration: const BoxDecoration(
             color: Color(0xFFFDE68A),
             shape: BoxShape.circle,
           ),
-          child: Center(child: Icon(_status == 'error' ? Icons.sentiment_dissatisfied : Icons.sentiment_satisfied, size: 50, color: Colors.orange)),
+          child: Center(
+            child: Icon(
+              _status == 'error'
+                  ? Icons.sentiment_dissatisfied
+                  : Icons.sentiment_satisfied,
+              size: 50,
+              color: Colors.orange,
+            ),
+          ),
         ),
         const SizedBox(height: 16),
-        const Text('OTP Verification', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+        const Text(
+          'OTP Verification',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
         const SizedBox(height: 8),
-        const Text('Enter the 4-digit code', style: TextStyle(fontSize: 16, color: Colors.black54)),
+        const Text(
+          'Enter the 4-digit code',
+          style: TextStyle(fontSize: 16, color: Colors.black54),
+        ),
       ],
     );
   }
@@ -790,12 +883,20 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
     final defaultPinTheme = PinTheme(
       width: 48,
       height: 56,
-      textStyle: const TextStyle(fontSize: 22, color: Colors.black, fontWeight: FontWeight.w600),
+      textStyle: const TextStyle(
+        fontSize: 22,
+        color: Colors.black,
+        fontWeight: FontWeight.w600,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _status == 'error' ? Colors.red : const Color(0xFFE5E7EB)),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+        border: Border.all(
+          color: _status == 'error' ? Colors.red : const Color(0xFFE5E7EB),
+        ),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+        ],
       ),
     );
 
@@ -808,57 +909,86 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
           color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(24),
         ),
-        child: _status == 'success' ? _buildFace() : Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildFace(),
-            const SizedBox(height: 32),
-            Pinput(
-              length: 4,
-              controller: _otpController,
-              defaultPinTheme: defaultPinTheme,
-              focusedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  border: Border.all(color: const Color(0xFF8B5CF6), width: 2),
-                ),
+        child: _status == 'success'
+            ? _buildFace()
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildFace(),
+                  const SizedBox(height: 32),
+                  Pinput(
+                    length: 4,
+                    controller: _otpController,
+                    defaultPinTheme: defaultPinTheme,
+                    focusedPinTheme: defaultPinTheme.copyWith(
+                      decoration: defaultPinTheme.decoration!.copyWith(
+                        border: Border.all(
+                          color: const Color(0xFF8B5CF6),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    onCompleted: (pin) => _verify(),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _verify,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(
+                          0xFF8B5CF6,
+                        ), // Purple color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Verify',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    '00:${_timerSeconds.toString().padLeft(2, '0')}',
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: _timerSeconds == 0 ? _resendOtp : null,
+                    child: Text(
+                      'Resend OTP',
+                      style: TextStyle(
+                        color: _timerSeconds == 0
+                            ? const Color(0xFF8B5CF6)
+                            : Colors.black38,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              onCompleted: (pin) => _verify(),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _verify,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B5CF6), // Purple color
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: _isLoading
-                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Verify', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              '00:${_timerSeconds.toString().padLeft(2, '0')}',
-              style: const TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: _timerSeconds == 0 ? _resendOtp : null,
-              child: Text(
-                'Resend OTP',
-                style: TextStyle(
-                  color: _timerSeconds == 0 ? const Color(0xFF8B5CF6) : Colors.black38,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )
-          ],
-        ),
       ),
     );
   }

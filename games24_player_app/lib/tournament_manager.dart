@@ -21,7 +21,8 @@ class Tournament {
   final String reportingTime;
   final String matchDay;
   final String tournamentProgress;
-  final List<Map<String, dynamic>> registeredUsers; // List of registered team data
+  final List<Map<String, dynamic>>
+  registeredUsers; // List of registered team data
 
   Tournament({
     required this.id,
@@ -95,7 +96,7 @@ class TournamentManager extends ChangeNotifier {
   factory TournamentManager() => _instance;
   TournamentManager._internal();
 
-  List<Tournament> _tournaments = [
+  final List<Tournament> _tournaments = [
     Tournament(
       id: 't1',
       title: 'City Apex Super Cup 2024',
@@ -154,27 +155,37 @@ class TournamentManager extends ChangeNotifier {
   ];
 
   List<Tournament> get allTournaments => _tournaments;
-  List<Tournament> get ongoingTournaments => _tournaments.where((t) => t.status == TournamentStatus.ongoing).toList();
-  List<Tournament> get upcomingTournaments => _tournaments.where((t) => t.status == TournamentStatus.upcoming).toList();
-  List<Tournament> get myTournaments => _tournaments.where((t) => t.registeredUsers.isNotEmpty).toList();
+  List<Tournament> get ongoingTournaments =>
+      _tournaments.where((t) => t.status == TournamentStatus.ongoing).toList();
+  List<Tournament> get upcomingTournaments =>
+      _tournaments.where((t) => t.status == TournamentStatus.upcoming).toList();
+  List<Tournament> get myTournaments =>
+      _tournaments.where((t) => t.registeredUsers.isNotEmpty).toList();
 
   void addTournament(Tournament tournament) {
     _tournaments.add(tournament);
     notifyListeners();
   }
 
-  bool registerTeam(String tournamentId, Map<String, dynamic> registrationData) {
+  bool registerTeam(
+    String tournamentId,
+    Map<String, dynamic> registrationData,
+  ) {
     final index = _tournaments.indexWhere((t) => t.id == tournamentId);
     if (index != -1) {
       final tournament = _tournaments[index];
       if (tournament.registeredTeams < tournament.maxTeams) {
         // Prevent duplicate registration based on team name (simplistic check)
-        bool alreadyRegistered = tournament.registeredUsers.any((user) => user['teamName'] == registrationData['teamName']);
+        bool alreadyRegistered = tournament.registeredUsers.any(
+          (user) => user['teamName'] == registrationData['teamName'],
+        );
         if (alreadyRegistered) {
           return false;
         }
 
-        final updatedUsers = List<Map<String, dynamic>>.from(tournament.registeredUsers)..add(registrationData);
+        final updatedUsers = List<Map<String, dynamic>>.from(
+          tournament.registeredUsers,
+        )..add(registrationData);
         _tournaments[index] = tournament.copyWith(
           registeredTeams: tournament.registeredTeams + 1,
           registeredUsers: updatedUsers,

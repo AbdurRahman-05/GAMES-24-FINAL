@@ -5,10 +5,12 @@ class CreatePublicTournamentScreen extends StatefulWidget {
   const CreatePublicTournamentScreen({super.key});
 
   @override
-  State<CreatePublicTournamentScreen> createState() => _CreatePublicTournamentScreenState();
+  State<CreatePublicTournamentScreen> createState() =>
+      _CreatePublicTournamentScreenState();
 }
 
-class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScreen> {
+class _CreatePublicTournamentScreenState
+    extends State<CreatePublicTournamentScreen> {
   String _selectedSport = 'Football';
   bool _rulesExpanded = true;
 
@@ -30,11 +32,11 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
                   _buildLabel('Tournament Name'),
                   _buildTextField('e.g., Weekend Turf Clash Season 4'),
                   const SizedBox(height: 20),
-                  
+
                   _buildLabel('Select Sport'),
                   _buildSportSelector(),
                   const SizedBox(height: 20),
-                  
+
                   Row(
                     children: [
                       Expanded(
@@ -59,7 +61,7 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
+
                   Row(
                     children: [
                       Expanded(
@@ -84,13 +86,13 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   _buildRulesSection(),
                   const SizedBox(height: 24),
-                  
+
                   _buildVenueCard(),
                   const SizedBox(height: 32),
-                  
+
                   _buildNextButton(),
                   const SizedBox(height: 40),
                 ],
@@ -116,17 +118,16 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
           shadows: [
-            Shadow(
-              color: Colors.black12,
-              offset: Offset(2, 2),
-              blurRadius: 4,
-            ),
+            Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 4),
           ],
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: Colors.black87),
+          icon: const Icon(
+            Icons.notifications_none_outlined,
+            color: Colors.black87,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: 8),
@@ -164,7 +165,11 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
                 color: Color(0xFFF3F5F1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black87,
+              ),
             ),
           ),
           Column(
@@ -180,10 +185,7 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
               SizedBox(height: 2),
               Text(
                 'Step 1 of 2',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                ),
+                style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
               ),
             ],
           ),
@@ -193,7 +195,11 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
               color: Color(0xFFF3F5F1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.help_outline, size: 20, color: Colors.black87),
+            child: const Icon(
+              Icons.help_outline,
+              size: 20,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),
@@ -253,7 +259,10 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
           hintText: hint,
           hintStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -269,8 +278,15 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(value, style: const TextStyle(fontSize: 14, color: Colors.black87)),
-          const Icon(Icons.keyboard_arrow_down, color: Colors.black87, size: 20),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          const Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.black87,
+            size: 20,
+          ),
         ],
       ),
     );
@@ -286,8 +302,15 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(hint, style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280))),
-          const Icon(Icons.calendar_today_outlined, color: Colors.black87, size: 18),
+          Text(
+            hint,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+          ),
+          const Icon(
+            Icons.calendar_today_outlined,
+            color: Colors.black87,
+            size: 18,
+          ),
         ],
       ),
     );
@@ -358,14 +381,18 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFE5E7EB).withOpacity(0.5),
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.rule, color: Color(0xFF166534), size: 20),
           ),
           title: const Text(
             'Participant Rules & Guidelines',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           subtitle: const Text(
             'Review standard tournament expectations',
@@ -373,36 +400,45 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
           ),
           iconColor: Colors.black87,
           collapsedIconColor: Colors.black87,
-          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          childrenPadding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: 16,
+          ),
           children: [
             _buildRuleCard(
               icon: Icons.access_time,
               title: 'Reporting Time',
-              description: 'Players must report 15 minutes prior to kickoff at the venue desk.',
+              description:
+                  'Players must report 15 minutes prior to kickoff at the venue desk.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.checkroom,
               title: 'Equipment',
-              description: 'Proper turf boots/sports shoes and matching team jerseys required.',
+              description:
+                  'Proper turf boots/sports shoes and matching team jerseys required.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.shield_outlined,
               title: 'Fair Play',
-              description: 'Zero tolerance for unsportsmanlike behavior or verbal abuse towards refs.',
+              description:
+                  'Zero tolerance for unsportsmanlike behavior or verbal abuse towards refs.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.swap_horiz,
               title: 'Substitutions',
-              description: 'Up to 5 rolling substitutions allowed per match with prior intimation.',
+              description:
+                  'Up to 5 rolling substitutions allowed per match with prior intimation.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.gavel,
               title: 'Referee Decision',
-              description: 'On-field referee decision is final and binding for all participating teams.',
+              description:
+                  'On-field referee decision is final and binding for all participating teams.',
             ),
           ],
         ),
@@ -410,7 +446,11 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
     );
   }
 
-  Widget _buildRuleCard({required IconData icon, required String title, required String description}) {
+  Widget _buildRuleCard({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -428,12 +468,20 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280), height: 1.4),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
@@ -468,18 +516,30 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
               children: [
                 Row(
                   children: const [
-                    Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF166534)),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 12,
+                      color: Color(0xFF166534),
+                    ),
                     SizedBox(width: 4),
                     Text(
                       'Primary Venue Linked',
-                      style: TextStyle(fontSize: 10, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF166534),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Grand Arena Tur...',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -522,7 +582,9 @@ class _CreatePublicTournamentScreenState extends State<CreatePublicTournamentScr
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreatePublicTournamentStep2Screen()),
+            MaterialPageRoute(
+              builder: (context) => const CreatePublicTournamentStep2Screen(),
+            ),
           );
         },
         style: ElevatedButton.styleFrom(

@@ -61,10 +61,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
     }
 
     return Column(
-      children: displayList.map((t) => Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
-        child: _buildTournamentCard(t),
-      )).toList(),
+      children: displayList
+          .map(
+            (t) => Padding(
+              padding: const EdgeInsets.only(bottom: 20.0),
+              child: _buildTournamentCard(t),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -75,11 +79,19 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.emoji_events_outlined, size: 64, color: Colors.grey.shade400),
+            Icon(
+              Icons.emoji_events_outlined,
+              size: 64,
+              color: Colors.grey.shade400,
+            ),
             const SizedBox(height: 16),
             Text(
               'No tournaments yet',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade700,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -92,10 +104,21 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                 onPressed: () => setState(() => _selectedTabIndex = 1),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F6D38),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Explore Tournaments', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Explore Tournaments',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
           ],
         ),
@@ -168,7 +191,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
     }
 
     String statsLabel = 'Slots Left';
-    String statsValue = '${tournament.maxTeams - tournament.registeredTeams} / ${tournament.maxTeams}';
+    String statsValue =
+        '${tournament.maxTeams - tournament.registeredTeams} / ${tournament.maxTeams}';
     if (tournament.status == TournamentStatus.ongoing) {
       statsLabel = 'Status';
       statsValue = tournament.tournamentProgress;
@@ -189,7 +213,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TournamentDetailsScreen(tournament: tournament),
+            builder: (context) =>
+                TournamentDetailsScreen(tournament: tournament),
           ),
         );
       },
@@ -204,7 +229,9 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                   child: Image.network(
                     tournament.imageUrl,
                     height: 180,
@@ -215,11 +242,17 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black.withOpacity(0.2), Colors.black.withOpacity(0.8)],
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.2),
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
                         stops: const [0.4, 0.7, 1.0],
                       ),
                     ),
@@ -231,15 +264,41 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(color: const Color(0xFF0F6D38), borderRadius: BorderRadius.circular(16)),
-                        child: Text(tournament.sport, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F6D38),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          tournament.sport,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(color: statusColor, borderRadius: BorderRadius.circular(16)),
-                        child: Text(statusText, style: TextStyle(color: statusTextColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusTextColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -250,9 +309,22 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tournament.title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(
+                        tournament.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(tournament.location, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                      Text(
+                        tournament.location,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -260,17 +332,33 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                   bottom: 16,
                   right: 16,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.25),
+                      color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white.withOpacity(0.4)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.access_time, color: Colors.white, size: 14),
+                        const Icon(
+                          Icons.access_time,
+                          color: Colors.white,
+                          size: 14,
+                        ),
                         const SizedBox(width: 6),
-                        Text(timeLabel, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                        Text(
+                          timeLabel,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -283,31 +371,67 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Row(
                       children: [
                         Container(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(color: Colors.green.shade50, shape: BoxShape.circle),
-                          child: const Icon(Icons.emoji_events_outlined, color: Color(0xFF0F6D38), size: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.emoji_events_outlined,
+                            color: Color(0xFF0F6D38),
+                            size: 24,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Prize Pool', style: TextStyle(color: Color(0xFF6B7280), fontSize: 12)),
+                            const Text(
+                              'Prize Pool',
+                              style: TextStyle(
+                                color: Color(0xFF6B7280),
+                                fontSize: 12,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text(tournament.prizePool, style: const TextStyle(color: Color(0xFF0F6D38), fontSize: 15, fontWeight: FontWeight.bold)),
+                            Text(
+                              tournament.prizePool,
+                              style: const TextStyle(
+                                color: Color(0xFF0F6D38),
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                         const Spacer(),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(statsLabel, style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12)),
+                            Text(
+                              statsLabel,
+                              style: const TextStyle(
+                                color: Color(0xFF6B7280),
+                                fontSize: 12,
+                              ),
+                            ),
                             const SizedBox(height: 2),
-                            Text(statsValue, style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold)),
+                            Text(
+                              statsValue,
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -322,7 +446,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => TournamentDetailsScreen(tournament: tournament),
+                            builder: (context) =>
+                                TournamentDetailsScreen(tournament: tournament),
                           ),
                         );
                       },
@@ -330,14 +455,22 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                         backgroundColor: const Color(0xFF0F6D38),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(Icons.arrow_forward_ios, size: 16),
                           const SizedBox(width: 8),
-                          Text(buttonText, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                          Text(
+                            buttonText,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),

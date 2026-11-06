@@ -55,8 +55,8 @@ model AdminUser {
 }
 
 model VerifiedAdmin {
-  id                 Int      @id @default(autoincrement())
-  adminUserId        Int      @unique
+  id                 Int             @id @default(autoincrement())
+  adminUserId        Int             @unique
   trackingCode       String?
   venueName          String
   ownerName          String
@@ -64,11 +64,11 @@ model VerifiedAdmin {
   ownerEmail         String
   streetAddress      String
   neighborhoodArea   String
-  isMobileVerified   Boolean  @default(true)
-  isEmailVerified    Boolean  @default(true)
-  photosCount        Int      @default(0)
-  photoUrls          String[] @default([])
-  amenities          String[] @default([])
+  isMobileVerified   Boolean         @default(true)
+  isEmailVerified    Boolean         @default(true)
+  photosCount        Int             @default(0)
+  photoUrls          String[]        @default([])
+  amenities          String[]        @default([])
   gstin              String?
   panNumber          String?
   aadhaarNumber      String?
@@ -78,19 +78,21 @@ model VerifiedAdmin {
   bankAccount        String?
   ifscCode           String?
   upiId              String?
-  status             String        @default("VERIFIED")
-  dayRate            Float         @default(1000.0)
-  nightRate          Float         @default(1400.0)
-  weekdayRate        Float         @default(1200.0)
-  weekendRate        Float         @default(1600.0)
+  status             String          @default("VERIFIED") // VERIFIED, HOLD, CANCELLED
+  isBookingHold      Boolean         @default(false)
+  dayRate            Float           @default(1000.0)
+  nightRate          Float           @default(1400.0)
+  weekdayRate        Float           @default(1200.0)
+  weekendRate        Float           @default(1600.0)
   dashboard          AdminDashboard?
   bookings           TurfBooking[]
   blockedSlots       BlockedSlot[]
   offers             SlotOffer[]
-  verifiedAt         DateTime      @default(now())
-  verifiedBy         String        @default("Super Admin")
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  tournaments        Tournament[]
+  verifiedAt         DateTime        @default(now())
+  verifiedBy         String          @default("Super Admin")
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 }
 
 model AdminDashboard {
@@ -102,7 +104,7 @@ model AdminDashboard {
   openingTime         String        @default("05:00 AM")
   closingTime         String        @default("11:00 PM")
 
-  // Realtime Venue Performance KPIs (Initially 0, increases as real venue activities occur)
+  // Realtime Venue Performance KPIs
   todayBookingsCount  Int           @default(0)
   todayPaidBookings   Int           @default(0)
   todayCashBookings   Int           @default(0)
@@ -135,7 +137,8 @@ model TurfBooking {
   timeSlot        String        // "06:00 AM - 07:00 AM"
   amount          Float         @default(1200.0)
   paymentMethod   String        @default("UPI")
-  status          String        @default("Confirmed")
+  status          String        @default("Confirmed") // Confirmed, Cancelled, On Hold
+  isHold          Boolean       @default(false)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 }
@@ -168,4 +171,28 @@ model SlotOffer {
   updatedAt       DateTime      @updatedAt
 
   @@unique([verifiedAdminId, date, timeSlot])
+}
+
+model Tournament {
+  id              Int            @id @default(autoincrement())
+  verifiedAdminId Int?
+  verifiedAdmin   VerifiedAdmin? @relation(fields: [verifiedAdminId], references: [id], onDelete: SetNull)
+  title           String
+  sport           String         @default("Football")
+  format          String         @default("Knockout")
+  status          String         @default("UPCOMING") // UPCOMING, LIVE, FINISHED, ON_HOLD, CANCELLED
+  isHold          Boolean        @default(false)
+  date            String         // "YYYY-MM-DD"
+  time            String?        @default("09:00 AM")
+  venueName       String
+  location        String?
+  entryFee        Float          @default(1500.0)
+  prizePool       String?        @default("₹15,000")
+  maxTeams        Int            @default(12)
+  registeredTeams Int            @default(0)
+  bannerUrl       String?
+  organizerName   String?
+  organizerPhone  String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }

@@ -5,10 +5,12 @@ class CreatePrivateTournamentStep2Screen extends StatefulWidget {
   const CreatePrivateTournamentStep2Screen({super.key});
 
   @override
-  State<CreatePrivateTournamentStep2Screen> createState() => _CreatePrivateTournamentStep2ScreenState();
+  State<CreatePrivateTournamentStep2Screen> createState() =>
+      _CreatePrivateTournamentStep2ScreenState();
 }
 
-class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTournamentStep2Screen> {
+class _CreatePrivateTournamentStep2ScreenState
+    extends State<CreatePrivateTournamentStep2Screen> {
   bool _agreedToTerms = true;
 
   @override
@@ -22,25 +24,28 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
           _buildProgressBar(),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildOverviewSection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildFinancialSection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildArenaSection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildRulesSummarySection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildTermsCheckbox(),
                   const SizedBox(height: 32),
-                  
+
                   _buildCreateButton(),
                   const SizedBox(height: 40),
                 ],
@@ -66,17 +71,16 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
           shadows: [
-            Shadow(
-              color: Colors.black12,
-              offset: Offset(2, 2),
-              blurRadius: 4,
-            ),
+            Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 4),
           ],
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: Colors.black87),
+          icon: const Icon(
+            Icons.notifications_none_outlined,
+            color: Colors.black87,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: 8),
@@ -114,7 +118,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                 color: Color(0xFFF3F5F1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black87,
+              ),
             ),
           ),
           Column(
@@ -145,7 +153,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
               color: Color(0xFFF3F5F1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.help_outline, size: 20, color: Colors.black87),
+            child: const Icon(
+              Icons.help_outline,
+              size: 20,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),
@@ -271,18 +283,29 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
               Expanded(
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 20, color: Color(0xFF166534)),
+                    const Icon(
+                      Icons.calendar_today_outlined,
+                      size: 20,
+                      color: Color(0xFF166534),
+                    ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
                           'Match Date',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Text(
                           'Sat, Oct 26,...',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ],
                     ),
@@ -292,18 +315,29 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
               Expanded(
                 child: Row(
                   children: [
-                    const Icon(Icons.account_tree_outlined, size: 20, color: Color(0xFF166534)),
+                    const Icon(
+                      Icons.account_tree_outlined,
+                      size: 20,
+                      color: Color(0xFF166534),
+                    ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
                         Text(
                           'Format',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Text(
                           '16 Teams K...',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ],
                     ),
@@ -322,7 +356,7 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
             border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.03),
+                color: Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -336,7 +370,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                   color: const Color(0xFFE5F5EB),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.vpn_key_outlined, size: 20, color: Color(0xFF166534)),
+                child: const Icon(
+                  Icons.vpn_key_outlined,
+                  size: 20,
+                  color: Color(0xFF166534),
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -345,7 +383,12 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                   children: const [
                     Text(
                       'ACCESS PASSCODE',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF6B7280), letterSpacing: 1),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6B7280),
+                        letterSpacing: 1,
+                      ),
                     ),
                     SizedBox(height: 4),
                     Text(
@@ -361,7 +404,10 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFE5F5EB),
                   borderRadius: BorderRadius.circular(20),
@@ -372,7 +418,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                     SizedBox(width: 6),
                     Text(
                       'Copy PIN',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
                   ],
                 ),
@@ -384,7 +434,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                   color: const Color(0xFFF3F5F1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.share_outlined, size: 16, color: Colors.black87),
+                child: const Icon(
+                  Icons.share_outlined,
+                  size: 16,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -415,7 +469,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                       children: [
                         const Text(
                           'Entry Fee',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(6),
@@ -423,14 +481,22 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                             color: const Color(0xFFE5F5EB),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.payments_outlined, size: 16, color: Color(0xFF166534)),
+                          child: const Icon(
+                            Icons.payments_outlined,
+                            size: 16,
+                            color: Color(0xFF166534),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       '\$50',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     const Text(
@@ -458,7 +524,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                       children: [
                         const Text(
                           'Grand Prize',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(6),
@@ -466,14 +536,22 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                             color: const Color(0xFF86EFAC),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.emoji_events_outlined, size: 16, color: Color(0xFF166534)),
+                          child: const Icon(
+                            Icons.emoji_events_outlined,
+                            size: 16,
+                            color: Color(0xFF166534),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       '\$5,000',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                     const SizedBox(height: 2),
                     const Text(
@@ -497,19 +575,31 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.verified_user_outlined, size: 18, color: Color(0xFF166534)),
+              const Icon(
+                Icons.verified_user_outlined,
+                size: 18,
+                color: Color(0xFF166534),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: RichText(
                   text: const TextSpan(
-                    style: TextStyle(fontSize: 12, color: Colors.black87, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
                     children: [
                       TextSpan(
                         text: '16 Teams capacity: ',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF166534),
+                        ),
                       ),
                       TextSpan(
-                        text: 'Private prize pool is escrow-guaranteed upon completion.',
+                        text:
+                            'Private prize pool is escrow-guaranteed upon completion.',
                       ),
                     ],
                   ),
@@ -569,14 +659,21 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                     bottom: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
                         'Court 3',
-                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -590,18 +687,29 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                 children: [
                   Row(
                     children: const [
-                      Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF166534)),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 12,
+                        color: Color(0xFF166534),
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Downtown Sports Complex',
-                        style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   const Text(
                     'Grand Arena Turf',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -609,36 +717,58 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE5F5EB),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: const [
-                            Icon(Icons.grass_outlined, size: 10, color: Color(0xFF166534)),
+                            Icon(
+                              Icons.grass_outlined,
+                              size: 10,
+                              color: Color(0xFF166534),
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'FIFA Synthetic',
-                              style: TextStyle(fontSize: 10, color: Color(0xFF166534), fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF166534),
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F5F1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: const [
-                            Icon(Icons.lightbulb_outline, size: 10, color: Colors.black87),
+                            Icon(
+                              Icons.lightbulb_outline,
+                              size: 10,
+                              color: Colors.black87,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Floodlights',
-                              style: TextStyle(fontSize: 10, color: Colors.black87, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ],
                         ),
@@ -730,12 +860,20 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280), height: 1.3),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
@@ -760,13 +898,15 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
               });
             },
             activeColor: const Color(0xFF166534),
-            fillColor: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
+            fillColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
                 return const Color(0xFF166534);
               }
               return const Color(0xFFF3F5F1);
             }),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
             side: BorderSide.none,
           ),
         ),
@@ -774,7 +914,11 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280), height: 1.4),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+                height: 1.4,
+              ),
               children: [
                 const TextSpan(text: 'I agree to the '),
                 TextSpan(
@@ -784,11 +928,15 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.underline,
                   ),
-                  recognizer: TapGestureRecognizer()..onTap = () {
-                    // Open terms
-                  },
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      // Open terms
+                    },
                 ),
-                const TextSpan(text: ' and confirm venue availability for all private matches.'),
+                const TextSpan(
+                  text:
+                      ' and confirm venue availability for all private matches.',
+                ),
               ],
             ),
           ),
@@ -806,10 +954,14 @@ class _CreatePrivateTournamentStep2ScreenState extends State<CreatePrivateTourna
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF0F6D38), // Slightly darker green
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF166534).withOpacity(0.5),
+          disabledBackgroundColor: const Color(
+            0xFF166534,
+          ).withValues(alpha: 0.5),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24), // More rounded than public step 2
+            borderRadius: BorderRadius.circular(
+              24,
+            ), // More rounded than public step 2
           ),
         ),
         child: const Text(

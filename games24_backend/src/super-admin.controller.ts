@@ -10,6 +10,12 @@ export class SuperAdminController {
     return this.superAdminService.getStats();
   }
 
+  // REALTIME OVERVIEW: ALL KPIS, REVENUE BREAKDOWN, LIVE ACTIONS, PLAYER STATS
+  @Get('overview')
+  async getDashboardOverview() {
+    return this.superAdminService.getDashboardOverview();
+  }
+
   @Get('registrations')
   async getRegistrations(
     @Query('status') status?: string,
@@ -58,5 +64,65 @@ export class SuperAdminController {
   @Get('status/:identifier')
   async getAdminStatus(@Param('identifier') identifier: string) {
     return this.superAdminService.getAdminStatus(identifier);
+  }
+
+  // HOLD / RESUME TURF BOOKINGS
+  @Post('turfs/:id/toggle-hold')
+  async toggleTurfBookingHold(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { hold?: boolean },
+  ) {
+    return this.superAdminService.toggleTurfBookingHold(id, body);
+  }
+
+  // ALL BOOKINGS MANAGEMENT
+  @Get('all-bookings')
+  async getAllBookings(
+    @Query('search') search?: string,
+    @Query('turfId') turfId?: string,
+    @Query('status') status?: string,
+    @Query('date') date?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.superAdminService.getAllBookings({ search, turfId, status, date, page, limit });
+  }
+
+  @Post('bookings/:id/hold')
+  async toggleBookingHold(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { isHold?: boolean },
+  ) {
+    return this.superAdminService.toggleBookingHold(id, body);
+  }
+
+  @Post('bookings/:id/cancel')
+  async cancelBooking(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { reason?: string },
+  ) {
+    return this.superAdminService.cancelBooking(id, body);
+  }
+
+  // TOURNAMENTS MANAGEMENT
+  @Get('all-tournaments')
+  async getAllTournaments(
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.superAdminService.getAllTournaments({ status, search });
+  }
+
+  @Post('tournaments/:id/toggle-hold')
+  async toggleTournamentHold(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { isHold?: boolean },
+  ) {
+    return this.superAdminService.toggleTournamentHold(id, body);
+  }
+
+  @Post('tournaments')
+  async createTournament(@Body() body: any) {
+    return this.superAdminService.createTournament(body);
   }
 }

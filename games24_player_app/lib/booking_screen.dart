@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_constants.dart';
 import 'booking_manager.dart';
+import 'challenge_manager.dart';
 
 class BookingScreen extends StatefulWidget {
   final int? turfId;
@@ -42,6 +43,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final Set<String> _selectedTimeSlots = {};
   bool _isOpenForChallenge = false;
   final TextEditingController _teamNameController = TextEditingController();
+  final TextEditingController _teamSizeController = TextEditingController(text: '7 Players (7v7)');
   int _currentImageIndex = 0;
   bool _isLoadingSlots = false;
   bool _isBookingInProgress = false;
@@ -59,7 +61,8 @@ class _BookingScreenState extends State<BookingScreen> {
       return {
         'day': weekdays[d.weekday - 1],
         'date': d.day.toString().padLeft(2, '0'),
-        'fullDate': "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}",
+        'fullDate':
+            "${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}",
       };
     });
 
@@ -73,16 +76,23 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<int?> _getEffectiveTurfId() async {
     if (_resolvedTurfId != null) return _resolvedTurfId;
     try {
-      final res = await http.get(Uri.parse('http://localhost:3000/turfs')).timeout(const Duration(seconds: 4));
+      final res = await http
+          .get(Uri.parse('http://localhost:3000/turfs'))
+          .timeout(const Duration(seconds: 4));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
         final match = list.firstWhere(
-          (t) => (t['venueName']?.toString().toLowerCase() == widget.turfName.toLowerCase()) ||
-                 (t['name']?.toString().toLowerCase() == widget.turfName.toLowerCase()),
+          (t) =>
+              (t['venueName']?.toString().toLowerCase() ==
+                  widget.turfName.toLowerCase()) ||
+              (t['name']?.toString().toLowerCase() ==
+                  widget.turfName.toLowerCase()),
           orElse: () => list.isNotEmpty ? list.first : null,
         );
         if (match != null && match['id'] != null) {
-          _resolvedTurfId = match['id'] is int ? match['id'] : int.tryParse(match['id'].toString());
+          _resolvedTurfId = match['id'] is int
+              ? match['id']
+              : int.tryParse(match['id'].toString());
         }
       }
     } catch (e) {
@@ -108,13 +118,19 @@ class _BookingScreenState extends State<BookingScreen> {
     if (effectiveTurfId != null) {
       try {
         final res = await http
-            .get(Uri.parse('http://localhost:3000/turfs/$effectiveTurfId/slots?date=$targetDate'))
+            .get(
+              Uri.parse(
+                'http://localhost:3000/turfs/$effectiveTurfId/slots?date=$targetDate',
+              ),
+            )
             .timeout(const Duration(seconds: 5));
         if (!mounted) return;
         if (res.statusCode == 200) {
           final json = jsonDecode(res.body);
           if (json['slots'] is List) {
-            final rawPrice = int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
+            final rawPrice =
+                int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ??
+                1200;
             if (!mounted) return;
             setState(() {
               _slots = (json['slots'] as List)
@@ -124,20 +140,23 @@ class _BookingScreenState extends State<BookingScreen> {
                     return status != 'blocked';
                   })
                   .map<Map<String, dynamic>>((s) {
-                final map = s is Map ? s : <String, dynamic>{};
-                final timeVal = (map['slot'] ?? map['time'])?.toString() ?? '';
-                return <String, dynamic>{
-                  'slot': timeVal,
-                  'time': timeVal,
-                  'status': map['status']?.toString() ?? 'available',
-                  'price': map['price'] ?? rawPrice,
-                  'originalPrice': map['originalPrice'] ?? map['price'] ?? rawPrice,
-                  'rateType': map['rateType']?.toString() ?? '',
-                  'isNight': map['isNight'] == true,
-                  'offer': map['offer'],
-                  'offerTag': map['offerTag'],
-                };
-              }).toList();
+                    final map = s is Map ? s : <String, dynamic>{};
+                    final timeVal =
+                        (map['slot'] ?? map['time'])?.toString() ?? '';
+                    return <String, dynamic>{
+                      'slot': timeVal,
+                      'time': timeVal,
+                      'status': map['status']?.toString() ?? 'available',
+                      'price': map['price'] ?? rawPrice,
+                      'originalPrice':
+                          map['originalPrice'] ?? map['price'] ?? rawPrice,
+                      'rateType': map['rateType']?.toString() ?? '',
+                      'isNight': map['isNight'] == true,
+                      'offer': map['offer'],
+                      'offerTag': map['offerTag'],
+                    };
+                  })
+                  .toList();
               _isLoadingSlots = false;
             });
             return;
@@ -150,20 +169,25 @@ class _BookingScreenState extends State<BookingScreen> {
 
     if (!mounted) return;
     // Fallback: auto-split 1-hour slots from turf schedule
-    final rawPrice = int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
+    final rawPrice =
+        int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
     final generated = AppConstants.generateTimeSlots(
       widget.openingTime ?? '06:00 AM',
       widget.closingTime ?? '10:00 PM',
     );
     if (!mounted) return;
     setState(() {
-      _slots = generated.map<Map<String, dynamic>>((s) => <String, dynamic>{
-        'slot': s,
-        'time': s,
-        'status': 'available',
-        'price': rawPrice,
-        'isNight': false,
-      }).toList();
+      _slots = generated
+          .map<Map<String, dynamic>>(
+            (s) => <String, dynamic>{
+              'slot': s,
+              'time': s,
+              'status': 'available',
+              'price': rawPrice,
+              'isNight': false,
+            },
+          )
+          .toList();
       _isLoadingSlots = false;
     });
   }
@@ -181,6 +205,7 @@ class _BookingScreenState extends State<BookingScreen> {
         ),
         title: Text(
           widget.turfName,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF111827),
             fontSize: 18,
@@ -232,9 +257,7 @@ class _BookingScreenState extends State<BookingScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         height: 200,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Stack(
@@ -242,14 +265,19 @@ class _BookingScreenState extends State<BookingScreen> {
             children: [
               PageView.builder(
                 itemCount: images.length,
-                onPageChanged: (idx) => setState(() => _currentImageIndex = idx),
+                onPageChanged: (idx) =>
+                    setState(() => _currentImageIndex = idx),
                 itemBuilder: (context, index) {
                   return Image.network(
                     images[index],
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       color: Colors.grey.shade200,
-                      child: const Icon(Icons.sports_soccer_rounded, size: 48, color: Colors.grey),
+                      child: const Icon(
+                        Icons.sports_soccer_rounded,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
                     ),
                   );
                 },
@@ -262,7 +290,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.75),
+                        Colors.black.withValues(alpha: 0.75),
                       ],
                     ),
                   ),
@@ -273,14 +301,21 @@ class _BookingScreenState extends State<BookingScreen> {
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       '${_currentImageIndex + 1} / ${images.length} Photos',
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -293,7 +328,10 @@ class _BookingScreenState extends State<BookingScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF166534),
                         borderRadius: BorderRadius.circular(8),
@@ -305,7 +343,11 @@ class _BookingScreenState extends State<BookingScreen> {
                           SizedBox(width: 4),
                           Text(
                             'Super Admin Verified Turf',
-                            style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -354,12 +396,20 @@ class _BookingScreenState extends State<BookingScreen> {
             children: [
               const Text(
                 'Facilities & Amenities',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
+                ),
               ),
               if (widget.openingTime != null && widget.closingTime != null)
                 Text(
                   '${widget.openingTime} - ${widget.closingTime}',
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF166534), fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF166534),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
             ],
           ),
@@ -385,11 +435,16 @@ class _BookingScreenState extends State<BookingScreen> {
               }
 
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF166534).withOpacity(0.08),
+                  color: const Color(0xFF166534).withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF166534).withOpacity(0.2)),
+                  border: Border.all(
+                    color: const Color(0xFF166534).withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -398,7 +453,11 @@ class _BookingScreenState extends State<BookingScreen> {
                     const SizedBox(width: 5),
                     Text(
                       item,
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                   ],
                 ),
@@ -421,16 +480,28 @@ class _BookingScreenState extends State<BookingScreen> {
             children: [
               const Text(
                 'Select Date',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
+                ),
               ),
               Row(
                 children: [
                   Text(
                     _dates[_selectedDateIndex]['fullDate']!,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280), fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(Icons.calendar_month, color: Color(0xFF166534), size: 18),
+                  const Icon(
+                    Icons.calendar_month,
+                    color: Color(0xFF166534),
+                    size: 18,
+                  ),
                 ],
               ),
             ],
@@ -459,7 +530,9 @@ class _BookingScreenState extends State<BookingScreen> {
                   duration: const Duration(milliseconds: 200),
                   width: 54,
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF0F6D38) : const Color(0xFFF3F5F1),
+                    color: isSelected
+                        ? const Color(0xFF0F6D38)
+                        : const Color(0xFFF3F5F1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -469,7 +542,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         date['day']!,
                         style: TextStyle(
                           fontSize: 11,
-                          color: isSelected ? Colors.white70 : const Color(0xFF6B7280),
+                          color: isSelected
+                              ? Colors.white70
+                              : const Color(0xFF6B7280),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -478,7 +553,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : const Color(0xFF111827),
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF111827),
                         ),
                       ),
                     ],
@@ -500,7 +577,11 @@ class _BookingScreenState extends State<BookingScreen> {
           padding: EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
             'Select Sport',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111827),
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -515,9 +596,15 @@ class _BookingScreenState extends State<BookingScreen> {
               final sport = widget.sports[index];
               final isSelected = _selectedSport == sport;
               IconData iconData = Icons.sports_soccer;
-              if (sport.toLowerCase().contains('cricket')) iconData = Icons.sports_cricket;
-              if (sport.toLowerCase().contains('badminton')) iconData = Icons.sports_tennis;
-              if (sport.toLowerCase().contains('basketball')) iconData = Icons.sports_basketball;
+              if (sport.toLowerCase().contains('cricket')) {
+                iconData = Icons.sports_cricket;
+              }
+              if (sport.toLowerCase().contains('badminton')) {
+                iconData = Icons.sports_tennis;
+              }
+              if (sport.toLowerCase().contains('basketball')) {
+                iconData = Icons.sports_basketball;
+              }
 
               return GestureDetector(
                 onTap: () => setState(() => _selectedSport = sport),
@@ -525,20 +612,32 @@ class _BookingScreenState extends State<BookingScreen> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF0F6D38) : const Color(0xFFF3F5F1),
+                    color: isSelected
+                        ? const Color(0xFF0F6D38)
+                        : const Color(0xFFF3F5F1),
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(iconData, size: 14, color: isSelected ? Colors.white : const Color(0xFF4B5563)),
+                      Icon(
+                        iconData,
+                        size: 14,
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF4B5563),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         sport,
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF4B5563),
                         ),
                       ),
                     ],
@@ -556,7 +655,9 @@ class _BookingScreenState extends State<BookingScreen> {
     if (_isLoadingSlots) {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-        child: Center(child: CircularProgressIndicator(color: Color(0xFF166534))),
+        child: Center(
+          child: CircularProgressIndicator(color: Color(0xFF166534)),
+        ),
       );
     }
 
@@ -594,12 +695,37 @@ class _BookingScreenState extends State<BookingScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text(
-                'Available Slots (1-Hour Intervals)',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Available Slots',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF111827),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      '1-Hour Intervals',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF6B7280),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildLegendItem('Available', const Color(0xFFE5F5EB)),
                   const SizedBox(width: 6),
@@ -629,7 +755,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 padding: EdgeInsets.all(16.0),
                 child: Text(
                   'No available slots for this date.',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF6B7280), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
@@ -641,6 +771,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Widget _buildLegendItem(String label, Color color) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 8,
@@ -662,7 +793,12 @@ class _BookingScreenState extends State<BookingScreen> {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF9CA3AF), letterSpacing: 0.8),
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF9CA3AF),
+            letterSpacing: 0.8,
+          ),
         ),
         const SizedBox(height: 8),
         LayoutBuilder(
@@ -676,23 +812,31 @@ class _BookingScreenState extends State<BookingScreen> {
                 final isBlocked = slot['status'] == 'blocked';
                 final isSelected = _selectedTimeSlots.contains(slot['time']);
 
-                final offer = slot['offer'] is Map ? slot['offer'] as Map : null;
+                final offer = slot['offer'] is Map
+                    ? slot['offer'] as Map
+                    : null;
                 final offerTag = slot['offerTag']?.toString() ?? '';
                 final hasOffer = offer != null || offerTag.isNotEmpty;
-                final origPrice = (slot['originalPrice'] ?? slot['price'] ?? 1000);
+                final origPrice =
+                    (slot['originalPrice'] ?? slot['price'] ?? 1000);
                 final currentPrice = (slot['price'] ?? 1000);
-                final bool hasPriceDiscount = hasOffer && origPrice != currentPrice;
+                final bool hasPriceDiscount =
+                    hasOffer && origPrice != currentPrice;
 
                 String badgeText = '';
                 if (offer != null) {
-                  if (offer['tagLabel'] != null && offer['tagLabel'].toString().isNotEmpty) {
+                  if (offer['tagLabel'] != null &&
+                      offer['tagLabel'].toString().isNotEmpty) {
                     badgeText = offer['tagLabel'].toString();
-                  } else if (offer['discountPercent'] != null && (offer['discountPercent'] as num) > 0) {
+                  } else if (offer['discountPercent'] != null &&
+                      (offer['discountPercent'] as num) > 0) {
                     badgeText = '${offer['discountPercent']}% OFF';
                   }
                 } else if (offerTag.startsWith('PERCENT|')) {
                   final p = offerTag.split('|');
-                  badgeText = p.length > 2 && p[2].isNotEmpty ? p[2] : '${p[1]}% OFF';
+                  badgeText = p.length > 2 && p[2].isNotEmpty
+                      ? p[2]
+                      : '${p[1]}% OFF';
                 } else if (offerTag.startsWith('PRICE|')) {
                   badgeText = 'Special Price';
                 }
@@ -724,7 +868,11 @@ class _BookingScreenState extends State<BookingScreen> {
                         ? () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(isBooked ? 'Slot is already booked.' : 'Slot is blocked for maintenance.'),
+                                content: Text(
+                                  isBooked
+                                      ? 'Slot is already booked.'
+                                      : 'Slot is blocked for maintenance.',
+                                ),
                                 duration: const Duration(seconds: 1),
                               ),
                             );
@@ -747,7 +895,10 @@ class _BookingScreenState extends State<BookingScreen> {
                         border: Border.all(color: borderColor, width: 1.5),
                       ),
                       alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -756,7 +907,9 @@ class _BookingScreenState extends State<BookingScreen> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 9.0,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
                               color: textColor,
                             ),
                           ),
@@ -779,8 +932,12 @@ class _BookingScreenState extends State<BookingScreen> {
                                   style: TextStyle(
                                     fontSize: 8.5,
                                     decoration: TextDecoration.lineThrough,
-                                    decorationColor: isSelected ? Colors.white70 : const Color(0xFF9CA3AF),
-                                    color: isSelected ? Colors.white70 : const Color(0xFF9CA3AF),
+                                    decorationColor: isSelected
+                                        ? Colors.white70
+                                        : const Color(0xFF9CA3AF),
+                                    color: isSelected
+                                        ? Colors.white70
+                                        : const Color(0xFF9CA3AF),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -790,7 +947,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : const Color(0xFF166534),
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF166534),
                                   ),
                                 ),
                               ],
@@ -798,9 +957,14 @@ class _BookingScreenState extends State<BookingScreen> {
                             if (badgeText.isNotEmpty) ...[
                               const SizedBox(height: 1),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFDCFCE7),
+                                  color: isSelected
+                                      ? Colors.white.withValues(alpha: 0.2)
+                                      : const Color(0xFFDCFCE7),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -808,7 +972,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   style: TextStyle(
                                     fontSize: 7.5,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : const Color(0xFF15803D),
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF15803D),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -823,7 +989,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   Icon(
                                     Icons.nightlight_round,
                                     size: 9,
-                                    color: isSelected ? Colors.white70 : const Color(0xFF166534),
+                                    color: isSelected
+                                        ? Colors.white70
+                                        : const Color(0xFF166534),
                                   ),
                                   const SizedBox(width: 2),
                                 ],
@@ -832,7 +1000,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   style: TextStyle(
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : const Color(0xFF166534),
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF166534),
                                   ),
                                 ),
                               ],
@@ -840,9 +1010,14 @@ class _BookingScreenState extends State<BookingScreen> {
                             if (badgeText.isNotEmpty) ...[
                               const SizedBox(height: 1),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? Colors.white.withValues(alpha: 0.2) : const Color(0xFFDCFCE7),
+                                  color: isSelected
+                                      ? Colors.white.withValues(alpha: 0.2)
+                                      : const Color(0xFFDCFCE7),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -850,7 +1025,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                   style: TextStyle(
                                     fontSize: 7.5,
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : const Color(0xFF15803D),
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF15803D),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -891,7 +1068,11 @@ class _BookingScreenState extends State<BookingScreen> {
                     color: Color(0xFFBE123C),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.flash_on, color: Colors.white, size: 16),
+                  child: const Icon(
+                    Icons.flash_on,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -908,14 +1089,17 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                       Text(
                         'Let other teams request to match with you.',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Switch(
                   value: _isOpenForChallenge,
-                  activeColor: const Color(0xFFBE123C),
+                  activeThumbColor: const Color(0xFFBE123C),
                   onChanged: (val) {
                     setState(() {
                       _isOpenForChallenge = val;
@@ -929,11 +1113,40 @@ class _BookingScreenState extends State<BookingScreen> {
               TextField(
                 controller: _teamNameController,
                 decoration: InputDecoration(
-                  hintText: 'Enter your Team Name',
-                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
+                  hintText: 'Enter your Team Name (e.g. Eagles FC)',
+                  prefixIcon: const Icon(Icons.shield_outlined, size: 18),
+                  hintStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF9CA3AF),
+                  ),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _teamSizeController,
+                decoration: InputDecoration(
+                  hintText: 'Team Size (e.g. 7 Players, 5v5)',
+                  prefixIcon: const Icon(Icons.groups_outlined, size: 18),
+                  hintStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -948,7 +1161,8 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   int _calculateCourtFee() {
-    final rawPrice = int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
+    final rawPrice =
+        int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
     int fee = 0;
     for (final s in _selectedTimeSlots) {
       Map<String, dynamic>? slotObj;
@@ -987,10 +1201,17 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             const Text(
               'Booking Summary',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF111827),
+              ),
             ),
             const SizedBox(height: 12),
-            _buildSummaryRow('Selected Date', _dates[_selectedDateIndex]['fullDate']!),
+            _buildSummaryRow(
+              'Selected Date',
+              _dates[_selectedDateIndex]['fullDate']!,
+            ),
             const SizedBox(height: 8),
             _buildSummaryRow('Selected Sport', _selectedSport),
             const SizedBox(height: 8),
@@ -1005,11 +1226,19 @@ class _BookingScreenState extends State<BookingScreen> {
               children: [
                 const Text(
                   'Total Payable',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF111827),
+                  ),
                 ),
                 Text(
                   '₹$total',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF166534),
+                  ),
                 ),
               ],
             ),
@@ -1027,9 +1256,18 @@ class _BookingScreenState extends State<BookingScreen> {
           label,
           style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF111827), fontWeight: FontWeight.w600),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF111827),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     );
@@ -1045,7 +1283,7 @@ class _BookingScreenState extends State<BookingScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -1061,28 +1299,40 @@ class _BookingScreenState extends State<BookingScreen> {
                 : () async {
                     if (_selectedTimeSlots.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please select at least one available slot.')),
+                        const SnackBar(
+                          content: Text(
+                            'Please select at least one available slot.',
+                          ),
+                        ),
                       );
                       return;
                     }
 
-                    if (_isOpenForChallenge && _teamNameController.text.trim().isEmpty) {
+                    if (_isOpenForChallenge &&
+                        _teamNameController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please enter your team name for open challenge.')),
+                        const SnackBar(
+                          content: Text(
+                            'Please enter your team name for open challenge.',
+                          ),
+                        ),
                       );
                       return;
                     }
 
                     final selectedSlot = _selectedTimeSlots.first;
-                    final selectedDate = _dates[_selectedDateIndex]['fullDate']!;
+                    final selectedDate =
+                        _dates[_selectedDateIndex]['fullDate']!;
 
                     setState(() => _isBookingInProgress = true);
                     try {
                       final effectiveTurfId = await _getEffectiveTurfId();
                       if (effectiveTurfId != null) {
                         final prefs = await SharedPreferences.getInstance();
-                        String customerName = (prefs.getString('fullName') ?? '').trim();
-                        String customerPhone = (prefs.getString('mobileNumber') ?? '').trim();
+                        String customerName =
+                            (prefs.getString('fullName') ?? '').trim();
+                        String customerPhone =
+                            (prefs.getString('mobileNumber') ?? '').trim();
 
                         if (customerName.isEmpty) {
                           customerName = 'Vignesh';
@@ -1092,7 +1342,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         }
 
                         final res = await http.post(
-                          Uri.parse('http://localhost:3000/turfs/$effectiveTurfId/book'),
+                          Uri.parse(
+                            'http://localhost:3000/turfs/$effectiveTurfId/book',
+                          ),
                           headers: {'Content-Type': 'application/json'},
                           body: jsonEncode({
                             'customerName': customerName,
@@ -1117,25 +1369,71 @@ class _BookingScreenState extends State<BookingScreen> {
                             bookingObj['location'] = widget.location;
                             bookingObj['courtName'] = widget.turfName;
                             bookingObj['isActive'] = true;
-                            if (bookingObj['date'] == null) bookingObj['date'] = selectedDate;
-                            if (bookingObj['timeSlot'] == null) bookingObj['timeSlot'] = selectedSlot;
-                            if (bookingObj['status'] == null) bookingObj['status'] = 'Confirmed';
+                            if (bookingObj['date'] == null) {
+                              bookingObj['date'] = selectedDate;
+                            }
+                            if (bookingObj['timeSlot'] == null) {
+                              bookingObj['timeSlot'] = selectedSlot;
+                            }
+                            if (bookingObj['status'] == null) {
+                              bookingObj['status'] = 'Confirmed';
+                            }
                             BookingManager().addBooking(bookingObj);
                           } catch (e) {
                             debugPrint('Error caching booking locally: $e');
                           }
                           BookingManager().fetchBookings();
 
+                          if (_isOpenForChallenge) {
+                            final tName = _teamNameController.text.trim().isNotEmpty
+                                ? _teamNameController.text.trim()
+                                : customerName;
+                            final tSize = _teamSizeController.text.trim().isNotEmpty
+                                ? _teamSizeController.text.trim()
+                                : '7 Players (7v7)';
+                            final initials = tName.length >= 2
+                                ? tName.substring(0, 2).toUpperCase()
+                                : 'TC';
+
+                            ChallengeManager().addChallenge(
+                              Challenge(
+                                id: 'ch_${DateTime.now().millisecondsSinceEpoch}',
+                                turfName: widget.turfName,
+                                date: selectedDate,
+                                time: selectedSlot,
+                                sport: _selectedSport,
+                                challengerName: tName,
+                                challengerTeamInitials: initials,
+                                challengerColor: const Color(0xFF166534),
+                                creatorPhone: customerPhone,
+                                teamSize: tSize,
+                                isCreator: true,
+                                joinRequests: [],
+                              ),
+                            );
+                          }
+
                           if (mounted) {
                             showDialog(
                               context: context,
                               builder: (ctx) => AlertDialog(
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                                 title: const Row(
                                   children: [
-                                    Icon(Icons.check_circle, color: Color(0xFF166534), size: 28),
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: Color(0xFF166534),
+                                      size: 28,
+                                    ),
                                     SizedBox(width: 8),
-                                    Text('Booking Confirmed!'),
+                                    Expanded(
+                                      child: Text(
+                                        'Booking Confirmed!',
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 content: Text(
@@ -1164,7 +1462,10 @@ class _BookingScreenState extends State<BookingScreen> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(json['message'] ?? 'Booking failed. Slot may already be booked.'),
+                                content: Text(
+                                  json['message'] ??
+                                      'Booking failed. Slot may already be booked.',
+                                ),
                                 backgroundColor: const Color(0xFFDC2626),
                                 behavior: SnackBarBehavior.floating,
                                 duration: const Duration(seconds: 3),
@@ -1205,20 +1506,30 @@ class _BookingScreenState extends State<BookingScreen> {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
                         'Confirm Booking',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       if (_selectedTimeSlots.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Text(
                           '- ₹$total',
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white70),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ],

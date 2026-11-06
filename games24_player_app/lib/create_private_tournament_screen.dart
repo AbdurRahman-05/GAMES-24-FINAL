@@ -5,10 +5,12 @@ class CreatePrivateTournamentScreen extends StatefulWidget {
   const CreatePrivateTournamentScreen({super.key});
 
   @override
-  State<CreatePrivateTournamentScreen> createState() => _CreatePrivateTournamentScreenState();
+  State<CreatePrivateTournamentScreen> createState() =>
+      _CreatePrivateTournamentScreenState();
 }
 
-class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentScreen> {
+class _CreatePrivateTournamentScreenState
+    extends State<CreatePrivateTournamentScreen> {
   String _selectedSport = 'Football';
   bool _rulesExpanded = true;
 
@@ -30,15 +32,18 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
                   _buildLabel('Tournament Name'),
                   _buildTextField('e.g., Weekend Turf Clash Season 4'),
                   const SizedBox(height: 20),
-                  
+
                   _buildLabel('Access Code / Tournament PIN'),
-                  _buildTextFieldWithIcon('e.g., SECUREPIN2024', Icons.lock_outline),
+                  _buildTextFieldWithIcon(
+                    'e.g., SECUREPIN2024',
+                    Icons.lock_outline,
+                  ),
                   const SizedBox(height: 20),
-                  
+
                   _buildLabel('Select Sport'),
                   _buildSportSelector(),
                   const SizedBox(height: 20),
-                  
+
                   Row(
                     children: [
                       Expanded(
@@ -63,7 +68,7 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
                     ],
                   ),
                   const SizedBox(height: 20),
-                  
+
                   Row(
                     children: [
                       Expanded(
@@ -88,13 +93,13 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   _buildRulesSection(),
                   const SizedBox(height: 24),
-                  
+
                   _buildVenueCard(),
                   const SizedBox(height: 32),
-                  
+
                   _buildNextButton(),
                   const SizedBox(height: 40),
                 ],
@@ -120,17 +125,16 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
           shadows: [
-            Shadow(
-              color: Colors.black12,
-              offset: Offset(2, 2),
-              blurRadius: 4,
-            ),
+            Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 4),
           ],
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: Colors.black87),
+          icon: const Icon(
+            Icons.notifications_none_outlined,
+            color: Colors.black87,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: 8),
@@ -168,7 +172,11 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
                 color: Color(0xFFF3F5F1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black87,
+              ),
             ),
           ),
           Column(
@@ -184,10 +192,7 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
               SizedBox(height: 2),
               Text(
                 'Invite-only & Secure',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B7280),
-                ),
+                style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
               ),
             ],
           ),
@@ -197,7 +202,11 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
               color: Color(0xFFF3F5F1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.help_outline, size: 20, color: Colors.black87),
+            child: const Icon(
+              Icons.help_outline,
+              size: 20,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),
@@ -257,7 +266,10 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
           hintText: hint,
           hintStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -275,7 +287,10 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
           hintStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),
           prefixIcon: Icon(icon, color: const Color(0xFF6B7280), size: 20),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -291,8 +306,15 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(value, style: const TextStyle(fontSize: 14, color: Colors.black87)),
-          const Icon(Icons.keyboard_arrow_down, color: Colors.black87, size: 20),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          const Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.black87,
+            size: 20,
+          ),
         ],
       ),
     );
@@ -308,8 +330,15 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(hint, style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280))),
-          const Icon(Icons.calendar_today_outlined, color: Colors.black87, size: 18),
+          Text(
+            hint,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+          ),
+          const Icon(
+            Icons.calendar_today_outlined,
+            color: Colors.black87,
+            size: 18,
+          ),
         ],
       ),
     );
@@ -380,14 +409,18 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFE5E7EB).withOpacity(0.5),
+              color: const Color(0xFFE5E7EB).withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.rule, color: Color(0xFF166534), size: 20),
           ),
           title: const Text(
             'Private Tournament Rules',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
           ),
           subtitle: const Text(
             'Secure access & organizer requirements\nReview standard tournament expectations',
@@ -395,30 +428,38 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
           ),
           iconColor: Colors.black87,
           collapsedIconColor: Colors.black87,
-          childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          childrenPadding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            bottom: 16,
+          ),
           children: [
             _buildRuleCard(
               icon: Icons.key_outlined,
               title: 'Access Code Security',
-              description: 'Do not share access codes publicly; only invited teams can join.',
+              description:
+                  'Do not share access codes publicly; only invited teams can join.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.person_add_alt_1_outlined,
               title: 'Organizer Approval',
-              description: 'Tournament creator manually approves all participating teams.',
+              description:
+                  'Tournament creator manually approves all participating teams.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.location_off_outlined,
               title: 'Confidential Venue',
-              description: 'Exact venue coordinates and locker room details are revealed only after registration approval.',
+              description:
+                  'Exact venue coordinates and locker room details are revealed only after registration approval.',
             ),
             const SizedBox(height: 8),
             _buildRuleCard(
               icon: Icons.shield_outlined,
               title: 'Private Fair Play',
-              description: 'Strict code of conduct applies to all invited guests and participants.',
+              description:
+                  'Strict code of conduct applies to all invited guests and participants.',
             ),
           ],
         ),
@@ -426,7 +467,11 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
     );
   }
 
-  Widget _buildRuleCard({required IconData icon, required String title, required String description}) {
+  Widget _buildRuleCard({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -444,12 +489,20 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280), height: 1.4),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
@@ -484,18 +537,30 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
               children: [
                 Row(
                   children: const [
-                    Icon(Icons.location_on_outlined, size: 12, color: Color(0xFF166534)),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 12,
+                      color: Color(0xFF166534),
+                    ),
                     SizedBox(width: 4),
                     Text(
                       'Primary Venue Linked',
-                      style: TextStyle(fontSize: 10, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF166534),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Grand Arena Tur...',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -538,7 +603,9 @@ class _CreatePrivateTournamentScreenState extends State<CreatePrivateTournamentS
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreatePrivateTournamentStep2Screen()),
+            MaterialPageRoute(
+              builder: (context) => const CreatePrivateTournamentStep2Screen(),
+            ),
           );
         },
         style: ElevatedButton.styleFrom(

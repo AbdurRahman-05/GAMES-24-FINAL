@@ -70,25 +70,37 @@ class _AlterBookingDialogState extends ConsumerState<AlterBookingDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.edit_calendar_rounded, color: AppColors.primary),
                       ),
-                      child: const Icon(Icons.edit_calendar_rounded, color: AppColors.primary),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Alter / Shift Booking', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        Text(widget.bookingId, style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Alter / Shift Booking',
+                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              widget.bookingId,
+                              style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
@@ -106,23 +118,47 @@ class _AlterBookingDialogState extends ConsumerState<AlterBookingDialog> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Customer Name:'),
-                      Text(widget.playerName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.playerName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Court Name:'),
-                      Text(widget.courtName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.courtName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Current Time Slot:'),
-                      Text(widget.originalTimeSlot, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.originalTimeSlot,
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -136,17 +172,18 @@ class _AlterBookingDialogState extends ConsumerState<AlterBookingDialog> {
             Row(
               children: [
                 Expanded(
+                  flex: 3,
                   child: DropdownButtonFormField<String>(
                     initialValue: _selectedDate,
                     isExpanded: true,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'Today', child: Text('Today')),
-                      DropdownMenuItem(value: 'Tomorrow', child: Text('Tomorrow')),
-                      DropdownMenuItem(value: 'Next Sat', child: Text('Next Sat')),
+                      DropdownMenuItem(value: 'Today', child: Text('Today', overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(value: 'Tomorrow', child: Text('Tomorrow', overflow: TextOverflow.ellipsis)),
+                      DropdownMenuItem(value: 'Next Sat', child: Text('Next Sat', overflow: TextOverflow.ellipsis)),
                     ],
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedDate = val);
@@ -155,7 +192,7 @@ class _AlterBookingDialogState extends ConsumerState<AlterBookingDialog> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  flex: 2,
+                  flex: 4,
                   child: DropdownButtonFormField<String>(
                     initialValue: _selectedNewSlot,
                     isExpanded: true,

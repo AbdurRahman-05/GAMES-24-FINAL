@@ -47,7 +47,11 @@ class TeamsHubScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: const Color(0xFFE5E7EB)),
                   ),
-                  child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 20,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -65,10 +69,7 @@ class TeamsHubScreen extends StatelessWidget {
                   SizedBox(height: 2),
                   Text(
                     'Manage squads & match rosters',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -83,7 +84,11 @@ class TeamsHubScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFE5E7EB)),
                 ),
-                child: const Icon(Icons.search, size: 18, color: Colors.black87),
+                child: const Icon(
+                  Icons.search,
+                  size: 18,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(width: 8),
               Container(
@@ -93,7 +98,11 @@ class TeamsHubScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFE5F5EB)),
                 ),
-                child: const Icon(Icons.qr_code_scanner, size: 18, color: Color(0xFF166534)),
+                child: const Icon(
+                  Icons.qr_code_scanner,
+                  size: 18,
+                  color: Color(0xFF166534),
+                ),
               ),
             ],
           ),
@@ -112,7 +121,7 @@ class TeamsHubScreen extends StatelessWidget {
           border: Border.all(color: const Color(0xFFE5E7EB)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -149,10 +158,17 @@ class TeamsHubScreen extends StatelessWidget {
                           color: const Color(0xFFF3F5F1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.group_add_outlined, color: Color(0xFF166534), size: 24),
+                        child: const Icon(
+                          Icons.group_add_outlined,
+                          color: Color(0xFF166534),
+                          size: 24,
+                        ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF86EFAC),
                           borderRadius: BorderRadius.circular(12),
@@ -180,10 +196,7 @@ class TeamsHubScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   const Text(
                     'Form your squad, pick home turf & lead tournaments',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -191,13 +204,21 @@ class TeamsHubScreen extends StatelessWidget {
                     height: 44,
                     child: ElevatedButton.icon(
                       onPressed: () {},
-                      icon: const Text('Create Squad', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      icon: const Text(
+                        'Create Squad',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       label: const Icon(Icons.arrow_forward, size: 16),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0F6D38),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -230,7 +251,11 @@ class TeamsHubScreen extends StatelessWidget {
                     color: const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.key_outlined, color: Colors.black54, size: 20),
+                  child: const Icon(
+                    Icons.key_outlined,
+                    color: Colors.black54,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -247,10 +272,7 @@ class TeamsHubScreen extends StatelessWidget {
                     SizedBox(height: 2),
                     Text(
                       'Got a 6-digit squad passcode?',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
-                      ),
+                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                     ),
                   ],
                 ),
@@ -288,12 +310,25 @@ class TeamsHubScreen extends StatelessWidget {
                   height: 44,
                   child: ElevatedButton.icon(
                     onPressed: () {},
-                    icon: const Text('Join', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87)),
-                    label: const Icon(Icons.arrow_forward, size: 16, color: Colors.black87),
+                    icon: const Text(
+                      'Join',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    label: const Icon(
+                      Icons.arrow_forward,
+                      size: 16,
+                      color: Colors.black87,
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE5E7EB), // Light grey
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
@@ -326,7 +361,10 @@ class TeamsHubScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE5E7EB),
                       borderRadius: BorderRadius.circular(12),
@@ -398,7 +436,8 @@ class TeamsHubScreen extends StatelessWidget {
           teamName: 'Thunder Smashers',
           roleBadge: 'Vice Captain',
           isCaptain: false,
-          sportDetail: 'Cricket • Box Cricket\nSquad', // Adding newline to match design
+          sportDetail:
+              'Cricket • Box Cricket\nSquad', // Adding newline to match design
           membersCount: '8',
           winsCount: '8',
           rating: '4.7',
@@ -498,19 +537,36 @@ class TeamsHubScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: isCaptain ? const Color(0xFFF7FDF9) : const Color(0xFFF3F4F6),
-                              border: Border.all(color: isCaptain ? const Color(0xFFE5F5EB) : const Color(0xFFE5E7EB)),
+                              color: isCaptain
+                                  ? const Color(0xFFF7FDF9)
+                                  : const Color(0xFFF3F4F6),
+                              border: Border.all(
+                                color: isCaptain
+                                    ? const Color(0xFFE5F5EB)
+                                    : const Color(0xFFE5E7EB),
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               children: [
                                 if (isCaptain) ...[
-                                  const Icon(Icons.emoji_events, size: 10, color: Color(0xFF166534)),
+                                  const Icon(
+                                    Icons.emoji_events,
+                                    size: 10,
+                                    color: Color(0xFF166534),
+                                  ),
                                   const SizedBox(width: 4),
                                 ] else ...[
-                                  const Icon(Icons.shield_outlined, size: 10, color: Colors.black54),
+                                  const Icon(
+                                    Icons.shield_outlined,
+                                    size: 10,
+                                    color: Colors.black54,
+                                  ),
                                   const SizedBox(width: 4),
                                 ],
                                 Text(
@@ -518,7 +574,9 @@ class TeamsHubScreen extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: isCaptain ? const Color(0xFF166534) : Colors.black87,
+                                    color: isCaptain
+                                        ? const Color(0xFF166534)
+                                        : Colors.black87,
                                   ),
                                 ),
                               ],
@@ -551,7 +609,11 @@ class TeamsHubScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatItem(membersCount, 'Members'),
-                  _buildStatItem(winsCount, 'Wins', valueColor: const Color(0xFF166534)),
+                  _buildStatItem(
+                    winsCount,
+                    'Wins',
+                    valueColor: const Color(0xFF166534),
+                  ),
                   _buildStatItem(rating, 'Rating', isRating: true),
                 ],
               ),
@@ -566,14 +628,21 @@ class TeamsHubScreen extends StatelessWidget {
                     _buildAvatarStack(),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         avatarsCount,
-                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ],
@@ -581,16 +650,27 @@ class TeamsHubScreen extends StatelessWidget {
                 Row(
                   children: [
                     if (nextMatchText != null) ...[
-                      const Icon(Icons.calendar_today_outlined, size: 14, color: Color(0xFF166534)),
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 14,
+                        color: Color(0xFF166534),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         dateText,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6B7280)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                     ] else ...[
                       Text(
                         dateText,
-                        style: const TextStyle(fontSize: 12, color: Colors.black87),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                        ),
                       ),
                     ],
                   ],
@@ -600,24 +680,39 @@ class TeamsHubScreen extends StatelessWidget {
             if (nextMatchText != null) ...[
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF3F5F1), // Light green tint
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.flag_outlined, size: 16, color: Color(0xFF166534)),
+                    const Icon(
+                      Icons.flag_outlined,
+                      size: 16,
+                      color: Color(0xFF166534),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         nextMatchText,
-                        style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                     Text(
                       nextMatchTime!,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                   ],
                 ),
@@ -633,12 +728,20 @@ class TeamsHubScreen extends StatelessWidget {
                   backgroundColor: const Color(0xFFF3F5F1),
                   foregroundColor: const Color(0xFF0F6D38),
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(buttonText, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text(
+                      buttonText,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                     const SizedBox(width: 4),
                     const Icon(Icons.chevron_right, size: 16),
                   ],
@@ -651,7 +754,12 @@ class TeamsHubScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String value, String label, {Color valueColor = Colors.black87, bool isRating = false}) {
+  Widget _buildStatItem(
+    String value,
+    String label, {
+    Color valueColor = Colors.black87,
+    bool isRating = false,
+  }) {
     return Column(
       children: [
         Row(
@@ -662,22 +770,25 @@ class TeamsHubScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isRating ? const Color(0xFFD97706) : valueColor, // Orange for rating
+                color: isRating
+                    ? const Color(0xFFD97706)
+                    : valueColor, // Orange for rating
               ),
             ),
             if (isRating) ...[
               const SizedBox(width: 2),
-              const Icon(Icons.star_outline, size: 14, color: Color(0xFFD97706)),
+              const Icon(
+                Icons.star_outline,
+                size: 14,
+                color: Color(0xFFD97706),
+              ),
             ],
           ],
         ),
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xFF6B7280),
-          ),
+          style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
         ),
       ],
     );
@@ -713,10 +824,7 @@ class TeamsHubScreen extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 2),
-        image: DecorationImage(
-          image: NetworkImage(url),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
       ),
     );
   }
@@ -745,10 +853,7 @@ class TeamsHubScreen extends StatelessWidget {
                   SizedBox(height: 2),
                   Text(
                     'Teams looking for players tonight',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -784,7 +889,11 @@ class TeamsHubScreen extends StatelessWidget {
                         color: const Color(0xFFF3F5F1), // Light green tint
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.sports_soccer, size: 24, color: Color(0xFF166534)),
+                      child: const Icon(
+                        Icons.sports_soccer,
+                        size: 24,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -803,7 +912,10 @@ class TeamsHubScreen extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFFEE2E2), // Light red
                                   borderRadius: BorderRadius.circular(12),
@@ -822,7 +934,10 @@ class TeamsHubScreen extends StatelessWidget {
                           const SizedBox(height: 2),
                           const Text(
                             'Seeking: Striker / Midfielder',
-                            style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6B7280),
+                            ),
                           ),
                         ],
                       ),
@@ -831,24 +946,38 @@ class TeamsHubScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF3F5F1), // Light green
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: const [
-                      Icon(Icons.stadium_outlined, size: 16, color: Color(0xFF166534)),
+                      Icon(
+                        Icons.stadium_outlined,
+                        size: 16,
+                        color: Color(0xFF166534),
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Grand Arena • Turf A',
-                          style: TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       Text(
                         'Tonight, 21:00',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                     ],
                   ),
@@ -863,7 +992,11 @@ class TeamsHubScreen extends StatelessWidget {
                         color: const Color(0xFFE5E7EB),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.chat_bubble_outline, size: 20, color: Colors.black87),
+                      child: const Icon(
+                        Icons.chat_bubble_outline,
+                        size: 20,
+                        color: Colors.black87,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -872,12 +1005,20 @@ class TeamsHubScreen extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: () {},
                           icon: const Icon(Icons.person_add_alt_1, size: 18),
-                          label: const Text('Request to Join', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          label: const Text(
+                            'Request to Join',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0F6D38),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ),

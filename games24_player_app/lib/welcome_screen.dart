@@ -8,7 +8,7 @@ class WelcomeScreen extends StatelessWidget {
   void _finishWelcome(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_seen_welcome', true);
-    
+
     if (context.mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const SignupScreen()),
@@ -35,7 +35,7 @@ class WelcomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(flex: 2),
-              
+
               // Logo Placeholder
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -52,10 +52,7 @@ class WelcomeScreen extends StatelessWidget {
                 },
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 180,
-                    ),
+                    Image.asset('assets/images/logo.png', height: 180),
                     const SizedBox(height: 16),
                     const Text(
                       'Discover, book, and play turfs instantly',
@@ -68,9 +65,9 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const Spacer(flex: 1),
-              
+
               // Features Row
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -103,13 +100,11 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
-              const Spacer(flex: 1),
-              
 
-              
               const Spacer(flex: 1),
-              
+
+              const Spacer(flex: 1),
+
               // Get Started Button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40.0),
@@ -143,7 +138,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const Spacer(flex: 1),
             ],
           ),
@@ -157,10 +152,7 @@ class _FeatureIcon extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _FeatureIcon({
-    required this.icon,
-    required this.label,
-  });
+  const _FeatureIcon({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -171,16 +163,12 @@ class _FeatureIcon extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.green.withOpacity(0.3),
+              color: Colors.green.withValues(alpha: 0.3),
               width: 1,
             ),
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 0.1),
           ),
-          child: Icon(
-            icon,
-            color: Colors.greenAccent.shade400,
-            size: 32,
-          ),
+          child: Icon(icon, color: Colors.greenAccent.shade400, size: 32),
         ),
         const SizedBox(height: 12),
         Text(
@@ -196,6 +184,7 @@ class _FeatureIcon extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _Dot extends StatelessWidget {
   final bool isActive;
 

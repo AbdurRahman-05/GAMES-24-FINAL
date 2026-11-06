@@ -37,21 +37,32 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF0F6D38),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
                     'Season 4',
-                    style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
             ),
             const Text(
               'Universal Player Rankings • Live Standings',
-              style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.normal),
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 11,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ],
         ),
@@ -101,7 +112,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 color: const Color(0xFF0F6D38),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.emoji_events, color: Colors.white, size: 24),
+              child: const Icon(
+                Icons.emoji_events,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -110,15 +125,31 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 children: [
                   Row(
                     children: [
-                      const Text('Season 4 Final Lap', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      const Text(
+                        'Season 4 Final Lap',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       const Icon(Icons.circle, size: 6, color: Colors.red),
                       const SizedBox(width: 4),
-                      const Text('12d left', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text(
+                        '12d left',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text('Top 3 earn ₹25,000 Vouchers + Golden Jersey', style: TextStyle(color: Colors.black54, fontSize: 11)),
+                  const Text(
+                    'Top 3 earn ₹25,000 Vouchers + Golden Jersey',
+                    style: TextStyle(color: Colors.black54, fontSize: 11),
+                  ),
                 ],
               ),
             ),
@@ -181,19 +212,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Row(
         children: [
-          _buildFilterChip('All Sports', Icons.all_inclusive, isSelected: true),
+          _buildFilterChip('All Sports', Icons.all_inclusive, isSelected: _selectedSport == 'All Sports'),
           const SizedBox(width: 8),
-          _buildFilterChip('Football', Icons.sports_soccer),
+          _buildFilterChip('Football', Icons.sports_soccer, isSelected: _selectedSport == 'Football'),
           const SizedBox(width: 8),
-          _buildFilterChip('Cricket', Icons.sports_cricket),
+          _buildFilterChip('Cricket', Icons.sports_cricket, isSelected: _selectedSport == 'Cricket'),
           const SizedBox(width: 8),
-          _buildFilterChip('Badminton', Icons.sports_tennis),
+          _buildFilterChip('Badminton', Icons.sports_tennis, isSelected: _selectedSport == 'Badminton'),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, IconData icon, {bool isSelected = false}) {
+  Widget _buildFilterChip(
+    String label,
+    IconData icon, {
+    bool isSelected = false,
+  }) {
     return GestureDetector(
       onTap: () => setState(() => _selectedSport = label),
       child: Container(
@@ -201,11 +236,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF0F6D38) : Colors.grey[100],
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? const Color(0xFF0F6D38) : Colors.grey[300]!),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF0F6D38) : Colors.grey[300]!,
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 16, color: isSelected ? Colors.white : Colors.grey[700]),
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : Colors.grey[700],
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -228,11 +269,34 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildPodiumItem(rank: 2, name: 'Alex R.', location: 'Delhi NCR', points: '3,150', winRate: '88% W', imageUrl: 'https://picsum.photos/seed/user1/150/150', isYou: true),
+          _buildPodiumItem(
+            rank: 2,
+            name: 'Alex R.',
+            location: 'Delhi NCR',
+            points: '3,150',
+            winRate: '88% W',
+            imageUrl: 'https://picsum.photos/seed/user1/150/150',
+            isYou: true,
+          ),
           const SizedBox(width: 16),
-          _buildPodiumItem(rank: 1, name: 'Vikram Sethi', location: 'Delhi NCR', points: '3,420', winRate: '94% W', imageUrl: 'https://picsum.photos/seed/user2/150/150', isCenter: true),
+          _buildPodiumItem(
+            rank: 1,
+            name: 'Vikram Sethi',
+            location: 'Delhi NCR',
+            points: '3,420',
+            winRate: '94% W',
+            imageUrl: 'https://picsum.photos/seed/user2/150/150',
+            isCenter: true,
+          ),
           const SizedBox(width: 16),
-          _buildPodiumItem(rank: 3, name: 'Sameer K.', location: 'Mumbai', points: '2,980', winRate: '82% W', imageUrl: 'https://picsum.photos/seed/user3/150/150'),
+          _buildPodiumItem(
+            rank: 3,
+            name: 'Sameer K.',
+            location: 'Mumbai',
+            points: '2,980',
+            winRate: '82% W',
+            imageUrl: 'https://picsum.photos/seed/user3/150/150',
+          ),
         ],
       ),
     );
@@ -249,8 +313,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     bool isYou = false,
   }) {
     double avatarSize = isCenter ? 80 : 64;
-    Color medalColor = isCenter ? Colors.amber : (rank == 2 ? Colors.grey[400]! : Colors.brown[300]!);
-    
+    Color medalColor = isCenter
+        ? Colors.amber
+        : (rank == 2 ? Colors.grey[400]! : Colors.brown[300]!);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -263,7 +329,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: isCenter ? [Colors.orange, Colors.amber] : [Colors.grey[300]!, Colors.grey[100]!],
+                  colors: isCenter
+                      ? [Colors.orange, Colors.amber]
+                      : [Colors.grey[300]!, Colors.grey[100]!],
                 ),
               ),
               child: Container(
@@ -272,62 +340,101 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 2),
-                  image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
+                  image: DecorationImage(
+                    image: NetworkImage(imageUrl),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
             if (isCenter)
               Positioned(
                 top: -16,
-                child: Icon(Icons.workspace_premium, color: Colors.amber, size: 32),
+                child: Icon(
+                  Icons.workspace_premium,
+                  color: Colors.amber,
+                  size: 32,
+                ),
               )
             else
               Positioned(
                 top: -10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey[200]!),
-                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.emoji_events, color: medalColor, size: 12),
                       const SizedBox(width: 2),
-                      Text('$rank${rank == 2 ? "nd" : "rd"}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(
+                        '$rank${rank == 2 ? "nd" : "rd"}',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            
+
             if (isCenter || isYou)
               Positioned(
                 bottom: -10,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: isCenter ? Colors.orange : const Color(0xFF0F6D38),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     isCenter ? '#1 Universal' : 'YOU',
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
           ],
         ),
         const SizedBox(height: 16),
-        Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isCenter ? 14 : 12)),
+        Text(
+          name,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: isCenter ? 14 : 12,
+          ),
+        ),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isCenter) const Icon(Icons.sports_soccer, size: 10, color: Colors.grey),
+            if (isCenter)
+              const Icon(Icons.sports_soccer, size: 10, color: Colors.grey),
             if (isCenter) const SizedBox(width: 2),
-            Text(location, style: TextStyle(color: Colors.grey[600], fontSize: 10)),
+            Text(
+              location,
+              style: TextStyle(color: Colors.grey[600], fontSize: 10),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -337,7 +444,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.grey[100]!),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Column(
             children: [
@@ -346,7 +459,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: isCenter ? Colors.orange[800] : const Color(0xFF0F6D38),
+                  color: isCenter
+                      ? Colors.orange[800]
+                      : const Color(0xFF0F6D38),
                 ),
               ),
               Text(
@@ -370,7 +485,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFE5F5EB)),
           boxShadow: [
-            BoxShadow(color: const Color(0xFF0F6D38).withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: const Color(0xFF0F6D38).withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Column(
@@ -385,7 +504,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       height: 48,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        image: DecorationImage(image: NetworkImage('https://picsum.photos/seed/user1/150/150'), fit: BoxFit.cover),
+                        image: DecorationImage(
+                          image: NetworkImage(
+                            'https://picsum.photos/seed/user1/150/150',
+                          ),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -398,7 +522,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
-                        child: const Text('#2', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          '#2',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -410,25 +541,57 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     children: [
                       Row(
                         children: [
-                          const Text('Alex Rivera', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                          const Text(
+                            'Alex Rivera',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: const Color(0xFFBBE5CA), borderRadius: BorderRadius.circular(8)),
-                            child: const Text('Turf Master', style: TextStyle(color: Color(0xFF0F6D38), fontSize: 9, fontWeight: FontWeight.bold)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFBBE5CA),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Turf Master',
+                              style: TextStyle(
+                                color: Color(0xFF0F6D38),
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 2),
-                      const Text('Top 0.5% Globally • Delhi NCR', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                      const Text(
+                        'Top 0.5% Globally • Delhi NCR',
+                        style: TextStyle(color: Colors.grey, fontSize: 10),
+                      ),
                     ],
                   ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: const [
-                    Text('3,150', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F6D38))),
-                    Text('universal pts', style: TextStyle(color: Colors.grey, fontSize: 9)),
+                    Text(
+                      '3,150',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF0F6D38),
+                      ),
+                    ),
+                    Text(
+                      'universal pts',
+                      style: TextStyle(color: Colors.grey, fontSize: 9),
+                    ),
                   ],
                 ),
               ],
@@ -436,18 +599,34 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.trending_up, color: Color(0xFF0F6D38), size: 16),
+                const Icon(
+                  Icons.trending_up,
+                  color: Color(0xFF0F6D38),
+                  size: 16,
+                ),
                 const SizedBox(width: 4),
-                const Text('270 pts to take #1 from Vikram', style: TextStyle(fontSize: 11, color: Colors.black87)),
+                const Text(
+                  '270 pts to take #1 from Vikram',
+                  style: TextStyle(fontSize: 11, color: Colors.black87),
+                ),
                 const Spacer(),
-                const Text('92%', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F6D38))),
+                const Text(
+                  '92%',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F6D38),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(
               value: 0.92,
               backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0F6D38)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF0F6D38),
+              ),
               minHeight: 6,
               borderRadius: BorderRadius.circular(3),
             ),
@@ -469,13 +648,22 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text('Universal Rankings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    'Universal Rankings',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
                   SizedBox(height: 2),
-                  Text('Updated every 15 mins • 4,820 Active Contenders', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                  Text(
+                    'Updated every 15 mins • 4,820 Active Contenders',
+                    style: TextStyle(color: Colors.grey, fontSize: 11),
+                  ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(16),
@@ -485,28 +673,102 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   children: const [
                     Icon(Icons.tune, size: 14, color: Colors.black87),
                     SizedBox(width: 4),
-                    Text('Filter', style: TextStyle(fontSize: 12, color: Colors.black87)),
+                    Text(
+                      'Filter',
+                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        
-        _buildRankRow(rank: 4, name: 'Arjun Kapoor', change: '+ 2', location: 'Bangalore', sport: 'Cricket', points: '2,840', wins: '46 Wins', imageUrl: 'https://picsum.photos/seed/user4/150/150', isVerified: true),
+
+        _buildRankRow(
+          rank: 4,
+          name: 'Arjun Kapoor',
+          change: '+ 2',
+          location: 'Bangalore',
+          sport: 'Cricket',
+          points: '2,840',
+          wins: '46 Wins',
+          imageUrl: 'https://picsum.photos/seed/user4/150/150',
+          isVerified: true,
+        ),
         _buildDivider(),
-        _buildRankRow(rank: 5, name: 'Elena Rostova', change: '-', location: 'Mumbai', sport: 'Badminton', points: '2,710', wins: '52 Wins', imageUrl: 'https://picsum.photos/seed/user5/150/150', isVerified: true),
+        _buildRankRow(
+          rank: 5,
+          name: 'Elena Rostova',
+          change: '-',
+          location: 'Mumbai',
+          sport: 'Badminton',
+          points: '2,710',
+          wins: '52 Wins',
+          imageUrl: 'https://picsum.photos/seed/user5/150/150',
+          isVerified: true,
+        ),
         _buildDivider(),
-        _buildRankRow(rank: 6, name: 'Tariq Al-Mansoor', change: '+ 1', location: 'Delhi NCR', sport: 'Football', points: '2,630', wins: '38 Wins', imageUrl: 'https://picsum.photos/seed/user6/150/150'),
+        _buildRankRow(
+          rank: 6,
+          name: 'Tariq Al-Mansoor',
+          change: '+ 1',
+          location: 'Delhi NCR',
+          sport: 'Football',
+          points: '2,630',
+          wins: '38 Wins',
+          imageUrl: 'https://picsum.photos/seed/user6/150/150',
+        ),
         _buildDivider(),
-        _buildRankRow(rank: 7, name: 'David Kim', change: '- 1', location: 'Chennai', sport: 'Football', points: '2,510', wins: '35 Wins', imageUrl: 'https://picsum.photos/seed/user7/150/150', isChangeNegative: true),
+        _buildRankRow(
+          rank: 7,
+          name: 'David Kim',
+          change: '- 1',
+          location: 'Chennai',
+          sport: 'Football',
+          points: '2,510',
+          wins: '35 Wins',
+          imageUrl: 'https://picsum.photos/seed/user7/150/150',
+          isChangeNegative: true,
+        ),
         _buildDivider(),
-        _buildRankRow(rank: 8, name: 'Pooja Reddy', change: '- 3', location: 'Hyderabad', sport: 'Badminton', points: '2,420', wins: '40 Wins', imageUrl: 'https://picsum.photos/seed/user8/150/150', isVerified: true, isChangeNegative: true),
+        _buildRankRow(
+          rank: 8,
+          name: 'Pooja Reddy',
+          change: '- 3',
+          location: 'Hyderabad',
+          sport: 'Badminton',
+          points: '2,420',
+          wins: '40 Wins',
+          imageUrl: 'https://picsum.photos/seed/user8/150/150',
+          isVerified: true,
+          isChangeNegative: true,
+        ),
         _buildDivider(),
-        _buildRankRow(rank: 9, name: 'Rohan Deshmukh', change: '-', location: 'Pune', sport: 'Cricket', points: '2,350', wins: '31 Wins', imageUrl: 'https://picsum.photos/seed/user9/150/150'),
+        _buildRankRow(
+          rank: 9,
+          name: 'Rohan Deshmukh',
+          change: '-',
+          location: 'Pune',
+          sport: 'Cricket',
+          points: '2,350',
+          wins: '31 Wins',
+          imageUrl: 'https://picsum.photos/seed/user9/150/150',
+        ),
         _buildDivider(),
-        _buildRankRow(rank: 10, name: 'Marcus Vance', change: '+ 1', location: 'Delhi NCR', sport: '14 Clean Sheets', sportColor: const Color(0xFFE5F5EB), sportTextColor: const Color(0xFF0F6D38), points: '2,280', wins: '29 Wins', imageUrl: 'https://picsum.photos/seed/user10/150/150', sportIcon: Icons.shield_outlined),
-        
+        _buildRankRow(
+          rank: 10,
+          name: 'Marcus Vance',
+          change: '+ 1',
+          location: 'Delhi NCR',
+          sport: '14 Clean Sheets',
+          sportColor: const Color(0xFFE5F5EB),
+          sportTextColor: const Color(0xFF0F6D38),
+          points: '2,280',
+          wins: '29 Wins',
+          imageUrl: 'https://picsum.photos/seed/user10/150/150',
+          sportIcon: Icons.shield_outlined,
+        ),
+
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Container(
@@ -519,9 +781,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
-                Text('View All 500+ Ranked Players', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F6D38))),
+                Text(
+                  'View All 500+ Ranked Players',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Color(0xFF0F6D38),
+                  ),
+                ),
                 SizedBox(width: 4),
-                Icon(Icons.keyboard_arrow_down, color: Color(0xFF0F6D38), size: 18),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Color(0xFF0F6D38),
+                  size: 18,
+                ),
               ],
             ),
           ),
@@ -555,9 +828,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     IconData defaultSportIcon = Icons.sports_soccer;
     if (sport == 'Cricket') defaultSportIcon = Icons.sports_cricket;
     if (sport == 'Badminton') defaultSportIcon = Icons.sports_tennis;
-    
-    Color changeColor = change == '-' ? Colors.grey : (isChangeNegative ? Colors.red : const Color(0xFF0F6D38));
-    
+
+    Color changeColor = change == '-'
+        ? Colors.grey
+        : (isChangeNegative ? Colors.red : const Color(0xFF0F6D38));
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
@@ -577,7 +852,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
+                  image: DecorationImage(
+                    image: NetworkImage(imageUrl),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               if (isVerified)
@@ -589,7 +867,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check_circle, color: Color(0xFF10B981), size: 14),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF10B981),
+                      size: 14,
+                    ),
                   ),
                 ),
             ],
@@ -601,15 +883,41 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               children: [
                 Row(
                   children: [
-                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     if (change == '-')
-                      const Text('—', style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold))
+                      const Text(
+                        '—',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
                     else
                       Row(
                         children: [
-                          Icon(isChangeNegative ? Icons.arrow_drop_down : Icons.arrow_drop_up, color: changeColor, size: 16),
-                          Text(change.replaceAll(RegExp(r'[+-]\s'), ''), style: TextStyle(color: changeColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                          Icon(
+                            isChangeNegative
+                                ? Icons.arrow_drop_down
+                                : Icons.arrow_drop_up,
+                            color: changeColor,
+                            size: 16,
+                          ),
+                          Text(
+                            change.replaceAll(RegExp(r'[+-]\s'), ''),
+                            style: TextStyle(
+                              color: changeColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                   ],
@@ -617,21 +925,40 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Text(location, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                    Text(
+                      location,
+                      style: const TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
                     const SizedBox(width: 6),
-                    const Text('•', style: TextStyle(color: Colors.grey, fontSize: 11)),
+                    const Text(
+                      '•',
+                      style: TextStyle(color: Colors.grey, fontSize: 11),
+                    ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: sportColor ?? Colors.grey[100],
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Row(
                         children: [
-                          Icon(sportIcon ?? defaultSportIcon, size: 10, color: sportTextColor ?? Colors.orange),
+                          Icon(
+                            sportIcon ?? defaultSportIcon,
+                            size: 10,
+                            color: sportTextColor ?? Colors.orange,
+                          ),
                           const SizedBox(width: 4),
-                          Text(sport, style: TextStyle(color: sportTextColor ?? Colors.grey[800], fontSize: 10)),
+                          Text(
+                            sport,
+                            style: TextStyle(
+                              color: sportTextColor ?? Colors.grey[800],
+                              fontSize: 10,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -643,8 +970,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(points, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              Text(wins, style: const TextStyle(color: Colors.grey, fontSize: 10)),
+              Text(
+                points,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                wins,
+                style: const TextStyle(color: Colors.grey, fontSize: 10),
+              ),
             ],
           ),
         ],
@@ -668,13 +1004,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               children: const [
                 Icon(Icons.stars, color: Color(0xFF0F6D38), size: 18),
                 SizedBox(width: 8),
-                Text('How Universal Points Work', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(
+                  'How Universal Points Work',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
               'Earn points by winning official GAMES24 booked turf matches (+50 pts), scoring tournament MVPs (+120 pts), and maintaining clean play ratings. Seasons reset bi-monthly.',
-              style: TextStyle(color: Colors.black87, fontSize: 11, height: 1.4),
+              style: TextStyle(
+                color: Colors.black87,
+                fontSize: 11,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 12),
             Row(

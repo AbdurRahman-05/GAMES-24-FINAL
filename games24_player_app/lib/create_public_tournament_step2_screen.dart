@@ -6,10 +6,12 @@ class CreatePublicTournamentStep2Screen extends StatefulWidget {
   const CreatePublicTournamentStep2Screen({super.key});
 
   @override
-  State<CreatePublicTournamentStep2Screen> createState() => _CreatePublicTournamentStep2ScreenState();
+  State<CreatePublicTournamentStep2Screen> createState() =>
+      _CreatePublicTournamentStep2ScreenState();
 }
 
-class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTournamentStep2Screen> {
+class _CreatePublicTournamentStep2ScreenState
+    extends State<CreatePublicTournamentStep2Screen> {
   bool _agreedToTerms = true;
 
   @override
@@ -23,25 +25,28 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
           _buildProgressBar(),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildOverviewSection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildFinancialSection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildArenaSection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildRulesSummarySection(),
                   const SizedBox(height: 32),
-                  
+
                   _buildTermsCheckbox(),
                   const SizedBox(height: 32),
-                  
+
                   _buildCreateButton(),
                   const SizedBox(height: 40),
                 ],
@@ -67,17 +72,16 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,
           shadows: [
-            Shadow(
-              color: Colors.black12,
-              offset: Offset(2, 2),
-              blurRadius: 4,
-            ),
+            Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 4),
           ],
         ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_none_outlined, color: Colors.black87),
+          icon: const Icon(
+            Icons.notifications_none_outlined,
+            color: Colors.black87,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: 8),
@@ -115,7 +119,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                 color: Color(0xFFF3F5F1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black87,
+              ),
             ),
           ),
           Column(
@@ -146,7 +154,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
               color: Color(0xFFF3F5F1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.help_outline, size: 20, color: Colors.black87),
+            child: const Icon(
+              Icons.help_outline,
+              size: 20,
+              color: Colors.black87,
+            ),
           ),
         ],
       ),
@@ -234,7 +246,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
               ),
               child: Row(
                 children: const [
-                  Icon(Icons.check_circle_outline, size: 12, color: Color(0xFF166534)),
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 12,
+                    color: Color(0xFF166534),
+                  ),
                   SizedBox(width: 4),
                   Text(
                     'Instant Publish',
@@ -270,7 +286,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                       color: const Color(0xFFF3F5F1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.calendar_month_outlined, size: 18, color: Color(0xFF166534)),
+                    child: const Icon(
+                      Icons.calendar_month_outlined,
+                      size: 18,
+                      color: Color(0xFF166534),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -278,11 +298,18 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                     children: const [
                       Text(
                         'Match Date',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                       Text(
                         'Sat, Oct 26, 2024',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
                     ],
                   ),
@@ -298,7 +325,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                       color: const Color(0xFFF3F5F1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.account_tree_outlined, size: 18, color: Color(0xFF166534)),
+                    child: const Icon(
+                      Icons.account_tree_outlined,
+                      size: 18,
+                      color: Color(0xFF166534),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Column(
@@ -306,11 +337,18 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                     children: const [
                       Text(
                         'Format',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF6B7280),
+                        ),
                       ),
                       Text(
                         '16 Teams Knock...',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
                       ),
                     ],
                   ),
@@ -340,10 +378,7 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
             ),
             Text(
               'Currency: INR (₹)',
-              style: TextStyle(
-                fontSize: 11,
-                color: Color(0xFF6B7280),
-              ),
+              style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
             ),
           ],
         ),
@@ -366,7 +401,10 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                       children: [
                         const Text(
                           'Entry Fee',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(4),
@@ -374,7 +412,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                             color: const Color(0xFFE5F5EB),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.payments_outlined, size: 16, color: Color(0xFF166534)),
+                          child: const Icon(
+                            Icons.payments_outlined,
+                            size: 16,
+                            color: Color(0xFF166534),
+                          ),
                         ),
                       ],
                     ),
@@ -384,13 +426,20 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                       children: const [
                         Text(
                           '₹500',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(bottom: 4.0, left: 2.0),
                           child: Text(
                             '/ team',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF6B7280),
+                            ),
                           ),
                         ),
                       ],
@@ -404,7 +453,9 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF9F0), // Slight orange tint for grand prize
+                  color: const Color(
+                    0xFFFFF9F0,
+                  ), // Slight orange tint for grand prize
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFFFFF0D4), width: 2),
                 ),
@@ -416,7 +467,10 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                       children: [
                         const Text(
                           'Grand Prize',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.all(4),
@@ -424,18 +478,30 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                             color: const Color(0xFFFFEDD5),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.emoji_events_outlined, size: 16, color: Color(0xFFD97706)),
+                          child: const Icon(
+                            Icons.emoji_events_outlined,
+                            size: 16,
+                            color: Color(0xFFD97706),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       '₹10,000',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                     const Text(
                       '+ Trophy & Medals',
-                      style: TextStyle(fontSize: 10, color: Color(0xFFD97706), fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFFD97706),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -452,7 +518,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
           ),
           child: Row(
             children: [
-              const Icon(Icons.calculate_outlined, size: 18, color: Color(0xFF166534)),
+              const Icon(
+                Icons.calculate_outlined,
+                size: 18,
+                color: Color(0xFF166534),
+              ),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -540,7 +610,11 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                   children: [
                     const Text(
                       'Grand Arena Turf',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -555,36 +629,56 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE5F5EB),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.sports_soccer, size: 10, color: Color(0xFF166534)),
+                              Icon(
+                                Icons.sports_soccer,
+                                size: 10,
+                                color: Color(0xFF166534),
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'FIFA Synthetic',
-                                style: TextStyle(fontSize: 10, color: Color(0xFF166534)),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFF166534),
+                                ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF7ED),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.lightbulb_outline, size: 10, color: Color(0xFFD97706)),
+                              Icon(
+                                Icons.lightbulb_outline,
+                                size: 10,
+                                color: Color(0xFFD97706),
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'Floodlights',
-                                style: TextStyle(fontSize: 10, color: Color(0xFFD97706)),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFFD97706),
+                                ),
                               ),
                             ],
                           ),
@@ -618,19 +712,28 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
             ),
             Text(
               '5 configured',
-              style: TextStyle(
-                fontSize: 11,
-                color: Color(0xFF6B7280),
-              ),
+              style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
             ),
           ],
         ),
         const SizedBox(height: 16),
         _buildRuleItem('Reporting Time', '15 mins prior to kickoff time'),
-        _buildRuleItem('Equipment', 'Proper turf boots & matching jerseys required'),
-        _buildRuleItem('Fair Play', 'Zero tolerance policy for misconduct or abuse'),
-        _buildRuleItem('Substitutions', 'Up to 5 rolling substitutions per match'),
-        _buildRuleItem('Official Decision', 'Referee decision is final and binding'),
+        _buildRuleItem(
+          'Equipment',
+          'Proper turf boots & matching jerseys required',
+        ),
+        _buildRuleItem(
+          'Fair Play',
+          'Zero tolerance policy for misconduct or abuse',
+        ),
+        _buildRuleItem(
+          'Substitutions',
+          'Up to 5 rolling substitutions per match',
+        ),
+        _buildRuleItem(
+          'Official Decision',
+          'Referee decision is final and binding',
+        ),
       ],
     );
   }
@@ -654,15 +757,17 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Colors.black87,
+                  height: 1.4,
+                ),
                 children: [
                   TextSpan(
                     text: '$title: ',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  TextSpan(
-                    text: description,
-                  ),
+                  TextSpan(text: description),
                 ],
               ),
             ),
@@ -687,14 +792,20 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
               });
             },
             activeColor: const Color(0xFF166534),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280), height: 1.4),
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6B7280),
+                height: 1.4,
+              ),
               children: [
                 const TextSpan(text: 'I agree to '),
                 TextSpan(
@@ -704,11 +815,14 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.underline,
                   ),
-                  recognizer: TapGestureRecognizer()..onTap = () {
-                    // Open terms
-                  },
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      // Open terms
+                    },
                 ),
-                const TextSpan(text: ', and confirm venue availability for all match slots.'),
+                const TextSpan(
+                  text: ', and confirm venue availability for all match slots.',
+                ),
               ],
             ),
           ),
@@ -722,32 +836,43 @@ class _CreatePublicTournamentStep2ScreenState extends State<CreatePublicTourname
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: _agreedToTerms ? () {
-          final newTourney = Tournament(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            title: 'Weekend Turf Clash Season 4', // Static from mockup
-            sport: 'Football',
-            status: TournamentStatus.upcoming,
-            date: 'Sat, Oct 26, 2024',
-            time: '09:00 - 18:00',
-            venue: 'Grand Arena Turf',
-            location: 'Downtown Sports Complex',
-            entryFee: '₹500',
-            prizePool: '₹10,000 + Trophy',
-            grandPrize: '₹10,000',
-            maxTeams: 16,
-            registeredTeams: 0,
-            format: '16 Teams Knockout',
-            imageUrl: 'https://picsum.photos/seed/turf1/800/400',
-          );
-          TournamentManager().addTournament(newTourney);
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tournament Created Successfully!')));
-          Navigator.popUntil(context, (route) => route.isFirst); // Go back to main layout
-        } : null,
+        onPressed: _agreedToTerms
+            ? () {
+                final newTourney = Tournament(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  title: 'Weekend Turf Clash Season 4', // Static from mockup
+                  sport: 'Football',
+                  status: TournamentStatus.upcoming,
+                  date: 'Sat, Oct 26, 2024',
+                  time: '09:00 - 18:00',
+                  venue: 'Grand Arena Turf',
+                  location: 'Downtown Sports Complex',
+                  entryFee: '₹500',
+                  prizePool: '₹10,000 + Trophy',
+                  grandPrize: '₹10,000',
+                  maxTeams: 16,
+                  registeredTeams: 0,
+                  format: '16 Teams Knockout',
+                  imageUrl: 'https://picsum.photos/seed/turf1/800/400',
+                );
+                TournamentManager().addTournament(newTourney);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Tournament Created Successfully!'),
+                  ),
+                );
+                Navigator.popUntil(
+                  context,
+                  (route) => route.isFirst,
+                ); // Go back to main layout
+              }
+            : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF166534), // Dark Green
           foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFF166534).withOpacity(0.5),
+          disabledBackgroundColor: const Color(
+            0xFF166534,
+          ).withValues(alpha: 0.5),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

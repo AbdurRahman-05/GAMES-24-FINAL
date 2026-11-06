@@ -16,8 +16,7 @@ class TurfOwnerProfileScreen extends ConsumerStatefulWidget {
       _TurfOwnerProfileScreenState();
 }
 
-class _TurfOwnerProfileScreenState
-    extends ConsumerState<TurfOwnerProfileScreen>
+class _TurfOwnerProfileScreenState extends ConsumerState<TurfOwnerProfileScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _bookingFilter = 'All';
@@ -41,10 +40,18 @@ class _TurfOwnerProfileScreenState
     final venueNameCtrl = TextEditingController(text: profile.venueName);
     final addressCtrl = TextEditingController(text: profile.address);
     final areaCtrl = TextEditingController(text: profile.area);
-    final dayRateCtrl = TextEditingController(text: profile.dayRate.toStringAsFixed(0));
-    final nightRateCtrl = TextEditingController(text: profile.nightRate.toStringAsFixed(0));
-    final weekdayRateCtrl = TextEditingController(text: profile.weekdayRate.toStringAsFixed(0));
-    final weekendRateCtrl = TextEditingController(text: profile.weekendRate.toStringAsFixed(0));
+    final dayRateCtrl = TextEditingController(
+      text: profile.dayRate.toStringAsFixed(0),
+    );
+    final nightRateCtrl = TextEditingController(
+      text: profile.nightRate.toStringAsFixed(0),
+    );
+    final weekdayRateCtrl = TextEditingController(
+      text: profile.weekdayRate.toStringAsFixed(0),
+    );
+    final weekendRateCtrl = TextEditingController(
+      text: profile.weekendRate.toStringAsFixed(0),
+    );
 
     showDialog(
       context: context,
@@ -69,24 +76,47 @@ class _TurfOwnerProfileScreenState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Basic Contact & Venue Info',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+              const Text(
+                'Basic Contact & Venue Info',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 12),
               AppTextField(label: 'Owner Full Name', controller: ownerNameCtrl),
               const SizedBox(height: 10),
-              AppTextField(label: 'Phone Number', controller: phoneCtrl, keyboardType: TextInputType.phone),
+              AppTextField(
+                label: 'Phone Number',
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+              ),
               const SizedBox(height: 10),
-              AppTextField(label: 'Email Address', controller: emailCtrl, keyboardType: TextInputType.emailAddress),
+              AppTextField(
+                label: 'Email Address',
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+              ),
               const SizedBox(height: 10),
-              AppTextField(label: 'Turf / Venue Business Name', controller: venueNameCtrl),
+              AppTextField(
+                label: 'Turf / Venue Business Name',
+                controller: venueNameCtrl,
+              ),
               const SizedBox(height: 10),
               AppTextField(label: 'Full Address', controller: addressCtrl),
               const SizedBox(height: 10),
               AppTextField(label: 'Area / Landmark', controller: areaCtrl),
               const SizedBox(height: 16),
 
-              const Text('Hourly Rates Setup (₹)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+              const Text(
+                'Hourly Rates Setup (₹)',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -164,20 +194,32 @@ class _TurfOwnerProfileScreenState
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              ref.read(turfProfileProvider.notifier).updateProfileDetails(
+              ref
+                  .read(turfProfileProvider.notifier)
+                  .updateProfileDetails(
                     ownerName: ownerNameCtrl.text.trim(),
                     ownerPhone: phoneCtrl.text.trim(),
                     ownerEmail: emailCtrl.text.trim(),
                     venueName: venueNameCtrl.text.trim(),
                     address: addressCtrl.text.trim(),
                     area: areaCtrl.text.trim(),
-                    dayRate: double.tryParse(dayRateCtrl.text) ?? profile.dayRate,
-                    nightRate: double.tryParse(nightRateCtrl.text) ?? profile.nightRate,
-                    weekdayRate: double.tryParse(weekdayRateCtrl.text) ?? profile.weekdayRate,
-                    weekendRate: double.tryParse(weekendRateCtrl.text) ?? profile.weekendRate,
+                    dayRate:
+                        double.tryParse(dayRateCtrl.text) ?? profile.dayRate,
+                    nightRate:
+                        double.tryParse(nightRateCtrl.text) ??
+                        profile.nightRate,
+                    weekdayRate:
+                        double.tryParse(weekdayRateCtrl.text) ??
+                        profile.weekdayRate,
+                    weekendRate:
+                        double.tryParse(weekendRateCtrl.text) ??
+                        profile.weekendRate,
                   );
               Navigator.pop(ctx);
-              ToastUtils.showSuccess(context, "Turf Profile updated successfully!");
+              ToastUtils.showSuccess(
+                context,
+                "Turf Profile updated successfully!",
+              );
             },
             child: const Text('Save Changes'),
           ),
@@ -192,15 +234,35 @@ class _TurfOwnerProfileScreenState
     String wkendOpen = profile.weekendOpeningTime;
     String wkendClose = profile.weekendClosingTime;
 
-    final openOptions = ['24 Hours', '05:00 AM', '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM'];
-    final closeOptions = ['24 Hours', '09:00 PM', '10:00 PM', '11:00 PM', '11:30 PM', '12:00 AM', '01:00 AM (Overnight)'];
+    final openOptions = [
+      '24 Hours',
+      '05:00 AM',
+      '06:00 AM',
+      '07:00 AM',
+      '08:00 AM',
+      '09:00 AM',
+    ];
+    final closeOptions = [
+      '24 Hours',
+      '09:00 PM',
+      '10:00 PM',
+      '11:00 PM',
+      '11:30 PM',
+      '12:00 AM',
+      '01:00 AM (Overnight)',
+    ];
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.access_time_filled_rounded, color: AppColors.primary),
@@ -246,7 +308,10 @@ class _TurfOwnerProfileScreenState
                       ),
                       const Text(
                         'Open 24 Hours (All Day)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -264,42 +329,90 @@ class _TurfOwnerProfileScreenState
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.primary),
+                              Icon(
+                                Icons.calendar_today_rounded,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
                               SizedBox(width: 6),
-                              Text('Weekday Timings (Mon - Fri)',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+                              Text(
+                                'Weekday Timings (Mon - Fri)',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.primary,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          const Text('Opening Time', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          const Text(
+                            'Opening Time',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
                           const SizedBox(height: 4),
                           DropdownButtonFormField<String>(
-                            initialValue: openOptions.contains(wkdayOpen) ? wkdayOpen : openOptions[2],
+                            initialValue: openOptions.contains(wkdayOpen)
+                                ? wkdayOpen
+                                : openOptions[2],
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                             items: openOptions
-                                .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 13))))
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null) setDialogState(() => wkdayOpen = val);
+                              if (val != null)
+                                setDialogState(() => wkdayOpen = val);
                             },
                           ),
                           const SizedBox(height: 10),
-                          const Text('Closing Time', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          const Text(
+                            'Closing Time',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
                           const SizedBox(height: 4),
                           DropdownButtonFormField<String>(
-                            initialValue: closeOptions.contains(wkdayClose) ? wkdayClose : closeOptions[3],
+                            initialValue: closeOptions.contains(wkdayClose)
+                                ? wkdayClose
+                                : closeOptions[3],
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                             items: closeOptions
-                                .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 13))))
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null) setDialogState(() => wkdayClose = val);
+                              if (val != null)
+                                setDialogState(() => wkdayClose = val);
                             },
                           ),
                         ],
@@ -319,42 +432,90 @@ class _TurfOwnerProfileScreenState
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.weekend_rounded, size: 16, color: AppColors.secondary),
+                              Icon(
+                                Icons.weekend_rounded,
+                                size: 16,
+                                color: AppColors.secondary,
+                              ),
                               SizedBox(width: 6),
-                              Text('Weekend Timings (Sat - Sun)',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.secondary)),
+                              Text(
+                                'Weekend Timings (Sat - Sun)',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.secondary,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          const Text('Opening Time', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          const Text(
+                            'Opening Time',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
                           const SizedBox(height: 4),
                           DropdownButtonFormField<String>(
-                            initialValue: openOptions.contains(wkendOpen) ? wkendOpen : openOptions[1],
+                            initialValue: openOptions.contains(wkendOpen)
+                                ? wkendOpen
+                                : openOptions[1],
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                             items: openOptions
-                                .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 13))))
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null) setDialogState(() => wkendOpen = val);
+                              if (val != null)
+                                setDialogState(() => wkendOpen = val);
                             },
                           ),
                           const SizedBox(height: 10),
-                          const Text('Closing Time', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          const Text(
+                            'Closing Time',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
                           const SizedBox(height: 4),
                           DropdownButtonFormField<String>(
-                            initialValue: closeOptions.contains(wkendClose) ? wkendClose : closeOptions[4],
+                            initialValue: closeOptions.contains(wkendClose)
+                                ? wkendClose
+                                : closeOptions[4],
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                             items: closeOptions
-                                .map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 13))))
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null) setDialogState(() => wkendClose = val);
+                              if (val != null)
+                                setDialogState(() => wkendClose = val);
                             },
                           ),
                         ],
@@ -376,15 +537,27 @@ class _TurfOwnerProfileScreenState
                 foregroundColor: Colors.white,
               ),
               onPressed: () {
-                ref.read(turfProfileProvider.notifier).updateOperatingHours(
+                ref
+                    .read(turfProfileProvider.notifier)
+                    .updateOperatingHours(
                       weekdayOpening: wkdayOpen,
                       weekdayClosing: wkdayClose,
                       weekendOpening: wkendOpen,
                       weekendClosing: wkendClose,
                     );
-                ref.read(adminSlotProvider.notifier).updateOperatingHours(wkdayOpen, wkdayClose, wkendOpen, wkendClose);
+                ref
+                    .read(adminSlotProvider.notifier)
+                    .updateOperatingHours(
+                      wkdayOpen,
+                      wkdayClose,
+                      wkendOpen,
+                      wkendClose,
+                    );
                 Navigator.pop(ctx);
-                ToastUtils.showSuccess(context, "Weekday & Weekend timings updated!");
+                ToastUtils.showSuccess(
+                  context,
+                  "Weekday & Weekend timings updated!",
+                );
               },
               child: const Text('Update Timings'),
             ),
@@ -402,15 +575,26 @@ class _TurfOwnerProfileScreenState
     final nightRateCtrl = TextEditingController(text: '1400');
     final courtsCtrl = TextEditingController(text: '1');
 
-    final popularSports = ['Cricket', 'Football', 'Pickleball', 'Badminton', 'Others'];
+    final popularSports = [
+      'Cricket',
+      'Football',
+      'Pickleball',
+      'Badminton',
+      'Others',
+    ];
     String selectedSportName = popularSports.first;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.sports_soccer_rounded, color: AppColors.primary),
@@ -431,13 +615,21 @@ class _TurfOwnerProfileScreenState
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Select Sport Category:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  const Text(
+                    'Select Sport Category:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     initialValue: selectedSportName,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
                     items: popularSports
                         .map((s) => DropdownMenuItem(value: s, child: Text(s)))
@@ -512,14 +704,20 @@ class _TurfOwnerProfileScreenState
                 foregroundColor: Colors.white,
               ),
               onPressed: () {
-                final sportName = nameCtrl.text.trim().isEmpty ? selectedSportName : nameCtrl.text.trim();
+                final sportName = nameCtrl.text.trim().isEmpty
+                    ? selectedSportName
+                    : nameCtrl.text.trim();
                 final rate = double.tryParse(rateCtrl.text) ?? 1200.0;
                 final wkdayRate = double.tryParse(weekdayRateCtrl.text) ?? rate;
-                final wkendRate = double.tryParse(weekendRateCtrl.text) ?? (rate * 1.3);
-                final nightRate = double.tryParse(nightRateCtrl.text) ?? (rate * 1.25);
+                final wkendRate =
+                    double.tryParse(weekendRateCtrl.text) ?? (rate * 1.3);
+                final nightRate =
+                    double.tryParse(nightRateCtrl.text) ?? (rate * 1.25);
                 final courtsCount = int.tryParse(courtsCtrl.text) ?? 1;
 
-                ref.read(turfProfileProvider.notifier).addSport(
+                ref
+                    .read(turfProfileProvider.notifier)
+                    .addSport(
                       TurfSportItem(
                         name: sportName,
                         hourlyRate: rate,
@@ -530,7 +728,10 @@ class _TurfOwnerProfileScreenState
                       ),
                     );
                 Navigator.pop(ctx);
-                ToastUtils.showSuccess(context, "Added $sportName with custom sport rates!");
+                ToastUtils.showSuccess(
+                  context,
+                  "Added $sportName with custom sport rates!",
+                );
               },
               child: const Text('Add Sport'),
             ),
@@ -541,10 +742,18 @@ class _TurfOwnerProfileScreenState
   }
 
   void _showEditSportRateDialog(TurfSportItem sport) {
-    final baseRateCtrl = TextEditingController(text: sport.hourlyRate.toStringAsFixed(0));
-    final weekdayRateCtrl = TextEditingController(text: sport.weekdayRate.toStringAsFixed(0));
-    final weekendRateCtrl = TextEditingController(text: sport.weekendRate.toStringAsFixed(0));
-    final nightRateCtrl = TextEditingController(text: sport.nightRate.toStringAsFixed(0));
+    final baseRateCtrl = TextEditingController(
+      text: sport.hourlyRate.toStringAsFixed(0),
+    );
+    final weekdayRateCtrl = TextEditingController(
+      text: sport.weekdayRate.toStringAsFixed(0),
+    );
+    final weekendRateCtrl = TextEditingController(
+      text: sport.weekendRate.toStringAsFixed(0),
+    );
+    final nightRateCtrl = TextEditingController(
+      text: sport.nightRate.toStringAsFixed(0),
+    );
 
     showDialog(
       context: context,
@@ -558,7 +767,10 @@ class _TurfOwnerProfileScreenState
             Expanded(
               child: Text(
                 'Edit ${sport.name} Rates',
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -571,8 +783,10 @@ class _TurfOwnerProfileScreenState
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Set custom hourly rates for ${sport.name}:',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  'Set custom hourly rates for ${sport.name}:',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
                 const SizedBox(height: 12),
                 AppTextField(
                   label: 'Base Standard Rate (₹/hr)',
@@ -620,15 +834,26 @@ class _TurfOwnerProfileScreenState
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              ref.read(turfProfileProvider.notifier).updateSportRate(
+              ref
+                  .read(turfProfileProvider.notifier)
+                  .updateSportRate(
                     sport.name,
-                    hourlyRate: double.tryParse(baseRateCtrl.text) ?? sport.hourlyRate,
-                    weekdayRate: double.tryParse(weekdayRateCtrl.text) ?? sport.weekdayRate,
-                    weekendRate: double.tryParse(weekendRateCtrl.text) ?? sport.weekendRate,
-                    nightRate: double.tryParse(nightRateCtrl.text) ?? sport.nightRate,
+                    hourlyRate:
+                        double.tryParse(baseRateCtrl.text) ?? sport.hourlyRate,
+                    weekdayRate:
+                        double.tryParse(weekdayRateCtrl.text) ??
+                        sport.weekdayRate,
+                    weekendRate:
+                        double.tryParse(weekendRateCtrl.text) ??
+                        sport.weekendRate,
+                    nightRate:
+                        double.tryParse(nightRateCtrl.text) ?? sport.nightRate,
                   );
               Navigator.pop(ctx);
-              ToastUtils.showSuccess(context, "Updated rates for ${sport.name}!");
+              ToastUtils.showSuccess(
+                context,
+                "Updated rates for ${sport.name}!",
+              );
             },
             child: const Text('Save Sport Rates'),
           ),
@@ -639,9 +864,15 @@ class _TurfOwnerProfileScreenState
 
   void _showAddVenueCourtDialog(TurfProfileState profile) {
     final courtNameCtrl = TextEditingController();
-    final surfaceCtrl = TextEditingController(text: 'FIFA Quality Synthetic Turf');
-    final rateCtrl = TextEditingController(text: profile.dayRate.toStringAsFixed(0));
-    String selectedSport = profile.sports.isNotEmpty ? profile.sports.first.name : 'Football';
+    final surfaceCtrl = TextEditingController(
+      text: 'FIFA Quality Synthetic Turf',
+    );
+    final rateCtrl = TextEditingController(
+      text: profile.dayRate.toStringAsFixed(0),
+    );
+    String selectedSport = profile.sports.isNotEmpty
+        ? profile.sports.first.name
+        : 'Football';
     String dropdownValue = selectedSport;
     String customSportValue = '';
 
@@ -649,7 +880,9 @@ class _TurfOwnerProfileScreenState
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.add_business_rounded, color: AppColors.primary),
@@ -674,17 +907,31 @@ class _TurfOwnerProfileScreenState
                   controller: courtNameCtrl,
                 ),
                 const SizedBox(height: 12),
-                const Text('Sport Type:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const Text(
+                  'Sport Type:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
                 const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
                   initialValue: dropdownValue,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                   items: [
-                    ...profile.sports.map((s) => DropdownMenuItem(value: s.name, child: Text(s.name))),
-                    const DropdownMenuItem(value: 'Others', child: Text('Others (Type your own)')),
+                    ...profile.sports.map(
+                      (s) =>
+                          DropdownMenuItem(value: s.name, child: Text(s.name)),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'Others',
+                      child: Text('Others (Type your own)'),
+                    ),
                   ],
                   onChanged: (val) {
                     if (val != null) {
@@ -699,7 +946,7 @@ class _TurfOwnerProfileScreenState
                   const SizedBox(height: 12),
                   AppTextField(
                     label: 'Custom Sport Name',
-                    controller: TextEditingController(text: customSportValue), 
+                    controller: TextEditingController(text: customSportValue),
                     onChanged: (val) {
                       customSportValue = val;
                       selectedSport = val;
@@ -760,10 +1007,15 @@ class _TurfOwnerProfileScreenState
     );
   }
 
-  void _showEditVenueCourtDialog(TurfProfileState profile, TurfCourtVenueItem court) {
+  void _showEditVenueCourtDialog(
+    TurfProfileState profile,
+    TurfCourtVenueItem court,
+  ) {
     final courtNameCtrl = TextEditingController(text: court.name);
     final surfaceCtrl = TextEditingController(text: court.surface);
-    final rateCtrl = TextEditingController(text: court.hourlyRate.toStringAsFixed(0));
+    final rateCtrl = TextEditingController(
+      text: court.hourlyRate.toStringAsFixed(0),
+    );
     final descCtrl = TextEditingController(text: court.description);
     final sportIcons = {
       'Football': Icons.sports_soccer_rounded,
@@ -781,7 +1033,7 @@ class _TurfOwnerProfileScreenState
         courtSports[s] = true;
       }
     }
-    
+
     List<String> defaultAmenities = [
       'Floodlights (1200 Lux)',
       'Changing Rooms and Showers',
@@ -818,17 +1070,31 @@ class _TurfOwnerProfileScreenState
               children: [
                 Container(
                   margin: const EdgeInsets.only(top: 12, bottom: 4),
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.edit_rounded, color: AppColors.secondary, size: 22),
+                        decoration: BoxDecoration(
+                          color: AppColors.secondary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.edit_rounded,
+                          color: AppColors.secondary,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -837,23 +1103,43 @@ class _TurfOwnerProfileScreenState
                           children: [
                             Text(
                               'Edit Court: ${court.name}',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const Text('Update court details, images & amenities', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            const Text(
+                              'Update court details, images & amenities',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColors.error,
+                        ),
                         tooltip: 'Remove Court',
                         onPressed: () {
                           Navigator.pop(ctx);
-                          ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
-                          ToastUtils.showSuccess(context, "Removed court: ${court.name}");
+                          ref
+                              .read(turfProfileProvider.notifier)
+                              .removeCourtVenue(court.id);
+                          ToastUtils.showSuccess(
+                            context,
+                            "Removed court: ${court.name}",
+                          );
                         },
                       ),
-                      IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(ctx)),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
                     ],
                   ),
                 ),
@@ -863,7 +1149,10 @@ class _TurfOwnerProfileScreenState
                     controller: scrollCtrl,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
                     children: [
-                      _sheetSectionLabel(Icons.stadium_rounded, 'Court Details'),
+                      _sheetSectionLabel(
+                        Icons.stadium_rounded,
+                        'Court Details',
+                      ),
                       const SizedBox(height: 12),
                       AppTextField(
                         label: 'Court / Pitch Name',
@@ -871,80 +1160,121 @@ class _TurfOwnerProfileScreenState
                       ),
                       const SizedBox(height: 12),
                       _sheetSectionLabel(
-                        Icons.sports_rounded, 
-                        'Sports Available', 
-                        trailing: const Text('Select all supported', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Icons.sports_rounded,
+                        'Sports Available',
+                        trailing: const Text(
+                          'Select all supported',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: courtSports.keys.map<Widget>((sport) {
-                          final isSelected = courtSports[sport]!;
-                          return InkWell(
-                            onTap: () => setDialogState(() => courtSports[sport] = !isSelected),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected ? Colors.lightGreen.shade200 : Colors.grey.shade100,
+                        children:
+                            courtSports.keys.map<Widget>((sport) {
+                              final isSelected = courtSports[sport]!;
+                              return InkWell(
+                                onTap: () => setDialogState(
+                                  () => courtSports[sport] = !isSelected,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(sportIcons[sport] ?? Icons.sports_rounded, size: 16, color: isSelected ? Colors.green.shade800 : Colors.grey.shade600),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    sport,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected ? Colors.green.shade800 : Colors.grey.shade700,
-                                    ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
-                                  if (isSelected) ...[
-                                    const SizedBox(width: 4),
-                                    Icon(Icons.check_rounded, size: 16, color: Colors.green.shade800),
-                                  ]
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList()
-                          ..add(
-                            ActionChip(
-                              avatar: const Icon(Icons.add, size: 16, color: Colors.black87),
-                              label: const Text('Add Sport', style: TextStyle(color: Colors.black87)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.black87)),
-                              backgroundColor: Colors.white,
-                              onPressed: () {
-                                final ctrl = TextEditingController();
-                                showDialog(
-                                  context: context,
-                                  builder: (c) => AlertDialog(
-                                    title: const Text('Add Sport'),
-                                    content: TextField(
-                                      controller: ctrl,
-                                      decoration: const InputDecoration(hintText: 'Sport Name'),
-                                    ),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          if (ctrl.text.isNotEmpty) {
-                                            setDialogState(() => courtSports[ctrl.text] = true);
-                                          }
-                                          Navigator.pop(c);
-                                        },
-                                        child: const Text('Add'),
-                                      )
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? Colors.lightGreen.shade200
+                                        : Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        sportIcons[sport] ??
+                                            Icons.sports_rounded,
+                                        size: 16,
+                                        color: isSelected
+                                            ? Colors.green.shade800
+                                            : Colors.grey.shade600,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        sport,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: isSelected
+                                              ? Colors.green.shade800
+                                              : Colors.grey.shade700,
+                                        ),
+                                      ),
+                                      if (isSelected) ...[
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.check_rounded,
+                                          size: 16,
+                                          color: Colors.green.shade800,
+                                        ),
+                                      ],
                                     ],
                                   ),
-                                );
-                              },
+                                ),
+                              );
+                            }).toList()..add(
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.add,
+                                  size: 16,
+                                  color: Colors.black87,
+                                ),
+                                label: const Text(
+                                  'Add Sport',
+                                  style: TextStyle(color: Colors.black87),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: const BorderSide(color: Colors.black87),
+                                ),
+                                backgroundColor: Colors.white,
+                                onPressed: () {
+                                  final ctrl = TextEditingController();
+                                  showDialog(
+                                    context: context,
+                                    builder: (c) => AlertDialog(
+                                      title: const Text('Add Sport'),
+                                      content: TextField(
+                                        controller: ctrl,
+                                        decoration: const InputDecoration(
+                                          hintText: 'Sport Name',
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(c),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            if (ctrl.text.isNotEmpty) {
+                                              setDialogState(
+                                                () => courtSports[ctrl.text] =
+                                                    true,
+                                              );
+                                            }
+                                            Navigator.pop(c);
+                                          },
+                                          child: const Text('Add'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -968,41 +1298,75 @@ class _TurfOwnerProfileScreenState
                       ),
                       const SizedBox(height: 24),
 
-                      _sheetSectionLabel(Icons.description_rounded, 'Court Description'),
+                      _sheetSectionLabel(
+                        Icons.description_rounded,
+                        'Court Description',
+                      ),
                       const SizedBox(height: 10),
                       TextField(
-                        controller: descCtrl, maxLines: 4, maxLength: 300,
+                        controller: descCtrl,
+                        maxLines: 4,
+                        maxLength: 300,
                         decoration: InputDecoration(
                           hintText: 'Optional details about the court...',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
                           contentPadding: const EdgeInsets.all(14),
                           counterStyle: const TextStyle(fontSize: 10),
                         ),
                       ),
                       const SizedBox(height: 16),
 
-                      _sheetSectionLabel(Icons.checklist_rounded, 'Amenities & Features'),
+                      _sheetSectionLabel(
+                        Icons.checklist_rounded,
+                        'Amenities & Features',
+                      ),
                       const SizedBox(height: 4),
-                      const Text('Select all amenities available at this court.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      const Text(
+                        'Select all amenities available at this court.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
                       const SizedBox(height: 10),
-                      ...courtAmenities.keys.map((amenity) => CheckboxListTile(
-                        value: courtAmenities[amenity],
-                        onChanged: (val) => setDialogState(() => courtAmenities[amenity] = val ?? false),
-                        title: Text(amenity, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                        activeColor: AppColors.primary,
-                        contentPadding: EdgeInsets.zero,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        dense: true,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      )),
+                      ...courtAmenities.keys.map(
+                        (amenity) => CheckboxListTile(
+                          value: courtAmenities[amenity],
+                          onChanged: (val) => setDialogState(
+                            () => courtAmenities[amenity] = val ?? false,
+                          ),
+                          title: Text(
+                            amenity,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          activeColor: AppColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          dense: true,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       Align(
                         alignment: Alignment.centerLeft,
                         child: ActionChip(
                           avatar: const Icon(Icons.add, size: 16),
                           label: const Text('Add Other Amenity'),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.grey.shade400)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(color: Colors.grey.shade400),
+                          ),
                           backgroundColor: Colors.white,
                           onPressed: () {
                             final ctrl = TextEditingController();
@@ -1012,19 +1376,27 @@ class _TurfOwnerProfileScreenState
                                 title: const Text('Add Amenity'),
                                 content: TextField(
                                   controller: ctrl,
-                                  decoration: const InputDecoration(hintText: 'Amenity Name'),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Amenity Name',
+                                  ),
                                 ),
                                 actions: [
-                                  TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(c),
+                                    child: const Text('Cancel'),
+                                  ),
                                   ElevatedButton(
                                     onPressed: () {
                                       if (ctrl.text.isNotEmpty) {
-                                        setDialogState(() => courtAmenities[ctrl.text] = true);
+                                        setDialogState(
+                                          () =>
+                                              courtAmenities[ctrl.text] = true,
+                                        );
                                       }
                                       Navigator.pop(c);
                                     },
                                     child: const Text('Add'),
-                                  )
+                                  ),
                                 ],
                               ),
                             );
@@ -1033,12 +1405,21 @@ class _TurfOwnerProfileScreenState
                       ),
                       const SizedBox(height: 24),
 
-                      _sheetSectionLabel(Icons.photo_library_rounded, 'Court Photo Gallery'),
+                      _sheetSectionLabel(
+                        Icons.photo_library_rounded,
+                        'Court Photo Gallery',
+                      ),
                       const SizedBox(height: 4),
-                      const Text('Add up to 5 court images. The first image will be used as the cover photo.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      const Text(
+                        'Add up to 5 court images. The first image will be used as the cover photo.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
                       const SizedBox(height: 12),
                       _buildImagePreviewCard(
-                        TextEditingController(text: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800'),
+                        TextEditingController(
+                          text:
+                              'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800',
+                        ),
                         'Cover Photo',
                         isCover: true,
                       ),
@@ -1047,14 +1428,22 @@ class _TurfOwnerProfileScreenState
                         children: [
                           Expanded(
                             child: _buildImagePreviewCard(
-                              TextEditingController(text: court.imageUrls.length > 1 ? court.imageUrls[1] : ''),
+                              TextEditingController(
+                                text: court.imageUrls.length > 1
+                                    ? court.imageUrls[1]
+                                    : '',
+                              ),
                               'Gallery Photo 2',
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: _buildImagePreviewCard(
-                              TextEditingController(text: court.imageUrls.length > 2 ? court.imageUrls[2] : ''),
+                              TextEditingController(
+                                text: court.imageUrls.length > 2
+                                    ? court.imageUrls[2]
+                                    : '',
+                              ),
                               'Gallery Photo 3',
                             ),
                           ),
@@ -1065,51 +1454,85 @@ class _TurfOwnerProfileScreenState
                         children: [
                           Expanded(
                             child: _buildImagePreviewCard(
-                              TextEditingController(text: court.imageUrls.length > 3 ? court.imageUrls[3] : ''),
+                              TextEditingController(
+                                text: court.imageUrls.length > 3
+                                    ? court.imageUrls[3]
+                                    : '',
+                              ),
                               'Gallery Photo 4 (Optional)',
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: _buildImagePreviewCard(
-                              TextEditingController(text: court.imageUrls.length > 4 ? court.imageUrls[4] : ''),
+                              TextEditingController(
+                                text: court.imageUrls.length > 4
+                                    ? court.imageUrls[4]
+                                    : '',
+                              ),
                               'Gallery Photo 5 (Optional)',
                             ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.save_rounded),
-                          label: const Text('Save Court Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          label: const Text(
+                            'Save Court Details',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary, foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                           onPressed: () {
-                            final courtName = courtNameCtrl.text.trim().isEmpty ? court.name : courtNameCtrl.text.trim();
-                            final hourlyRate = double.tryParse(rateCtrl.text) ?? court.hourlyRate;
+                            final courtName = courtNameCtrl.text.trim().isEmpty
+                                ? court.name
+                                : courtNameCtrl.text.trim();
+                            final hourlyRate =
+                                double.tryParse(rateCtrl.text) ??
+                                court.hourlyRate;
 
                             final updatedCourt = TurfCourtVenueItem(
                               id: court.id,
                               name: courtName,
-                              sport: courtSports.entries.where((e) => e.value).map((e) => e.key).join(', '),
-                              surface: surfaceCtrl.text.trim().isEmpty ? court.surface : surfaceCtrl.text.trim(),
+                              sport: courtSports.entries
+                                  .where((e) => e.value)
+                                  .map((e) => e.key)
+                                  .join(', '),
+                              surface: surfaceCtrl.text.trim().isEmpty
+                                  ? court.surface
+                                  : surfaceCtrl.text.trim(),
                               hourlyRate: hourlyRate,
                               timings: profile.weekdayOpeningTime == '24 Hours'
                                   ? '24 Hours Open'
                                   : '${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
                               description: descCtrl.text.trim(),
-                              amenities: courtAmenities.entries.where((e) => e.value).map((e) => e.key).toList(),
+                              amenities: courtAmenities.entries
+                                  .where((e) => e.value)
+                                  .map((e) => e.key)
+                                  .toList(),
                             );
 
-                            ref.read(turfProfileProvider.notifier).updateCourtVenue(updatedCourt);
+                            ref
+                                .read(turfProfileProvider.notifier)
+                                .updateCourtVenue(updatedCourt);
                             Navigator.pop(ctx);
-                            ToastUtils.showSuccess(context, "Updated court: $courtName");
+                            ToastUtils.showSuccess(
+                              context,
+                              "Updated court: $courtName",
+                            );
                           },
                         ),
                       ),
@@ -1126,16 +1549,26 @@ class _TurfOwnerProfileScreenState
 
   void _showEditTurfDialog() {
     final descCtrl = TextEditingController(
-        text: 'Premium FIFA-quality synthetic turf with floodlights for night play. Ideal for 5v5, 7v7 football and box cricket matches. Clean facilities, ample parking, and refreshment lounge available.');
+      text:
+          'Premium FIFA-quality synthetic turf with floodlights for night play. Ideal for 5v5, 7v7 football and box cricket matches. Clean facilities, ample parking, and refreshment lounge available.',
+    );
     final img1Ctrl = TextEditingController(
-        text: 'https://images.unsplash.com/photo-1518605368461-1e1e38ce8ba9?auto=format&fit=crop&w=800&q=80');
+      text:
+          'https://images.unsplash.com/photo-1518605368461-1e1e38ce8ba9?auto=format&fit=crop&w=800&q=80',
+    );
     final img2Ctrl = TextEditingController(
-        text: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=800&q=80');
+      text:
+          'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=800&q=80',
+    );
     final img3Ctrl = TextEditingController(
-        text: 'https://images.unsplash.com/photo-1551280388-1c4b787595b9?auto=format&fit=crop&w=800&q=80');
+      text:
+          'https://images.unsplash.com/photo-1551280388-1c4b787595b9?auto=format&fit=crop&w=800&q=80',
+    );
     final img4Ctrl = TextEditingController(text: '');
     final img5Ctrl = TextEditingController(text: '');
-    final surfaceCtrl = TextEditingController(text: 'FIFA 2-Star Synthetic Grass (50mm)');
+    final surfaceCtrl = TextEditingController(
+      text: 'FIFA 2-Star Synthetic Grass (50mm)',
+    );
     final dimensionCtrl = TextEditingController(text: '120 x 80 Feet');
     Map<String, bool> amenities = {
       'Floodlights (1200 Lux)': true,
@@ -1179,29 +1612,58 @@ class _TurfOwnerProfileScreenState
               children: [
                 Container(
                   margin: const EdgeInsets.only(top: 12, bottom: 4),
-                  width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.stadium_rounded, color: AppColors.primary, size: 22),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.stadium_rounded,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Edit Turf Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                            Text('Update images, description & amenities', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            Text(
+                              'Edit Turf Details',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            Text(
+                              'Update images, description & amenities',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(ctx)),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
                     ],
                   ),
                 ),
@@ -1211,115 +1673,220 @@ class _TurfOwnerProfileScreenState
                     controller: scrollCtrl,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 40),
                     children: [
-                      _sheetSectionLabel(Icons.photo_library_rounded, 'Turf Photo Gallery'),
+                      _sheetSectionLabel(
+                        Icons.photo_library_rounded,
+                        'Turf Photo Gallery',
+                      ),
                       const SizedBox(height: 4),
-                      const Text('Add up to 5 turf images. The first image will be used as the cover photo.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      const Text(
+                        'Add up to 5 turf images. The first image will be used as the cover photo.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
                       const SizedBox(height: 12),
-                      _buildImagePreviewCard(img1Ctrl, 'Cover Photo (Slot 1)', isCover: true),
+                      _buildImagePreviewCard(
+                        img1Ctrl,
+                        'Cover Photo (Slot 1)',
+                        isCover: true,
+                      ),
                       const SizedBox(height: 10),
-                      Row(children: [Expanded(child: _buildImagePreviewCard(img2Ctrl, 'Photo 2')), const SizedBox(width: 8), Expanded(child: _buildImagePreviewCard(img3Ctrl, 'Photo 3'))]),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildImagePreviewCard(img2Ctrl, 'Photo 2'),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildImagePreviewCard(img3Ctrl, 'Photo 3'),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 10),
-                      Row(children: [Expanded(child: _buildImagePreviewCard(img4Ctrl, 'Photo 4 (Optional)')), const SizedBox(width: 8), Expanded(child: _buildImagePreviewCard(img5Ctrl, 'Photo 5 (Optional)'))]),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildImagePreviewCard(
+                              img4Ctrl,
+                              'Photo 4 (Optional)',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _buildImagePreviewCard(
+                              img5Ctrl,
+                              'Photo 5 (Optional)',
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 24),
                       _sheetSectionLabel(
-                        Icons.sports_rounded, 
-                        'Sports Available', 
-                        trailing: const Text('Select all supported', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                        Icons.sports_rounded,
+                        'Sports Available',
+                        trailing: const Text(
+                          'Select all supported',
+                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: selectedSports.keys.map<Widget>((sport) {
-                          final isSelected = selectedSports[sport]!;
-                          return InkWell(
-                            onTap: () => setSheetState(() => selectedSports[sport] = !isSelected),
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected ? Colors.lightGreen.shade200 : Colors.grey.shade100,
+                        children:
+                            selectedSports.keys.map<Widget>((sport) {
+                              final isSelected = selectedSports[sport]!;
+                              return InkWell(
+                                onTap: () => setSheetState(
+                                  () => selectedSports[sport] = !isSelected,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(sportIcons[sport], size: 16, color: isSelected ? Colors.green.shade800 : Colors.grey.shade600),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    sport,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: isSelected ? Colors.green.shade800 : Colors.grey.shade700,
-                                    ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
-                                  if (isSelected) ...[
-                                    const SizedBox(width: 4),
-                                    Icon(Icons.check_rounded, size: 16, color: Colors.green.shade800),
-                                  ]
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList()
-                          ..add(
-                            ActionChip(
-                              avatar: const Icon(Icons.add, size: 16, color: Colors.black87),
-                              label: const Text('Add Sport', style: TextStyle(color: Colors.black87)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.black87)),
-                              backgroundColor: Colors.white,
-                              onPressed: () {
-                                final ctrl = TextEditingController();
-                                showDialog(
-                                  context: context,
-                                  builder: (c) => AlertDialog(
-                                    title: const Text('Add Sport'),
-                                    content: TextField(
-                                      controller: ctrl,
-                                      decoration: const InputDecoration(hintText: 'Sport Name'),
-                                    ),
-                                    actions: [
-                                      TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          if (ctrl.text.isNotEmpty) {
-                                            setSheetState(() => selectedSports[ctrl.text] = true);
-                                          }
-                                          Navigator.pop(c);
-                                        },
-                                        child: const Text('Add'),
-                                      )
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? Colors.lightGreen.shade200
+                                        : Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        sportIcons[sport],
+                                        size: 16,
+                                        color: isSelected
+                                            ? Colors.green.shade800
+                                            : Colors.grey.shade600,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        sport,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: isSelected
+                                              ? Colors.green.shade800
+                                              : Colors.grey.shade700,
+                                        ),
+                                      ),
+                                      if (isSelected) ...[
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.check_rounded,
+                                          size: 16,
+                                          color: Colors.green.shade800,
+                                        ),
+                                      ],
                                     ],
                                   ),
-                                );
-                              },
+                                ),
+                              );
+                            }).toList()..add(
+                              ActionChip(
+                                avatar: const Icon(
+                                  Icons.add,
+                                  size: 16,
+                                  color: Colors.black87,
+                                ),
+                                label: const Text(
+                                  'Add Sport',
+                                  style: TextStyle(color: Colors.black87),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: const BorderSide(color: Colors.black87),
+                                ),
+                                backgroundColor: Colors.white,
+                                onPressed: () {
+                                  final ctrl = TextEditingController();
+                                  showDialog(
+                                    context: context,
+                                    builder: (c) => AlertDialog(
+                                      title: const Text('Add Sport'),
+                                      content: TextField(
+                                        controller: ctrl,
+                                        decoration: const InputDecoration(
+                                          hintText: 'Sport Name',
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(c),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            if (ctrl.text.isNotEmpty) {
+                                              setSheetState(
+                                                () =>
+                                                    selectedSports[ctrl.text] =
+                                                        true,
+                                              );
+                                            }
+                                            Navigator.pop(c);
+                                          },
+                                          child: const Text('Add'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          ),
                       ),
                       const SizedBox(height: 24),
-                      _sheetSectionLabel(Icons.description_rounded, 'Turf Description'),
+                      _sheetSectionLabel(
+                        Icons.description_rounded,
+                        'Turf Description',
+                      ),
                       const SizedBox(height: 10),
                       TextField(
-                        controller: descCtrl, maxLines: 5, maxLength: 500,
+                        controller: descCtrl,
+                        maxLines: 5,
+                        maxLength: 500,
                         decoration: InputDecoration(
-                          hintText: 'Describe your turf - facilities, surface quality, team sizes, ambiance...',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                          hintText:
+                              'Describe your turf - facilities, surface quality, team sizes, ambiance...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
                           contentPadding: const EdgeInsets.all(14),
                           counterStyle: const TextStyle(fontSize: 10),
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _sheetSectionLabel(Icons.grass_rounded, 'Surface & Dimensions'),
+                      _sheetSectionLabel(
+                        Icons.grass_rounded,
+                        'Surface & Dimensions',
+                      ),
                       const SizedBox(height: 10),
                       TextField(
                         controller: surfaceCtrl,
                         decoration: InputDecoration(
                           labelText: 'Surface Type & Quality',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -1327,40 +1894,81 @@ class _TurfOwnerProfileScreenState
                         controller: dimensionCtrl,
                         decoration: InputDecoration(
                           labelText: 'Turf Dimensions',
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _sheetSectionLabel(Icons.checklist_rounded, 'Amenities & Features'),
+                      _sheetSectionLabel(
+                        Icons.checklist_rounded,
+                        'Amenities & Features',
+                      ),
                       const SizedBox(height: 4),
-                      const Text('Select all amenities available at your turf.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      const Text(
+                        'Select all amenities available at your turf.',
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
                       const SizedBox(height: 10),
-                      ...amenities.keys.map((amenity) => CheckboxListTile(
-                        value: amenities[amenity],
-                        onChanged: (val) => setSheetState(() => amenities[amenity] = val ?? false),
-                        title: Text(amenity, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                        activeColor: AppColors.primary,
-                        contentPadding: EdgeInsets.zero,
-                        controlAffinity: ListTileControlAffinity.leading,
-                        dense: true,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      )),
+                      ...amenities.keys.map(
+                        (amenity) => CheckboxListTile(
+                          value: amenities[amenity],
+                          onChanged: (val) => setSheetState(
+                            () => amenities[amenity] = val ?? false,
+                          ),
+                          title: Text(
+                            amenity,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          activeColor: AppColors.primary,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          dense: true,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.save_rounded),
-                          label: const Text('Save Turf Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                          label: const Text(
+                            'Save Turf Details',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary, foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                           onPressed: () {
                             Navigator.pop(ctx);
-                            ToastUtils.showSuccess(context, "Turf details updated successfully!");
+                            ToastUtils.showSuccess(
+                              context,
+                              "Turf details updated successfully!",
+                            );
                           },
                         ),
                       ),
@@ -1383,15 +1991,26 @@ class _TurfOwnerProfileScreenState
           children: [
             Icon(icon, color: AppColors.primary, size: 18),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppColors.primary,
+              ),
+            ),
           ],
         ),
-        if (trailing != null) trailing,
+        ?trailing,
       ],
     );
   }
 
-  Widget _buildImagePreviewCard(TextEditingController ctrl, String label, {bool isCover = false}) {
+  Widget _buildImagePreviewCard(
+    TextEditingController ctrl,
+    String label, {
+    bool isCover = false,
+  }) {
     return StatefulBuilder(
       builder: (context, setCardState) {
         final hasUrl = ctrl.text.trim().isNotEmpty;
@@ -1400,7 +2019,9 @@ class _TurfOwnerProfileScreenState
             showDialog(
               context: context,
               builder: (ctx) => AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 title: Text('Upload/Set $label'),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1408,7 +2029,9 @@ class _TurfOwnerProfileScreenState
                     ElevatedButton.icon(
                       onPressed: () async {
                         final ImagePicker picker = ImagePicker();
-                        final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+                        final XFile? image = await picker.pickImage(
+                          source: ImageSource.gallery,
+                        );
                         if (image != null) {
                           ctrl.text = image.path;
                           if (context.mounted) {
@@ -1428,22 +2051,41 @@ class _TurfOwnerProfileScreenState
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text('OR', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                     TextField(
-                      controller: ctrl, autofocus: true,
+                      controller: ctrl,
+                      autofocus: true,
                       decoration: InputDecoration(
-                        hintText: 'Enter image URL (https://...)', 
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
+                        hintText: 'Enter image URL (https://...)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
                   ],
                 ),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text('Cancel'),
+                  ),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
-                    onPressed: () { Navigator.pop(ctx); setCardState(() {}); },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      setCardState(() {});
+                    },
                     child: const Text('Save Image'),
                   ),
                 ],
@@ -1453,29 +2095,117 @@ class _TurfOwnerProfileScreenState
           child: Container(
             height: isCover ? 180 : 110,
             decoration: BoxDecoration(
-              color: hasUrl ? Colors.grey.shade200 : AppColors.primary.withValues(alpha: 0.03),
+              color: hasUrl
+                  ? Colors.grey.shade200
+                  : AppColors.primary.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isCover && !hasUrl ? AppColors.primary.withValues(alpha: 0.4) : Colors.grey.shade300, width: isCover && !hasUrl ? 1.5 : 1),
-              image: hasUrl ? DecorationImage(image: NetworkImage(ctrl.text.trim()), fit: BoxFit.cover, onError: (e, st) {}) : null,
+              border: Border.all(
+                color: isCover && !hasUrl
+                    ? AppColors.primary.withValues(alpha: 0.4)
+                    : Colors.grey.shade300,
+                width: isCover && !hasUrl ? 1.5 : 1,
+              ),
+              image: hasUrl
+                  ? DecorationImage(
+                      image: NetworkImage(ctrl.text.trim()),
+                      fit: BoxFit.cover,
+                      onError: (e, st) {},
+                    )
+                  : null,
             ),
             child: hasUrl
-                ? Stack(children: [
-                    Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), gradient: LinearGradient(begin: Alignment.bottomCenter, end: Alignment.topCenter, colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent, Colors.transparent]))),
-                    if (isCover) Positioned(top: 12, left: 12, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF1B4D3E), borderRadius: BorderRadius.circular(20)), child: const Text('COVER', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)))),
-                    Positioned(bottom: 12, right: 12, child: Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.6), shape: BoxShape.circle), child: const Icon(Icons.edit_rounded, color: Colors.white, size: 16))),
-                  ])
-                : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(Icons.add_photo_alternate_rounded, color: const Color(0xFF6B8B78), size: 32),
-                    const SizedBox(height: 8),
-                    Text(label, style: const TextStyle(fontSize: 13, color: Color(0xFF6B8B78), fontWeight: FontWeight.w500), textAlign: TextAlign.center),
-                    const SizedBox(height: 4),
-                    Text('Tap to add', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                  ]),
+                ? Stack(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.6),
+                              Colors.transparent,
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (isCover)
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1B4D3E),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'COVER',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        bottom: 12,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.6),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_photo_alternate_rounded,
+                        color: const Color(0xFF6B8B78),
+                        size: 32,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF6B8B78),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap to add',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         );
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -1522,7 +2252,11 @@ class _TurfOwnerProfileScreenState
                     CircleAvatar(
                       radius: 36,
                       backgroundColor: AppColors.primary,
-                      child: const Icon(Icons.stadium_rounded, size: 40, color: Colors.white),
+                      child: const Icon(
+                        Icons.stadium_rounded,
+                        size: 40,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -1542,37 +2276,58 @@ class _TurfOwnerProfileScreenState
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.success.withValues(alpha: 0.15),
+                                  color: AppColors.success.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.verified_rounded, size: 12, color: AppColors.success),
+                                    Icon(
+                                      Icons.verified_rounded,
+                                      size: 12,
+                                      color: AppColors.success,
+                                    ),
                                     SizedBox(width: 4),
-                                    Text('Verified KYC',
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.success)),
+                                    Text(
+                                      'Verified KYC',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.success,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
-                          Text('Owner: ${profile.ownerName} • ${profile.ownerPhone}',
-                              style: theme.textTheme.bodySmall),
+                          Text(
+                            'Owner: ${profile.ownerName} • ${profile.ownerPhone}',
+                            style: theme.textTheme.bodySmall,
+                          ),
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_rounded, size: 13, color: AppColors.primary),
+                              const Icon(
+                                Icons.location_on_rounded,
+                                size: 13,
+                                color: AppColors.primary,
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   profile.address,
-                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1593,22 +2348,34 @@ class _TurfOwnerProfileScreenState
                     children: [
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit, size: 14),
-                        label: const Text('Edit Details', style: TextStyle(fontSize: 11)),
+                        label: const Text(
+                          'Edit Details',
+                          style: TextStyle(fontSize: 11),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                         onPressed: () => _showEditProfileDialog(profile),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.stadium_rounded, size: 14),
-                        label: const Text('Edit Turf', style: TextStyle(fontSize: 11)),
+                        label: const Text(
+                          'Edit Turf',
+                          style: TextStyle(fontSize: 11),
+                        ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                         onPressed: _showEditTurfDialog,
                       ),
@@ -1616,30 +2383,46 @@ class _TurfOwnerProfileScreenState
                       OutlinedButton.icon(
                         icon: const Icon(Icons.access_time_rounded, size: 14),
                         label: Text(
-                            profile.openingTime == '24 Hours'
-                                ? 'Timings (24 Hours Open)'
-                                : 'Timings (${profile.openingTime} - ${profile.closingTime})',
-                            style: const TextStyle(fontSize: 11)),
+                          profile.openingTime == '24 Hours'
+                              ? 'Timings (24 Hours Open)'
+                              : 'Timings (${profile.openingTime} - ${profile.closingTime})',
+                          style: const TextStyle(fontSize: 11),
+                        ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                         onPressed: () => _showEditTimingsDialog(profile),
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.sports_soccer_rounded, size: 14),
-                        label: const Text('Add Sport', style: TextStyle(fontSize: 11)),
+                        label: const Text(
+                          'Add Sport',
+                          style: TextStyle(fontSize: 11),
+                        ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                         onPressed: _showAddSportDialog,
                       ),
                       const SizedBox(width: 8),
                       OutlinedButton.icon(
                         icon: const Icon(Icons.add_business_rounded, size: 14),
-                        label: const Text('Add Venue Court', style: TextStyle(fontSize: 11)),
+                        label: const Text(
+                          'Add Venue Court',
+                          style: TextStyle(fontSize: 11),
+                        ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                         ),
                         onPressed: () => _showAddVenueCourtDialog(profile),
                       ),
@@ -1659,8 +2442,14 @@ class _TurfOwnerProfileScreenState
             indicatorColor: AppColors.primary,
             tabs: const [
               Tab(icon: Icon(Icons.storefront_rounded), text: 'Venue Overview'),
-              Tab(icon: Icon(Icons.receipt_long_rounded), text: 'Booking History'),
-              Tab(icon: Icon(Icons.security_rounded), text: 'KYC Details (Locked)'),
+              Tab(
+                icon: Icon(Icons.receipt_long_rounded),
+                text: 'Booking History',
+              ),
+              Tab(
+                icon: Icon(Icons.security_rounded),
+                text: 'KYC Details (Locked)',
+              ),
             ],
           ),
 
@@ -1702,12 +2491,19 @@ class _TurfOwnerProfileScreenState
                     const Expanded(
                       child: Row(
                         children: [
-                          Icon(Icons.schedule_rounded, color: AppColors.primary, size: 20),
+                          Icon(
+                            Icons.schedule_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Operating Timings & Schedule',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -1715,7 +2511,11 @@ class _TurfOwnerProfileScreenState
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
                       onPressed: () => _showEditTimingsDialog(profile),
                     ),
                   ],
@@ -1732,25 +2532,43 @@ class _TurfOwnerProfileScreenState
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_month_rounded, size: 18, color: AppColors.primary),
+                      const Icon(
+                        Icons.calendar_month_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Weekdays (Mon - Fri)',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                            const Text(
+                              'Weekdays (Mon - Fri)',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: AppColors.primary,
+                              ),
+                            ),
                             Text(
-                                profile.weekdayOpeningTime == '24 Hours'
-                                    ? 'Open 24 Hours'
-                                    : '${profile.weekdayOpeningTime} to ${profile.weekdayClosingTime}',
-                                style: const TextStyle(fontSize: 11, color: Colors.black87)),
+                              profile.weekdayOpeningTime == '24 Hours'
+                                  ? 'Open 24 Hours'
+                                  : '${profile.weekdayOpeningTime} to ${profile.weekdayClosingTime}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black87,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       Text(
                         '₹${profile.weekdayRate.toStringAsFixed(0)}/hr',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ],
                   ),
@@ -1766,25 +2584,43 @@ class _TurfOwnerProfileScreenState
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.weekend_rounded, size: 18, color: AppColors.secondary),
+                      const Icon(
+                        Icons.weekend_rounded,
+                        size: 18,
+                        color: AppColors.secondary,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Weekends (Sat - Sun)',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.secondary)),
+                            const Text(
+                              'Weekends (Sat - Sun)',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: AppColors.secondary,
+                              ),
+                            ),
                             Text(
-                                profile.weekendOpeningTime == '24 Hours'
-                                    ? 'Open 24 Hours'
-                                    : '${profile.weekendOpeningTime} to ${profile.weekendClosingTime}',
-                                style: const TextStyle(fontSize: 11, color: Colors.black87)),
+                              profile.weekendOpeningTime == '24 Hours'
+                                  ? 'Open 24 Hours'
+                                  : '${profile.weekendOpeningTime} to ${profile.weekendClosingTime}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black87,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                       Text(
                         '₹${profile.weekendRate.toStringAsFixed(0)}/hr',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.secondary),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: AppColors.secondary,
+                        ),
                       ),
                     ],
                   ),
@@ -1803,15 +2639,30 @@ class _TurfOwnerProfileScreenState
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.wb_sunny_rounded, size: 15, color: Colors.amber),
+                            const Icon(
+                              Icons.wb_sunny_rounded,
+                              size: 15,
+                              color: Colors.amber,
+                            ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Day Slot Rate', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                  Text('₹${profile.dayRate.toStringAsFixed(0)}/hr',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                  const Text(
+                                    'Day Slot Rate',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    '₹${profile.dayRate.toStringAsFixed(0)}/hr',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -1829,15 +2680,30 @@ class _TurfOwnerProfileScreenState
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.nightlight_round, size: 15, color: Colors.indigo),
+                            const Icon(
+                              Icons.nightlight_round,
+                              size: 15,
+                              color: Colors.indigo,
+                            ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Night Slot Rate', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                                  Text('₹${profile.nightRate.toStringAsFixed(0)}/hr',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                  const Text(
+                                    'Night Slot Rate',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    '₹${profile.nightRate.toStringAsFixed(0)}/hr',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -1856,7 +2722,10 @@ class _TurfOwnerProfileScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Sports Supported', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              const Text(
+                'Sports Supported',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
               TextButton.icon(
                 icon: const Icon(Icons.add_circle_outline_rounded, size: 16),
                 label: const Text('Add Sport'),
@@ -1873,16 +2742,25 @@ class _TurfOwnerProfileScreenState
                 onTap: () => _showEditSportRateDialog(sport),
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.sports_rounded, size: 16, color: AppColors.primary),
+                      const Icon(
+                        Icons.sports_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 6),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1890,16 +2768,27 @@ class _TurfOwnerProfileScreenState
                         children: [
                           Text(
                             '${sport.name} • ₹${sport.hourlyRate.toStringAsFixed(0)}/hr',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: AppColors.primary,
+                            ),
                           ),
                           Text(
                             'Wkday ₹${sport.weekdayRate.toStringAsFixed(0)} | Wkend ₹${sport.weekendRate.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 9, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Colors.grey,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.edit_rounded, size: 12, color: AppColors.primary),
+                      const Icon(
+                        Icons.edit_rounded,
+                        size: 12,
+                        color: AppColors.primary,
+                      ),
                     ],
                   ),
                 ),
@@ -1927,92 +2816,148 @@ class _TurfOwnerProfileScreenState
             ],
           ),
           const SizedBox(height: 8),
-          ...profile.courts.map((court) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondary.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
+          ...profile.courts.map(
+            (court) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.stadium,
+                            color: AppColors.secondary,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                court.name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Sport: ${court.sport} • ${court.surface}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Timings: ${court.timings}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          '₹${court.hourlyRate.toStringAsFixed(0)}/hr',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.edit_rounded, size: 14),
+                          label: const Text(
+                            'Edit Turf',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: const BorderSide(color: AppColors.primary),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
                             ),
-                            child: const Icon(Icons.stadium, color: AppColors.secondary, size: 22),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(court.name,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                const SizedBox(height: 2),
-                                Text('Sport: ${court.sport} • ${court.surface}',
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                const SizedBox(height: 2),
-                                Text('Timings: ${court.timings}',
-                                    style: const TextStyle(fontSize: 10, color: AppColors.primary)),
-                              ],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          Text(
-                            '₹${court.hourlyRate.toStringAsFixed(0)}/hr',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 13),
+                          onPressed: () =>
+                              _showEditVenueCourtDialog(profile, court),
+                        ),
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 14,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.edit_rounded, size: 14),
-                            label: const Text('Edit Turf', style: TextStyle(fontSize: 12)),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              side: const BorderSide(color: AppColors.primary),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          label: const Text(
+                            'Remove',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                            side: const BorderSide(color: AppColors.error),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
                             ),
-                            onPressed: () => _showEditVenueCourtDialog(profile, court),
-                          ),
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.delete_outline_rounded, size: 14),
-                            label: const Text('Remove', style: TextStyle(fontSize: 12)),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.error,
-                              side: const BorderSide(color: AppColors.error),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            onPressed: () {
-                              ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
-                              ToastUtils.showSuccess(context, "Removed court: ${court.name}");
-                            },
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          onPressed: () {
+                            ref
+                                .read(turfProfileProvider.notifier)
+                                .removeCourtVenue(court.id);
+                            ToastUtils.showSuccess(
+                              context,
+                              "Removed court: ${court.name}",
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              )),
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
 
           // Facilities List
-          const Text('Amenities & Facilities', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text(
+            'Amenities & Facilities',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: profile.facilities.map((facility) {
               return Chip(
-                avatar: const Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
+                avatar: const Icon(
+                  Icons.check_circle_rounded,
+                  size: 16,
+                  color: AppColors.success,
+                ),
                 label: Text(facility, style: const TextStyle(fontSize: 11)),
                 backgroundColor: Colors.grey.withValues(alpha: 0.08),
               );
@@ -2037,7 +2982,9 @@ class _TurfOwnerProfileScreenState
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: ['All', 'Confirmed', 'Completed', 'Cancelled'].map((status) {
+              children: ['All', 'Confirmed', 'Completed', 'Cancelled'].map((
+                status,
+              ) {
                 final isSelected = _bookingFilter == status;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
@@ -2047,7 +2994,9 @@ class _TurfOwnerProfileScreenState
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Colors.black87,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       fontSize: 12,
                     ),
                     onSelected: (selected) {
@@ -2067,20 +3016,34 @@ class _TurfOwnerProfileScreenState
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
+                      Icon(
+                        Icons.receipt_long_outlined,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 8),
-                      Text('No bookings found for this filter.', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'No bookings found for this filter.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    top: 16,
+                    bottom: 120,
+                  ),
                   itemCount: filteredBookings.length,
                   itemBuilder: (context, index) {
                     final item = filteredBookings[index];
                     Color statusColor = AppColors.success;
-                    if (item.status == 'Confirmed') statusColor = AppColors.primary;
-                    if (item.status == 'Cancelled') statusColor = AppColors.error;
+                    if (item.status == 'Confirmed')
+                      statusColor = AppColors.primary;
+                    if (item.status == 'Cancelled')
+                      statusColor = AppColors.error;
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -2091,13 +3054,19 @@ class _TurfOwnerProfileScreenState
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(item.id,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                        color: Colors.grey)),
+                                Text(
+                                  item.id,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: statusColor.withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(8),
@@ -2116,12 +3085,19 @@ class _TurfOwnerProfileScreenState
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(Icons.person_rounded, size: 16, color: AppColors.primary),
+                                const Icon(
+                                  Icons.person_rounded,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
                                     '${item.customerName} (${item.customerPhone})',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12.5,
+                                    ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -2130,7 +3106,11 @@ class _TurfOwnerProfileScreenState
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.sports_rounded, size: 15, color: Colors.grey),
+                                const Icon(
+                                  Icons.sports_rounded,
+                                  size: 15,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
@@ -2144,7 +3124,11 @@ class _TurfOwnerProfileScreenState
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.access_time_rounded, size: 15, color: Colors.grey),
+                                const Icon(
+                                  Icons.access_time_rounded,
+                                  size: 15,
+                                  color: Colors.grey,
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
@@ -2187,7 +3171,9 @@ class _TurfOwnerProfileScreenState
             decoration: BoxDecoration(
               color: AppColors.warning.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+              border: Border.all(
+                color: AppColors.warning.withValues(alpha: 0.4),
+              ),
             ),
             child: const Row(
               children: [
@@ -2199,7 +3185,11 @@ class _TurfOwnerProfileScreenState
                     children: [
                       Text(
                         '🔒 KYC & Tax Identity Locked',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning, fontSize: 13),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.warning,
+                          fontSize: 13,
+                        ),
                       ),
                       SizedBox(height: 2),
                       Text(
@@ -2248,12 +3238,18 @@ class _TurfOwnerProfileScreenState
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.account_balance_rounded, color: AppColors.primary),
+                    Icon(
+                      Icons.account_balance_rounded,
+                      color: AppColors.primary,
+                    ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Automated Weekly Payout Bank Account',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -2295,7 +3291,10 @@ class _TurfOwnerProfileScreenState
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -2314,7 +3313,11 @@ class _TurfOwnerProfileScreenState
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle, size: 12, color: AppColors.success),
+                    const Icon(
+                      Icons.check_circle,
+                      size: 12,
+                      color: AppColors.success,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       badge,
@@ -2357,7 +3360,10 @@ class _TurfOwnerProfileScreenState
         const SizedBox(width: 8),
         Row(
           children: [
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
             const SizedBox(width: 4),
             const Icon(Icons.lock_outline, size: 12, color: Colors.grey),
           ],

@@ -221,6 +221,9 @@ export class TurfService {
       throw new NotFoundException(`Turf with ID ${id} not found`);
     }
 
+    if (turf.isBookingHold || turf.status === 'HOLD') {
+      throw new BadRequestException(`Bookings for "${turf.venueName}" are temporarily on hold by Platform Super Admin.`);
+    }
     const verifiedAdminId = turf.id;
 
     const now = new Date();

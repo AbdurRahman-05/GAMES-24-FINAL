@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchTurfs();
     BookingManager().fetchBookings();
+    ChallengeManager().syncWithCurrentUser();
   }
 
   Future<void> _fetchTurfs() async {
@@ -53,7 +54,11 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': true},
     {'name': 'Cricket', 'icon': Icons.sports_cricket, 'isSelected': false},
     {'name': 'Tennis', 'icon': Icons.sports_tennis, 'isSelected': false},
-    {'name': 'Basketball', 'icon': Icons.sports_basketball, 'isSelected': false},
+    {
+      'name': 'Basketball',
+      'icon': Icons.sports_basketball,
+      'isSelected': false,
+    },
     {'name': 'Go-Kart', 'icon': Icons.directions_car, 'isSelected': false},
   ];
 
@@ -64,16 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         color: const Color(0xFF166534),
         onRefresh: () async {
-          await Future.wait([
-            _fetchTurfs(),
-            BookingManager().fetchBookings(),
-          ]);
+          await Future.wait([_fetchTurfs(), BookingManager().fetchBookings()]);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: ValueListenableBuilder<List<Map<String, dynamic>>>(
             valueListenable: BookingManager().bookingsNotifier,
-            builder: (context, _, __) {
+            builder: (context, _, _) {
               final activeBookings = BookingManager().activeBookings;
 
               return Column(
@@ -96,10 +98,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: _buildSectionHeader(
-                      'Upcoming Matches', 
-                      'View Schedule', 
+                      'Upcoming Matches',
+                      'View Schedule',
                       hasLiveBadge: true,
-                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TournamentsScreen())),
+                      onActionTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TournamentsScreen(),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -111,11 +118,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: _buildSectionHeader(
-                        'Your Active Bookings', 
+                        'Your Active Bookings',
                         'History',
                         onActionTap: () => Navigator.push(
-                          context, 
-                          MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MyBookingsScreen(),
+                          ),
                         ).then((_) => BookingManager().fetchBookings()),
                       ),
                     ),
@@ -130,9 +139,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: _buildSectionHeader(
-                      'Join Team / Open Challenges', 
+                      'Join Team / Open Challenges',
                       'View All',
-                      onActionTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TeamsHubScreen())),
+                      onActionTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TeamsHubScreen(),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -173,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),
@@ -191,23 +205,36 @@ class _HomeScreenState extends State<HomeScreen> {
                         return const Iterable<Map<String, dynamic>>.empty();
                       }
                       return _allTurfs.where((turf) {
-                        return turf['name']
-                            .toString()
-                            .toLowerCase()
-                            .contains(textEditingValue.text.toLowerCase());
+                        return turf['name'].toString().toLowerCase().contains(
+                          textEditingValue.text.toLowerCase(),
+                        );
                       });
                     },
                     displayStringForOption: (option) => option['name'],
                     onSelected: (option) {
-                      final int? tId = option['id'] is int ? option['id'] as int : int.tryParse(option['id']?.toString() ?? '');
+                      final int? tId = option['id'] is int
+                          ? option['id'] as int
+                          : int.tryParse(option['id']?.toString() ?? '');
                       final List<String> sportsList = (option['sports'] is List)
-                          ? (option['sports'] as List).map((e) => e.toString()).toList()
-                          : (option['sports']?.toString().split(' • ') ?? ['Football', 'Box Cricket']);
-                      final List<String> photoUrls = (option['photoUrls'] is List)
-                          ? (option['photoUrls'] as List).map((e) => e.toString()).toList()
-                          : [option['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
-                      final List<String> amenities = (option['amenities'] is List)
-                          ? (option['amenities'] as List).map((e) => e.toString()).toList()
+                          ? (option['sports'] as List)
+                                .map((e) => e.toString())
+                                .toList()
+                          : (option['sports']?.toString().split(' • ') ??
+                                ['Football', 'Box Cricket']);
+                      final List<String> photoUrls =
+                          (option['photoUrls'] is List)
+                          ? (option['photoUrls'] as List)
+                                .map((e) => e.toString())
+                                .toList()
+                          : [
+                              option['imageUrl'] ??
+                                  'https://picsum.photos/seed/turf1/800/400',
+                            ];
+                      final List<String> amenities =
+                          (option['amenities'] is List)
+                          ? (option['amenities'] as List)
+                                .map((e) => e.toString())
+                                .toList()
                           : ['Floodlights', 'Parking', 'Restroom'];
 
                       Navigator.push(
@@ -215,7 +242,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         MaterialPageRoute(
                           builder: (context) => BookingScreen(
                             turfId: tId,
-                            turfName: option['venueName'] ?? option['name'] ?? 'Turf Arena',
+                            turfName:
+                                option['venueName'] ??
+                                option['name'] ??
+                                'Turf Arena',
                             imageUrl: option['imageUrl'] ?? photoUrls.first,
                             photoUrls: photoUrls,
                             amenities: amenities,
@@ -228,20 +258,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                     },
-                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        decoration: const InputDecoration(
-                          hintText: 'Search turfs...',
-                          hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.only(top: 14),
-                        ),
-                        style: const TextStyle(fontSize: 14),
-                      );
-                    },
+                    fieldViewBuilder:
+                        (context, controller, focusNode, onFieldSubmitted) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            decoration: const InputDecoration(
+                              hintText: 'Search turfs...',
+                              hintStyle: TextStyle(
+                                color: Color(0xFF9CA3AF),
+                                fontSize: 14,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.only(top: 14),
+                            ),
+                            style: const TextStyle(fontSize: 14),
+                          );
+                        },
                     optionsViewBuilder: (context, onSelected, options) {
                       return Align(
                         alignment: Alignment.topLeft,
@@ -258,16 +292,37 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: EdgeInsets.zero,
                               shrinkWrap: true,
                               itemCount: options.length,
-                              separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                              separatorBuilder: (context, index) =>
+                                  const Divider(
+                                    height: 1,
+                                    color: Color(0xFFE5E7EB),
+                                  ),
                               itemBuilder: (context, index) {
                                 final option = options.elementAt(index);
                                 return ListTile(
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(option['imageUrl'], width: 40, height: 40, fit: BoxFit.cover),
+                                    child: Image.network(
+                                      option['imageUrl'],
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
-                                  title: Text(option['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                  subtitle: Text(option['location'], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                                  title: Text(
+                                    option['name'],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    option['location'],
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ),
                                   onTap: () => onSelected(option),
                                 );
                               },
@@ -301,7 +356,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title, String actionText, {bool hasLiveBadge = false, IconData? trailingIcon, VoidCallback? onActionTap}) {
+  Widget _buildSectionHeader(
+    String title,
+    String actionText, {
+    bool hasLiveBadge = false,
+    IconData? trailingIcon,
+    VoidCallback? onActionTap,
+  }) {
     return Row(
       children: [
         Text(
@@ -379,37 +440,54 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
             child: Container(
-            width: 88,
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF166534) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: isSelected ? [
-                BoxShadow(color: const Color(0xFF166534).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 6))
-              ] : [
-                BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 2))
-              ],
-              border: isSelected ? null : Border.all(color: const Color(0xFFF3F4F6), width: 1.5),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  cat['icon'] as IconData,
-                  color: isSelected ? Colors.white : const Color(0xFF4B5563),
-                  size: 28,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  cat['name'] as String,
-                  style: TextStyle(
+              width: 88,
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF166534) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF166534).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                border: isSelected
+                    ? null
+                    : Border.all(color: const Color(0xFFF3F4F6), width: 1.5),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    cat['icon'] as IconData,
                     color: isSelected ? Colors.white : const Color(0xFF4B5563),
-                    fontSize: 13,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    size: 28,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    cat['name'] as String,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF4B5563),
+                      fontSize: 13,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ));
+          );
         },
       ),
     );
@@ -458,7 +536,11 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
               ],
               border: Border.all(color: const Color(0xFFF3F4F6)),
             ),
@@ -469,19 +551,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         match['time'] as String,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF4B5563)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF4B5563),
+                        ),
                       ),
                     ),
                     Text(
                       match['slots'] as String,
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                   ],
                 ),
@@ -489,11 +582,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildTeamAvatar(match['t1Initials'] as String, match['t1Name'] as String, match['t1Color'] as Color),
+                    _buildTeamAvatar(
+                      match['t1Initials'] as String,
+                      match['t1Name'] as String,
+                      match['t1Color'] as Color,
+                    ),
                     const SizedBox(width: 16),
-                    const Text('VS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    const Text(
+                      'VS',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
                     const SizedBox(width: 16),
-                    _buildTeamAvatar(match['t2Initials'] as String, match['t2Name'] as String, match['t2Color'] as Color),
+                    _buildTeamAvatar(
+                      match['t2Initials'] as String,
+                      match['t2Name'] as String,
+                      match['t2Color'] as Color,
+                    ),
                   ],
                 ),
                 const Spacer(),
@@ -502,19 +609,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       match['location'] as String,
-                      style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                      style: const TextStyle(
+                        color: Color(0xFF6B7280),
+                        fontSize: 12,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () {
                         _showJoinMatchDialog(context, match);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF166534),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text('Join', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Join',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -537,12 +657,18 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Center(
             child: Text(
               initials,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
         const SizedBox(height: 4),
-        Text(name, style: const TextStyle(fontSize: 10, color: Color(0xFF111827))),
+        Text(
+          name,
+          style: const TextStyle(fontSize: 10, color: Color(0xFF111827)),
+        ),
       ],
     );
   }
@@ -554,15 +680,34 @@ class _HomeScreenState extends State<HomeScreen> {
       final today = DateTime(now.year, now.month, now.day);
       final parts = dateStr.split('-');
       if (parts.length == 3) {
-        final bDate = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+        final bDate = DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+        );
         final diff = bDate.difference(today).inDays;
-        final slotText = (timeSlot != null && timeSlot.isNotEmpty) ? ', $timeSlot' : '';
+        final slotText = (timeSlot != null && timeSlot.isNotEmpty)
+            ? ', $timeSlot'
+            : '';
         if (diff == 0) {
           return 'Today$slotText';
         } else if (diff == 1) {
           return 'Tomorrow$slotText';
         } else {
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const months = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
           return '${bDate.day} ${months[bDate.month - 1]}$slotText';
         }
       }
@@ -573,14 +718,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildActiveBookings(List<Map<String, dynamic>> bookings) {
     return Column(
       children: bookings.map((booking) {
-        final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
+        final turfName =
+            (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena')
+                .toString();
         final rawImg = (booking['imageUrl'] ?? '').toString();
-        final imgUrl = rawImg.isNotEmpty ? rawImg : 'https://picsum.photos/seed/${booking['id'] ?? 'booking'}/250/250';
+        final imgUrl = rawImg.isNotEmpty
+            ? rawImg
+            : 'https://picsum.photos/seed/${booking['id'] ?? 'booking'}/250/250';
         final status = (booking['status'] ?? 'Confirmed').toString();
         final dateStr = (booking['date'] ?? '').toString();
         final timeSlot = (booking['timeSlot'] ?? '').toString();
         final formattedDateTime = _formatBookingDate(dateStr, timeSlot);
-        final locationOrCourt = (booking['courtName'] ?? booking['location'] ?? 'Turf 1').toString();
+        final locationOrCourt =
+            (booking['courtName'] ?? booking['location'] ?? 'Turf 1')
+                .toString();
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
@@ -589,7 +740,9 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const MyBookingsScreen(),
+                ),
               ).then((_) => BookingManager().fetchBookings());
             },
             child: Container(
@@ -598,7 +751,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
                 ],
                 border: Border.all(color: const Color(0xFFF3F4F6)),
               ),
@@ -611,14 +768,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 80,
                       height: 80,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.sports_soccer, color: Color(0xFF166534), size: 36),
+                        child: const Icon(
+                          Icons.sports_soccer,
+                          color: Color(0xFF166534),
+                          size: 36,
+                        ),
                       ),
                     ),
                   ),
@@ -633,14 +794,20 @@ class _HomeScreenState extends State<HomeScreen> {
                             Expanded(
                               child: Text(
                                 turfName,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.green.shade100,
                                 borderRadius: BorderRadius.circular(12),
@@ -659,19 +826,29 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 4),
                         Text(
                           formattedDateTime,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF6B7280)),
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 14,
+                              color: Color(0xFF6B7280),
+                            ),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
                                 locationOrCourt,
-                                style: const TextStyle(fontSize: 12, color: Color(0xFF111827)),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF111827),
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -725,7 +902,11 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 16, offset: const Offset(0, 8)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
         ],
         border: Border.all(color: const Color(0xFFF3F4F6)),
       ),
@@ -738,17 +919,25 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF166534).withOpacity(0.1),
+                  color: const Color(0xFF166534).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   challenge.sport,
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF166534),
+                  ),
                 ),
               ),
               Text(
                 '${challenge.date}, ${challenge.time}',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF4B5563)),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF4B5563),
+                ),
               ),
             ],
           ),
@@ -756,17 +945,25 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildTeamAvatar(challenge.challengerTeamInitials, challenge.challengerName, challenge.challengerColor),
+              _buildTeamAvatar(
+                challenge.challengerTeamInitials,
+                challenge.challengerName,
+                challenge.challengerColor,
+              ),
               const SizedBox(width: 16),
-              const Text('VS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Text(
+                'VS',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
               const SizedBox(width: 16),
               if (challenge.isJoined)
                 _buildTeamAvatar(
-                  challenge.opponentName != null && challenge.opponentName!.length >= 2 
-                      ? challenge.opponentName!.substring(0, 2).toUpperCase() 
-                      : 'VS', 
-                  challenge.opponentName ?? 'Opponent', 
-                  const Color(0xFFBE123C)
+                  challenge.opponentName != null &&
+                          challenge.opponentName!.length >= 2
+                      ? challenge.opponentName!.substring(0, 2).toUpperCase()
+                      : 'VS',
+                  challenge.opponentName ?? 'Opponent',
+                  const Color(0xFFBE123C),
                 )
               else
                 Column(
@@ -777,14 +974,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFD1D5DB), style: BorderStyle.solid),
+                        border: Border.all(
+                          color: const Color(0xFFD1D5DB),
+                          style: BorderStyle.solid,
+                        ),
                       ),
                       child: const Center(
-                        child: Icon(Icons.help_outline, color: Color(0xFF9CA3AF), size: 20),
+                        child: Icon(
+                          Icons.help_outline,
+                          color: Color(0xFF9CA3AF),
+                          size: 20,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text('Open Slot', style: TextStyle(fontSize: 10, color: Color(0xFF6B7280))),
+                    const Text(
+                      'Open Slot',
+                      style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+                    ),
                   ],
                 ),
             ],
@@ -796,52 +1003,105 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Text(
                   challenge.turfName,
-                  style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 12,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               if (challenge.isJoined)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
                   ),
-                  child: const Text('Matched', style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5F5EB),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF86EFAC)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF166534)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Matched',
+                        style: TextStyle(
+                          color: Color(0xFF166534),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               else if (challenge.isCreator)
                 GestureDetector(
                   onTap: () {
-                    if (challenge.joinRequests.isNotEmpty) {
-                      _showRequestsDialog(challenge);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No requests yet.')));
-                    }
+                    _showRequestsDialog(challenge);
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: challenge.joinRequests.isNotEmpty ? const Color(0xFFBE123C) : Colors.grey.shade300,
+                      color: challenge.joinRequests.isNotEmpty
+                          ? const Color(0xFF166534)
+                          : const Color(0xFF0F766E),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      challenge.joinRequests.isNotEmpty ? '${challenge.joinRequests.length} Requests' : 'Waiting',
-                      style: TextStyle(
-                        color: challenge.joinRequests.isNotEmpty ? Colors.white : Colors.black54,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.mail_outline_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          challenge.joinRequests.isNotEmpty
+                              ? 'See Requests (${challenge.joinRequests.length})'
+                              : 'See Requests',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 )
               else if (challenge.userHasRequested)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange.shade100,
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade300),
                   ),
-                  child: Text('Requested', style: TextStyle(color: Colors.orange.shade800, fontSize: 12, fontWeight: FontWeight.bold)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.hourglass_top_rounded, size: 12, color: Colors.orange.shade900),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Requested',
+                        style: TextStyle(
+                          color: Colors.orange.shade900,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 )
               else
                 GestureDetector(
@@ -849,12 +1109,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     _showJoinChallengeDialog(challenge);
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF166534),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text('Join', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.sports_rounded, size: 13, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'Join',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
@@ -866,16 +1143,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showJoinChallengeDialog(Challenge challenge) {
     final teamNameCtrl = TextEditingController();
+    final teamSizeCtrl = TextEditingController(text: '7 Players (7v7)');
     final contactCtrl = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Join Challenge'),
+              const Expanded(
+                child: Text(
+                  'Join Open Challenge',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               IconButton(
                 icon: const Icon(Icons.close),
                 padding: EdgeInsets.zero,
@@ -884,19 +1169,67 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: teamNameCtrl,
-                decoration: const InputDecoration(labelText: 'Your Team Name'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: contactCtrl,
-                decoration: const InputDecoration(labelText: 'Contact Details (Phone/Email)'),
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.sports_soccer_rounded, size: 18, color: Color(0xFF166534)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Challenge ${challenge.challengerName} • ${challenge.turfName}',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: teamNameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Team Name',
+                    hintText: 'e.g. Thunder FC',
+                    prefixIcon: Icon(Icons.shield_outlined, size: 18),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: teamSizeCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Team Size / Format',
+                    hintText: 'e.g. 7 Players (7v7)',
+                    prefixIcon: Icon(Icons.groups_outlined, size: 18),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: contactCtrl,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Contact Number',
+                    hintText: 'e.g. +91 98765 43210',
+                    prefixIcon: Icon(Icons.phone_outlined, size: 18),
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  ),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -904,17 +1237,41 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF166534),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () {
-                if (teamNameCtrl.text.trim().isEmpty || contactCtrl.text.trim().isEmpty) return;
+                final tName = teamNameCtrl.text.trim();
+                final tSize = teamSizeCtrl.text.trim();
+                final cNumber = contactCtrl.text.trim();
+
+                if (tName.isEmpty || tSize.isEmpty || cNumber.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter Team Name, Team Size, and Contact Number.'),
+                      backgroundColor: Color(0xFFDC2626),
+                    ),
+                  );
+                  return;
+                }
+
                 ChallengeManager().requestToJoin(
                   challenge.id,
-                  teamNameCtrl.text.trim(),
-                  contactCtrl.text.trim(),
+                  tName,
+                  tSize,
+                  cNumber,
                 );
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Join request sent!')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Join request sent to ${challenge.challengerName}!'),
+                    backgroundColor: const Color(0xFF166534),
+                  ),
+                );
               },
-              child: const Text('Send Request'),
+              child: const Text('Send Join Request'),
             ),
           ],
         );
@@ -926,44 +1283,176 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        final requests = challenge.joinRequests;
+
         return AlertDialog(
-          title: const Text('Join Requests'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  requests.isNotEmpty ? 'Join Requests (${requests.length})' : 'Open Challenge Status',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
           content: SizedBox(
             width: double.maxFinite,
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: challenge.joinRequests.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final req = challenge.joinRequests[index];
-                return ListTile(
-                  title: Text(req.teamName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Contact: ${req.contactDetails}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.check_circle, color: Colors.green),
-                        onPressed: () {
-                          ChallengeManager().acceptRequest(challenge.id, req);
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Accepted ${req.teamName}!')));
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.cancel, color: Colors.red),
-                        onPressed: () {
-                          ChallengeManager().rejectRequest(challenge.id, req.id);
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Request rejected.')));
-                        },
-                      ),
-                    ],
+            child: requests.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.mark_email_read_outlined,
+                          size: 48,
+                          color: Color(0xFF166534),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'No Requests Yet',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Your open challenge for ${challenge.sport} at ${challenge.turfName} is live.\n\nOther players can challenge your team with their team name, team size, and contact details.',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: requests.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final req = requests[index];
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    req.teamName,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                      color: Color(0xFF111827),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE5F5EB),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    req.teamSize,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF166534),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.phone_rounded, size: 12, color: Color(0xFF6B7280)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  req.contactDetails,
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  req.requestedAt,
+                                  style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFFDC2626),
+                                    side: const BorderSide(color: Color(0xFFFCA5A5)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  icon: const Icon(Icons.close_rounded, size: 14),
+                                  label: const Text('Decline', style: TextStyle(fontSize: 11)),
+                                  onPressed: () {
+                                    ChallengeManager().rejectRequest(challenge.id, req.id);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Request declined.')),
+                                    );
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF166534),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  icon: const Icon(Icons.check_circle_rounded, size: 14),
+                                  label: const Text('Accept Challenge', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                  onPressed: () {
+                                    ChallengeManager().acceptRequest(challenge.id, req);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Challenge accepted! Paired with ${req.teamName}.'),
+                                        backgroundColor: const Color(0xFF166534),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
         );
       },
     );
@@ -973,7 +1462,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_isLoadingTurfs) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: CircularProgressIndicator(color: Color(0xFF166534))),
+        child: Center(
+          child: CircularProgressIndicator(color: Color(0xFF166534)),
+        ),
       );
     }
 
@@ -988,11 +1479,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: const Column(
           children: [
-            Icon(Icons.sports_soccer_rounded, size: 44, color: Color(0xFF9CA3AF)),
+            Icon(
+              Icons.sports_soccer_rounded,
+              size: 44,
+              color: Color(0xFF9CA3AF),
+            ),
             SizedBox(height: 10),
             Text(
               'No verified turfs available yet',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
             ),
             SizedBox(height: 4),
             Text(
@@ -1022,7 +1521,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: _buildTurfCard(
-            turfId: turf['id'] is int ? turf['id'] as int : int.tryParse(turf['id']?.toString() ?? ''),
+            turfId: turf['id'] is int
+                ? turf['id'] as int
+                : int.tryParse(turf['id']?.toString() ?? ''),
             name: turf['venueName'] ?? turf['name'] ?? 'Turf Arena',
             price: turf['price'] ?? '₹1,200',
             location: turf['location'] ?? 'Madurai',
@@ -1061,7 +1562,11 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 24, offset: const Offset(0, 12)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
         ],
       ),
       child: Column(
@@ -1071,16 +1576,23 @@ class _HomeScreenState extends State<HomeScreen> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
                 child: Image.network(
                   imageUrl,
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     height: 180,
                     color: Colors.grey.shade200,
-                    child: const Icon(Icons.sports_soccer, size: 48, color: Colors.grey),
+                    child: const Icon(
+                      Icons.sports_soccer,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ),
@@ -1088,7 +1600,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: 12,
                 right: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -1099,11 +1614,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 4),
                       Text(
                         rating,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                       Text(
                         ' ($reviews)',
-                        style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -1113,20 +1634,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 12,
                 left: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
                     sports,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-          
+
           // Details
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -1139,14 +1666,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Text(
                         name,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       price,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                   ],
                 ),
@@ -1157,12 +1691,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Row(
                         children: [
-                          const Icon(Icons.location_on_outlined, size: 14, color: Color(0xFF6B7280)),
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 14,
+                            color: Color(0xFF6B7280),
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
                               location,
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF6B7280),
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1170,7 +1711,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    const Text('/ hour', style: TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                    const Text(
+                      '/ hour',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -1181,18 +1725,31 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
-                        children: tags.take(3).map((tag) => Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: const Color(0xFFE5E7EB)),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            tag,
-                            style: const TextStyle(fontSize: 10, color: Color(0xFF4B5563)),
-                          ),
-                        )).toList(),
+                        children: tags
+                            .take(3)
+                            .map(
+                              (tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color: const Color(0xFFE5E7EB),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1220,12 +1777,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         backgroundColor: const Color(0xFF166534),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text('Book Slot', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      child: const Text(
+                        'Book Slot',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -1250,9 +1816,15 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Filters', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text(
+                'Filters',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
-              const Text('Distance', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Distance',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               Slider(value: 5, min: 1, max: 20, onChanged: (val) {}),
               const SizedBox(height: 16),
               SizedBox(
@@ -1262,9 +1834,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF166534),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Apply Filters', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Apply Filters',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -1279,9 +1860,16 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Join Match?', style: TextStyle(fontWeight: FontWeight.bold)),
-          content: Text('Do you want to join the match between ${match['t1Name']} and ${match['t2Name']}?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Join Match?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Do you want to join the match between ${match['t1Name']} and ${match['t2Name']}?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -1290,10 +1878,17 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Successfully Joined Match!')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Successfully Joined Match!')),
+                );
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534)),
-              child: const Text('Confirm', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF166534),
+              ),
+              child: const Text(
+                'Confirm',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );

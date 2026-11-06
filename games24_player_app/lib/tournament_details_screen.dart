@@ -20,7 +20,11 @@ class TournamentDetailsScreen extends StatelessWidget {
         ),
         title: Text(
           tournament.title,
-          style: const TextStyle(color: Color(0xFF111827), fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -65,14 +69,18 @@ class TournamentDetailsScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
           ),
         ),
         padding: const EdgeInsets.all(16),
         alignment: Alignment.bottomLeft,
         child: Text(
           tournament.title,
-          style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -86,19 +94,39 @@ class TournamentDetailsScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: const Color(0xFF0F6D38), borderRadius: BorderRadius.circular(16)),
-              child: Text(tournament.sport, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F6D38),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                tournament.sport,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: tournament.status == TournamentStatus.ongoing ? const Color(0xFFDC2626) : const Color(0xFFD1D5DB),
+                color: tournament.status == TournamentStatus.ongoing
+                    ? const Color(0xFFDC2626)
+                    : const Color(0xFFD1D5DB),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                tournament.status == TournamentStatus.ongoing ? 'Live Now' : (tournament.status == TournamentStatus.upcoming ? 'Upcoming' : 'Completed'),
-                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                tournament.status == TournamentStatus.ongoing
+                    ? 'Live Now'
+                    : (tournament.status == TournamentStatus.upcoming
+                          ? 'Upcoming'
+                          : 'Completed'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -106,7 +134,11 @@ class TournamentDetailsScreen extends StatelessWidget {
         const SizedBox(height: 16),
         _detailRow(Icons.calendar_today, 'Date', tournament.date),
         _detailRow(Icons.access_time, 'Time', tournament.time),
-        _detailRow(Icons.location_on, 'Venue', '${tournament.venue}, ${tournament.location}'),
+        _detailRow(
+          Icons.location_on,
+          'Venue',
+          '${tournament.venue}, ${tournament.location}',
+        ),
         _detailRow(Icons.sports, 'Format', tournament.format),
       ],
     );
@@ -115,17 +147,32 @@ class TournamentDetailsScreen extends StatelessWidget {
   Widget _buildFinancials() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE5E7EB))),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Financial & Prize Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text(
+            'Financial & Prize Details',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _financeItem('Entry Fee', tournament.entryFee, Icons.monetization_on),
-              _financeItem('Prize Pool', tournament.prizePool, Icons.emoji_events),
+              _financeItem(
+                'Entry Fee',
+                tournament.entryFee,
+                Icons.monetization_on,
+              ),
+              _financeItem(
+                'Prize Pool',
+                tournament.prizePool,
+                Icons.emoji_events,
+              ),
               _financeItem('Grand Prize', tournament.grandPrize, Icons.star),
             ],
           ),
@@ -139,9 +186,15 @@ class TournamentDetailsScreen extends StatelessWidget {
       children: [
         Icon(icon, color: const Color(0xFF0F6D38), size: 28),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+        ),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
       ],
     );
   }
@@ -150,11 +203,20 @@ class TournamentDetailsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Rules & Guidelines', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          'Rules & Guidelines',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 12),
         _ruleItem('Reporting Time', tournament.reportingTime),
-        _ruleItem('Equipment', 'Standard kits required. Non-marking shoes mandatory for indoor.'),
-        _ruleItem('Match Rules', 'Referee decisions are final. Yellow/Red card penalties apply.'),
+        _ruleItem(
+          'Equipment',
+          'Standard kits required. Non-marking shoes mandatory for indoor.',
+        ),
+        _ruleItem(
+          'Match Rules',
+          'Referee decisions are final. Yellow/Red card penalties apply.',
+        ),
       ],
     );
   }
@@ -172,7 +234,10 @@ class TournamentDetailsScreen extends StatelessWidget {
               text: TextSpan(
                 style: const TextStyle(color: Color(0xFF374151), fontSize: 13),
                 children: [
-                  TextSpan(text: '$title: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  TextSpan(
+                    text: '$title: ',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   TextSpan(text: desc),
                 ],
               ),
@@ -186,16 +251,25 @@ class TournamentDetailsScreen extends StatelessWidget {
   Widget _buildRegistrationInfo() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: const Color(0xFFF3F5F1), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F5F1),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Registration Status', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              const Text(
+                'Registration Status',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 4),
-              Text('${tournament.registeredTeams} / ${tournament.maxTeams} Teams Registered', style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
+              Text(
+                '${tournament.registeredTeams} / ${tournament.maxTeams} Teams Registered',
+                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+              ),
             ],
           ),
           CircularProgressIndicator(
@@ -216,8 +290,16 @@ class TournamentDetailsScreen extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: const Color(0xFF6B7280)),
           const SizedBox(width: 8),
-          Text('$label: ', style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13))),
+          Text(
+            '$label: ',
+            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+            ),
+          ),
         ],
       ),
     );
@@ -230,7 +312,13 @@ class TournamentDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
         child: SafeArea(
           child: ElevatedButton(
@@ -239,7 +327,11 @@ class TournamentDetailsScreen extends StatelessWidget {
                 : () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => TournamentRegistrationScreen(tournament: tournament)),
+                      MaterialPageRoute(
+                        builder: (context) => TournamentRegistrationScreen(
+                          tournament: tournament,
+                        ),
+                      ),
                     );
                   },
             style: ElevatedButton.styleFrom(
@@ -247,9 +339,14 @@ class TournamentDetailsScreen extends StatelessWidget {
               disabledBackgroundColor: Colors.grey,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: Text(isFull ? 'Tournament Full' : 'Register / Join Tournament', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text(
+              isFull ? 'Tournament Full' : 'Register / Join Tournament',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       );
@@ -258,20 +355,33 @@ class TournamentDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
         child: SafeArea(
           child: ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Live Standings coming soon!')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Live Standings coming soon!')),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0F6D38),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('View Live Standings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'View Live Standings',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       );

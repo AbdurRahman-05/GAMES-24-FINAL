@@ -48,9 +48,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
       if (_selectedSport == 'All Sports') return true;
       final sports = turf['sports'];
       if (sports is List) {
-        return sports.any((s) => s.toString().toLowerCase().contains(_selectedSport.toLowerCase()));
+        return sports.any(
+          (s) =>
+              s.toString().toLowerCase().contains(_selectedSport.toLowerCase()),
+        );
       }
-      return turf['sports']?.toString().toLowerCase().contains(_selectedSport.toLowerCase()) ?? false;
+      return turf['sports']?.toString().toLowerCase().contains(
+            _selectedSport.toLowerCase(),
+          ) ??
+          false;
     }).toList();
 
     return SingleChildScrollView(
@@ -84,7 +90,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.refresh, size: 20, color: Color(0xFF0F6D38)),
+                  icon: const Icon(
+                    Icons.refresh,
+                    size: 20,
+                    color: Color(0xFF0F6D38),
+                  ),
                   tooltip: 'Refresh Turfs',
                   onPressed: () {
                     setState(() => _isLoadingTurfs = true);
@@ -126,11 +136,19 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ),
         child: const Column(
           children: [
-            Icon(Icons.sports_soccer_rounded, size: 52, color: Color(0xFF9CA3AF)),
+            Icon(
+              Icons.sports_soccer_rounded,
+              size: 52,
+              color: Color(0xFF9CA3AF),
+            ),
             SizedBox(height: 12),
             Text(
               'No Verified Turfs Found',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
             ),
             SizedBox(height: 6),
             Text(
@@ -155,12 +173,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
         final List<String> sportsList = (turf['sports'] is List)
             ? (turf['sports'] as List).map((e) => e.toString()).toList()
-            : (turf['sports']?.toString().split(' • ') ?? ['Football', 'Cricket']);
+            : (turf['sports']?.toString().split(' • ') ??
+                  ['Football', 'Cricket']);
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: _buildTurfCard(
-            turfId: turf['id'] is int ? turf['id'] as int : int.tryParse(turf['id']?.toString() ?? ''),
+            turfId: turf['id'] is int
+                ? turf['id'] as int
+                : int.tryParse(turf['id']?.toString() ?? ''),
             name: turf['venueName'] ?? turf['name'] ?? 'Turf Arena',
             location: turf['location'] ?? 'Madurai',
             price: turf['price'] ?? '₹1,200',
@@ -199,32 +220,48 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   return const Iterable<Map<String, dynamic>>.empty();
                 }
                 return _allTurfs.where((turf) {
-                  final name = (turf['venueName'] ?? turf['name'] ?? '').toString().toLowerCase();
+                  final name = (turf['venueName'] ?? turf['name'] ?? '')
+                      .toString()
+                      .toLowerCase();
                   final loc = (turf['location'] ?? '').toString().toLowerCase();
                   final q = textEditingValue.text.toLowerCase();
                   return name.contains(q) || loc.contains(q);
                 });
               },
-              displayStringForOption: (option) => option['venueName'] ?? option['name'] ?? '',
+              displayStringForOption: (option) =>
+                  option['venueName'] ?? option['name'] ?? '',
               onSelected: (option) {
                 final List<String> photoUrls = (option['photoUrls'] is List)
-                    ? (option['photoUrls'] as List).map((e) => e.toString()).toList()
-                    : [option['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
+                    ? (option['photoUrls'] as List)
+                          .map((e) => e.toString())
+                          .toList()
+                    : [
+                        option['imageUrl'] ??
+                            'https://picsum.photos/seed/turf1/800/400',
+                      ];
 
                 final List<String> amenities = (option['amenities'] is List)
-                    ? (option['amenities'] as List).map((e) => e.toString()).toList()
+                    ? (option['amenities'] as List)
+                          .map((e) => e.toString())
+                          .toList()
                     : ['Floodlights', 'Parking', 'Restroom'];
 
                 final List<String> sports = (option['sports'] is List)
-                    ? (option['sports'] as List).map((e) => e.toString()).toList()
-                    : (option['sports']?.toString().split(' • ') ?? ['Football', 'Cricket']);
+                    ? (option['sports'] as List)
+                          .map((e) => e.toString())
+                          .toList()
+                    : (option['sports']?.toString().split(' • ') ??
+                          ['Football', 'Cricket']);
 
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => BookingScreen(
-                      turfId: option['id'] is int ? option['id'] as int : int.tryParse(option['id']?.toString() ?? ''),
-                      turfName: option['venueName'] ?? option['name'] ?? 'Turf Arena',
+                      turfId: option['id'] is int
+                          ? option['id'] as int
+                          : int.tryParse(option['id']?.toString() ?? ''),
+                      turfName:
+                          option['venueName'] ?? option['name'] ?? 'Turf Arena',
                       imageUrl: option['imageUrl'] ?? photoUrls.first,
                       photoUrls: photoUrls,
                       amenities: amenities,
@@ -237,20 +274,24 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                 );
               },
-              fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                return TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  decoration: const InputDecoration(
-                    hintText: 'Search turfs, locations, sports...',
-                    hintStyle: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.only(top: 10),
-                  ),
-                  style: const TextStyle(fontSize: 14),
-                );
-              },
+              fieldViewBuilder:
+                  (context, controller, focusNode, onFieldSubmitted) {
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      decoration: const InputDecoration(
+                        hintText: 'Search turfs, locations, sports...',
+                        hintStyle: TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 14,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.only(top: 10),
+                      ),
+                      style: const TextStyle(fontSize: 14),
+                    );
+                  },
               optionsViewBuilder: (context, onSelected, options) {
                 return Align(
                   alignment: Alignment.topLeft,
@@ -267,11 +308,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         itemCount: options.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, color: Color(0xFFE5E7EB)),
                         itemBuilder: (context, index) {
                           final option = options.elementAt(index);
-                          final imgUrl = option['imageUrl'] ??
-                              ((option['photoUrls'] is List && (option['photoUrls'] as List).isNotEmpty)
+                          final imgUrl =
+                              option['imageUrl'] ??
+                              ((option['photoUrls'] is List &&
+                                      (option['photoUrls'] as List).isNotEmpty)
                                   ? (option['photoUrls'] as List).first
                                   : 'https://picsum.photos/seed/turf1/800/400');
                           return ListTile(
@@ -282,21 +326,31 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 width: 40,
                                 height: 40,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
+                                errorBuilder: (_, _, _) => Container(
                                   width: 40,
                                   height: 40,
                                   color: Colors.grey.shade200,
-                                  child: const Icon(Icons.sports_soccer, size: 20, color: Colors.grey),
+                                  child: const Icon(
+                                    Icons.sports_soccer,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ),
                             title: Text(
                               option['venueName'] ?? option['name'] ?? '',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                             subtitle: Text(
                               option['location'] ?? '',
-                              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF6B7280),
+                              ),
                             ),
                             onTap: () => onSelected(option),
                           );
@@ -404,7 +458,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -417,17 +471,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: Image.network(
                   imageUrl,
                   height: 160,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     height: 160,
                     color: Colors.grey.shade200,
                     child: const Center(
-                      child: Icon(Icons.sports_soccer, size: 40, color: Colors.grey),
+                      child: Icon(
+                        Icons.sports_soccer,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
@@ -437,7 +497,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 top: 12,
                 right: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -448,12 +511,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       const SizedBox(width: 4),
                       Text(
                         rating,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '($reviews)',
-                        style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -464,9 +533,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 bottom: 12,
                 left: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: isAvailable ? const Color(0xFF0F6D38) : const Color(0xFFDC2626),
+                    color: isAvailable
+                        ? const Color(0xFF0F6D38)
+                        : const Color(0xFFDC2626),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -519,7 +593,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_outlined, color: Color(0xFF6B7280), size: 14),
+                              const Icon(
+                                Icons.location_on_outlined,
+                                color: Color(0xFF6B7280),
+                                size: 14,
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -580,16 +658,23 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           children: sports.map((sport) {
                             return Container(
                               margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE5E7EB)),
+                                border: Border.all(
+                                  color: const Color(0xFFE5E7EB),
+                                ),
                               ),
                               child: Row(
                                 children: [
                                   Icon(
-                                    sport.toLowerCase().contains('cricket') ? Icons.sports_cricket : Icons.sports_soccer,
+                                    sport.toLowerCase().contains('cricket')
+                                        ? Icons.sports_cricket
+                                        : Icons.sports_soccer,
                                     size: 12,
                                     color: const Color(0xFF4B5563),
                                   ),
@@ -636,7 +721,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         minimumSize: Size.zero,
                       ),
                       child: const Text(

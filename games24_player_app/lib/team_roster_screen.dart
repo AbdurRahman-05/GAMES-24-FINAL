@@ -11,7 +11,9 @@ class TeamRosterScreen extends StatelessWidget {
         child: Stack(
           children: [
             SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 160), // padding for bottom buttons
+              padding: const EdgeInsets.only(
+                bottom: 160,
+              ), // padding for bottom buttons
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -54,7 +56,11 @@ class TeamRosterScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: const Color(0xFFE5E7EB)),
                   ),
-                  child: const Icon(Icons.arrow_back, size: 20, color: Colors.black87),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 20,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -72,10 +78,7 @@ class TeamRosterScreen extends StatelessWidget {
                   SizedBox(height: 2),
                   Text(
                     'Squad Management & Tactics',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -89,7 +92,11 @@ class TeamRosterScreen extends StatelessWidget {
                   color: const Color(0xFFF3F4F6),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.share_outlined, size: 18, color: Colors.black87),
+                child: const Icon(
+                  Icons.share_outlined,
+                  size: 18,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(width: 8),
               Container(
@@ -98,7 +105,11 @@ class TeamRosterScreen extends StatelessWidget {
                   color: const Color(0xFFF3F4F6),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.settings_outlined, size: 18, color: Colors.black87),
+                child: const Icon(
+                  Icons.settings_outlined,
+                  size: 18,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
@@ -130,9 +141,14 @@ class TeamRosterScreen extends StatelessWidget {
                       height: 64,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE5E7EB), width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFFE5E7EB),
+                          width: 1.5,
+                        ),
                         image: const DecorationImage(
-                          image: NetworkImage('https://picsum.photos/seed/team1/150/150'),
+                          image: NetworkImage(
+                            'https://picsum.photos/seed/team1/150/150',
+                          ),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -147,7 +163,11 @@ class TeamRosterScreen extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
-                        child: const Icon(Icons.settings, size: 12, color: Colors.white),
+                        child: const Icon(
+                          Icons.settings,
+                          size: 12,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -172,7 +192,11 @@ class TeamRosterScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 4),
-                          Icon(Icons.verified, size: 16, color: Color(0xFF0F6D38)),
+                          Icon(
+                            Icons.verified,
+                            size: 16,
+                            color: Color(0xFF0F6D38),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -187,15 +211,24 @@ class TeamRosterScreen extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF7FDF9),
-                              border: Border.all(color: const Color(0xFFE5F5EB)),
+                              border: Border.all(
+                                color: const Color(0xFFE5F5EB),
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               children: const [
-                                Icon(Icons.circle, size: 6, color: Color(0xFF166534)),
+                                Icon(
+                                  Icons.circle,
+                                  size: 6,
+                                  color: Color(0xFF166534),
+                                ),
                                 SizedBox(width: 4),
                                 Text(
                                   'Division 1',
@@ -245,17 +278,31 @@ class TeamRosterScreen extends StatelessWidget {
                           children: const [
                             Text(
                               '14',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF166534),
+                              ),
                             ),
                             SizedBox(width: 2),
                             Text(
                               '(78%)',
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF166534),
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 2),
-                        const Text('Wins', style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                        const Text(
+                          'Wins',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -273,10 +320,20 @@ class TeamRosterScreen extends StatelessWidget {
                       children: const [
                         Text(
                           '#3',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFD97706)),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFD97706),
+                          ),
                         ),
                         SizedBox(height: 2),
-                        Text('City Rank', style: TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+                        Text(
+                          'City Rank',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -298,16 +355,30 @@ class TeamRosterScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Text('Squad Invite PIN', style: TextStyle(fontSize: 10, color: Color(0xFF6B7280))),
+                        Text(
+                          'Squad Invite PIN',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
                         Text(
                           'BSTRIKE-2024',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: 0.5),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(8),
@@ -317,7 +388,14 @@ class TeamRosterScreen extends StatelessWidget {
                       children: const [
                         Icon(Icons.copy, size: 14, color: Color(0xFF0F6D38)),
                         SizedBox(width: 4),
-                        Text('Copy', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        Text(
+                          'Copy',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -329,7 +407,11 @@ class TeamRosterScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),
-                    child: const Icon(Icons.send_outlined, size: 16, color: Colors.black87),
+                    child: const Icon(
+                      Icons.send_outlined,
+                      size: 16,
+                      color: Colors.black87,
+                    ),
                   ),
                 ],
               ),
@@ -350,9 +432,19 @@ class TeamRosterScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280))),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+            ),
           ],
         ),
       ),
@@ -377,7 +469,11 @@ class TeamRosterScreen extends StatelessWidget {
                 color: Color(0xFFE5F5EB),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome_mosaic_outlined, size: 20, color: Color(0xFF0F6D38)),
+              child: const Icon(
+                Icons.auto_awesome_mosaic_outlined,
+                size: 20,
+                color: Color(0xFF0F6D38),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -386,7 +482,11 @@ class TeamRosterScreen extends StatelessWidget {
                 children: const [
                   Text(
                     'Formation: 2-3-1 Classic',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                   SizedBox(height: 2),
                   Text(
@@ -405,7 +505,11 @@ class TeamRosterScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Ready 8/7',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F6D38)),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F6D38),
+                ),
               ),
             ),
           ],
@@ -435,7 +539,10 @@ class TeamRosterScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE5F5EB),
                       borderRadius: BorderRadius.circular(12),
@@ -452,7 +559,10 @@ class TeamRosterScreen extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF0F6D38),
                   borderRadius: BorderRadius.circular(16),
@@ -461,7 +571,14 @@ class TeamRosterScreen extends StatelessWidget {
                   children: const [
                     Icon(Icons.person_add_alt_1, size: 14, color: Colors.white),
                     SizedBox(width: 4),
-                    Text('Add Member', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(
+                      'Add Member',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -592,7 +709,11 @@ class TeamRosterScreen extends StatelessWidget {
             children: [
               Row(
                 children: const [
-                  Icon(Icons.people_outline, size: 18, color: Color(0xFF6B7280)),
+                  Icon(
+                    Icons.people_outline,
+                    size: 18,
+                    color: Color(0xFF6B7280),
+                  ),
                   SizedBox(width: 8),
                   Text(
                     '4 additional reserves registered',
@@ -604,9 +725,17 @@ class TeamRosterScreen extends StatelessWidget {
                 children: const [
                   Text(
                     'View All',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F6D38)),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F6D38),
+                    ),
                   ),
-                  Icon(Icons.keyboard_arrow_down, size: 16, color: Color(0xFF0F6D38)),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    size: 16,
+                    color: Color(0xFF0F6D38),
+                  ),
                 ],
               ),
             ],
@@ -663,7 +792,11 @@ class TeamRosterScreen extends StatelessWidget {
                   ),
                   child: Text(
                     '#$number',
-                    style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -691,19 +824,30 @@ class TeamRosterScreen extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                     if (isYou) ...[
                       const SizedBox(width: 4),
                       const Text(
                         '(You)',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF166534),
+                        ),
                       ),
                     ],
                     const SizedBox(width: 6),
                     if (roleBadgeColor != Colors.transparent)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: roleBadgeColor,
                           borderRadius: BorderRadius.circular(4),
@@ -711,12 +855,20 @@ class TeamRosterScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             if (roleBadge == 'Captain') ...[
-                              Icon(Icons.emoji_events, size: 10, color: roleBadgeTextColor),
+                              Icon(
+                                Icons.emoji_events,
+                                size: 10,
+                                color: roleBadgeTextColor,
+                              ),
                               const SizedBox(width: 2),
                             ],
                             Text(
                               roleBadge,
-                              style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: roleBadgeTextColor),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: roleBadgeTextColor,
+                              ),
                             ),
                           ],
                         ),
@@ -724,7 +876,10 @@ class TeamRosterScreen extends StatelessWidget {
                     else
                       Text(
                         roleBadge,
-                        style: TextStyle(fontSize: 11, color: roleBadgeTextColor),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: roleBadgeTextColor,
+                        ),
                       ),
                   ],
                 ),
@@ -732,14 +887,20 @@ class TeamRosterScreen extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: positionColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         position,
-                        style: TextStyle(fontSize: 10, color: positionTextColor),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: positionTextColor,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -749,7 +910,13 @@ class TeamRosterScreen extends StatelessWidget {
                     ],
                     Text(
                       statText,
-                      style: TextStyle(fontSize: 11, fontWeight: statIcon != null ? FontWeight.bold : FontWeight.normal, color: statColor),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: statIcon != null
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: statColor,
+                      ),
                     ),
                   ],
                 ),
@@ -778,13 +945,18 @@ class TeamRosterScreen extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.sports_soccer, size: 18),
-            label: const Text('Schedule Team Match / Book Slot', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            label: const Text(
+              'Schedule Team Match / Book Slot',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF0F6D38),
               foregroundColor: Colors.white,
               elevation: 4,
-              shadowColor: Colors.black.withOpacity(0.2),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shadowColor: Colors.black.withValues(alpha: 0.2),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -794,13 +966,26 @@ class TeamRosterScreen extends StatelessWidget {
           height: 48,
           child: ElevatedButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.sports_kabaddi, size: 18, color: Color(0xFF0F6D38)), // closely resembling crossed swords
-            label: const Text('Challenge Other Squads', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87)),
+            icon: const Icon(
+              Icons.sports_kabaddi,
+              size: 18,
+              color: Color(0xFF0F6D38),
+            ), // closely resembling crossed swords
+            label: const Text(
+              'Challenge Other Squads',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFF3F5F1),
               foregroundColor: Colors.black87,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),

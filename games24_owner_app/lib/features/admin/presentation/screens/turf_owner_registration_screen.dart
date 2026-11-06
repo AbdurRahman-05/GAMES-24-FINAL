@@ -1181,15 +1181,24 @@ class _TurfOwnerRegistrationScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.phone_android_rounded, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text('Mobile: +91 ${_phoneController.text.trim().isEmpty ? "9876543210" : _phoneController.text.trim()}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.phone_android_rounded, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Mobile: +91 ${_phoneController.text.trim().isEmpty ? "9876543210" : _phoneController.text.trim()}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  if (_isMobileVerified)
+                  if (_isMobileVerified) ...[
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -1206,6 +1215,7 @@ class _TurfOwnerRegistrationScreenState
                         ],
                       ),
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
@@ -1256,15 +1266,24 @@ class _TurfOwnerRegistrationScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.email_rounded, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text('Email: ${_emailController.text.trim().isEmpty ? "owner@turf.com" : _emailController.text.trim()}',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.email_rounded, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Email: ${_emailController.text.trim().isEmpty ? "owner@turf.com" : _emailController.text.trim()}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  if (_isEmailVerified)
+                  if (_isEmailVerified) ...[
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -1281,6 +1300,7 @@ class _TurfOwnerRegistrationScreenState
                         ],
                       ),
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 12),
@@ -1804,13 +1824,18 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Application Tracking Code:', style: TextStyle(fontWeight: FontWeight.w600)),
-                  Text(
-                    trackingCode,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                      fontSize: 15,
-                      letterSpacing: 0.8,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      trackingCode,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                        fontSize: 15,
+                        letterSpacing: 0.8,
+                      ),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -1820,7 +1845,15 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Venue Name:'),
-                  Text(venueName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      venueName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -1828,7 +1861,15 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Owner Name:'),
-                  Text(ownerName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      ownerName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -1836,7 +1877,15 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Contact Mobile:'),
-                  Text(phone, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      phone,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -1844,7 +1893,15 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Contact Email:'),
-                  Text(email, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      email,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -1852,7 +1909,15 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Neighborhood Area:'),
-                  Text(area, style: const TextStyle(fontWeight: FontWeight.w500)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      area,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -1897,7 +1962,15 @@ class _TurfOwnerRegistrationScreenState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Bank Account:'),
-                    Text(_bankAccountController.text.trim(), style: const TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _bankAccountController.text.trim(),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.end,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -1907,7 +1980,15 @@ class _TurfOwnerRegistrationScreenState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Partner UPI ID:'),
-                    Text(_upiIdController.text.trim(), style: const TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _upiIdController.text.trim(),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                        textAlign: TextAlign.end,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               ],
