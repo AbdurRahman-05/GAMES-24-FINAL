@@ -22,12 +22,136 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _allTurfs = [];
   bool _isLoadingTurfs = true;
 
+  // Search and Filter state under Join Team / Open Challenges
+  bool _isSearchOpen = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  String _filterSport = 'All';
+  String _filterDistance = 'Any';
+  String _filterPrice = 'Any';
+  String _filterRating = 'Any';
+  final Set<String> _filterAmenities = {};
+
   @override
   void initState() {
     super.initState();
     _fetchTurfs();
     BookingManager().fetchBookings();
     ChallengeManager().syncWithCurrentUser();
+    ChallengeManager().cleanExpiredChallenges();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _filteredTurfs {
+    return _allTurfs.where((turf) {
+      final name = (turf['venueName'] ?? turf['name'] ?? '').toString().toLowerCase();
+      final location = (turf['location'] ?? '').toString().toLowerCase();
+
+      List<String> sports = [];
+      if (turf['sports'] is List) {
+        sports = (turf['sports'] as List).map((s) => s.toString().toLowerCase()).toList();
+      } else if (turf['sports'] != null) {
+        sports = turf['sports']
+            .toString()
+            .toLowerCase()
+            .split(RegExp(r'[,•|/]'))
+            .map((s) => s.trim())
+            .toList();
+      }
+
+      // 1. Search Query filter
+      if (_searchQuery.trim().isNotEmpty) {
+        final query = _searchQuery.trim().toLowerCase();
+        final matchesName = name.contains(query);
+        final matchesLocation = location.contains(query);
+        final matchesSport = sports.any((s) => s.contains(query));
+        if (!matchesName && !matchesLocation && !matchesSport) {
+          return false;
+        }
+      }
+
+      // 2. Sport Filter (from Filter sheet or Category selection)
+      if (_filterSport != 'All') {
+        final target = _filterSport.toLowerCase();
+        final matches = sports.any((s) =>
+            s.contains(target) ||
+            (target == 'cricket' && s.contains('box cricket')) ||
+            (target == 'football' && s.contains('soccer')));
+        if (!matches) return false;
+      }
+
+      // 3. Price Filter
+      if (_filterPrice != 'Any') {
+        final priceRaw = (turf['price'] ?? '0').toString().replaceAll(RegExp(r'[^0-9]'), '');
+        final priceVal = double.tryParse(priceRaw) ?? 0.0;
+        if (_filterPrice == 'Under ₹800' && priceVal > 800) return false;
+        if (_filterPrice == '₹800 - ₹1,500' && (priceVal < 800 || priceVal > 1500)) return false;
+        if (_filterPrice == '₹1,500+' && priceVal < 1500) return false;
+      }
+
+      // 4. Rating Filter
+      if (_filterRating != 'Any') {
+        final ratingRaw = (turf['rating'] ?? '4.8').toString();
+        final ratingVal = double.tryParse(ratingRaw) ?? 4.8;
+        if (_filterRating == '4.0+ ★' && ratingVal < 4.0) return false;
+        if (_filterRating == '4.5+ ★' && ratingVal < 4.5) return false;
+      }
+
+      // 5. Amenities Filter
+      if (_filterAmenities.isNotEmpty) {
+        List<String> turfAmenities = [];
+        if (turf['amenities'] is List) {
+          turfAmenities = (turf['amenities'] as List).map((a) => a.toString().toLowerCase()).toList();
+        }
+        for (var req in _filterAmenities) {
+          if (!turfAmenities.any((a) => a.contains(req.toLowerCase()))) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
+  bool get _hasActiveFilters {
+    return _filterSport != 'All' ||
+        _filterDistance != 'Any' ||
+        _filterPrice != 'Any' ||
+        _filterRating != 'Any' ||
+        _filterAmenities.isNotEmpty;
+  }
+
+  int get _activeFilterCount {
+    int count = 0;
+    if (_filterSport != 'All') count++;
+    if (_filterDistance != 'Any') count++;
+    if (_filterPrice != 'Any') count++;
+    if (_filterRating != 'Any') count++;
+    count += _filterAmenities.length;
+    return count;
+  }
+
+  void _clearAllFilters() {
+    setState(() {
+      _filterSport = 'All';
+      _filterDistance = 'Any';
+      _filterPrice = 'Any';
+      _filterRating = 'Any';
+      _filterAmenities.clear();
+      _searchQuery = '';
+      _searchController.clear();
+      _isSearchOpen = false;
+      for (var cat in _categories) {
+        cat['isSelected'] = false;
+      }
+    });
   }
 
   Future<void> _fetchTurfs() async {
@@ -83,12 +207,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _buildSearchBar(),
-                  ),
-
-                  const SizedBox(height: 24),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: _buildSectionHeader('Categories', ''),
@@ -152,16 +270,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildOpenChallenges(),
+
                   const SizedBox(height: 32),
+                  // "All Games" Section Header with Search & Filter action icons
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _buildSectionHeader(
-                      'Nearby Turfs',
-                      'See all',
-                      trailingIcon: Icons.near_me_outlined,
-                      onActionTap: widget.onExploreTap,
-                    ),
+                    child: _buildAllGamesHeader(),
                   ),
+                  if (_isSearchOpen) ...[
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildInlineSearchBar(),
+                    ),
+                  ],
+                  if (_hasActiveFilters) ...[
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _buildActiveFilterChips(),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -177,183 +306,257 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildAllGamesHeader() {
     return Row(
       children: [
-        Expanded(
+        const Text(
+          'All Games',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+            color: Color(0xFF111827),
+          ),
+        ),
+        const Spacer(),
+        // Search icon only button
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isSearchOpen = !_isSearchOpen;
+              if (!_isSearchOpen) {
+                _searchQuery = '';
+                _searchController.clear();
+              }
+            });
+          },
           child: Container(
-            height: 54,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              color: _isSearchOpen ? const Color(0xFF166534) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isSearchOpen ? const Color(0xFF166534) : const Color(0xFFE5E7EB),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Row(
-              children: [
-                const SizedBox(width: 16),
-                const Icon(Icons.search, color: Color(0xFF6B7280)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Autocomplete<Map<String, dynamic>>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      if (textEditingValue.text.isEmpty) {
-                        return const Iterable<Map<String, dynamic>>.empty();
-                      }
-                      return _allTurfs.where((turf) {
-                        return turf['name'].toString().toLowerCase().contains(
-                          textEditingValue.text.toLowerCase(),
-                        );
-                      });
-                    },
-                    displayStringForOption: (option) => option['name'],
-                    onSelected: (option) {
-                      final int? tId = option['id'] is int
-                          ? option['id'] as int
-                          : int.tryParse(option['id']?.toString() ?? '');
-                      final List<String> sportsList = (option['sports'] is List)
-                          ? (option['sports'] as List)
-                                .map((e) => e.toString())
-                                .toList()
-                          : (option['sports']?.toString().split(' • ') ??
-                                ['Football', 'Box Cricket']);
-                      final List<String> photoUrls =
-                          (option['photoUrls'] is List)
-                          ? (option['photoUrls'] as List)
-                                .map((e) => e.toString())
-                                .toList()
-                          : [
-                              option['imageUrl'] ??
-                                  'https://picsum.photos/seed/turf1/800/400',
-                            ];
-                      final List<String> amenities =
-                          (option['amenities'] is List)
-                          ? (option['amenities'] as List)
-                                .map((e) => e.toString())
-                                .toList()
-                          : ['Floodlights', 'Parking', 'Restroom'];
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BookingScreen(
-                            turfId: tId,
-                            turfName:
-                                option['venueName'] ??
-                                option['name'] ??
-                                'Turf Arena',
-                            imageUrl: option['imageUrl'] ?? photoUrls.first,
-                            photoUrls: photoUrls,
-                            amenities: amenities,
-                            openingTime: option['openingTime'] ?? '06:00 AM',
-                            closingTime: option['closingTime'] ?? '10:00 PM',
-                            price: option['price'] ?? '₹1,200',
-                            location: option['location'] ?? 'Madurai',
-                            sports: sportsList,
-                          ),
-                        ),
-                      );
-                    },
-                    fieldViewBuilder:
-                        (context, controller, focusNode, onFieldSubmitted) {
-                          return TextField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            decoration: const InputDecoration(
-                              hintText: 'Search turfs...',
-                              hintStyle: TextStyle(
-                                color: Color(0xFF9CA3AF),
-                                fontSize: 14,
-                              ),
-                              border: InputBorder.none,
-                              isDense: true,
-                              contentPadding: EdgeInsets.only(top: 14),
-                            ),
-                            style: const TextStyle(fontSize: 14),
-                          );
-                        },
-                    optionsViewBuilder: (context, onSelected, options) {
-                      return Align(
-                        alignment: Alignment.topLeft,
-                        child: Material(
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            width: MediaQuery.of(context).size.width - 86,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: ListView.separated(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              itemCount: options.length,
-                              separatorBuilder: (context, index) =>
-                                  const Divider(
-                                    height: 1,
-                                    color: Color(0xFFE5E7EB),
-                                  ),
-                              itemBuilder: (context, index) {
-                                final option = options.elementAt(index);
-                                return ListTile(
-                                  leading: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      option['imageUrl'],
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    option['name'],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    option['location'],
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6B7280),
-                                    ),
-                                  ),
-                                  onTap: () => onSelected(option),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+            child: Icon(
+              Icons.search,
+              size: 20,
+              color: _isSearchOpen ? Colors.white : const Color(0xFF374151),
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
+        // Filter icon button
         GestureDetector(
-          onTap: () {
-            _showFilterBottomSheet(context);
-          },
-          child: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: const Color(0xFF166534),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.tune, color: Colors.white),
+          onTap: () => _showFilterBottomSheet(context),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF166534),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF166534).withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.tune_rounded,
+                  size: 20,
+                  color: Colors.white,
+                ),
+              ),
+              if (_hasActiveFilters)
+                Positioned(
+                  top: -3,
+                  right: -3,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFEF4444),
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '$_activeFilterCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildInlineSearchBar() {
+    return Container(
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: Color(0xFF166534), size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              autofocus: true,
+              style: const TextStyle(fontSize: 14, color: Color(0xFF1F2937)),
+              decoration: const InputDecoration(
+                hintText: 'Search games, turfs, sports, or areas...',
+                hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                border: InputBorder.none,
+                isDense: true,
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val;
+                });
+              },
+            ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+              child: const Icon(Icons.cancel, size: 18, color: Color(0xFF9CA3AF)),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFilterChips() {
+    final chips = <Widget>[];
+
+    if (_filterSport != 'All') {
+      chips.add(_buildFilterPill(_filterSport, () {
+        setState(() {
+          _filterSport = 'All';
+          for (var c in _categories) {
+            c['isSelected'] = false;
+          }
+        });
+      }));
+    }
+
+    if (_filterDistance != 'Any') {
+      chips.add(_buildFilterPill(_filterDistance, () {
+        setState(() => _filterDistance = 'Any');
+      }));
+    }
+
+    if (_filterPrice != 'Any') {
+      chips.add(_buildFilterPill(_filterPrice, () {
+        setState(() => _filterPrice = 'Any');
+      }));
+    }
+
+    if (_filterRating != 'Any') {
+      chips.add(_buildFilterPill(_filterRating, () {
+        setState(() => _filterRating = 'Any');
+      }));
+    }
+
+    for (final a in _filterAmenities) {
+      chips.add(_buildFilterPill(a, () {
+        setState(() => _filterAmenities.remove(a));
+      }));
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          ...chips,
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: _clearAllFilters,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                'Clear All',
+                style: TextStyle(
+                  color: Color(0xFFDC2626),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill(String label, VoidCallback onRemove) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF166534).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF166534),
+            ),
+          ),
+          const SizedBox(width: 4),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(
+              Icons.close,
+              size: 14,
+              color: Color(0xFF166534),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -434,10 +637,16 @@ class _HomeScreenState extends State<HomeScreen> {
           return GestureDetector(
             onTap: () {
               setState(() {
+                final currentSelected = _categories[index]['isSelected'] as bool;
                 for (var category in _categories) {
                   category['isSelected'] = false;
                 }
-                _categories[index]['isSelected'] = true;
+                if (!currentSelected) {
+                  _categories[index]['isSelected'] = true;
+                  _filterSport = cat['name'] as String;
+                } else {
+                  _filterSport = 'All';
+                }
               });
             },
             child: Container(
@@ -495,30 +704,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildUpcomingMatches() {
-    final matches = [
-      {
-        'time': 'Today, 7:00 PM',
-        'slots': '5 slots left',
-        't1Initials': 'FC',
-        't1Name': 'Strikers',
-        't1Color': const Color(0xFF166534),
-        't2Initials': 'UN',
-        't2Name': 'United',
-        't2Color': const Color(0xFFBE123C),
-        'location': 'Elite Arena, Turf 2',
-      },
-      {
-        'time': 'Tomorrow, 6:00 PM',
-        'slots': '2 slots left',
-        't1Initials': 'KN',
-        't1Name': 'Knights',
-        't1Color': Colors.blue.shade800,
-        't2Initials': 'TI',
-        't2Name': 'Titans',
-        't2Color': Colors.orange.shade800,
-        'location': 'City Sports Club, Turf 1',
-      },
-    ];
+    final matches = <Map<String, dynamic>>[];
+
+    if (matches.isEmpty) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.sports_soccer_outlined,
+                color: Color(0xFF166534),
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'No Upcoming Matches',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Book a turf slot or join an open game to play!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return SizedBox(
       height: 160,
@@ -871,11 +1119,67 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildOpenChallenges() {
     return ValueListenableBuilder<List<Challenge>>(
       valueListenable: ChallengeManager().challengesNotifier,
-      builder: (context, challenges, child) {
+      builder: (context, allChallenges, child) {
+        final challenges = allChallenges.where((c) => !c.isExpired).toList();
         if (challenges.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text('No open challenges available.'),
+          return Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.flag_outlined,
+                    color: Color(0xFF166534),
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'No Open Challenges',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Create a challenge after booking to invite opponents.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           );
         }
         return SizedBox(
@@ -1505,8 +1809,57 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    final displayed = _filteredTurfs;
+    if (displayed.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+        ),
+        child: Column(
+          children: [
+            const Icon(
+              Icons.search_off_rounded,
+              size: 44,
+              color: Color(0xFF9CA3AF),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'No games or turfs found',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Try changing your sport, distance, or search query',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _clearAllFilters,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF166534),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              ),
+              child: const Text('Reset Filters', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
-      children: _allTurfs.map((turf) {
+      children: displayed.map((turf) {
         final List<String> tags = (turf['amenities'] is List)
             ? (turf['amenities'] as List).map((e) => e.toString()).toList()
             : ['Floodlights', 'Parking', 'Restroom'];
@@ -1805,52 +2158,276 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showFilterBottomSheet(BuildContext context) {
+    String tempSport = _filterSport;
+    String tempDistance = _filterDistance;
+    String tempPrice = _filterPrice;
+    String tempRating = _filterRating;
+    final Set<String> tempAmenities = Set<String>.from(_filterAmenities);
+
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Filters',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Distance',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              Slider(value: 5, min: 1, max: 20, onChanged: (val) {}),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF166534),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalContext, setModalState) {
+            Widget buildSectionLabel(String label) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 18, bottom: 10),
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1F2937),
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              );
+            }
+
+            Widget buildChip(String title, bool isSelected, VoidCallback onTap) {
+              return GestureDetector(
+                onTap: onTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF166534) : const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFF166534) : const Color(0xFFE5E7EB),
+                      width: 1.2,
                     ),
                   ),
-                  child: const Text(
-                    'Apply Filters',
+                  child: Text(
+                    title,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? Colors.white : const Color(0xFF374151),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              );
+            }
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.78,
+              minChildSize: 0.5,
+              maxChildSize: 0.92,
+              expand: false,
+              builder: (_, scrollController) {
+                return Column(
+                  children: [
+                    // Handle bar
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 12, bottom: 8),
+                        width: 44,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    // Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.tune_rounded, color: Color(0xFF166534), size: 22),
+                              SizedBox(width: 8),
+                              Text(
+                                'Filter Games & Turfs',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF111827),
+                                ),
+                              ),
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setModalState(() {
+                                tempSport = 'All';
+                                tempDistance = 'Any';
+                                tempPrice = 'Any';
+                                tempRating = 'Any';
+                                tempAmenities.clear();
+                              });
+                            },
+                            child: const Text(
+                              'Reset All',
+                              style: TextStyle(
+                                color: Color(0xFFDC2626),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                    Expanded(
+                      child: ListView(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        children: [
+                          // 1. Sport
+                          buildSectionLabel('Particular Sport'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              'All',
+                              'Football',
+                              'Cricket',
+                              'Badminton',
+                              'Tennis',
+                              'Basketball',
+                            ].map((s) {
+                              return buildChip(s, tempSport == s, () {
+                                setModalState(() => tempSport = s);
+                              });
+                            }).toList(),
+                          ),
+
+                          // 2. Distance
+                          buildSectionLabel('Nearby Distance'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: ['Any', '< 5 km', '< 10 km', '< 25 km'].map((d) {
+                              return buildChip(d, tempDistance == d, () {
+                                setModalState(() => tempDistance = d);
+                              });
+                            }).toList(),
+                          ),
+
+                          // 3. Price
+                          buildSectionLabel('Price per Hour'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              'Any',
+                              'Under ₹800',
+                              '₹800 - ₹1,500',
+                              '₹1,500+',
+                            ].map((p) {
+                              return buildChip(p, tempPrice == p, () {
+                                setModalState(() => tempPrice = p);
+                              });
+                            }).toList(),
+                          ),
+
+                          // 4. Rating
+                          buildSectionLabel('Customer Rating'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: ['Any', '4.0+ ★', '4.5+ ★'].map((r) {
+                              return buildChip(r, tempRating == r, () {
+                                setModalState(() => tempRating = r);
+                              });
+                            }).toList(),
+                          ),
+
+                          // 5. Amenities
+                          buildSectionLabel('Amenities & Features'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              'Floodlights',
+                              'Parking',
+                              'Restroom',
+                              'Drinking Water',
+                              'Air Conditioning',
+                            ].map((a) {
+                              final isSelected = tempAmenities.contains(a);
+                              return buildChip(a, isSelected, () {
+                                setModalState(() {
+                                  if (isSelected) {
+                                    tempAmenities.remove(a);
+                                  } else {
+                                    tempAmenities.add(a);
+                                  }
+                                });
+                              });
+                            }).toList(),
+                          ),
+
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                    // Bottom Apply Button
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      child: SafeArea(
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _filterSport = tempSport;
+                                _filterDistance = tempDistance;
+                                _filterPrice = tempPrice;
+                                _filterRating = tempRating;
+                                _filterAmenities.clear();
+                                _filterAmenities.addAll(tempAmenities);
+
+                                for (var cat in _categories) {
+                                  cat['isSelected'] = (cat['name'] == _filterSport);
+                                }
+                              });
+                              Navigator.pop(ctx);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF166534),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Apply Filters',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         );
       },
     );

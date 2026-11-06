@@ -115,6 +115,84 @@ class Challenge {
         : [],
     userHasRequested: json['userHasRequested'] == true,
   );
+
+  bool get isExpired {
+    try {
+      final now = DateTime.now();
+      DateTime challengeDate;
+
+      final dStr = date.trim().toLowerCase();
+      if (dStr == 'today') {
+        challengeDate = DateTime(now.year, now.month, now.day);
+      } else if (dStr == 'tomorrow') {
+        challengeDate = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+      } else if (dStr == 'yesterday') {
+        return true;
+      } else {
+        DateTime? parsed = DateTime.tryParse(date.trim());
+        if (parsed != null) {
+          challengeDate = DateTime(parsed.year, parsed.month, parsed.day);
+        } else {
+          final parts = date.trim().split(RegExp(r'[-/ ]'));
+          if (parts.length >= 3) {
+            int? day = int.tryParse(parts[0]);
+            int? month = int.tryParse(parts[1]);
+            int? year = int.tryParse(parts[2]);
+            if (day != null && month != null && year != null) {
+              if (year < 100) year += 2000;
+              challengeDate = DateTime(year, month, day);
+            } else {
+              challengeDate = DateTime(now.year, now.month, now.day);
+            }
+          } else {
+            challengeDate = DateTime(now.year, now.month, now.day);
+          }
+        }
+      }
+
+      final todayDate = DateTime(now.year, now.month, now.day);
+      if (challengeDate.isBefore(todayDate)) {
+        return true;
+      }
+      if (challengeDate.isAfter(todayDate)) {
+        return false;
+      }
+
+      // If it is today, check if match slot time has already passed
+      String timeStr = time.trim();
+      if (timeStr.contains('-')) {
+        timeStr = timeStr.split('-').first.trim();
+      }
+
+      final timeRegex = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)?', caseSensitive: false);
+      final match = timeRegex.firstMatch(timeStr);
+      if (match != null) {
+        int hour = int.parse(match.group(1)!);
+        int minute = int.parse(match.group(2)!);
+        String? ampm = match.group(3)?.toUpperCase();
+
+        if (ampm == 'PM' && hour < 12) {
+          hour += 12;
+        } else if (ampm == 'AM' && hour == 12) {
+          hour = 0;
+        }
+
+        final matchDateTime = DateTime(
+          challengeDate.year,
+          challengeDate.month,
+          challengeDate.day,
+          hour,
+          minute,
+        );
+
+        return now.isAfter(matchDateTime);
+      }
+
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 class ChallengeManager {
@@ -127,44 +205,18 @@ class ChallengeManager {
   static const String _storageKey = 'saved_open_challenges';
   String _currentUserPhone = '';
 
-  final ValueNotifier<List<Challenge>> challengesNotifier = ValueNotifier([
-    Challenge(
-      id: '1',
-      turfName: 'Green Valley Arena',
-      date: 'Today',
-      time: '06:00 PM',
-      sport: 'Football',
-      challengerName: 'Eagles FC',
-      challengerTeamInitials: 'EA',
-      challengerColor: const Color(0xFF1E40AF),
-      creatorPhone: '+919087786231', // Booked player phone (Abdur)
-      teamSize: '7v7 Match',
-      isCreator: true, // Booked player side: shows See Requests!
-      joinRequests: [
-        JoinRequest(
-          id: 'req_1',
-          teamName: 'Thunder Strikers FC',
-          teamSize: '7 Players (7v7)',
-          contactDetails: '+91 98450 12345',
-          requestedAt: '10 mins ago',
-        ),
-      ],
-    ),
-    Challenge(
-      id: '2',
-      turfName: 'Metro Arena Turf',
-      date: 'Tomorrow',
-      time: '07:30 PM',
-      sport: 'Football',
-      challengerName: 'Red Dragons FC',
-      challengerTeamInitials: 'RD',
-      challengerColor: const Color(0xFFBE123C),
-      creatorPhone: '+919876543210', // Other team
-      teamSize: '5v5 Match',
-      isCreator: false, // Other players side: shows Join!
-      joinRequests: [],
-    ),
-  ]);
+  final ValueNotifier<List<Challenge>> challengesNotifier = ValueNotifier<List<Challenge>>([]);
+
+  List<Challenge> get activeChallenges =>
+      challengesNotifier.value.where((c) => !c.isExpired).toList();
+
+  void cleanExpiredChallenges() {
+    final active = activeChallenges;
+    if (active.length != challengesNotifier.value.length) {
+      challengesNotifier.value = active;
+      _saveToStorage();
+    }
+  }
 
   Future<void> _loadFromStorage() async {
     try {
@@ -173,10 +225,11 @@ class ChallengeManager {
       final savedStr = prefs.getString(_storageKey);
       if (savedStr != null && savedStr.isNotEmpty) {
         final List list = jsonDecode(savedStr);
-        final loaded = list.map((item) => Challenge.fromJson(Map<String, dynamic>.from(item))).toList();
-        if (loaded.isNotEmpty) {
-          challengesNotifier.value = loaded;
-        }
+        final loaded = list
+            .map((item) => Challenge.fromJson(Map<String, dynamic>.from(item)))
+            .where((c) => c.id != '1' && c.id != '2' && !c.isExpired)
+            .toList();
+        challengesNotifier.value = loaded;
       }
       syncWithCurrentUser();
     } catch (e) {

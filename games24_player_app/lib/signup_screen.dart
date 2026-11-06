@@ -42,9 +42,9 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6FAF7),
-
-      body: SingleChildScrollView(
-        child: Padding(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,31 +300,73 @@ class _SignupScreenState extends State<SignupScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: (_agreeToTerms && _isOtpVerified && !_isLoading)
-                      ? _register
-                      : null,
+                  onPressed: _isLoading
+                      ? null
+                      : () {
+                          if (_nameController.text.trim().isEmpty) {
+                            ToastUtils.showError(context, 'Please enter your full name');
+                            return;
+                          }
+                          if (_mobileController.text.trim().isEmpty) {
+                            ToastUtils.showError(context, 'Please enter your mobile number');
+                            return;
+                          }
+                          if (!_isOtpVerified) {
+                            ToastUtils.showError(
+                              context,
+                              'Please verify your mobile number with OTP first',
+                            );
+                            return;
+                          }
+                          if (_passwordController.text.trim().isEmpty) {
+                            ToastUtils.showError(context, 'Please create a password');
+                            return;
+                          }
+                          if (!_agreeToTerms) {
+                            ToastUtils.showError(
+                              context,
+                              'Please agree to the Terms of Service and Privacy Policy',
+                            );
+                            return;
+                          }
+                          _register();
+                        },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green.shade600,
+                    backgroundColor: (_agreeToTerms && _isOtpVerified)
+                        ? Colors.green.shade600
+                        : Colors.green.shade700,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0xFFE5E7EB),
+                    disabledForegroundColor: const Color(0xFF9CA3AF),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                     elevation: 0,
                   ),
-                  child: _isLoading ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Create Account',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Create Account',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward, size: 20),
-                    ],
-                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -407,8 +449,9 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _sendOtpAndShowDialog() async {
     final mobile = '$_selectedCountryCode${_mobileController.text.trim()}';

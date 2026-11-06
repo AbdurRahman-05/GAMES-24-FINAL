@@ -96,63 +96,7 @@ class TournamentManager extends ChangeNotifier {
   factory TournamentManager() => _instance;
   TournamentManager._internal();
 
-  final List<Tournament> _tournaments = [
-    Tournament(
-      id: 't1',
-      title: 'City Apex Super Cup 2024',
-      sport: 'Football',
-      status: TournamentStatus.ongoing,
-      date: 'Oct 15 - Oct 20, 2024',
-      time: '18:00 - 22:00',
-      venue: 'Grand Royale Turf',
-      location: 'Sector 4, Downtown',
-      entryFee: '₹1,500',
-      prizePool: '₹50,000 + Trophy',
-      grandPrize: '₹30,000',
-      maxTeams: 16,
-      registeredTeams: 16,
-      format: 'Knockout',
-      imageUrl: 'https://picsum.photos/seed/tourn1/800/400',
-      matchDay: 'Day 2 of 4',
-      tournamentProgress: 'Quarter Finals',
-    ),
-    Tournament(
-      id: 't2',
-      title: 'Weekend Box Cricket League',
-      sport: 'Cricket',
-      status: TournamentStatus.ongoing,
-      date: 'Oct 16 - Oct 17, 2024',
-      time: '09:00 - 18:00',
-      venue: 'Urban Arena',
-      location: 'HSR Layout',
-      entryFee: '₹2,000',
-      prizePool: '₹25,000',
-      grandPrize: '₹15,000',
-      maxTeams: 12,
-      registeredTeams: 12,
-      format: 'League + Knockout',
-      imageUrl: 'https://picsum.photos/seed/tourn2/800/400',
-      matchDay: 'Day 1 of 2',
-      tournamentProgress: 'Group Stages',
-    ),
-    Tournament(
-      id: 't3',
-      title: 'Monsoon Kickoff Tournament',
-      sport: 'Football',
-      status: TournamentStatus.upcoming,
-      date: 'Nov 05 - Nov 10, 2024',
-      time: '17:00 - 23:00',
-      venue: 'Greenfield Sports Complex',
-      location: 'Whitefield',
-      entryFee: '₹1,200',
-      prizePool: '₹40,000',
-      grandPrize: '₹25,000',
-      maxTeams: 24,
-      registeredTeams: 10,
-      format: 'Group Stages + Knockout',
-      imageUrl: 'https://picsum.photos/seed/tourn3/800/400',
-    ),
-  ];
+  final List<Tournament> _tournaments = [];
 
   List<Tournament> get allTournaments => _tournaments;
   List<Tournament> get ongoingTournaments =>
