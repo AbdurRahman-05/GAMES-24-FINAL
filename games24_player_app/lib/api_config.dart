@@ -21,3 +21,4 @@ class ApiConfig {
     return trimmed;
   }
 }
+
