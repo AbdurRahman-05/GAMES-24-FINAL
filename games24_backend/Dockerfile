@@ -30,3 +30,4 @@ RUN mkdir -p uploads/photos uploads/documents
 EXPOSE 3000
 
 CMD ["npm", "run", "start:prod"]
+

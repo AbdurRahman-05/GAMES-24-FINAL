@@ -1,0 +1,14 @@
+{
+  "name": "games24-root",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "install:backend": "cd games24_backend && npm install",
+    "build": "cd games24_backend && npm install && npm run build",
+    "start": "cd games24_backend && npm run start:prod",
+    "start:prod": "cd games24_backend && npm run start:prod"
+  }
+}
