@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../admin/providers/admin_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -97,21 +96,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.heroGradient,
-        ),
+        color: const Color(0xFF071F11),
         child: Stack(
           children: [
             // Background ambient shapes
             Positioned(
-              top: -60,
-              right: -60,
+              top: -80,
+              right: -80,
               child: Container(
-                width: 240,
-                height: 240,
+                width: 260,
+                height: 260,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.05),
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
                 ),
               ),
             ),
@@ -119,11 +116,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               bottom: -80,
               left: -80,
               child: Container(
-                width: 280,
-                height: 280,
+                width: 260,
+                height: 260,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.03),
+                  color: const Color(0xFF047857).withValues(alpha: 0.18),
                 ),
               ),
             ),
@@ -141,74 +138,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: Container(
-                        width: 104,
-                        height: 104,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 28,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Icon(
-                                Icons.stadium_rounded,
-                                size: 52,
-                                color: AppColors.primary,
-                              ),
-                              Positioned(
-                                top: 14,
-                                right: 14,
-                                child: Container(
-                                  padding: const EdgeInsets.all(3),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF59E0B),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.verified_rounded,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          height: 140,
+                          fit: BoxFit.contain,
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 16),
 
-                  // Animated App Titles
+                  // Animated App Titles & Partner Badge
                   SlideTransition(
                     position: _slideAnimation,
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: Column(
                         children: [
-                          const Text(
-                            'Games24 Owner',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 6,
+                              horizontal: 16,
+                              vertical: 7,
                             ),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
@@ -217,14 +169,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                                 color: Colors.white.withValues(alpha: 0.25),
                               ),
                             ),
-                            child: const Text(
-                              'TURF OWNER & PARTNER HUB',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 2.0,
-                              ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.verified_rounded, size: 14, color: Color(0xFF10B981)),
+                                SizedBox(width: 6),
+                                Text(
+                                  'TURF OWNER & PARTNER HUB',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                    letterSpacing: 2.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'MANAGE • BOOK • GROW',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.75),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 3.5,
                             ),
                           ),
                         ],

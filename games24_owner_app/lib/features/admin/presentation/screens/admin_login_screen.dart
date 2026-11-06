@@ -5,10 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/app_card.dart';
-import '../../../../core/widgets/app_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/admin_providers.dart';
 
@@ -149,37 +145,71 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
+      backgroundColor: const Color(0xFFF6FAF7),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // Official Games24 Brand Logo
+              Center(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Partner Hub Pill Badge
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
+                  color: const Color(0xFF166534).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(
-                  Icons.stadium_rounded,
-                  size: 44,
-                  color: AppColors.primary,
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.shield_rounded, size: 14, color: Color(0xFF166534)),
+                    SizedBox(width: 6),
+                    Text(
+                      'TURF OWNER & PARTNER HUB',
+                      style: TextStyle(
+                        color: Color(0xFF166534),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                'Turf Owner Partner Hub',
-                style: theme.textTheme.displayMedium,
+              const SizedBox(height: 14),
+
+              // Header Titles
+              const Text(
+                'Partner Login',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.5,
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Log in with your verified mobile number and OTP to manage slots, revenue, and player bookings.',
-                style: theme.textTheme.bodyMedium,
+              const SizedBox(height: 6),
+              const Text(
+                'Enter your verified mobile number and OTP to manage court slots, revenue & player bookings.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -222,168 +252,313 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 const SizedBox(height: 20),
               ],
 
-              // Register New Turf Callout Banner
-              AppCard(
-                onTap: () => context.push('/register'),
-                color: AppColors.secondary.withValues(alpha: 0.1),
-                child: Row(
+              // Clean Form Card (matching Player App style)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Phone Number Label & Input
+                    const Text(
+                      'Registered Mobile Number',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: const BoxDecoration(
-                        color: AppColors.secondary,
-                        shape: BoxShape.circle,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
-                      child: const Icon(Icons.add_business_rounded,
-                          color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          const Text(
-                            'New Turf Owner? Register Here 🏟️',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: AppColors.secondary,
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                            decoration: const BoxDecoration(
+                              border: Border(right: BorderSide(color: Color(0xFFE5E7EB))),
+                            ),
+                            child: const Row(
+                              children: [
+                                Text(
+                                  '+91',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Icon(Icons.arrow_drop_down, size: 18, color: Color(0xFF6B7280)),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Complete 4-step onboarding & GST KYC document submission',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded,
-                        size: 14, color: AppColors.secondary),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Phone Number Input
-              AppTextField(
-                label: 'Partner Registered Phone',
-                hint: 'Enter 10-digit registered number',
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                prefixIcon: Icons.phone_rounded,
-              ),
-              const SizedBox(height: 20),
-
-              // OTP Input (Mock: 1234)
-              AppTextField(
-                label: 'Partner Login OTP (Mock: 1234)',
-                hint: '1234',
-                controller: _otpController,
-                keyboardType: TextInputType.number,
-                prefixIcon: Icons.password_rounded,
-              ),
-              const SizedBox(height: 6),
-              const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: Text(
-                  'Mock OTP: Use 1234 to verify and log in',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-
-              // Quick Fill Helper for Verified Admin
-              AppCard(
-                onTap: () {
-                  setState(() {
-                    _phoneController.text = '7010396732';
-                    _otpController.text = '1234';
-                    _errorMessage = null;
-                  });
-                },
-                color: AppColors.primary.withValues(alpha: 0.08),
-                child: Row(
-                  children: [
-                    const Icon(Icons.verified_user_rounded,
-                        color: AppColors.primary),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Quick-Fill Verified Partner (7010396732)',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Tap to autofill verified owner number (Inno - KK Nagar)',
-                            style: theme.textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.touch_app_rounded,
-                        color: AppColors.primary, size: 20),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Error / Warning Alert Box
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.shade300),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.warning_amber_rounded, color: Colors.red.shade700, size: 22),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Login Denied / Not Verified',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.red.shade900,
-                                fontSize: 13,
+                          Expanded(
+                            child: TextField(
+                              controller: _phoneController,
+                              keyboardType: TextInputType.phone,
+                              style: const TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF111827),
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: 'Enter 10-digit number',
+                                hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13.5),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              _errorMessage!,
-                              style: TextStyle(color: Colors.red.shade800, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // OTP Input
+                    const Text(
+                      'Login OTP',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF374151),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: TextField(
+                        controller: _otpController,
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2.0,
+                          color: Color(0xFF111827),
+                        ),
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF166534), size: 20),
+                          suffixIcon: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF166534).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'Mock: 1234',
+                              style: TextStyle(
+                                color: Color(0xFF166534),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          hintText: '1234',
+                          hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13.5, letterSpacing: 0),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Quick-Fill Helper Button
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _phoneController.text = '7010396732';
+                          _otpController.text = '1234';
+                          _errorMessage = null;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.touch_app_rounded, size: 16, color: Color(0xFF166534)),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Tap to autofill verified partner (7010396732)',
+                                style: TextStyle(
+                                  color: Color(0xFF166534),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Error Alert Box (if present)
+                    if (_errorMessage != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.red.shade300),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(Icons.error_outline_rounded, color: Colors.red.shade700, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(color: Colors.red.shade900, fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                     ],
+
+                    // Primary Login Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _onAdminLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF166534),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: const Color(0xFFA7F3D0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Login to Dashboard',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_rounded, size: 18),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Register New Turf Card
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.push('/register'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF166534).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.add_business_rounded,
+                              color: Color(0xFF166534),
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'New Turf Owner? Register Venue',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  '4-step onboarding & instant verification',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF6B7280),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
-
-              // Login Button
-              AppButton(
-                text: _isLoading ? 'Verifying with Database...' : 'Login to Turf Partner Dashboard',
-                icon: Icons.login_rounded,
-                onPressed: _isLoading ? null : _onAdminLogin,
               ),
               const SizedBox(height: 16),
             ],

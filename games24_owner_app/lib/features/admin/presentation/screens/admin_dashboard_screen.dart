@@ -112,16 +112,85 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final profile = ref.watch(turfProfileProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6FAF7),
       appBar: AppBar(
-        title: Text('${profile.venueName} Partner Hub'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleSpacing: 16,
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB), width: 1),
+        ),
+        title: Row(
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              height: 34,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    profile.venueName.isNotEmpty ? profile.venueName : 'Turf Owner Hub',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF111827),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF16A34A),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        'Live Partner Dashboard',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF16A34A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_scanner_rounded, color: AppColors.primary),
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF166534).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF166534), size: 18),
+            ),
             onPressed: () => context.push('/admin/qr-scanner'),
             tooltip: 'Entry QR Scanner',
           ),
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.logout_rounded, color: Colors.red.shade700, size: 18),
+            ),
             onPressed: () async {
               final confirm = await showDialog<bool>(
                 context: context,

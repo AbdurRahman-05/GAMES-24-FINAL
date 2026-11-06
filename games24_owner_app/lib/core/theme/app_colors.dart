@@ -17,7 +17,7 @@ class AppColors {
   static const Color error = Color(0xFFDC2626); // Crimson Red
 
   // Warm Cream Background Colors
-  static const Color backgroundLight = Color(0xFFFFFFFF); // Pure White Background
+  static const Color backgroundLight = Color(0xFFF6FAF7); // Pure White Background
   static const Color backgroundDark = Color(0xFF121916); // Deep Forest Charcoal
 
   // Surface & Card Colors

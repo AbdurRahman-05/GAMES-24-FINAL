@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/shared/providers/app_providers.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,14 +17,12 @@ class Games24OwnerApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeModeProvider);
-
     return MaterialApp.router(
       title: 'Games24 Owner',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: themeMode,
+      themeMode: ThemeMode.light,
       routerConfig: AppRouter.router,
     );
   }
