@@ -1,3 +1,4 @@
+import 'api_config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   Future<void> _fetchTurfs() async {
     try {
-      final res = await http.get(Uri.parse('http://localhost:3000/turfs'));
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs'));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
         if (mounted) {

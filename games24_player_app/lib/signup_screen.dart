@@ -1,3 +1,4 @@
+import 'api_config.dart';
 import 'dart:async';
 import 'package:pinput/pinput.dart';
 import 'package:flutter/material.dart';
@@ -420,7 +421,7 @@ class _SignupScreenState extends State<SignupScreen> {
     try {
       // First check if mobile already exists
       final checkResponse = await http.post(
-        Uri.parse('http://localhost:3000/auth/check-mobile'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/check-mobile'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': mobile}),
       );
@@ -438,7 +439,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/send-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/send-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': mobile}),
       );
@@ -491,7 +492,7 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/register'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'fullName': name,
@@ -742,7 +743,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
 
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/auth/verify-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': widget.mobile, 'otp': otp}),
       );
@@ -778,7 +779,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
     });
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/send-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/send-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': widget.mobile}),
       );

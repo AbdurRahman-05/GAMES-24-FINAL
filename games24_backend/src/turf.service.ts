@@ -1,3 +1,16 @@
+
+function normalizePhotoList(urls: any): string[] {
+  if (!Array.isArray(urls) || urls.length === 0) {
+    return ['https://picsum.photos/seed/turf1/800/400'];
+  }
+  const defaultBase = process.env.BASE_URL || 'https://games-24-final.onrender.com';
+  return urls.map((u: any) => {
+    if (typeof u === 'string' && u.includes('localhost:3000')) {
+      return u.replace('http://localhost:3000', defaultBase);
+    }
+    return String(u);
+  });
+}
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from './prisma.service.js';
@@ -116,9 +129,7 @@ export class TurfService {
     });
 
     return verified.map((t: any) => {
-      const photos = Array.isArray(t.photoUrls) && t.photoUrls.length > 0
-        ? t.photoUrls
-        : ['https://picsum.photos/seed/turf1/800/400'];
+      const photos = normalizePhotoList(t.photoUrls);
       
       const amenities = Array.isArray(t.amenities) && t.amenities.length > 0
         ? t.amenities
@@ -176,9 +187,7 @@ export class TurfService {
       throw new NotFoundException(`Turf with ID ${id} not found`);
     }
 
-    const photos = Array.isArray(turf.photoUrls) && turf.photoUrls.length > 0
-      ? turf.photoUrls
-      : ['https://picsum.photos/seed/turf1/800/400'];
+    const photos = normalizePhotoList(turf.photoUrls);
     
     const amenities = Array.isArray(turf.amenities) && turf.amenities.length > 0
       ? turf.amenities
@@ -855,9 +864,7 @@ export class TurfService {
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     return bookings.map((b) => {
-      const photos = Array.isArray(b.verifiedAdmin?.photoUrls) && b.verifiedAdmin.photoUrls.length > 0
-        ? b.verifiedAdmin.photoUrls
-        : ['https://picsum.photos/seed/booking/250/250'];
+      const photos = normalizePhotoList(b.verifiedAdmin?.photoUrls);
 
       const isActive = b.status !== 'Cancelled' && b.date >= todayStr;
 

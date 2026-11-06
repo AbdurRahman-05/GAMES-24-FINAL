@@ -88,7 +88,8 @@ export class UploadController {
       throw new BadRequestException('No photo file received. Please choose an image.');
     }
     const host = req.get('host') || 'localhost:3000';
-    const protocol = req.protocol || 'http';
+    const protoHeader = req.headers['x-forwarded-proto'];
+    const protocol = protoHeader ? String(protoHeader).split(',')[0].trim() : (host.includes('localhost') ? 'http' : 'https');
     const fileUrl = `${protocol}://${host}/uploads/photos/${file.filename}`;
     console.log(`[UPLOAD] 📸 Venue photo saved: ${file.filename} (${file.size} bytes) -> ${fileUrl}`);
     return {
@@ -143,7 +144,8 @@ export class UploadController {
       throw new BadRequestException('No PDF document file received.');
     }
     const host = req.get('host') || 'localhost:3000';
-    const protocol = req.protocol || 'http';
+    const protoHeader = req.headers['x-forwarded-proto'];
+    const protocol = protoHeader ? String(protoHeader).split(',')[0].trim() : (host.includes('localhost') ? 'http' : 'https');
     const fileUrl = `${protocol}://${host}/uploads/documents/${file.filename}`;
     console.log(`[UPLOAD] 📄 KYC document saved: ${file.filename} (${file.size} bytes) -> ${fileUrl}`);
     return {

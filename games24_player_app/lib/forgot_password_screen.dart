@@ -1,3 +1,4 @@
+import 'api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -61,7 +62,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final mobile = '$_selectedCountryCode$mobileRaw';
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/send-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/send-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': mobile}),
       );
@@ -93,7 +94,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/verify-reset-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verify-reset-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': mobile, 'otp': otp}),
       );
@@ -133,7 +134,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/reset-password'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/reset-password'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'mobileNumber': mobile,

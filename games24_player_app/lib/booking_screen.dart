@@ -1,3 +1,4 @@
+import 'api_config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -77,7 +78,7 @@ class _BookingScreenState extends State<BookingScreen> {
     if (_resolvedTurfId != null) return _resolvedTurfId;
     try {
       final res = await http
-          .get(Uri.parse('http://localhost:3000/turfs'))
+          .get(Uri.parse('${ApiConfig.baseUrl}/turfs'))
           .timeout(const Duration(seconds: 4));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
@@ -120,7 +121,7 @@ class _BookingScreenState extends State<BookingScreen> {
         final res = await http
             .get(
               Uri.parse(
-                'http://localhost:3000/turfs/$effectiveTurfId/slots?date=$targetDate',
+                '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/slots?date=$targetDate',
               ),
             )
             .timeout(const Duration(seconds: 5));
@@ -1343,7 +1344,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                         final res = await http.post(
                           Uri.parse(
-                            'http://localhost:3000/turfs/$effectiveTurfId/book',
+                            '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/book',
                           ),
                           headers: {'Content-Type': 'application/json'},
                           body: jsonEncode({

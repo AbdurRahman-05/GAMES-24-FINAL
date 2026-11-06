@@ -1,3 +1,4 @@
+import '../../../api_config.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -89,7 +90,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
 
   Future<void> fetchSlotsForDate(int adminId, String dateKey) async {
     try {
-      final res = await http.get(Uri.parse('http://localhost:3000/turfs/$adminId/slots?date=$dateKey&role=owner'));
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/slots?date=$dateKey&role=owner'));
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         if (json['slots'] is List) {
@@ -118,7 +119,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
     toggleSlotDiscount(slot, offerString, dateKey);
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/turfs/$adminId/slot-offer'),
+        Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/slot-offer'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'date': dateKey,
@@ -148,7 +149,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
     toggleBlockSlot(slot, dateKey);
     try {
       final res = await http.post(
-        Uri.parse('http://localhost:3000/turfs/$adminId/toggle-block'),
+        Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/toggle-block'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'date': dateKey,
@@ -614,7 +615,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   Future<void> fetchVerifiedAdminByPhone(String phone) async {
     try {
       final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
-      final res = await http.get(Uri.parse('http://localhost:3000/auth/verified-admin/$clean'));
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/verified-admin/$clean'));
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body);
         if (json['admin'] != null && json['admin'] is Map<String, dynamic>) {
@@ -842,7 +843,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     try {
       final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
       final res = await http.patch(
-        Uri.parse('http://localhost:3000/auth/verified-admin/$id/profile'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verified-admin/$id/profile'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'ownerName': ownerName,
@@ -957,7 +958,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       };
 
       final res = await http.patch(
-        Uri.parse('http://localhost:3000/auth/verified-admin/$id/metrics'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verified-admin/$id/metrics'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
@@ -1017,7 +1018,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       if (cancelledBadge != null) payload['cancelledBadge'] = cancelledBadge;
 
       final res = await http.patch(
-        Uri.parse('http://localhost:3000/auth/verified-admin/$id/metrics'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verified-admin/$id/metrics'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );

@@ -1,3 +1,4 @@
+import 'api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -407,7 +408,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/login'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'mobileNumber': mobile, 'password': password}),
       );

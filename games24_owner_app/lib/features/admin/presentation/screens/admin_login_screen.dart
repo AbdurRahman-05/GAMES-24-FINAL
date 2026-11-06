@@ -1,3 +1,4 @@
+import '../../../../api_config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -84,7 +85,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/admin-login'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/admin-login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'mobileNumber': phone,
@@ -127,7 +128,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        final errorStr = 'Cannot connect to server (http://localhost:3000). Please ensure backend is running.';
+        final errorStr = 'Cannot connect to server (${ApiConfig.baseUrl}). Please ensure backend is running.';
         setState(() => _errorMessage = errorStr);
         ToastUtils.showError(context, errorStr);
       }

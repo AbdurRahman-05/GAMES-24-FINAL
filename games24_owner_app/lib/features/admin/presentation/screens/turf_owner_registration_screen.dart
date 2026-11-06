@@ -1,3 +1,4 @@
+import '../../../../api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
@@ -147,7 +148,7 @@ class _TurfOwnerRegistrationScreenState
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/check-admin-contact'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/check-admin-contact'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'ownerPhone': cleanPhone}),
       );
@@ -186,7 +187,7 @@ class _TurfOwnerRegistrationScreenState
 
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/check-admin-contact'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/check-admin-contact'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'ownerEmail': cleanEmail}),
       );
@@ -377,7 +378,7 @@ class _TurfOwnerRegistrationScreenState
     setState(() => _isCheckingStatus = true);
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:3000/auth/admin-status/$identifier'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/admin-status/$identifier'),
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -460,7 +461,7 @@ class _TurfOwnerRegistrationScreenState
       final ext = fileName.split('.').last.toLowerCase();
       final mimeSubtype = (ext == 'png') ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
 
-      final uri = Uri.parse('http://localhost:3000/upload/photo');
+      final uri = Uri.parse('${ApiConfig.baseUrl}/upload/photo');
       final request = http.MultipartRequest('POST', uri);
       request.files.add(http.MultipartFile.fromBytes(
         'file',
@@ -525,7 +526,7 @@ class _TurfOwnerRegistrationScreenState
         if (docType == 'gst') _isUploadingGst = true;
       });
 
-      final uri = Uri.parse('http://localhost:3000/upload/document');
+      final uri = Uri.parse('${ApiConfig.baseUrl}/upload/document');
       final request = http.MultipartRequest('POST', uri);
 
       if (file.bytes != null) {
@@ -591,7 +592,7 @@ class _TurfOwnerRegistrationScreenState
     setState(() => _isSendingOtp = true);
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/send-admin-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/send-admin-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'mobileNumber': phone,
@@ -621,7 +622,7 @@ class _TurfOwnerRegistrationScreenState
     setState(() => _isVerifyingMobile = true);
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/verify-admin-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verify-admin-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'type': 'mobile',
@@ -661,7 +662,7 @@ class _TurfOwnerRegistrationScreenState
     setState(() => _isVerifyingEmail = true);
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:3000/auth/verify-admin-otp'),
+        Uri.parse('${ApiConfig.baseUrl}/auth/verify-admin-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'type': 'email',
@@ -728,7 +729,7 @@ class _TurfOwnerRegistrationScreenState
       // Pre-registration real-time check with DB to verify neither phone nor email is taken
       try {
         final checkRes = await http.post(
-          Uri.parse('http://localhost:3000/auth/check-admin-contact'),
+          Uri.parse('${ApiConfig.baseUrl}/auth/check-admin-contact'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'ownerPhone': _phoneController.text.trim(),
@@ -764,7 +765,7 @@ class _TurfOwnerRegistrationScreenState
 
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:3000/auth/register-admin'),
+          Uri.parse('${ApiConfig.baseUrl}/auth/register-admin'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'venueName': _venueNameController.text.trim(),
@@ -840,7 +841,7 @@ class _TurfOwnerRegistrationScreenState
       if (_registeredAdminId != null) {
         try {
           final response = await http.post(
-            Uri.parse('http://localhost:3000/auth/update-admin-kyc'),
+            Uri.parse('${ApiConfig.baseUrl}/auth/update-admin-kyc'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
               'adminId': _registeredAdminId,

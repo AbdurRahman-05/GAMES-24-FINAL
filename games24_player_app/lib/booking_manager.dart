@@ -1,3 +1,4 @@
+import 'api_config.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -93,7 +94,7 @@ class BookingManager {
       final name = (prefs.getString('fullName') ?? 'Vignesh').trim();
 
       final uri = Uri.parse(
-          'http://localhost:3000/turfs/user-bookings?phone=${Uri.encodeComponent(phone)}&name=${Uri.encodeComponent(name)}');
+          '${ApiConfig.baseUrl}/turfs/user-bookings?phone=${Uri.encodeComponent(phone)}&name=${Uri.encodeComponent(name)}');
       final res = await http.get(uri).timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
@@ -119,7 +120,7 @@ class BookingManager {
 
   Future<bool> cancelBooking(int bookingId) async {
     try {
-      final uri = Uri.parse('http://localhost:3000/turfs/bookings/$bookingId/cancel');
+      final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$bookingId/cancel');
       final res = await http.post(uri).timeout(const Duration(seconds: 5));
       if (res.statusCode == 200 || res.statusCode == 201) {
         await fetchBookings();
