@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: games24-backend
+    runtime: node
+    rootDir: games24_backend
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
