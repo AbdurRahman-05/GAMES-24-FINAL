@@ -583,6 +583,7 @@ export class AuthService {
     const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     const activeBookings = (verifiedAdmin.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+    const cancelledBookings = (verifiedAdmin.bookings || []).filter((b: any) => b.status === 'Cancelled');
     const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
     const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
 
@@ -592,6 +593,13 @@ export class AuthService {
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
     const bookedSlotsCount = todayBookings.length;
+    const freeSlotsCount = Math.max(0, 18 - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
+    const occupancyPercent = Math.round((bookedSlotsCount / 18) * 100);
+    const slotsBadge = `${occupancyPercent}% Full`;
+    const realCancelledCount = Math.max(cancelledBookings.length, dashboard.cancelledCount || 0);
+    const shiftedCount = dashboard.shiftedCount || 0;
+    const cancelledTotal = realCancelledCount + shiftedCount;
+    const cancelledBadge = `${cancelledTotal} Tracked`;
     const growthBadge = todayBookingsCount > 0 ? `+${todayBookingsCount} Today` : '0% Today';
     const revBadge = `₹${monthRevenue.toLocaleString('en-IN')} GMV`;
 
@@ -603,6 +611,11 @@ export class AuthService {
       monthTotalBookings,
       monthRevenue,
       bookedSlotsCount,
+      freeSlotsCount,
+      slotsBadge,
+      cancelledCount: realCancelledCount,
+      cancelledTotal,
+      cancelledBadge,
       todayBookingsGrowth: growthBadge,
       revenueBadge: revBadge,
     };
@@ -623,14 +636,14 @@ export class AuthService {
         monthRevenue,
         monthTotalBookings,
         revenueBadge: revBadge,
-        freeSlotsCount: dashboard.freeSlotsCount,
+        freeSlotsCount,
         bookedSlotsCount,
         blockedSlotsCount: dashboard.blockedSlotsCount,
-        slotsBadge: dashboard.slotsBadge,
-        cancelledTotal: dashboard.cancelledTotal,
-        cancelledCount: dashboard.cancelledCount,
-        shiftedCount: dashboard.shiftedCount,
-        cancelledBadge: dashboard.cancelledBadge,
+        slotsBadge,
+        cancelledTotal,
+        cancelledCount: realCancelledCount,
+        shiftedCount,
+        cancelledBadge,
         sports: getAdminSports(verifiedAdmin.id).map((s: any) => s.name),
         sportsList: getAdminSports(verifiedAdmin.id),
       },
@@ -670,6 +683,7 @@ export class AuthService {
     const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
     const activeBookings = (admin.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+    const cancelledBookings = (admin.bookings || []).filter((b: any) => b.status === 'Cancelled');
     const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
     const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
 
@@ -679,6 +693,13 @@ export class AuthService {
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
     const bookedSlotsCount = todayBookings.length;
+    const freeSlotsCount = Math.max(0, 18 - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
+    const occupancyPercent = Math.round((bookedSlotsCount / 18) * 100);
+    const slotsBadge = `${occupancyPercent}% Full`;
+    const realCancelledCount = Math.max(cancelledBookings.length, dashboard.cancelledCount || 0);
+    const shiftedCount = dashboard.shiftedCount || 0;
+    const cancelledTotal = realCancelledCount + shiftedCount;
+    const cancelledBadge = `${cancelledTotal} Tracked`;
     const growthBadge = todayBookingsCount > 0 ? `+${todayBookingsCount} Today` : '0% Today';
     const revBadge = `₹${monthRevenue.toLocaleString('en-IN')} GMV`;
 
@@ -690,6 +711,11 @@ export class AuthService {
       monthTotalBookings,
       monthRevenue,
       bookedSlotsCount,
+      freeSlotsCount,
+      slotsBadge,
+      cancelledCount: realCancelledCount,
+      cancelledTotal,
+      cancelledBadge,
       todayBookingsGrowth: growthBadge,
       revenueBadge: revBadge,
     };
@@ -709,14 +735,14 @@ export class AuthService {
         monthRevenue,
         monthTotalBookings,
         revenueBadge: revBadge,
-        freeSlotsCount: dashboard.freeSlotsCount,
+        freeSlotsCount,
         bookedSlotsCount,
         blockedSlotsCount: dashboard.blockedSlotsCount,
-        slotsBadge: dashboard.slotsBadge,
-        cancelledTotal: dashboard.cancelledTotal,
-        cancelledCount: dashboard.cancelledCount,
-        shiftedCount: dashboard.shiftedCount,
-        cancelledBadge: dashboard.cancelledBadge,
+        slotsBadge,
+        cancelledTotal,
+        cancelledCount: realCancelledCount,
+        shiftedCount,
+        cancelledBadge,
         sports: getAdminSports(admin.id).map((s: any) => s.name),
         sportsList: getAdminSports(admin.id),
       },

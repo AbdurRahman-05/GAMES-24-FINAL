@@ -389,6 +389,8 @@ class TurfBookingHistoryItem {
     if (isLiveNow(now)) return false;
     return true;
   }
+
+  bool get isCancelled => status.toLowerCase() == 'cancelled';
 }
 
 class TurfCourtVenueItem {
@@ -1038,6 +1040,25 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       monthTotalBookings = todayBookingsCount;
     }
 
+    final realCancelledBookings = bookingHistory.where((b) => b.isCancelled).length;
+    int parsedCancelledCount = int.tryParse((dash['cancelledCount'] ?? data['cancelledCount'])?.toString() ?? '') ?? 0;
+    if (realCancelledBookings > parsedCancelledCount) {
+      parsedCancelledCount = realCancelledBookings;
+    }
+    final parsedShiftedCount = int.tryParse((dash['shiftedCount'] ?? data['shiftedCount'])?.toString() ?? '') ?? 0;
+    int parsedCancelledTotal = int.tryParse((dash['cancelledTotal'] ?? data['cancelledTotal'])?.toString() ?? '') ?? 0;
+    if (parsedCancelledCount + parsedShiftedCount > parsedCancelledTotal) {
+      parsedCancelledTotal = parsedCancelledCount + parsedShiftedCount;
+    }
+
+    final nowStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final activeTodayBookings = bookingHistory.where((b) {
+      if (b.isCancelled) return false;
+      final d = b.effectiveDate;
+      return d == nowStr || d.toLowerCase() == 'today';
+    }).length;
+    final finalTodayBookingsCount = activeTodayBookings > 0 ? activeTodayBookings : todayBookingsCount;
+
     state = state.copyWith(
       venueName: venueName,
       ownerName: ownerName,
@@ -1073,7 +1094,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       kycVerified: true,
       courts: courts,
       bookingHistory: bookingHistory,
-      todayBookingsCount: todayBookingsCount,
+      todayBookingsCount: finalTodayBookingsCount,
       todayPaidBookings: todayPaidBookings,
       todayCashBookings: todayCashBookings,
       todayBookingsGrowth: (dash['todayBookingsGrowth'] ?? data['todayBookingsGrowth'])?.toString() ?? '0% Today',
@@ -1081,13 +1102,13 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       monthTotalBookings: monthTotalBookings,
       revenueBadge: (dash['revenueBadge'] ?? data['revenueBadge'])?.toString() ?? '₹0 GMV',
       freeSlotsCount: int.tryParse((dash['freeSlotsCount'] ?? data['freeSlotsCount'])?.toString() ?? '') ?? 0,
-      bookedSlotsCount: int.tryParse((dash['bookedSlotsCount'] ?? data['bookedSlotsCount'])?.toString() ?? '') ?? 0,
+      bookedSlotsCount: finalTodayBookingsCount,
       blockedSlotsCount: int.tryParse((dash['blockedSlotsCount'] ?? data['blockedSlotsCount'])?.toString() ?? '') ?? 0,
       slotsBadge: (dash['slotsBadge'] ?? data['slotsBadge'])?.toString() ?? '0% Full',
-      cancelledTotal: int.tryParse((dash['cancelledTotal'] ?? data['cancelledTotal'])?.toString() ?? '') ?? 0,
-      cancelledCount: int.tryParse((dash['cancelledCount'] ?? data['cancelledCount'])?.toString() ?? '') ?? 0,
-      shiftedCount: int.tryParse((dash['shiftedCount'] ?? data['shiftedCount'])?.toString() ?? '') ?? 0,
-      cancelledBadge: (dash['cancelledBadge'] ?? data['cancelledBadge'])?.toString() ?? 'Tracked',
+      cancelledTotal: parsedCancelledTotal,
+      cancelledCount: parsedCancelledCount,
+      shiftedCount: parsedShiftedCount,
+      cancelledBadge: '$parsedCancelledTotal Tracked',
       isSubscriptionActive: !(data['isBookingHold'] == true || data['status'] == 'HOLD'),
       subscriptionStatus: (data['isBookingHold'] == true || data['status'] == 'HOLD') ? 'EXPIRED' : 'ACTIVE',
       isBookingHold: data['isBookingHold'] == true || data['status'] == 'HOLD',

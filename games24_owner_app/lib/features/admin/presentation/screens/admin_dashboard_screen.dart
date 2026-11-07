@@ -584,20 +584,40 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final allList = _getAllBookingsSource(profile);
 
     // Dynamic metrics based on actual bookings
-    final todayList = allList.where((b) {
+    final cancelledList = allList.where((b) => b.isCancelled).toList();
+    final dynamicCancelledCount = cancelledList.length > profile.cancelledCount
+        ? cancelledList.length
+        : profile.cancelledCount;
+    final dynamicShiftedCount = profile.shiftedCount;
+    final dynamicCancelledTotal = dynamicCancelledCount + dynamicShiftedCount;
+
+    // Active (non-cancelled) bookings for today
+    final activeTodayList = allList.where((b) {
+      if (b.isCancelled) return false;
       final d = b.effectiveDate;
       return d == todayStr || d.toLowerCase() == 'today';
     }).toList();
 
-    final dynamicTodayCount = todayList.isNotEmpty ? todayList.length : profile.todayBookingsCount;
-    final dynamicTodayPaid = todayList.isNotEmpty
-        ? todayList.where((b) => !b.paymentMethod.toLowerCase().contains('cash')).length
+    final dynamicTodayCount = activeTodayList.isNotEmpty
+        ? activeTodayList.length
+        : profile.todayBookingsCount;
+    final dynamicTodayPaid = activeTodayList.isNotEmpty
+        ? activeTodayList.where((b) => !b.paymentMethod.toLowerCase().contains('cash')).length
         : profile.todayPaidBookings;
-    final dynamicTodayCash = dynamicTodayCount - dynamicTodayPaid;
+    final dynamicTodayCash = (dynamicTodayCount - dynamicTodayPaid) > 0
+        ? (dynamicTodayCount - dynamicTodayPaid)
+        : 0;
 
+    final activeMonthList = allList.where((b) => !b.isCancelled).toList();
     final dynamicMonthRev = profile.monthRevenue > 0
         ? profile.monthRevenue
-        : allList.fold<double>(0.0, (sum, b) => sum + b.amount);
+        : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
+
+    final dynamicFreeSlots = (18 - dynamicTodayCount - profile.blockedSlotsCount) > 0
+        ? (18 - dynamicTodayCount - profile.blockedSlotsCount)
+        : 0;
+    final dynamicOccupancyPct = ((dynamicTodayCount / 18.0) * 100).round();
+    final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,7 +726,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${allList.length} bookings recorded this calendar month',
+                '${activeMonthList.length} active bookings this month (${cancelledList.length} cancelled)',
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.white.withValues(alpha: 0.75),
@@ -748,9 +768,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Court Occupancy",
-                value: '${profile.freeSlotsCount > 0 ? profile.freeSlotsCount : 12} Free',
+                value: '$dynamicFreeSlots Free',
                 subtitle: '$dynamicTodayCount Booked • ${profile.blockedSlotsCount} Off',
-                badgeText: profile.slotsBadge.isNotEmpty ? profile.slotsBadge : 'Live',
+                badgeText: dynamicSlotsBadge,
                 badgeColor: const Color(0xFF0284C7),
                 icon: Icons.pie_chart_rounded,
                 iconColor: const Color(0xFF0284C7),
@@ -788,7 +808,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
                     ),
                     Text(
-                      '${profile.cancelledCount} Cancelled • ${profile.shiftedCount} Shifted Slot(s)',
+                      '$dynamicCancelledCount Cancelled • $dynamicShiftedCount Shifted Slot(s)',
                       style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
                     ),
                   ],
@@ -801,7 +821,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '${profile.cancelledTotal} Total',
+                  '$dynamicCancelledTotal Total',
                   style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
                 ),
               ),
