@@ -40,6 +40,8 @@ class BookingManager {
     }
   }
 
+  List<Map<String, dynamic>> get allBookings => bookingsNotifier.value;
+
   List<Map<String, dynamic>> get activeBookings {
     final now = DateTime.now();
     final todayStr =

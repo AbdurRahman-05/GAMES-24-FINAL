@@ -67,7 +67,7 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
     final double serviceFee = 35.0;
     final double totalPrice = courtPrice + serviceFee;
 
-    final availableSlots = ref.watch(adminSlotProvider).getAvailableSlotsForDate(_selectedDate);
+    final availableSlots = ref.watch(adminSlotProvider).getUpcomingSlotsForDate(_selectedDate);
 
     return Scaffold(
       appBar: AppBar(

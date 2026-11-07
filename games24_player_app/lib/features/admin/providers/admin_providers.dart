@@ -17,6 +17,11 @@ class AdminSlotState {
     );
   }
 
+  List<String> getUpcomingSlotsForDate(DateTime date) {
+    final all = getAvailableSlotsForDate(date);
+    return all.where((s) => !AppConstants.isSlotPast(s, date)).toList();
+  }
+
   List<String> get availableSlots => getAvailableSlotsForDate(DateTime.now());
 
   AdminSlotState({

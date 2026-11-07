@@ -200,7 +200,7 @@ class _AlterBookingDialogState extends ConsumerState<AlterBookingDialog> {
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     ),
-                    items: ref.watch(adminSlotProvider).getAvailableSlotsForDate(_getParsedDate()).map((slot) {
+                    items: ref.watch(adminSlotProvider).getUpcomingSlotsForDate(_getParsedDate()).map((slot) {
                       return DropdownMenuItem(value: slot, child: Text(slot, overflow: TextOverflow.ellipsis));
                     }).toList(),
                     onChanged: (val) {

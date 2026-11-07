@@ -48,6 +48,7 @@ class _BookingScreenState extends State<BookingScreen> {
   int _currentImageIndex = 0;
   bool _isLoadingSlots = false;
   bool _isBookingInProgress = false;
+  bool _showPassedSlots = false;
   List<Map<String, dynamic>> _slots = [];
   late final List<Map<String, String>> _dates;
 
@@ -113,6 +114,11 @@ class _BookingScreenState extends State<BookingScreen> {
     if (!mounted) return;
     setState(() => _isLoadingSlots = true);
     final targetDate = _dates[_selectedDateIndex]['fullDate']!;
+    final now = DateTime.now();
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final isToday = targetDate == todayStr;
+    final currentMinutes = now.hour * 60 + now.minute;
 
     final effectiveTurfId = await _getEffectiveTurfId();
 
@@ -144,10 +150,21 @@ class _BookingScreenState extends State<BookingScreen> {
                     final map = s is Map ? s : <String, dynamic>{};
                     final timeVal =
                         (map['slot'] ?? map['time'])?.toString() ?? '';
+                    final slotStartMin =
+                        AppConstants.parseSlotStartMinutes(timeVal);
+                    final isPast = map['isPast'] == true ||
+                        (isToday &&
+                            slotStartMin != -1 &&
+                            currentMinutes >= slotStartMin);
+                    String status = map['status']?.toString() ?? 'available';
+                    if (isPast && status != 'booked') {
+                      status = 'passed';
+                    }
                     return <String, dynamic>{
                       'slot': timeVal,
                       'time': timeVal,
-                      'status': map['status']?.toString() ?? 'available',
+                      'status': status,
+                      'isPast': isPast,
                       'price': map['price'] ?? rawPrice,
                       'originalPrice':
                           map['originalPrice'] ?? map['price'] ?? rawPrice,
@@ -158,6 +175,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     };
                   })
                   .toList();
+              _selectedTimeSlots.removeWhere((t) {
+                final startMin = AppConstants.parseSlotStartMinutes(t);
+                return isToday && startMin != -1 && currentMinutes >= startMin;
+              });
               _isLoadingSlots = false;
             });
             return;
@@ -178,17 +199,24 @@ class _BookingScreenState extends State<BookingScreen> {
     );
     if (!mounted) return;
     setState(() {
-      _slots = generated
-          .map<Map<String, dynamic>>(
-            (s) => <String, dynamic>{
-              'slot': s,
-              'time': s,
-              'status': 'available',
-              'price': rawPrice,
-              'isNight': false,
-            },
-          )
-          .toList();
+      _slots = generated.map<Map<String, dynamic>>((s) {
+        final slotStartMin = AppConstants.parseSlotStartMinutes(s);
+        final isPast = isToday &&
+            slotStartMin != -1 &&
+            currentMinutes >= slotStartMin;
+        return <String, dynamic>{
+          'slot': s,
+          'time': s,
+          'status': isPast ? 'passed' : 'available',
+          'isPast': isPast,
+          'price': rawPrice,
+          'isNight': false,
+        };
+      }).toList();
+      _selectedTimeSlots.removeWhere((t) {
+        final startMin = AppConstants.parseSlotStartMinutes(t);
+        return isToday && startMin != -1 && currentMinutes >= startMin;
+      });
       _isLoadingSlots = false;
     });
   }
@@ -676,15 +704,28 @@ class _BookingScreenState extends State<BookingScreen> {
       return hour;
     }
 
-    final morning = _slots.where((s) {
+    final targetDate = _dates[_selectedDateIndex]['fullDate']!;
+    final now = DateTime.now();
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final isToday = targetDate == todayStr;
+    final passedSlotsCount = _slots.where((s) => s['isPast'] == true).length;
+
+    final visibleSlots = _slots.where((s) {
+      if (!isToday) return true;
+      if (_showPassedSlots) return true;
+      return s['isPast'] != true;
+    }).toList();
+
+    final morning = visibleSlots.where((s) {
       final h = parseStartHour(s);
       return h >= 5 && h < 12;
     }).toList();
-    final afternoon = _slots.where((s) {
+    final afternoon = visibleSlots.where((s) {
       final h = parseStartHour(s);
       return h >= 12 && h < 17;
     }).toList();
-    final evening = _slots.where((s) {
+    final evening = visibleSlots.where((s) {
       final h = parseStartHour(s);
       return h >= 17 || (h >= 0 && h < 5);
     }).toList();
@@ -729,14 +770,83 @@ class _BookingScreenState extends State<BookingScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildLegendItem('Available', const Color(0xFFE5F5EB)),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 5),
                   _buildLegendItem('Selected', const Color(0xFF0F6D38)),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 5),
                   _buildLegendItem('Booked', const Color(0xFFDC2626)),
+                  if (isToday && _showPassedSlots) ...[
+                    const SizedBox(width: 5),
+                    _buildLegendItem('Passed', const Color(0xFF9CA3AF)),
+                  ],
                 ],
               ),
             ],
           ),
+          if (isToday && passedSlotsCount > 0) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          _showPassedSlots ? Icons.visibility_outlined : Icons.schedule_rounded,
+                          size: 15,
+                          color: const Color(0xFF6B7280),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            _showPassedSlots
+                                ? 'Showing All Slots ($passedSlotsCount passed)'
+                                : 'Showing upcoming slots for today',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF4B5563),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _showPassedSlots = !_showPassedSlots;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _showPassedSlots ? const Color(0xFFE5E7EB) : const Color(0xFFE5F5EB),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _showPassedSlots ? 'Hide Passed' : 'View Passed ($passedSlotsCount)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _showPassedSlots ? const Color(0xFF374151) : const Color(0xFF0F6D38),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (morning.isNotEmpty) ...[
             const SizedBox(height: 14),
             _buildSlotSection('MORNING SLOTS', morning),
@@ -811,6 +921,7 @@ class _BookingScreenState extends State<BookingScreen> {
               children: slots.map((slot) {
                 final isBooked = slot['status'] == 'booked';
                 final isBlocked = slot['status'] == 'blocked';
+                final isPast = slot['status'] == 'passed' || slot['isPast'] == true;
                 final isSelected = _selectedTimeSlots.contains(slot['time']);
 
                 final offer = slot['offer'] is Map
@@ -846,7 +957,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 Color textColor = const Color(0xFF111827);
                 Color borderColor = Colors.transparent;
 
-                if (isBooked) {
+                if (isPast) {
+                  bgColor = const Color(0xFFF3F4F6);
+                  textColor = const Color(0xFF9CA3AF);
+                  borderColor = const Color(0xFFE5E7EB);
+                } else if (isBooked) {
                   bgColor = const Color(0xFFFEE2E2);
                   textColor = const Color(0xFFDC2626);
                 } else if (isBlocked) {
@@ -865,29 +980,40 @@ class _BookingScreenState extends State<BookingScreen> {
                 return SizedBox(
                   width: itemWidth,
                   child: GestureDetector(
-                    onTap: (isBooked || isBlocked)
+                    onTap: isPast
                         ? () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  isBooked
-                                      ? 'Slot is already booked.'
-                                      : 'Slot is blocked for maintenance.',
+                                  'Slot ${slot['time']} has already passed for today.',
                                 ),
                                 duration: const Duration(seconds: 1),
                               ),
                             );
                           }
-                        : () {
-                            setState(() {
-                              if (_selectedTimeSlots.contains(slot['time'])) {
-                                _selectedTimeSlots.remove(slot['time']);
-                              } else {
-                                _selectedTimeSlots.clear();
-                                _selectedTimeSlots.add(slot['time']);
+                        : (isBooked || isBlocked)
+                            ? () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      isBooked
+                                          ? 'Slot is already booked.'
+                                          : 'Slot is blocked for maintenance.',
+                                    ),
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
                               }
-                            });
-                          },
+                            : () {
+                                setState(() {
+                                  if (_selectedTimeSlots.contains(slot['time'])) {
+                                    _selectedTimeSlots.remove(slot['time']);
+                                  } else {
+                                    _selectedTimeSlots.clear();
+                                    _selectedTimeSlots.add(slot['time']);
+                                  }
+                                });
+                              },
                     child: Container(
                       height: (hasOffer && badgeText.isNotEmpty) ? 60 : 52,
                       decoration: BoxDecoration(
@@ -915,7 +1041,26 @@ class _BookingScreenState extends State<BookingScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          if (isBooked || isBlocked) ...[
+                          if (isPast) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5E7EB),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'Passed',
+                                style: TextStyle(
+                                  fontSize: 8.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF6B7280),
+                                ),
+                              ),
+                            ),
+                          ] else if (isBooked || isBlocked) ...[
                             Text(
                               isBooked ? 'Booked' : 'Blocked',
                               style: TextStyle(

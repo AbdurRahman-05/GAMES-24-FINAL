@@ -1,8 +1,238 @@
 import 'package:flutter/material.dart';
 import 'package:games24_player_app/team_roster_screen.dart';
+import 'package:games24_player_app/team_manager.dart';
 
-class TeamsHubScreen extends StatelessWidget {
+class TeamsHubScreen extends StatefulWidget {
   const TeamsHubScreen({super.key});
+
+  @override
+  State<TeamsHubScreen> createState() => _TeamsHubScreenState();
+}
+
+class _TeamsHubScreenState extends State<TeamsHubScreen> {
+  final TextEditingController _codeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  void _showCreateTeamDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    String selectedSport = 'Football';
+    String selectedFormat = '7v7 Squad';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Create New Squad',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Squad Name',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: nameController,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. Thunder Warriors FC',
+                        filled: true,
+                        fillColor: const Color(0xFFF3F5F1),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Sport',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: ['Football', 'Cricket', 'Badminton'].map((sport) {
+                        final isSel = selectedSport == sport;
+                        return ChoiceChip(
+                          label: Text(sport),
+                          selected: isSel,
+                          selectedColor: const Color(0xFFE5F5EB),
+                          labelStyle: TextStyle(
+                            color: isSel ? const Color(0xFF0F6D38) : Colors.black87,
+                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          onSelected: (val) {
+                            if (val) {
+                              setModalState(() {
+                                selectedSport = sport;
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Format / Squad Size',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        '5v5 Squad',
+                        '7v7 Squad',
+                        '11v11 Squad',
+                        'Box Cricket',
+                        'Doubles',
+                      ].map((fmt) {
+                        final isSel = selectedFormat == fmt;
+                        return ChoiceChip(
+                          label: Text(fmt),
+                          selected: isSel,
+                          selectedColor: const Color(0xFFE5F5EB),
+                          labelStyle: TextStyle(
+                            color: isSel ? const Color(0xFF0F6D38) : Colors.black87,
+                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          onSelected: (val) {
+                            if (val) {
+                              setModalState(() {
+                                selectedFormat = fmt;
+                              });
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F6D38),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () async {
+                          final name = nameController.text.trim();
+                          if (name.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter a team name'),
+                              ),
+                            );
+                            return;
+                          }
+                          final nav = Navigator.of(context);
+                          final messenger = ScaffoldMessenger.of(context);
+                          await TeamManager().createTeam(
+                            name: name,
+                            sport: selectedSport,
+                            squadSize: selectedFormat,
+                          );
+                          nav.pop();
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text('Team "$name" created successfully!'),
+                              backgroundColor: const Color(0xFF0F6D38),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Create Squad',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _handleJoinTeam() async {
+    final code = _codeController.text.trim();
+    if (code.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a squad passcode or PIN')),
+      );
+      return;
+    }
+    final success = await TeamManager().joinTeamWithCode(code);
+    if (success && mounted) {
+      _codeController.clear();
+      FocusScope.of(context).unfocus();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Joined squad "$code" successfully!'),
+          backgroundColor: const Color(0xFF0F6D38),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,31 +307,45 @@ class TeamsHubScreen extends StatelessWidget {
           ),
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
-                ),
-                child: const Icon(
-                  Icons.search,
-                  size: 18,
-                  color: Colors.black87,
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Search squads feature active')),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                  ),
+                  child: const Icon(
+                    Icons.search,
+                    size: 18,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF7FDF9),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFE5F5EB)),
-                ),
-                child: const Icon(
-                  Icons.qr_code_scanner,
-                  size: 18,
-                  color: Color(0xFF166534),
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Scan squad QR code')),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7FDF9),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE5F5EB)),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_scanner,
+                    size: 18,
+                    color: Color(0xFF166534),
+                  ),
                 ),
               ),
             ],
@@ -135,9 +379,9 @@ class TeamsHubScreen extends StatelessWidget {
               child: Container(
                 width: 120,
                 height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF7FDF9),
-                  borderRadius: const BorderRadius.only(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF7FDF9),
+                  borderRadius: BorderRadius.only(
                     topRight: Radius.circular(16),
                     bottomLeft: Radius.circular(120),
                   ),
@@ -203,7 +447,7 @@ class TeamsHubScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 44,
                     child: ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _showCreateTeamDialog(context),
                       icon: const Text(
                         'Create Squad',
                         style: TextStyle(
@@ -284,24 +528,36 @@ class TeamsHubScreen extends StatelessWidget {
                 Expanded(
                   child: Container(
                     height: 44,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF3F5F1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.key, size: 16, color: Color(0xFF6B7280)),
-                        SizedBox(width: 8),
-                        Text(
-                          'E.G. STRK-24',
-                          style: TextStyle(
-                            color: Color(0xFF9CA3AF),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
+                    child: TextField(
+                      controller: _codeController,
+                      textCapitalization: TextCapitalization.characters,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.key,
+                          size: 16,
+                          color: Color(0xFF6B7280),
                         ),
-                      ],
+                        hintText: 'E.G. STRK-24',
+                        hintStyle: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -309,22 +565,22 @@ class TeamsHubScreen extends StatelessWidget {
                 SizedBox(
                   height: 44,
                   child: ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: _handleJoinTeam,
                     icon: const Text(
                       'Join',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        color: Colors.black87,
+                        color: Colors.white,
                       ),
                     ),
                     label: const Icon(
                       Icons.arrow_forward,
                       size: 16,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE5E7EB), // Light grey
+                      backgroundColor: const Color(0xFF0F6D38),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -341,120 +597,164 @@ class TeamsHubScreen extends StatelessWidget {
   }
 
   Widget _buildYourTeamsSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+    return ValueListenableBuilder<List<PlayerTeam>>(
+      valueListenable: TeamManager().teamsNotifier,
+      builder: (context, teams, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Your Teams',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5E7EB),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      '2',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                  Row(
+                    children: [
+                      const Text(
+                        'Your Teams',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          teams.length.toString(),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  if (teams.isNotEmpty)
+                    Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF166534),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'Active',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF166534),
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF166534),
-                      shape: BoxShape.circle,
-                    ),
+            ),
+            const SizedBox(height: 16),
+            if (teams.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE5E7EB)),
                   ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Active',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF166534),
-                    ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE5F5EB),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.groups_outlined,
+                          size: 32,
+                          color: Color(0xFF0F6D38),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'No Teams Joined Yet',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Create your squad or enter a team passcode above to get started with match tracking and rosters.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7280),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
+              )
+            else
+              ...teams.map(
+                (team) => Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: _buildTeamCard(
+                    context: context,
+                    sportIcon: team.sport == 'Cricket'
+                        ? Icons.sports_cricket
+                        : (team.sport == 'Badminton'
+                            ? Icons.sports_tennis
+                            : Icons.sports_soccer),
+                    teamName: team.name,
+                    roleBadge: team.roleBadge,
+                    isCaptain: team.isCaptain,
+                    sportDetail: '${team.sport} • ${team.squadSize}',
+                    membersCount: team.membersCount.toString(),
+                    winsCount: team.winsCount.toString(),
+                    rating: team.rating,
+                    avatarsCount: '+${team.membersCount > 1 ? (team.membersCount - 1).toString() : '0'}',
+                    dateText: team.dateText,
+                    nextMatchText: team.nextMatchText,
+                    nextMatchTime: team.nextMatchTime,
+                    buttonText: 'View Roster & Strategy',
+                    onTapDetails: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TeamRosterScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildTeamCard(
-          context: context,
-          logoUrl: 'https://picsum.photos/seed/team1/150/150',
-          sportIcon: Icons.sports_soccer,
-          teamName: 'Blazing Strikers FC',
-          roleBadge: 'Captain',
-          isCaptain: true,
-          sportDetail: 'Football • 7v7 Squad',
-          membersCount: '11',
-          winsCount: '14',
-          rating: '4.9',
-          avatarsCount: '+7',
-          dateText: 'Sat, Oct 12',
-          nextMatchText: 'Weekend Turf Clash vs Red Hawks',
-          nextMatchTime: '19:30',
-          buttonText: 'View Roster & Strategy',
-          onTapDetails: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const TeamRosterScreen()),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildTeamCard(
-          context: context,
-          logoUrl: 'https://picsum.photos/seed/team2/150/150',
-          sportIcon: Icons.sports_cricket,
-          teamName: 'Thunder Smashers',
-          roleBadge: 'Vice Captain',
-          isCaptain: false,
-          sportDetail:
-              'Cricket • Box Cricket\nSquad', // Adding newline to match design
-          membersCount: '8',
-          winsCount: '8',
-          rating: '4.7',
-          avatarsCount: '+4',
-          dateText: 'Practice: Thu 8 PM',
-          nextMatchText: null, // No match bar for this one
-          nextMatchTime: null,
-          buttonText: 'View Roster & Details',
-          onTapDetails: () {},
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
   Widget _buildTeamCard({
     required BuildContext context,
-    required String logoUrl,
     required IconData sportIcon,
     required String teamName,
     required String roleBadge,
@@ -481,7 +781,6 @@ class TeamsHubScreen extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Top Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -491,12 +790,17 @@ class TeamsHubScreen extends StatelessWidget {
                     Container(
                       width: 48,
                       height: 48,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE5F5EB),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                        image: DecorationImage(
-                          image: NetworkImage(logoUrl),
-                          fit: BoxFit.cover,
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        teamName.isNotEmpty ? teamName[0].toUpperCase() : 'T',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F6D38),
                         ),
                       ),
                     ),
@@ -553,22 +857,18 @@ class TeamsHubScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (isCaptain) ...[
-                                  const Icon(
-                                    Icons.emoji_events,
-                                    size: 10,
-                                    color: Color(0xFF166534),
-                                  ),
-                                  const SizedBox(width: 4),
-                                ] else ...[
-                                  const Icon(
-                                    Icons.shield_outlined,
-                                    size: 10,
-                                    color: Colors.black54,
-                                  ),
-                                  const SizedBox(width: 4),
-                                ],
+                                Icon(
+                                  isCaptain
+                                      ? Icons.military_tech_outlined
+                                      : Icons.shield_outlined,
+                                  size: 12,
+                                  color: isCaptain
+                                      ? const Color(0xFF166534)
+                                      : const Color(0xFF6B7280),
+                                ),
+                                const SizedBox(width: 4),
                                 Text(
                                   roleBadge,
                                   style: TextStyle(
@@ -576,7 +876,7 @@ class TeamsHubScreen extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                     color: isCaptain
                                         ? const Color(0xFF166534)
-                                        : Colors.black87,
+                                        : const Color(0xFF6B7280),
                                   ),
                                 ),
                               ],
@@ -598,28 +898,32 @@ class TeamsHubScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Stats Row
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFFF9FAFB),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildStatItem(membersCount, 'Members'),
-                  _buildStatItem(
-                    winsCount,
-                    'Wins',
-                    valueColor: const Color(0xFF166534),
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: const Color(0xFFE5E7EB),
+                  ),
+                  _buildStatItem(winsCount, 'Wins'),
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: const Color(0xFFE5E7EB),
                   ),
                   _buildStatItem(rating, 'Rating', isRating: true),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            // Avatars and Date
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -630,18 +934,18 @@ class TeamsHubScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
-                        vertical: 4,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         avatarsCount,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Color(0xFF6B7280),
                         ),
                       ),
                     ),
@@ -685,7 +989,7 @@ class TeamsHubScreen extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF3F5F1), // Light green tint
+                  color: const Color(0xFFF3F5F1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -707,7 +1011,7 @@ class TeamsHubScreen extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      nextMatchTime!,
+                      nextMatchTime ?? '',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -770,9 +1074,7 @@ class TeamsHubScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isRating
-                    ? const Color(0xFFD97706)
-                    : valueColor, // Orange for rating
+                color: isRating ? const Color(0xFFD97706) : valueColor,
               ),
             ),
             if (isRating) ...[
@@ -796,35 +1098,44 @@ class TeamsHubScreen extends StatelessWidget {
 
   Widget _buildAvatarStack() {
     return SizedBox(
-      width: 70,
+      width: 60,
       height: 28,
       child: Stack(
         children: [
           Positioned(
             left: 0,
-            child: _buildAvatarItem('https://picsum.photos/seed/p1/50/50'),
+            child: _buildAvatarCircle('A', const Color(0xFF10B981)),
           ),
           Positioned(
-            left: 20,
-            child: _buildAvatarItem('https://picsum.photos/seed/p2/50/50'),
+            left: 18,
+            child: _buildAvatarCircle('B', const Color(0xFF3B82F6)),
           ),
           Positioned(
-            left: 40,
-            child: _buildAvatarItem('https://picsum.photos/seed/p3/50/50'),
+            left: 36,
+            child: _buildAvatarCircle('C', const Color(0xFFF59E0B)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAvatarItem(String url) {
+  Widget _buildAvatarCircle(String label, Color bg) {
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
+        color: bg,
         border: Border.all(color: Colors.white, width: 2),
-        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -886,7 +1197,7 @@ class TeamsHubScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F5F1), // Light green tint
+                        color: const Color(0xFFF3F5F1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -917,7 +1228,7 @@ class TeamsHubScreen extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFEE2E2), // Light red
+                                  color: const Color(0xFFFEE2E2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Text(
@@ -925,7 +1236,7 @@ class TeamsHubScreen extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFFB91C1C), // Dark red
+                                    color: Color(0xFFB91C1C),
                                   ),
                                 ),
                               ),
@@ -951,7 +1262,7 @@ class TeamsHubScreen extends StatelessWidget {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F5F1), // Light green
+                    color: const Color(0xFFF3F5F1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -985,17 +1296,24 @@ class TeamsHubScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE5E7EB),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.chat_bubble_outline,
-                        size: 20,
-                        color: Colors.black87,
+                    GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Chat with Metro Eagles captain')),
+                        );
+                      },
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE5E7EB),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.chat_bubble_outline,
+                          size: 20,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1003,7 +1321,14 @@ class TeamsHubScreen extends StatelessWidget {
                       child: SizedBox(
                         height: 44,
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Request sent to Metro Eagles captain!'),
+                                backgroundColor: Color(0xFF0F6D38),
+                              ),
+                            );
+                          },
                           icon: const Icon(Icons.person_add_alt_1, size: 18),
                           label: const Text(
                             'Request to Join',

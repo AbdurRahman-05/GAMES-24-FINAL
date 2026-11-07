@@ -3,6 +3,11 @@ import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/leaderboard_screen.dart';
 import 'package:games24_player_app/login_screen.dart';
+import 'package:games24_player_app/performance_screen.dart';
+import 'package:games24_player_app/badges_screen.dart';
+import 'package:games24_player_app/settings_screen.dart';
+import 'package:games24_player_app/support_screen.dart';
+import 'package:games24_player_app/booking_manager.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+    BookingManager().fetchBookings();
   }
 
   Future<void> _loadUserData() async {
@@ -91,6 +97,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.bar_chart_outlined,
               title: 'Performance',
               subtitle: 'Match stats, heatmaps & analytics',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PerformanceScreen()),
+                );
+              },
             ),
             const SizedBox(height: 8),
             _buildMenuItem(
@@ -111,6 +123,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.military_tech_outlined,
               title: 'Badges',
               subtitle: 'Achievements & milestone rewards',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BadgesScreen()),
+                );
+              },
             ),
             const SizedBox(height: 24),
             _buildSectionTitle('PREFERENCES & HELP'),
@@ -120,6 +138,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.settings_outlined,
               title: 'Settings',
               subtitle: 'Account details, notifications & security',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                );
+              },
             ),
             const SizedBox(height: 8),
             _buildMenuItem(
@@ -127,6 +151,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.support_agent_outlined,
               title: 'Support',
               subtitle: 'Help center & live chat assistance',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SupportScreen()),
+                );
+              },
             ),
             const SizedBox(height: 32),
             _buildLogOutButton(context),
@@ -147,7 +177,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar with Pro Badge
+          // Avatar with Member Badge
           Stack(
             children: [
               Container(
@@ -155,9 +185,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 height: 72,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: NetworkImage('https://picsum.photos/seed/user1/150/150'),
-                    fit: BoxFit.cover,
+                  color: Color(0xFF166534),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _fullName.isNotEmpty ? _fullName.substring(0, 1).toUpperCase() : 'P',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -177,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Icon(Icons.check_circle, color: Colors.white, size: 10),
                       SizedBox(width: 2),
                       Text(
-                        'Pro',
+                        'Member',
                         style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -231,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Icon(Icons.star_outline, color: Colors.orange, size: 16),
                     SizedBox(width: 4),
                     Text(
-                      '4.92 Player Rating',
+                      '5.0 Player Rating',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
@@ -249,14 +285,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildStatsRow() {
-    return Row(
-      children: [
-        _buildStatCard(icon: Icons.sports_soccer, value: '142', label: 'Total Matches'),
-        const SizedBox(width: 12),
-        _buildStatCard(icon: Icons.emoji_events_outlined, value: '98', label: 'Wins'),
-        const SizedBox(width: 12),
-        _buildStatCard(icon: Icons.local_fire_department_outlined, value: '8.4', label: 'Form Index', isOrange: true),
-      ],
+    return ValueListenableBuilder<List<Map<String, dynamic>>>(
+      valueListenable: BookingManager().bookingsNotifier,
+      builder: (context, bookings, _) {
+        final totalMatches = bookings.length;
+        final wins = totalMatches > 0 ? (totalMatches * 0.6).round() : 0;
+        final form = totalMatches > 0 ? '8.2' : '0.0';
+
+        return Row(
+          children: [
+            _buildStatCard(
+              icon: Icons.sports_soccer,
+              value: '$totalMatches',
+              label: 'Total Matches',
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              icon: Icons.emoji_events_outlined,
+              value: '$wins',
+              label: 'Wins',
+            ),
+            const SizedBox(width: 12),
+            _buildStatCard(
+              icon: Icons.local_fire_department_outlined,
+              value: form,
+              label: 'Form Index',
+              isOrange: true,
+            ),
+          ],
+        );
+      },
     );
   }
 

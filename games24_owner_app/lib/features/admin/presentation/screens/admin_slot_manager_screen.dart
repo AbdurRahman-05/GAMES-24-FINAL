@@ -914,9 +914,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               runSpacing: 8,
               children: [
                 _StatusBadge(color: AppColors.success, label: 'Available'),
-                _StatusBadge(color: Color(0xFF6B7280), label: 'Booked'),
+                _StatusBadge(color: Color(0xFFDC2626), label: 'Booked'),
                 _StatusBadge(color: AppColors.warning, label: 'Blocked'),
                 _StatusBadge(color: AppColors.primary, label: 'Offer Tag'),
+                _StatusBadge(color: Color(0xFF9CA3AF), label: 'Passed'),
               ],
             ),
             const SizedBox(height: 20),
@@ -1087,15 +1088,20 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     final dateKey = _getDateKey(_selectedDate);
                     final isBlocked = adminSlotState.getBlockedSlotsForDate(dateKey).contains(slot);
                     final isBooked = adminSlotState.getBookedSlotsForDate(dateKey).contains(slot);
+                    final isPast = AppConstants.isSlotPast(slot, _selectedDate);
                     final offerTag = adminSlotState.getDiscountedSlotsForDate(dateKey)[slot];
 
                     Color bgColor = Colors.white;
                     Color textColor = AppColors.textPrimaryLight;
                     String statusLabel = 'Available';
 
-                    if (isBooked) {
+                    if (isPast) {
                       bgColor = const Color(0xFFF3F4F6);
-                      textColor = const Color(0xFF6B7280);
+                      textColor = const Color(0xFF9CA3AF);
+                      statusLabel = isBooked ? 'Passed (Booked)' : 'Passed';
+                    } else if (isBooked) {
+                      bgColor = const Color(0xFFFEE2E2);
+                      textColor = const Color(0xFFDC2626);
                       statusLabel = 'Booked';
                     } else if (isBlocked) {
                       bgColor = AppColors.warning.withValues(alpha: 0.15);
@@ -1110,33 +1116,40 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     return SizedBox(
                       width: cardWidth,
                       child: GestureDetector(
-                        onTap: isBooked
+                        onTap: isPast
                             ? () {
-                                ToastUtils.showError(
+                                ToastUtils.showWarning(
                                   context,
-                                  "Slot $slot is already booked by customer in realtime and cannot be blocked.",
+                                  "Slot $slot has already passed for today.",
                                 );
                               }
-                            : () async {
-                                final profile = ref.read(turfProfileProvider);
-                                final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-                                final success = await ref.read(adminSlotProvider.notifier).toggleBlockSlotRealtime(adminId, slot, dateKey);
-                                if (context.mounted) {
-                                  if (success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          isBlocked ? 'Slot $slot unblocked' : 'Slot $slot blocked for maintenance',
-                                        ),
-                                        duration: const Duration(seconds: 1),
-                                      ),
+                            : isBooked
+                                ? () {
+                                    ToastUtils.showError(
+                                      context,
+                                      "Slot $slot is already booked by customer in realtime and cannot be blocked.",
                                     );
-                                  } else {
-                                    ToastUtils.showError(context, "Cannot block slot $slot (already booked or unavailable).");
                                   }
-                                }
-                              },
-                        onLongPress: isBooked
+                                : () async {
+                                    final profile = ref.read(turfProfileProvider);
+                                    final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                                    final success = await ref.read(adminSlotProvider.notifier).toggleBlockSlotRealtime(adminId, slot, dateKey);
+                                    if (context.mounted) {
+                                      if (success) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              isBlocked ? 'Slot $slot unblocked' : 'Slot $slot blocked for maintenance',
+                                            ),
+                                            duration: const Duration(seconds: 1),
+                                          ),
+                                        );
+                                      } else {
+                                        ToastUtils.showError(context, "Cannot block slot $slot (already booked or unavailable).");
+                                      }
+                                    }
+                                  },
+                        onLongPress: (isBooked || isPast)
                             ? null
                             : () => _showOfferActions(slot, offerTag),
                         child: Container(
@@ -1145,11 +1158,13 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             color: bgColor,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
-                              color: isBooked
+                              color: isPast
                                   ? const Color(0xFFE5E7EB)
-                                  : (offerTag != null
-                                      ? AppColors.primary
-                                      : (isBlocked ? AppColors.warning : AppColors.borderLight)),
+                                  : (isBooked
+                                      ? const Color(0xFFFCA5A5)
+                                      : (offerTag != null
+                                          ? AppColors.primary
+                                          : (isBlocked ? AppColors.warning : AppColors.borderLight))),
                               width: (isBlocked || offerTag != null) ? 1.5 : 1,
                             ),
                           ),
@@ -1161,13 +1176,13 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: isBooked ? const Color(0xFF9CA3AF) : textColor,
+                                  color: (isBooked || isPast) ? const Color(0xFF9CA3AF) : textColor,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 6),
-                              if (offerTag != null)
+                              if (offerTag != null && !isPast)
                                 _buildOfferContent(offerTag, textColor)
                               else if (isBooked)
                                 Row(
@@ -1176,17 +1191,17 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                                     Container(
                                       width: 6,
                                       height: 6,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFF9CA3AF),
+                                      decoration: BoxDecoration(
+                                        color: isPast ? const Color(0xFF9CA3AF) : const Color(0xFFDC2626),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
                                     const SizedBox(width: 4),
-                                    const Text(
-                                      'Booked',
+                                    Text(
+                                      isPast ? 'Passed' : 'Booked',
                                       style: TextStyle(
                                         fontSize: 10,
-                                        color: Color(0xFF6B7280),
+                                        color: isPast ? const Color(0xFF9CA3AF) : const Color(0xFFDC2626),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

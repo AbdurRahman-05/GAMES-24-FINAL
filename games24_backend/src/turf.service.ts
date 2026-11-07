@@ -70,6 +70,32 @@ export function parseSlotStartMinutes(slot: string): number {
   return hour * 60 + (isNaN(minutes) ? 0 : minutes);
 }
 
+export function getISTDateAndMinutes(): { todayStr: string; currentMinutes: number } {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date());
+    const getP = (t: string) => parts.find((p) => p.type === t)?.value || '0';
+    const todayStr = `${getP('year')}-${getP('month')}-${getP('day')}`;
+    const currentMinutes = parseInt(getP('hour'), 10) * 60 + parseInt(getP('minute'), 10);
+    return { todayStr, currentMinutes };
+  } catch (e) {
+    const now = new Date();
+    const istMs = now.getTime() + (330 + now.getTimezoneOffset()) * 60000;
+    const ist = new Date(istMs);
+    const todayStr = `${ist.getFullYear()}-${String(ist.getMonth() + 1).padStart(2, '0')}-${String(ist.getDate()).padStart(2, '0')}`;
+    const currentMinutes = ist.getHours() * 60 + ist.getMinutes();
+    return { todayStr, currentMinutes };
+  }
+}
+
 function generateTimeSlots(openingTime: string, closingTime: string): string[] {
   let startHour = parseHour(openingTime || '06:00 AM');
   let endHour = parseHour(closingTime || '11:00 PM');
@@ -235,8 +261,7 @@ export class TurfService {
     }
     const verifiedAdminId = turf.id;
 
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { todayStr, currentMinutes } = getISTDateAndMinutes();
     const targetDate = date || todayStr;
 
     const [year, month, d] = targetDate.split('-').map(Number);
@@ -290,7 +315,6 @@ export class TurfService {
       offerMap.set(off.timeSlot, off);
     }
 
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const isOwner = role?.toLowerCase() === 'owner' || role?.toLowerCase() === 'admin';
 
     // Filter slots based on date and time cutoff
@@ -335,9 +359,12 @@ export class TurfService {
     const slots = filteredSlotStrings.map((slot) => {
       const isBooked = bookedSlotMap.has(slot);
       const isBlocked = blockedSlotSet.has(slot);
+      const startMin = parseSlotStartMinutes(slot);
+      const isPast = (targetDate < todayStr) || (targetDate === todayStr && startMin !== -1 && currentMinutes >= startMin);
 
       let status = 'available';
-      if (isBooked) status = 'booked';
+      if (isPast) status = isBooked ? 'booked' : 'passed';
+      else if (isBooked) status = 'booked';
       else if (isBlocked) status = 'blocked';
 
       // Parse starting hour to check if Night slot (06:00 PM to 06:00 AM)
@@ -406,6 +433,7 @@ export class TurfService {
         slot,
         time: slot,
         status,
+        isPast,
         originalPrice: price,
         price: finalPrice,
         rateType,
@@ -447,13 +475,11 @@ export class TurfService {
     }
 
     // Validate that slot is not in the past or within 5-minute cutoff
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { todayStr, currentMinutes } = getISTDateAndMinutes();
     if (date < todayStr) {
       throw new BadRequestException('Cannot book slots for a past date');
     }
     if (date === todayStr) {
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
       const startMin = parseSlotStartMinutes(timeSlot);
       if (startMin !== -1 && currentMinutes >= startMin - 5) {
         throw new BadRequestException('This slot is no longer available for booking (booking closes 5 minutes before slot start time)');
@@ -544,7 +570,7 @@ export class TurfService {
     }
 
     // Automatically update AdminDashboard metrics based on actual database bookings
-    const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const monthPrefix = todayStr.substring(0, 7);
 
     const allBookings = await this.prisma.turfBooking.findMany({
       where: { verifiedAdminId, status: { not: 'Cancelled' } },

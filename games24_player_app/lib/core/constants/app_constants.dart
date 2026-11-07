@@ -84,4 +84,31 @@ class AppConstants {
 
     return result.isEmpty ? full24HourSlots : result;
   }
+
+  static int parseSlotStartMinutes(String slot) {
+    final startPart = slot.split('-').first.trim();
+    final parts = startPart.split(' ');
+    if (parts.isEmpty) return -1;
+    final timeParts = parts[0].split(':');
+    int hour = int.tryParse(timeParts[0]) ?? -1;
+    int minute = timeParts.length > 1 ? (int.tryParse(timeParts[1]) ?? 0) : 0;
+    if (hour == -1) return -1;
+    final ampm = parts.length > 1 ? parts[1].toUpperCase() : '';
+    if (ampm == 'PM' && hour != 12) hour += 12;
+    if (ampm == 'AM' && hour == 12) hour = 0;
+    return hour * 60 + minute;
+  }
+
+  static bool isSlotPast(String slot, DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+    if (target.isBefore(today)) return true;
+    if (target.isAfter(today)) return false;
+
+    final startMin = parseSlotStartMinutes(slot);
+    if (startMin == -1) return false;
+    final currentMinutes = now.hour * 60 + now.minute;
+    return currentMinutes >= startMin;
+  }
 }

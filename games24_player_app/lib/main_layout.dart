@@ -4,6 +4,7 @@ import 'tournaments_screen.dart';
 import 'create_tournament_dialog.dart';
 import 'explore_screen.dart';
 import 'profile_screen.dart';
+import 'notifications_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -78,7 +79,12 @@ class _MainLayoutState extends State<MainLayout> {
             Icons.notifications_none_outlined,
             color: Colors.black87,
           ),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            );
+          },
         ),
         const SizedBox(width: 8),
         GestureDetector(
