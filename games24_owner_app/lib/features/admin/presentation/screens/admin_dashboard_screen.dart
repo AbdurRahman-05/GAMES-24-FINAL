@@ -111,6 +111,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final theme = Theme.of(context);
     final profile = ref.watch(turfProfileProvider);
 
+    // If subscription has totally ended: owner side access is completely BLOCKED!
+    if (profile.isSubscriptionBlocked) {
+      return _buildBlockedAccessScaffold(context, profile);
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6FAF7),
       appBar: AppBar(
@@ -390,21 +395,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   Widget _buildSubscriptionBanner(BuildContext context, TurfProfileState profile) {
-    final isActive = profile.isSubscriptionActive;
+    // Only show reminder on Home page when 3 days or fewer left before subscription ends!
+    // When healthy (> 3 days left), home page stays clean and starts with KPIs!
+    if (!profile.isSubscriptionEndingSoon) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isActive ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
+        color: const Color(0xFFFFFBEB),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isActive ? const Color(0xFF86EFAC) : const Color(0xFFFCA5A5),
-          width: 1.2,
+          color: const Color(0xFFFCD34D),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isActive ? Colors.green : Colors.red).withValues(alpha: 0.05),
+            color: Colors.amber.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -417,13 +426,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3C7),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  isActive ? Icons.verified_rounded : Icons.warning_amber_rounded,
-                  color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                child: const Icon(
+                  Icons.timer_outlined,
+                  color: Color(0xFFD97706),
                   size: 20,
                 ),
               ),
@@ -433,21 +442,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isActive ? 'Platform Subscription: Active' : 'Subscription Expired • Turf Hidden',
-                      style: TextStyle(
+                      '⚠️ Subscription Renews in ${profile.subscriptionDaysRemaining} Day(s)',
+                      style: const TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w800,
-                        color: isActive ? const Color(0xFF166534) : const Color(0xFF991B1B),
+                        color: Color(0xFF92400E),
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      isActive
-                          ? 'Turf is LIVE on Player App • ₹1,000 + 18% GST (₹1,180/mo)'
-                          : 'Turf is HIDDEN from players. Pay ₹1,000 + GST to go live.',
-                      style: TextStyle(
+                      'Renews on ${profile.subscriptionRenewDate}. Pay ₹1,180 to avoid turf deactivation.',
+                      style: const TextStyle(
                         fontSize: 11,
-                        color: isActive ? const Color(0xFF15803D) : const Color(0xFFB91C1C),
+                        color: Color(0xFFB45309),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -460,19 +467,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                isActive
-                    ? 'Renews: ${profile.subscriptionRenewDate}'
-                    : 'Amount Due: ₹1,180/mo',
+              const Text(
+                'Amount: ₹1,180 (Base ₹1,000 + GST)',
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: isActive ? const Color(0xFF374151) : const Color(0xFFDC2626),
+                  color: Color(0xFF92400E),
                 ),
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isActive ? const Color(0xFF166534) : const Color(0xFFDC2626),
+                  backgroundColor: const Color(0xFFD97706),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   minimumSize: Size.zero,
@@ -481,9 +486,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   elevation: 0,
                 ),
                 onPressed: () => _openSubscriptionDialog(context, profile),
-                child: Text(
-                  isActive ? 'Subscription Details' : 'Pay ₹1,180 & Go Live ⚡',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                child: const Text(
+                  'Renew Now (₹1,180)',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -491,6 +496,218 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildBlockedAccessScaffold(BuildContext context, TurfProfileState profile) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9FAFB),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 30),
+            const SizedBox(width: 8),
+            const Text(
+              'Games24 Partner Hub',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF111827),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.logout_rounded, color: Colors.red.shade700, size: 18),
+            ),
+            onPressed: () => _handleLogout(context),
+            tooltip: 'Log Out',
+          ),
+        ],
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFF87171), width: 2),
+                ),
+                child: const Icon(Icons.lock_clock_rounded, size: 48, color: Color(0xFFDC2626)),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Owner Access Blocked',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF991B1B),
+                  letterSpacing: -0.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDC2626).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'SUBSCRIPTION EXPIRED • TURF HIDDEN',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFFDC2626),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Your monthly platform subscription for "${profile.venueName.isNotEmpty ? profile.venueName : 'Your Turf'}" has ended.\n\nYour turf is currently HIDDEN from players on the Games24 Player App and owner hub access is locked until renewed.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563), height: 1.5),
+              ),
+              const SizedBox(height: 24),
+              // Fee breakdown
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: const [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Platform Listing Fee', style: TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+                        Text('₹1,000.00', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Applicable GST (18%)', style: TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
+                        Text('₹180.00', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    Divider(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total Amount Due', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+                        Text('₹1,180 / month', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF166534))),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF166534),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 2,
+                  ),
+                  icon: const Icon(Icons.bolt_rounded, size: 20),
+                  label: const Text(
+                    'Pay ₹1,180 & Unlock Access Now ⚡',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  onPressed: () async {
+                    final success = await ref.read(turfProfileProvider.notifier).payPlatformSubscription();
+                    if (context.mounted && success) {
+                      ToastUtils.showSuccess(
+                        context,
+                        "Subscription renewed! Dashboard access unlocked and turf is now LIVE on Player App.",
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  ref.read(turfProfileProvider.notifier).setSubscriptionDays(30);
+                  ToastUtils.showSuccess(context, "Testing: Subscription reset to Active (30 days remaining).");
+                },
+                child: const Text('Quick Test: Unlock for 30 Days (Demo)', style: TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleLogout(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Are you sure you want to log out of the Partner Hub?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Log Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('owner_logged_in', false);
+    await prefs.remove('owner_phone');
+    await prefs.remove('verified_admin_data');
+    await prefs.remove('owner_venue_name');
+    ref.read(isAdminModeProvider.notifier).setMode(false);
+    if (context.mounted) {
+      context.go('/login');
+    }
   }
 
   void _openSubscriptionDialog(BuildContext context, TurfProfileState profile) {

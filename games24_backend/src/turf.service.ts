@@ -1,4 +1,23 @@
 
+import fs from 'fs';
+import path from 'path';
+
+export interface TurfSportConfig {
+  name: string;
+  hourlyRate: number;
+  weekdayRate: number;
+  weekendRate: number;
+  nightRate: number;
+  courtsAvailable: number;
+}
+
+export const DEFAULT_TURF_SPORTS: TurfSportConfig[] = [
+  { name: 'Cricket', hourlyRate: 1000.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 2 },
+  { name: 'Football', hourlyRate: 1400.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 2 },
+  { name: 'Pickle ball', hourlyRate: 800.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 2 },
+  { name: 'Badminton', hourlyRate: 450.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 4 },
+];
+
 function normalizePhotoList(urls: any): string[] {
   if (!Array.isArray(urls) || urls.length === 0) {
     return ['https://picsum.photos/seed/turf1/800/400'];
@@ -112,6 +131,77 @@ function generateTimeSlots(openingTime: string, closingTime: string): string[] {
 export class TurfService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private turfSportsStore: Record<number, TurfSportConfig[]> = {};
+  private sportsFilePath = path.resolve(process.cwd(), 'turf_sports_data.json');
+
+  private ensureSportsLoaded(): void {
+    if (Object.keys(this.turfSportsStore).length > 0) return;
+    try {
+      if (fs.existsSync(this.sportsFilePath)) {
+        const raw = fs.readFileSync(this.sportsFilePath, 'utf8');
+        this.turfSportsStore = JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error('Error loading turf sports data file:', e);
+    }
+  }
+
+  private persistSportsToFile(): void {
+    try {
+      fs.writeFileSync(this.sportsFilePath, JSON.stringify(this.turfSportsStore, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Error persisting turf sports data to file:', e);
+    }
+  }
+
+  getSportsForTurf(turfId: number): TurfSportConfig[] {
+    this.ensureSportsLoaded();
+    if (this.turfSportsStore[turfId] && this.turfSportsStore[turfId].length > 0) {
+      return this.turfSportsStore[turfId];
+    }
+    return DEFAULT_TURF_SPORTS;
+  }
+
+  saveSportsForTurf(turfId: number, sports: any[]): TurfSportConfig[] {
+    this.ensureSportsLoaded();
+    if (Array.isArray(sports) && sports.length > 0) {
+      const sanitized: TurfSportConfig[] = sports.map((s: any) => ({
+        name: String(s.name || 'Football'),
+        hourlyRate: Number(s.hourlyRate || s.dayRate || 1000.0),
+        weekdayRate: Number(s.weekdayRate || 1200.0),
+        weekendRate: Number(s.weekendRate || 1600.0),
+        nightRate: Number(s.nightRate || 1400.0),
+        courtsAvailable: Number(s.courtsAvailable || 1),
+      }));
+      this.turfSportsStore[turfId] = sanitized;
+      this.persistSportsToFile();
+      return sanitized;
+    }
+    return this.getSportsForTurf(turfId);
+  }
+
+  async getTurfSports(turfId: number) {
+    const sportsList = this.getSportsForTurf(turfId);
+    return {
+      success: true,
+      turfId,
+      sports: sportsList.map(s => s.name),
+      sportsList,
+    };
+  }
+
+  async saveTurfSports(turfId: number, body: any) {
+    const rawSports = Array.isArray(body) ? body : (body?.sports || body?.sportsList || []);
+    const updated = this.saveSportsForTurf(turfId, rawSports);
+    return {
+      success: true,
+      turfId,
+      message: 'Sports configuration and rates saved successfully',
+      sports: updated.map(s => s.name),
+      sportsList: updated,
+    };
+  }
+
   private async findVerifiedAdmin(id: number, includeDashboard = true, includeBookingsAndBlocked = false): Promise<any> {
     const include: any = {};
     if (includeDashboard) include.dashboard = true;
@@ -206,7 +296,8 @@ export class TurfService {
         currentRate: currentPrice,
         rating: '4.9',
         reviews: '128',
-        sports: ['Football', 'Box Cricket', 'Badminton'],
+        sports: this.getSportsForTurf(t.id).map(s => s.name),
+        sportsList: this.getSportsForTurf(t.id),
       };
     });
   }
@@ -223,6 +314,8 @@ export class TurfService {
     const amenities = Array.isArray(turf.amenities) && turf.amenities.length > 0
       ? turf.amenities
       : ['Drinking Water', 'Parking', 'Floodlights', 'Restroom'];
+
+    const sportsItems = this.getSportsForTurf(turf.id);
 
     return {
       id: turf.id,
@@ -247,14 +340,15 @@ export class TurfService {
       price: `₹${(turf.dayRate || 1000).toLocaleString('en-IN')}`,
       rating: '4.9',
       reviews: '128',
-      sports: ['Football', 'Box Cricket', 'Badminton'],
+      sports: sportsItems.map(s => s.name),
+      sportsList: sportsItems,
       dashboard: turf.dashboard,
       bookings: turf.bookings,
       blockedSlots: turf.blockedSlots,
     };
   }
 
-  async getTurfSlots(id: number, date?: string, role?: string) {
+  async getTurfSlots(id: number, date?: string, role?: string, sport?: string) {
     const turf = await this.findVerifiedAdmin(id, true, false);
 
     if (!turf) {
@@ -274,10 +368,22 @@ export class TurfService {
     const dayOfWeek = dateObj.getDay(); // 0 is Sunday, 6 is Saturday
     const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
 
-    const dayRate = turf.dayRate || 1000.0;
-    const nightRate = turf.nightRate || 1400.0;
-    const weekdayRate = turf.weekdayRate || 1200.0;
-    const weekendRate = turf.weekendRate || 1600.0;
+    const sportsItems = this.getSportsForTurf(verifiedAdminId);
+    let matchedSport: TurfSportConfig | undefined;
+    if (sport) {
+      matchedSport = sportsItems.find(s => s.name.toLowerCase() === sport.toLowerCase());
+      if (!matchedSport) {
+        matchedSport = sportsItems.find(s =>
+          s.name.toLowerCase().includes(sport.toLowerCase()) ||
+          sport.toLowerCase().includes(s.name.toLowerCase())
+        );
+      }
+    }
+
+    const dayRate = matchedSport ? matchedSport.hourlyRate : (turf.dayRate || 1000.0);
+    const nightRate = matchedSport ? matchedSport.nightRate : (turf.nightRate || 1400.0);
+    const weekdayRate = matchedSport ? matchedSport.weekdayRate : (turf.weekdayRate || 1200.0);
+    const weekendRate = matchedSport ? matchedSport.weekendRate : (turf.weekendRate || 1600.0);
 
     const openingTime = turf.dashboard?.openingTime || '06:00 AM';
     const closingTime = turf.dashboard?.closingTime || '10:00 PM';
@@ -494,6 +600,10 @@ export class TurfService {
     const turf = await this.findVerifiedAdmin(id, true, false);
     if (!turf) {
       throw new NotFoundException(`Turf #${id} not found`);
+    }
+
+    if (turf.isBookingHold || turf.status !== 'VERIFIED') {
+      throw new BadRequestException('This turf is currently inactive due to expired platform subscription and cannot accept bookings.');
     }
 
     const verifiedAdminId = turf.id;
@@ -959,6 +1069,34 @@ export class TurfService {
       month: 'short',
       year: 'numeric',
     });
+    const daysRemaining = isSubscribed ? 30 : 0;
+    const isEndingSoon = isSubscribed && daysRemaining <= 3 && daysRemaining > 0;
+    const isBlocked = !isSubscribed || daysRemaining <= 0;
+
+    const history = [
+      {
+        id: 'SUB-2026-11',
+        date: '07 Nov 2026, 10:15 AM',
+        baseAmount: 1000.0,
+        gstAmount: 180.0,
+        totalAmount: 1180.0,
+        paymentMethod: 'UPI (GPay)',
+        status: isSubscribed ? 'Paid & Active' : 'Expired',
+        validPeriod: '07 Nov 2026 - 07 Dec 2026',
+        receiptNumber: 'RCP-SUB-84920',
+      },
+      {
+        id: 'SUB-2026-10',
+        date: '07 Oct 2026, 11:30 AM',
+        baseAmount: 1000.0,
+        gstAmount: 180.0,
+        totalAmount: 1180.0,
+        paymentMethod: 'UPI (PhonePe)',
+        status: 'Completed',
+        validPeriod: '07 Oct 2026 - 07 Nov 2026',
+        receiptNumber: 'RCP-SUB-72109',
+      },
+    ];
 
     return {
       turfId: turf.id,
@@ -973,8 +1111,12 @@ export class TurfService {
       isSubscriptionActive: isSubscribed,
       status: isSubscribed ? 'ACTIVE' : 'EXPIRED',
       isLiveOnPlayerApp: isSubscribed,
+      daysRemaining,
+      isEndingSoon,
+      isBlocked,
       billingCycle: 'Monthly',
       nextBillingDate: renewDateStr,
+      history,
       description: 'Platform listing fee for turf discovery and slot bookings on Games24 Player App.',
     };
   }
@@ -1003,9 +1145,21 @@ export class TurfService {
       year: 'numeric',
     });
 
+    const newPayment = {
+      id: `SUB-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+      date: now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      baseAmount: 1000.0,
+      gstAmount: 180.0,
+      totalAmount: 1180.0,
+      paymentMethod: body?.paymentMethod || 'UPI (GPay)',
+      status: 'Paid & Active',
+      validPeriod: `${now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} - ${renewDateStr}`,
+      receiptNumber: `RCP-SUB-${now.getTime() % 100000}`,
+    };
+
     return {
       success: true,
-      message: 'Monthly subscription of ₹1,180 (₹1,000 + 18% GST) paid successfully. Your turf is now LIVE on Games24 Player App!',
+      message: 'Monthly subscription of ₹1,180 (₹1,000 + 18% GST) paid successfully. Your turf is now LIVE on Games24 Player App and owner access is unlocked!',
       subscription: {
         turfId: updated.id,
         venueName: updated.venueName,
@@ -1016,10 +1170,14 @@ export class TurfService {
         isSubscriptionActive: true,
         status: 'ACTIVE',
         isLiveOnPlayerApp: true,
+        daysRemaining: 30,
+        isEndingSoon: false,
+        isBlocked: false,
         paidAt: now.toISOString(),
         paymentMethod: body?.paymentMethod || 'UPI',
         utr: body?.utr || `UPI${Date.now()}`,
         nextBillingDate: renewDateStr,
+        newPayment,
       },
     };
   }

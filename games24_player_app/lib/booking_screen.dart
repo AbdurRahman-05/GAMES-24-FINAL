@@ -18,6 +18,7 @@ class BookingScreen extends StatefulWidget {
   final List<String>? amenities;
   final String? openingTime;
   final String? closingTime;
+  final List<dynamic>? sportsList;
 
   const BookingScreen({
     super.key,
@@ -27,6 +28,7 @@ class BookingScreen extends StatefulWidget {
     required this.price,
     required this.location,
     required this.sports,
+    this.sportsList,
     this.photoUrls,
     this.amenities,
     this.openingTime,
@@ -110,6 +112,20 @@ class _BookingScreenState extends State<BookingScreen> {
     super.dispose();
   }
 
+  double _getSportHourlyRate(String sportName) {
+    if (widget.sportsList != null) {
+      for (final s in widget.sportsList!) {
+        if (s is Map &&
+            s['name']?.toString().toLowerCase().trim() ==
+                sportName.toLowerCase().trim()) {
+          final rate = double.tryParse(s['hourlyRate']?.toString() ?? '');
+          if (rate != null && rate > 0) return rate;
+        }
+      }
+    }
+    return double.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1000.0;
+  }
+
   Future<void> _loadSlots() async {
     if (!mounted) return;
     setState(() => _isLoadingSlots = true);
@@ -124,10 +140,11 @@ class _BookingScreenState extends State<BookingScreen> {
 
     if (effectiveTurfId != null) {
       try {
+        final encodedSport = Uri.encodeComponent(_selectedSport);
         final res = await http
             .get(
               Uri.parse(
-                '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/slots?date=$targetDate',
+                '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/slots?date=$targetDate&sport=$encodedSport',
               ),
             )
             .timeout(const Duration(seconds: 5));
@@ -135,9 +152,7 @@ class _BookingScreenState extends State<BookingScreen> {
         if (res.statusCode == 200) {
           final json = jsonDecode(res.body);
           if (json['slots'] is List) {
-            final rawPrice =
-                int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ??
-                1200;
+            final rawPrice = _getSportHourlyRate(_selectedSport).toInt();
             if (!mounted) return;
             setState(() {
               _slots = (json['slots'] as List)
@@ -624,19 +639,31 @@ class _BookingScreenState extends State<BookingScreen> {
             itemBuilder: (context, index) {
               final sport = widget.sports[index];
               final isSelected = _selectedSport == sport;
+              final sLower = sport.toLowerCase();
               IconData iconData = Icons.sports_soccer;
-              if (sport.toLowerCase().contains('cricket')) {
+              if (sLower.contains('cricket')) {
                 iconData = Icons.sports_cricket;
-              }
-              if (sport.toLowerCase().contains('badminton')) {
+              } else if (sLower.contains('badminton')) {
                 iconData = Icons.sports_tennis;
-              }
-              if (sport.toLowerCase().contains('basketball')) {
+              } else if (sLower.contains('pickle')) {
+                iconData = Icons.sports_tennis_rounded;
+              } else if (sLower.contains('tennis')) {
+                iconData = Icons.sports_tennis;
+              } else if (sLower.contains('basketball')) {
                 iconData = Icons.sports_basketball;
               }
+              final rate = _getSportHourlyRate(sport).toInt();
 
               return GestureDetector(
-                onTap: () => setState(() => _selectedSport = sport),
+                onTap: () {
+                  if (_selectedSport != sport) {
+                    setState(() {
+                      _selectedSport = sport;
+                      _selectedTimeSlots.clear();
+                    });
+                    _loadSlots();
+                  }
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -658,7 +685,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        sport,
+                        '$sport • ₹$rate/hr',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected
@@ -1307,8 +1334,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   int _calculateCourtFee() {
-    final rawPrice =
-        int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
+    final rawPrice = _getSportHourlyRate(_selectedSport).toInt();
     int fee = 0;
     for (final s in _selectedTimeSlots) {
       Map<String, dynamic>? slotObj;

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Query,
   Body,
@@ -43,8 +44,30 @@ export class TurfController {
     @Param('id', ParseIntPipe) id: number,
     @Query('date') date?: string,
     @Query('role') role?: string,
+    @Query('sport') sport?: string,
   ) {
-    return this.turfService.getTurfSlots(id, date, role);
+    return this.turfService.getTurfSlots(id, date, role, sport);
+  }
+
+  @Get(':id/sports')
+  async getTurfSports(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.getTurfSports(id);
+  }
+
+  @Post(':id/sports')
+  async saveTurfSportsPost(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.saveTurfSports(id, body);
+  }
+
+  @Patch(':id/sports')
+  async saveTurfSportsPatch(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.saveTurfSports(id, body);
   }
 
   @Post(':id/book')

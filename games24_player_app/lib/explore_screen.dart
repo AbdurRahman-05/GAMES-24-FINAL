@@ -175,7 +175,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         final List<String> sportsList = (turf['sports'] is List)
             ? (turf['sports'] as List).map((e) => e.toString()).toList()
             : (turf['sports']?.toString().split(' • ') ??
-                  ['Football', 'Cricket']);
+                  ['Cricket', 'Football', 'Pickle ball', 'Badminton']);
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -252,7 +252,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           .map((e) => e.toString())
                           .toList()
                     : (option['sports']?.toString().split(' • ') ??
-                          ['Football', 'Cricket']);
+                          ['Cricket', 'Football', 'Pickle ball', 'Badminton']);
 
                 Navigator.push(
                   context,
@@ -390,6 +390,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
           _buildChip('Football', Icons.sports_soccer),
           const SizedBox(width: 8),
           _buildChip('Cricket', Icons.sports_cricket),
+          const SizedBox(width: 8),
+          _buildChip('Pickle ball', Icons.sports_tennis_rounded),
+          const SizedBox(width: 8),
+          _buildChip('Badminton', Icons.sports_tennis),
           const SizedBox(width: 8),
           _buildChip('Tennis', Icons.sports_tennis),
           const SizedBox(width: 8),

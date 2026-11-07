@@ -340,6 +340,82 @@ class TurfSportItem {
       courtsAvailable: courtsAvailable ?? this.courtsAvailable,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'hourlyRate': hourlyRate,
+    'weekdayRate': weekdayRate,
+    'weekendRate': weekendRate,
+    'nightRate': nightRate,
+    'courtsAvailable': courtsAvailable,
+  };
+
+  factory TurfSportItem.fromJson(Map<String, dynamic> json) => TurfSportItem(
+    name: json['name']?.toString() ?? 'Football',
+    hourlyRate: (json['hourlyRate'] is num)
+        ? (json['hourlyRate'] as num).toDouble()
+        : (double.tryParse(json['hourlyRate']?.toString() ?? '') ?? 1000.0),
+    weekdayRate: (json['weekdayRate'] is num)
+        ? (json['weekdayRate'] as num).toDouble()
+        : (double.tryParse(json['weekdayRate']?.toString() ?? '') ?? 1200.0),
+    weekendRate: (json['weekendRate'] is num)
+        ? (json['weekendRate'] as num).toDouble()
+        : (double.tryParse(json['weekendRate']?.toString() ?? '') ?? 1600.0),
+    nightRate: (json['nightRate'] is num)
+        ? (json['nightRate'] as num).toDouble()
+        : (double.tryParse(json['nightRate']?.toString() ?? '') ?? 1400.0),
+    courtsAvailable: (json['courtsAvailable'] is num)
+        ? (json['courtsAvailable'] as num).toInt()
+        : (int.tryParse(json['courtsAvailable']?.toString() ?? '') ?? 2),
+  );
+}
+
+class SubscriptionPaymentItem {
+  final String id;
+  final String date;
+  final double baseAmount;
+  final double gstAmount;
+  final double totalAmount;
+  final String paymentMethod;
+  final String status;
+  final String validPeriod;
+  final String receiptNumber;
+
+  const SubscriptionPaymentItem({
+    required this.id,
+    required this.date,
+    required this.baseAmount,
+    required this.gstAmount,
+    required this.totalAmount,
+    required this.paymentMethod,
+    required this.status,
+    required this.validPeriod,
+    required this.receiptNumber,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'date': date,
+    'baseAmount': baseAmount,
+    'gstAmount': gstAmount,
+    'totalAmount': totalAmount,
+    'paymentMethod': paymentMethod,
+    'status': status,
+    'validPeriod': validPeriod,
+    'receiptNumber': receiptNumber,
+  };
+
+  factory SubscriptionPaymentItem.fromJson(Map<String, dynamic> json) => SubscriptionPaymentItem(
+    id: json['id']?.toString() ?? 'SUB-01',
+    date: json['date']?.toString() ?? '07 Nov 2026',
+    baseAmount: (json['baseAmount'] is num) ? (json['baseAmount'] as num).toDouble() : 1000.0,
+    gstAmount: (json['gstAmount'] is num) ? (json['gstAmount'] as num).toDouble() : 180.0,
+    totalAmount: (json['totalAmount'] is num) ? (json['totalAmount'] as num).toDouble() : 1180.0,
+    paymentMethod: json['paymentMethod']?.toString() ?? 'UPI (GPay)',
+    status: json['status']?.toString() ?? 'Paid & Active',
+    validPeriod: json['validPeriod']?.toString() ?? '07 Nov 2026 - 07 Dec 2026',
+    receiptNumber: json['receiptNumber']?.toString() ?? 'RCP-SUB-84920',
+  );
 }
 
 class TurfProfileState {
@@ -405,6 +481,14 @@ class TurfProfileState {
   final double subscriptionTotalFee;
   final String subscriptionRenewDate;
   final bool isBookingHold;
+  final int subscriptionDaysRemaining;
+  final List<SubscriptionPaymentItem> subscriptionHistory;
+
+  bool get isSubscriptionEndingSoon =>
+      isSubscriptionActive && !isBookingHold && subscriptionDaysRemaining <= 3 && subscriptionDaysRemaining > 0;
+
+  bool get isSubscriptionBlocked =>
+      !isSubscriptionActive || isBookingHold || subscriptionDaysRemaining <= 0;
 
   const TurfProfileState({
     this.ownerName = 'Karthikeyan M',
@@ -500,6 +584,31 @@ class TurfProfileState {
     this.subscriptionTotalFee = 1180.0,
     this.subscriptionRenewDate = '07 Dec 2026',
     this.isBookingHold = false,
+    this.subscriptionDaysRemaining = 30,
+    this.subscriptionHistory = const [
+      SubscriptionPaymentItem(
+        id: 'SUB-2026-11',
+        date: '07 Nov 2026, 10:15 AM',
+        baseAmount: 1000.0,
+        gstAmount: 180.0,
+        totalAmount: 1180.0,
+        paymentMethod: 'UPI (GPay)',
+        status: 'Paid & Active',
+        validPeriod: '07 Nov 2026 - 07 Dec 2026',
+        receiptNumber: 'RCP-SUB-84920',
+      ),
+      SubscriptionPaymentItem(
+        id: 'SUB-2026-10',
+        date: '07 Oct 2026, 11:30 AM',
+        baseAmount: 1000.0,
+        gstAmount: 180.0,
+        totalAmount: 1180.0,
+        paymentMethod: 'UPI (PhonePe)',
+        status: 'Completed',
+        validPeriod: '07 Oct 2026 - 07 Nov 2026',
+        receiptNumber: 'RCP-SUB-72109',
+      ),
+    ],
   });
 
   TurfProfileState copyWith({
@@ -559,6 +668,8 @@ class TurfProfileState {
     double? subscriptionTotalFee,
     String? subscriptionRenewDate,
     bool? isBookingHold,
+    int? subscriptionDaysRemaining,
+    List<SubscriptionPaymentItem>? subscriptionHistory,
   }) {
     return TurfProfileState(
       ownerName: ownerName ?? this.ownerName,
@@ -617,6 +728,8 @@ class TurfProfileState {
       subscriptionTotalFee: subscriptionTotalFee ?? this.subscriptionTotalFee,
       subscriptionRenewDate: subscriptionRenewDate ?? this.subscriptionRenewDate,
       isBookingHold: isBookingHold ?? this.isBookingHold,
+      subscriptionDaysRemaining: subscriptionDaysRemaining ?? this.subscriptionDaysRemaining,
+      subscriptionHistory: subscriptionHistory ?? this.subscriptionHistory,
     );
   }
 }
@@ -637,6 +750,20 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         if (data is Map<String, dynamic>) {
           setFromVerifiedAdmin(data, saveToStorage: false);
           return;
+        }
+      }
+      final savedHistory = prefs.getString('subscription_history');
+      if (savedHistory != null && savedHistory.isNotEmpty) {
+        final List hList = jsonDecode(savedHistory);
+        final history = hList.map((i) => SubscriptionPaymentItem.fromJson(Map<String, dynamic>.from(i))).toList();
+        state = state.copyWith(subscriptionHistory: history);
+      }
+      final savedSports = prefs.getString('owner_sports_data');
+      if (savedSports != null && savedSports.isNotEmpty) {
+        final List sList = jsonDecode(savedSports);
+        final sports = sList.map((i) => TurfSportItem.fromJson(Map<String, dynamic>.from(i))).toList();
+        if (sports.isNotEmpty) {
+          state = state.copyWith(sports: sports);
         }
       }
       final phone = prefs.getString('owner_phone');
@@ -706,6 +833,20 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     final aadhaarDocUrl = data['aadhaarDocUrl']?.toString();
     final panDocUrl = data['panDocUrl']?.toString();
     final gstDocUrl = data['gstDocUrl']?.toString();
+
+    // Parse real dynamic sports configured for this turf if provided
+    List<TurfSportItem> parsedSports = [];
+    if (data['sportsList'] is List && (data['sportsList'] as List).isNotEmpty) {
+      parsedSports = (data['sportsList'] as List).map((i) {
+        if (i is Map<String, dynamic>) return TurfSportItem.fromJson(i);
+        if (i is Map) return TurfSportItem.fromJson(Map<String, dynamic>.from(i));
+        return TurfSportItem(name: i.toString(), hourlyRate: 1000.0, courtsAvailable: 2);
+      }).toList();
+    } else if (data['sports'] is List && (data['sports'] as List).isNotEmpty) {
+      parsedSports = (data['sports'] as List).map((name) {
+        return TurfSportItem(name: name.toString(), hourlyRate: 1000.0, courtsAvailable: 2);
+      }).toList();
+    }
 
     // Dynamically tailored courts based on real venue name
     final courts = [
@@ -812,6 +953,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       nightRate: double.tryParse(data['nightRate']?.toString() ?? '') ?? state.nightRate,
       weekdayRate: double.tryParse(data['weekdayRate']?.toString() ?? '') ?? state.weekdayRate,
       weekendRate: double.tryParse(data['weekendRate']?.toString() ?? '') ?? state.weekendRate,
+      sports: parsedSports.isNotEmpty ? parsedSports : state.sports,
       kycVerified: true,
       courts: courts,
       bookingHistory: bookingHistory,
@@ -926,6 +1068,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   void addSport(TurfSportItem sport) {
     final updatedSports = List<TurfSportItem>.from(state.sports)..add(sport);
     state = state.copyWith(sports: updatedSports);
+    _saveSports(updatedSports);
   }
 
   void updateSportRate(
@@ -947,6 +1090,24 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       return s;
     }).toList();
     state = state.copyWith(sports: updatedSports);
+    _saveSports(updatedSports);
+  }
+
+  Future<void> _saveSports(List<TurfSportItem> sports) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = jsonEncode(sports.map((s) => s.toJson()).toList());
+      await prefs.setString('owner_sports_data', jsonStr);
+
+      final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
+      await http.patch(
+        Uri.parse('${ApiConfig.baseUrl}/turfs/$id/sports'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'sports': sports.map((s) => s.toJson()).toList()}),
+      );
+    } catch (e) {
+      debugPrint("Error persisting owner sports: $e");
+    }
   }
 
   void addCourtVenue(TurfCourtVenueItem court) {
@@ -1074,7 +1235,17 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     return false;
   }
 
-  Future<bool> payPlatformSubscription({String paymentMethod = 'UPI'}) async {
+  void setSubscriptionDays(int days) {
+    final isBlocked = days <= 0;
+    state = state.copyWith(
+      subscriptionDaysRemaining: days,
+      isSubscriptionActive: !isBlocked,
+      isBookingHold: isBlocked,
+      subscriptionStatus: isBlocked ? 'EXPIRED' : 'ACTIVE',
+    );
+  }
+
+  Future<bool> payPlatformSubscription({String paymentMethod = 'UPI (GPay)'}) async {
     try {
       final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
       await http.post(
@@ -1085,18 +1256,41 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           'amount': 1180.0,
         }),
       );
+    } catch (e) {
+      debugPrint("Error paying platform subscription on server: $e");
+    }
 
-      final now = DateTime.now();
-      final nextMonth = DateTime(now.year, now.month + 1, now.day);
-      final renewStr = DateFormat('dd MMM yyyy').format(nextMonth);
+    final now = DateTime.now();
+    final nextMonth = DateTime(now.year, now.month + 1, now.day);
+    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(now);
+    final renewStr = DateFormat('dd MMM yyyy').format(nextMonth);
+    final periodStr = '${DateFormat('dd MMM yyyy').format(now)} - $renewStr';
+    final receiptNum = 'RCP-SUB-${now.millisecondsSinceEpoch % 100000}';
 
-      state = state.copyWith(
-        isSubscriptionActive: true,
-        isBookingHold: false,
-        subscriptionStatus: 'ACTIVE',
-        subscriptionRenewDate: renewStr,
-      );
+    final newPayment = SubscriptionPaymentItem(
+      id: 'SUB-${now.year}-${now.month.toString().padLeft(2, '0')}',
+      date: dateStr,
+      baseAmount: 1000.0,
+      gstAmount: 180.0,
+      totalAmount: 1180.0,
+      paymentMethod: paymentMethod,
+      status: 'Paid & Active',
+      validPeriod: periodStr,
+      receiptNumber: receiptNum,
+    );
 
+    final updatedHistory = [newPayment, ...state.subscriptionHistory];
+
+    state = state.copyWith(
+      isSubscriptionActive: true,
+      isBookingHold: false,
+      subscriptionStatus: 'ACTIVE',
+      subscriptionRenewDate: renewStr,
+      subscriptionDaysRemaining: 30,
+      subscriptionHistory: updatedHistory,
+    );
+
+    try {
       final prefs = await SharedPreferences.getInstance();
       final savedJson = prefs.getString('verified_admin_data');
       if (savedJson != null && savedJson.isNotEmpty) {
@@ -1107,16 +1301,11 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           await prefs.setString('verified_admin_data', jsonEncode(map));
         }
       }
-      return true;
+      await prefs.setString('subscription_history', jsonEncode(updatedHistory.map((h) => h.toJson()).toList()));
     } catch (e) {
-      debugPrint("Error paying platform subscription: $e");
-      state = state.copyWith(
-        isSubscriptionActive: true,
-        isBookingHold: false,
-        subscriptionStatus: 'ACTIVE',
-      );
-      return true;
+      debugPrint("Error saving subscription history to prefs: $e");
     }
+    return true;
   }
 
   Future<void> togglePlatformSubscription() async {

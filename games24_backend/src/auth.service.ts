@@ -1,6 +1,34 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from './prisma.service.js';
 import * as bcrypt from 'bcrypt';
+import fs from 'fs';
+import path from 'path';
+import { DEFAULT_TURF_SPORTS } from './turf.service.js';
+
+function getAdminSports(adminId: number) {
+  try {
+    const filePath = path.resolve(process.cwd(), 'turf_sports_data.json');
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      if (data[adminId] && data[adminId].length > 0) {
+        return data[adminId];
+      }
+    }
+  } catch (e) {}
+  return DEFAULT_TURF_SPORTS;
+}
+
+function saveAdminSports(adminId: number, sports: any[]) {
+  try {
+    const filePath = path.resolve(process.cwd(), 'turf_sports_data.json');
+    let data: Record<number, any> = {};
+    if (fs.existsSync(filePath)) {
+      data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    }
+    data[adminId] = sports;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {}
+}
 
 @Injectable()
 export class AuthService {
@@ -603,6 +631,8 @@ export class AuthService {
         cancelledCount: dashboard.cancelledCount,
         shiftedCount: dashboard.shiftedCount,
         cancelledBadge: dashboard.cancelledBadge,
+        sports: getAdminSports(verifiedAdmin.id).map((s: any) => s.name),
+        sportsList: getAdminSports(verifiedAdmin.id),
       },
     };
   }
@@ -687,6 +717,8 @@ export class AuthService {
         cancelledCount: dashboard.cancelledCount,
         shiftedCount: dashboard.shiftedCount,
         cancelledBadge: dashboard.cancelledBadge,
+        sports: getAdminSports(admin.id).map((s: any) => s.name),
+        sportsList: getAdminSports(admin.id),
       },
     };
   }
@@ -807,11 +839,17 @@ export class AuthService {
     if (profileData.weekdayRate !== undefined) dataToUpdate.weekdayRate = Number(profileData.weekdayRate);
     if (profileData.weekendRate !== undefined) dataToUpdate.weekendRate = Number(profileData.weekendRate);
 
+    if (profileData.sports || profileData.sportsList) {
+      saveAdminSports(verifiedAdminId, profileData.sportsList || profileData.sports);
+    }
+
     const updated = await this.prisma.verifiedAdmin.update({
       where: { id: verifiedAdminId },
       data: dataToUpdate,
       include: { dashboard: true },
     });
+
+    const sportsList = getAdminSports(verifiedAdminId);
 
     return {
       success: true,
@@ -821,6 +859,8 @@ export class AuthService {
         dashboard: updated.dashboard,
         openingTime: updated.dashboard?.openingTime,
         closingTime: updated.dashboard?.closingTime,
+        sports: sportsList.map((s: any) => s.name),
+        sportsList,
       },
     };
   }

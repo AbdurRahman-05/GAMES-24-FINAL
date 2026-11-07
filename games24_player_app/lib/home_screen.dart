@@ -79,10 +79,14 @@ class _HomeScreenState extends State<HomeScreen> {
       // 2. Sport Filter (from Filter sheet or Category selection)
       if (_filterSport != 'All') {
         final target = _filterSport.toLowerCase();
-        final matches = sports.any((s) =>
-            s.contains(target) ||
-            (target == 'cricket' && s.contains('box cricket')) ||
-            (target == 'football' && s.contains('soccer')));
+        final matches = sports.any((s) {
+          final sLower = s.toLowerCase();
+          return sLower.contains(target) ||
+              target.contains(sLower) ||
+              (target == 'cricket' && sLower.contains('box cricket')) ||
+              (target == 'football' && sLower.contains('soccer')) ||
+              (target.contains('pickle') && sLower.contains('pickle'));
+        });
         if (!matches) return false;
       }
 
@@ -176,15 +180,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': true},
+    {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': false},
     {'name': 'Cricket', 'icon': Icons.sports_cricket, 'isSelected': false},
+    {'name': 'Pickle ball', 'icon': Icons.sports_tennis_rounded, 'isSelected': false},
+    {'name': 'Badminton', 'icon': Icons.sports_tennis, 'isSelected': false},
     {'name': 'Tennis', 'icon': Icons.sports_tennis, 'isSelected': false},
     {
       'name': 'Basketball',
       'icon': Icons.sports_basketball,
       'isSelected': false,
     },
-    {'name': 'Go-Kart', 'icon': Icons.directions_car, 'isSelected': false},
   ];
 
   @override
@@ -1870,7 +1875,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final sportsStr = (turf['sports'] is List)
             ? (turf['sports'] as List).join(' • ')
-            : (turf['sports']?.toString() ?? 'Football • Box Cricket');
+            : (turf['sports']?.toString() ?? 'Cricket • Football • Pickle ball • Badminton');
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -1889,6 +1894,7 @@ class _HomeScreenState extends State<HomeScreen> {
             rating: turf['rating']?.toString() ?? '4.9',
             reviews: turf['reviews']?.toString() ?? '128',
             sports: sportsStr,
+            sportsList: (turf['sportsList'] is List) ? (turf['sportsList'] as List) : null,
             tags: tags,
           ),
         );
@@ -1909,6 +1915,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String rating,
     required String reviews,
     required String sports,
+    List<dynamic>? sportsList,
     required List<String> tags,
   }) {
     return Container(
@@ -2123,6 +2130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               price: price,
                               location: location,
                               sports: sports.split(' • '),
+                              sportsList: sportsList,
                             ),
                           ),
                         );
@@ -2289,8 +2297,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             runSpacing: 8,
                             children: [
                               'All',
-                              'Football',
                               'Cricket',
+                              'Football',
+                              'Pickle ball',
                               'Badminton',
                               'Tennis',
                               'Basketball',
