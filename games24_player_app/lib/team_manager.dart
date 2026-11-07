@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'match_score_manager.dart';
 
 class PlayerTeam {
   final String id;
@@ -16,6 +17,7 @@ class PlayerTeam {
   final String? nextMatchText;
   final String? nextMatchTime;
   final String dateText;
+  final List<PlayerItem> members;
 
   PlayerTeam({
     required this.id,
@@ -31,7 +33,8 @@ class PlayerTeam {
     this.nextMatchText,
     this.nextMatchTime,
     this.dateText = 'Joined Recently',
-  });
+    List<PlayerItem>? members,
+  }) : members = members ?? [];
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -47,6 +50,7 @@ class PlayerTeam {
     'nextMatchText': nextMatchText,
     'nextMatchTime': nextMatchTime,
     'dateText': dateText,
+    'members': members.map((m) => m.toJson()).toList(),
   };
 
   factory PlayerTeam.fromJson(Map<String, dynamic> json) => PlayerTeam(
@@ -63,6 +67,9 @@ class PlayerTeam {
     nextMatchText: json['nextMatchText']?.toString(),
     nextMatchTime: json['nextMatchTime']?.toString(),
     dateText: json['dateText']?.toString() ?? 'Joined Recently',
+    members: (json['members'] as List?)
+        ?.map((m) => PlayerItem.fromJson(Map<String, dynamic>.from(m)))
+        .toList() ?? [],
   );
 }
 
@@ -109,7 +116,9 @@ class TeamManager {
     required String name,
     required String sport,
     required String squadSize,
+    List<PlayerItem>? members,
   }) async {
+    final playerList = members ?? [];
     final newTeam = PlayerTeam(
       id: 'team_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
@@ -117,14 +126,73 @@ class TeamManager {
       squadSize: squadSize,
       roleBadge: 'Captain',
       isCaptain: true,
-      membersCount: 1,
+      membersCount: playerList.isNotEmpty ? playerList.length : 1,
       winsCount: 0,
       rating: '5.0',
       dateText: 'Created Today',
+      members: playerList,
     );
 
     teamsNotifier.value = [newTeam, ...teamsNotifier.value];
     await _saveToStorage();
+  }
+
+  Future<void> addMembersToTeam(String teamId, List<PlayerItem> newMembers) async {
+    final list = List<PlayerTeam>.from(teamsNotifier.value);
+    final idx = list.indexWhere((t) => t.id == teamId);
+    if (idx != -1) {
+      final team = list[idx];
+      final currentMembers = List<PlayerItem>.from(team.members);
+      for (final m in newMembers) {
+        if (!currentMembers.any((existing) => existing.phone == m.phone || existing.name == m.name)) {
+          currentMembers.add(m);
+        }
+      }
+      list[idx] = PlayerTeam(
+        id: team.id,
+        name: team.name,
+        sport: team.sport,
+        roleBadge: team.roleBadge,
+        isCaptain: team.isCaptain,
+        squadSize: team.squadSize,
+        membersCount: currentMembers.length,
+        winsCount: team.winsCount,
+        rating: team.rating,
+        logoUrl: team.logoUrl,
+        nextMatchText: team.nextMatchText,
+        nextMatchTime: team.nextMatchTime,
+        dateText: team.dateText,
+        members: currentMembers,
+      );
+      teamsNotifier.value = list;
+      await _saveToStorage();
+    }
+  }
+
+  Future<void> updateTeamMembers(String teamId, List<PlayerItem> updatedMembers) async {
+    final list = List<PlayerTeam>.from(teamsNotifier.value);
+    final idx = list.indexWhere((t) => t.id == teamId);
+    if (idx != -1) {
+      final team = list[idx];
+      list[idx] = PlayerTeam(
+        id: team.id,
+        name: team.name,
+        sport: team.sport,
+        roleBadge: team.roleBadge,
+        isCaptain: team.isCaptain,
+        squadSize: team.squadSize,
+        membersCount: updatedMembers.length,
+        winsCount: team.winsCount,
+        rating: team.rating,
+        logoUrl: team.logoUrl,
+        nextMatchText: team.nextMatchText,
+        nextMatchTime: team.nextMatchTime,
+        dateText: team.dateText,
+        members: updatedMembers,
+      );
+      teamsNotifier.value = list;
+      await _saveToStorage();
+    }
   }
 
   Future<bool> joinTeamWithCode(String code) async {

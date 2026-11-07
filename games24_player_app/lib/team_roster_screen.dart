@@ -1,7 +1,28 @@
 import 'package:flutter/material.dart';
+import 'team_manager.dart';
+import 'match_score_manager.dart';
+import 'contacts_picker_sheet.dart';
 
-class TeamRosterScreen extends StatelessWidget {
-  const TeamRosterScreen({super.key});
+class TeamRosterScreen extends StatefulWidget {
+  final PlayerTeam? team;
+  const TeamRosterScreen({super.key, this.team});
+
+  @override
+  State<TeamRosterScreen> createState() => _TeamRosterScreenState();
+}
+
+class _TeamRosterScreenState extends State<TeamRosterScreen> {
+  late List<PlayerItem> _members;
+
+  @override
+  void initState() {
+    super.initState();
+    _members = List<PlayerItem>.from(widget.team?.members ?? []);
+    if (_members.isEmpty) {
+      final contacts = MatchScoreManager().getDeviceContacts();
+      _members.addAll(contacts.take(6));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -178,11 +199,11 @@ class TeamRosterScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        children: const [
+                        children: [
                           Expanded(
                             child: Text(
-                              'Blazing Strikers FC',
-                              style: TextStyle(
+                              widget.team?.name ?? 'Blazing Strikers FC',
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
@@ -191,8 +212,8 @@ class TeamRosterScreen extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          SizedBox(width: 4),
-                          Icon(
+                          const SizedBox(width: 4),
+                          const Icon(
                             Icons.verified,
                             size: 16,
                             color: Color(0xFF0F6D38),
@@ -200,9 +221,9 @@ class TeamRosterScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Football • 7-a-side • Premier Tier',
-                        style: TextStyle(
+                      Text(
+                        '${widget.team?.sport ?? 'Football'} • ${widget.team?.squadSize ?? '7-a-side'} • ${widget.team?.roleBadge ?? 'Premier Tier'}',
+                        style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFF6B7280),
                         ),
@@ -223,16 +244,16 @@ class TeamRosterScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
-                              children: const [
-                                Icon(
+                              children: [
+                                const Icon(
                                   Icons.circle,
                                   size: 6,
                                   color: Color(0xFF166534),
                                 ),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'Division 1',
-                                  style: TextStyle(
+                                  widget.team?.isCaptain == true ? 'Captain Led' : 'Division 1',
+                                  style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF166534),
@@ -242,9 +263,9 @@ class TeamRosterScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            '• South Turf Arena',
-                            style: TextStyle(
+                          Text(
+                            '• ${widget.team?.sport ?? 'South'} Arena',
+                            style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF9CA3AF),
                             ),
@@ -259,9 +280,12 @@ class TeamRosterScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Row(
               children: [
-                _buildStatBox('11', 'Players'),
+                _buildStatBox('${_members.length}', 'Players'),
                 const SizedBox(width: 8),
-                _buildStatBox('18', 'Matches'),
+                _buildStatBox(
+                  '${(widget.team?.winsCount ?? 0) > 0 ? (widget.team!.winsCount + 4) : 18}',
+                  'Matches',
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Container(
@@ -275,17 +299,17 @@ class TeamRosterScreen extends StatelessWidget {
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             Text(
-                              '14',
-                              style: TextStyle(
+                              '${widget.team?.winsCount ?? 14}',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF166534),
                               ),
                             ),
-                            SizedBox(width: 2),
-                            Text(
+                            const SizedBox(width: 2),
+                            const Text(
                               '(78%)',
                               style: TextStyle(
                                 fontSize: 10,
@@ -317,17 +341,17 @@ class TeamRosterScreen extends StatelessWidget {
                       border: Border.all(color: const Color(0xFFFEF3C7)),
                     ),
                     child: Column(
-                      children: const [
+                      children: [
                         Text(
-                          '#3',
-                          style: TextStyle(
+                          '#${(widget.team?.name.length ?? 3) % 4 + 1}',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFFD97706),
                           ),
                         ),
-                        SizedBox(height: 2),
-                        Text(
+                        const SizedBox(height: 2),
+                        const Text(
                           'City Rank',
                           style: TextStyle(
                             fontSize: 11,
@@ -354,8 +378,8 @@ class TeamRosterScreen extends StatelessWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text(
+                      children: [
+                        const Text(
                           'Squad Invite PIN',
                           style: TextStyle(
                             fontSize: 10,
@@ -363,8 +387,10 @@ class TeamRosterScreen extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'BSTRIKE-2024',
-                          style: TextStyle(
+                          widget.team != null
+                              ? 'SQ-${widget.team!.name.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '').toUpperCase().padRight(4, 'X').substring(0, 4)}-${widget.team!.sport.substring(0, 3).toUpperCase()}'
+                              : 'BSTRIKE-2024',
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -452,6 +478,16 @@ class TeamRosterScreen extends StatelessWidget {
   }
 
   Widget _buildFormationBanner() {
+    final sport = widget.team?.sport ?? 'Football';
+    final formationTitle = sport == 'Cricket'
+        ? 'Playing XI: Balanced Attack'
+        : (sport == 'Badminton'
+            ? 'Format: Singles & Doubles'
+            : 'Formation: 2-3-1 Classic');
+    final nextMatch = widget.team?.nextMatchText != null
+        ? 'Next Match: ${widget.team!.nextMatchText}'
+        : 'Next Match: Weekend Turf Clash';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
@@ -479,19 +515,19 @@ class TeamRosterScreen extends StatelessWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
-                    'Formation: 2-3-1 Classic',
-                    style: TextStyle(
+                    formationTitle,
+                    style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
-                    'Next Match: Friday vs Thunder Strikers',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
+                    nextMatch,
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -503,9 +539,9 @@ class TeamRosterScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: const Color(0xFFE5F5EB)),
               ),
-              child: const Text(
-                'Ready 8/7',
-                style: TextStyle(
+              child: Text(
+                'Ready ${_members.length}',
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF0F6D38),
@@ -515,6 +551,36 @@ class TeamRosterScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _openContactsPicker() {
+    ContactsPickerSheet.show(
+      context,
+      alreadySelected: _members,
+      sport: widget.team?.sport ?? 'Football',
+      onImport: (newMembers) {
+        setState(() {
+          for (final m in newMembers) {
+            if (!_members.any((existing) =>
+                existing.phone == m.phone && existing.name == m.name)) {
+              _members.add(m);
+            }
+          }
+        });
+        if (widget.team != null) {
+          TeamManager().updateTeamMembers(widget.team!.id, _members);
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Added ${newMembers.length} contact(s) to ${widget.team?.name ?? "squad"}!',
+            ),
+            backgroundColor: const Color(0xFF0F6D38),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
     );
   }
 
@@ -547,9 +613,9 @@ class TeamRosterScreen extends StatelessWidget {
                       color: const Color(0xFFE5F5EB),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      '11',
-                      style: TextStyle(
+                    child: Text(
+                      '${_members.length}',
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF166534),
@@ -558,25 +624,175 @@ class TeamRosterScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _openContactsPicker,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F6D38),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.contacts, size: 14, color: Colors.white),
+                      SizedBox(width: 4),
+                      Text(
+                        'Import Contacts',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F6D38),
-                  borderRadius: BorderRadius.circular(16),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (_members.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(
+                children: [
+                  const Icon(
+                    Icons.contact_phone_outlined,
+                    size: 36,
+                    color: Color(0xFF0F6D38),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'No Players in Squad',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Access contacts from your mobile phone to add players to this team.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                  ),
+                  const SizedBox(height: 14),
+                  ElevatedButton.icon(
+                    onPressed: _openContactsPicker,
+                    icon: const Icon(Icons.contacts, size: 16),
+                    label: const Text('Access Mobile Contacts'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F6D38),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          ..._members.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final player = entry.value;
+            final isYou = idx == 0;
+            final role = player.role.isNotEmpty
+                ? player.role
+                : (isYou ? 'Captain' : 'Squad Player');
+            final isCap = role.toLowerCase().contains('captain') || isYou;
+            final isVice = role.toLowerCase().contains('vice');
+
+            final roleBadgeColor = isCap
+                ? const Color(0xFFFFFBEB)
+                : (isVice ? const Color(0xFFECFDF5) : Colors.transparent);
+            final roleBadgeTextColor = isCap
+                ? const Color(0xFFD97706)
+                : (isVice ? const Color(0xFF047857) : const Color(0xFF6B7280));
+
+            return Column(
+              children: [
+                _buildDynamicPlayerCard(
+                  index: idx + 1,
+                  player: player,
+                  isYou: isYou,
+                  role: role,
+                  isCaptain: isCap,
+                  isVice: isVice,
+                  roleBadgeColor: roleBadgeColor,
+                  roleBadgeTextColor: roleBadgeTextColor,
+                  onRemove: () {
+                    setState(() {
+                      _members.removeAt(idx);
+                    });
+                    if (widget.team != null) {
+                      TeamManager().updateTeamMembers(widget.team!.id, _members);
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Removed ${player.name} from squad'),
+                        behavior: SnackBarBehavior.floating,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
                 ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Divider(height: 1, color: Color(0xFFF3F4F6)),
+                ),
+              ],
+            );
+          }),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.phone_iphone_outlined,
+                    size: 16,
+                    color: Color(0xFF6B7280),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${_members.length} contacts linked to this squad',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: _openContactsPicker,
                 child: Row(
                   children: const [
-                    Icon(Icons.person_add_alt_1, size: 14, color: Colors.white),
-                    SizedBox(width: 4),
+                    Icon(Icons.add, size: 14, color: Color(0xFF0F6D38)),
+                    SizedBox(width: 2),
                     Text(
-                      'Add Member',
+                      'Import More',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Color(0xFF0F6D38),
                       ),
                     ),
                   ],
@@ -585,184 +801,36 @@ class TeamRosterScreen extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        _buildPlayerRow(
-          number: '10',
-          imageUrl: 'https://picsum.photos/seed/p1/50/50',
-          name: 'Alex Rivera',
-          isYou: true,
-          roleBadge: 'Captain',
-          roleBadgeColor: const Color(0xFFFFFBEB),
-          roleBadgeTextColor: const Color(0xFFD97706),
-          position: 'Striker',
-          statIcon: Icons.bolt,
-          statText: 'Pro 94',
-          statColor: const Color(0xFF166534),
-          actionIcon: Icons.query_stats,
-          statusColor: const Color(0xFF10B981),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-        ),
-        _buildPlayerRow(
-          number: '1',
-          imageUrl: 'https://picsum.photos/seed/p2/50/50',
-          name: 'Marcus Vance',
-          roleBadge: 'Key Player',
-          roleBadgeColor: const Color(0xFFF3F4F6),
-          roleBadgeTextColor: const Color(0xFF4B5563),
-          position: 'Goalkeeper',
-          statText: 'Clean Sheets: 6',
-          actionIcon: Icons.chat_outlined,
-          statusColor: const Color(0xFF10B981),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-        ),
-        _buildPlayerRow(
-          number: '4',
-          imageUrl: 'https://picsum.photos/seed/p3/50/50',
-          name: 'Rahul Sharma',
-          roleBadge: 'Vice Captain',
-          roleBadgeColor: const Color(0xFFECFDF5),
-          roleBadgeTextColor: const Color(0xFF047857),
-          position: 'Center Back',
-          statText: 'Tackles: 42',
-          actionIcon: Icons.chat_outlined,
-          statusColor: const Color(0xFF10B981),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-        ),
-        _buildPlayerRow(
-          number: '7',
-          imageUrl: 'https://picsum.photos/seed/p4/50/50',
-          name: 'David Kim',
-          roleBadge: 'Member',
-          roleBadgeColor: Colors.transparent,
-          roleBadgeTextColor: const Color(0xFF6B7280),
-          position: 'Left Winger',
-          statText: 'Assists: 9',
-          actionIcon: Icons.chat_outlined,
-          statusColor: const Color(0xFF10B981),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-        ),
-        _buildPlayerRow(
-          number: '8',
-          imageUrl: 'https://picsum.photos/seed/p5/50/50',
-          name: 'Tariq Al-Mansoor',
-          roleBadge: 'Member',
-          roleBadgeColor: Colors.transparent,
-          roleBadgeTextColor: const Color(0xFF6B7280),
-          position: 'Central Midfielder',
-          statText: 'Pass Acc: 89%',
-          actionIcon: Icons.chat_outlined,
-          statusColor: const Color(0xFF10B981),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-        ),
-        _buildPlayerRow(
-          number: '11',
-          imageUrl: 'https://picsum.photos/seed/p6/50/50',
-          name: 'Lucas Silva',
-          roleBadge: 'Pending RSVP',
-          roleBadgeColor: const Color(0xFFFEF3C7),
-          roleBadgeTextColor: const Color(0xFFD97706),
-          position: 'Right Winger',
-          positionColor: const Color(0xFFFFFBEB),
-          positionTextColor: const Color(0xFFD97706),
-          statText: 'Sub Option',
-          statColor: const Color(0xFFD97706),
-          actionIcon: Icons.notifications_active_outlined,
-          actionIconColor: const Color(0xFFD97706),
-          statusColor: const Color(0xFFF59E0B),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: Divider(height: 1, color: Color(0xFFF3F4F6)),
-        ),
-        _buildPlayerRow(
-          number: '3',
-          imageUrl: 'https://picsum.photos/seed/p7/50/50',
-          name: 'Carlos Mendez',
-          roleBadge: 'Member',
-          roleBadgeColor: Colors.transparent,
-          roleBadgeTextColor: const Color(0xFF6B7280),
-          position: 'Defender',
-          statText: 'Interceptions: 19',
-          actionIcon: Icons.chat_outlined,
-          statusColor: const Color(0xFF10B981),
-        ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: const [
-                  Icon(
-                    Icons.people_outline,
-                    size: 18,
-                    color: Color(0xFF6B7280),
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    '4 additional reserves registered',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                  ),
-                ],
-              ),
-              Row(
-                children: const [
-                  Text(
-                    'View All',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F6D38),
-                    ),
-                  ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    size: 16,
-                    color: Color(0xFF0F6D38),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildPlayerRow({
-    required String number,
-    required String imageUrl,
-    required String name,
-    bool isYou = false,
-    required String roleBadge,
+  Widget _buildDynamicPlayerCard({
+    required int index,
+    required PlayerItem player,
+    required bool isYou,
+    required String role,
+    required bool isCaptain,
+    required bool isVice,
     required Color roleBadgeColor,
     required Color roleBadgeTextColor,
-    required String position,
-    Color positionColor = const Color(0xFFF3F4F6),
-    Color positionTextColor = const Color(0xFF4B5563),
-    IconData? statIcon,
-    required String statText,
-    Color statColor = const Color(0xFF6B7280),
-    required IconData actionIcon,
-    Color actionIconColor = Colors.black87,
-    required Color statusColor,
+    required VoidCallback onRemove,
   }) {
+    final initials = player.avatarInitials.isNotEmpty
+        ? player.avatarInitials
+        : (player.name.isNotEmpty ? player.name[0].toUpperCase() : 'P');
+
+    final colors = [
+      const Color(0xFF0F6D38),
+      const Color(0xFF1E40AF),
+      const Color(0xFF9333EA),
+      const Color(0xFFD97706),
+      const Color(0xFF059669),
+      const Color(0xFFDC2626),
+      const Color(0xFF0284C7),
+    ];
+    final avatarBg = colors[(player.name.hashCode.abs()) % colors.length];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
@@ -770,28 +838,29 @@ class TeamRosterScreen extends StatelessWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: NetworkImage(imageUrl),
-                    fit: BoxFit.cover,
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: avatarBg,
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
               ),
               Positioned(
-                top: -4,
-                left: -4,
+                top: -3,
+                left: -3,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(3),
                   decoration: const BoxDecoration(
                     color: Colors.black87,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    '#$number',
+                    '#$index',
                     style: const TextStyle(
                       fontSize: 8,
                       fontWeight: FontWeight.bold,
@@ -804,10 +873,10 @@ class TeamRosterScreen extends StatelessWidget {
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  width: 12,
-                  height: 12,
+                  width: 11,
+                  height: 11,
                   decoration: BoxDecoration(
-                    color: statusColor,
+                    color: const Color(0xFF10B981),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
@@ -822,12 +891,15 @@ class TeamRosterScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                    Flexible(
+                      child: Text(
+                        player.name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (isYou) ...[
@@ -853,8 +925,9 @@ class TeamRosterScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (roleBadge == 'Captain') ...[
+                            if (isCaptain) ...[
                               Icon(
                                 Icons.emoji_events,
                                 size: 10,
@@ -863,7 +936,7 @@ class TeamRosterScreen extends StatelessWidget {
                               const SizedBox(width: 2),
                             ],
                             Text(
-                              roleBadge,
+                              role,
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
@@ -875,7 +948,7 @@ class TeamRosterScreen extends StatelessWidget {
                       )
                     else
                       Text(
-                        roleBadge,
+                        role,
                         style: TextStyle(
                           fontSize: 11,
                           color: roleBadgeTextColor,
@@ -892,30 +965,33 @@ class TeamRosterScreen extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: positionColor,
+                        color: const Color(0xFFF3F4F6),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        position,
-                        style: TextStyle(
+                        role,
+                        style: const TextStyle(
                           fontSize: 10,
-                          color: positionTextColor,
+                          color: Color(0xFF4B5563),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    if (statIcon != null) ...[
-                      Icon(statIcon, size: 12, color: statColor),
-                      const SizedBox(width: 2),
-                    ],
-                    Text(
-                      statText,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: statIcon != null
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: statColor,
+                    const Icon(
+                      Icons.phone_android,
+                      size: 12,
+                      color: Color(0xFF0F6D38),
+                    ),
+                    const SizedBox(width: 2),
+                    Flexible(
+                      child: Text(
+                        player.phone.isNotEmpty ? player.phone : 'Mobile Contact',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF166534),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -923,13 +999,54 @@ class TeamRosterScreen extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(actionIcon, size: 16, color: actionIconColor),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        player.phone.isNotEmpty
+                            ? 'Calling ${player.name} (${player.phone})...'
+                            : 'Calling ${player.name}...',
+                      ),
+                      backgroundColor: const Color(0xFF0F6D38),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE5F5EB),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.phone_outlined,
+                    size: 16,
+                    color: Color(0xFF0F6D38),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: onRemove,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFEE2E2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.remove_circle_outline,
+                    size: 16,
+                    color: Color(0xFFDC2626),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

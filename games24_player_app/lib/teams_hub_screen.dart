@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:games24_player_app/team_roster_screen.dart';
 import 'package:games24_player_app/team_manager.dart';
+import 'package:games24_player_app/match_score_manager.dart';
+import 'package:games24_player_app/contacts_picker_sheet.dart';
 
 class TeamsHubScreen extends StatefulWidget {
   const TeamsHubScreen({super.key});
@@ -22,6 +24,14 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
     final nameController = TextEditingController();
     String selectedSport = 'Football';
     String selectedFormat = '7v7 Squad';
+    final List<PlayerItem> selectedMembers = [
+      PlayerItem(
+        id: 'me',
+        name: 'You',
+        phone: '+91 70103 96731',
+        role: 'Captain',
+      ),
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -35,175 +45,356 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.88,
+                ),
                 padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Create New Squad',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE5F5EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.group_add_rounded,
+                                  color: Color(0xFF166534),
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Create New Squad',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Squad Name',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        hintText: 'e.g. Thunder Warriors FC',
-                        filled: true,
-                        fillColor: const Color(0xFFF3F5F1),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Sport',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: ['Football', 'Cricket', 'Badminton'].map((sport) {
-                        final isSel = selectedSport == sport;
-                        return ChoiceChip(
-                          label: Text(sport),
-                          selected: isSel,
-                          selectedColor: const Color(0xFFE5F5EB),
-                          labelStyle: TextStyle(
-                            color: isSel ? const Color(0xFF0F6D38) : Colors.black87,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: const Icon(Icons.close),
                           ),
-                          onSelected: (val) {
-                            if (val) {
-                              setModalState(() {
-                                selectedSport = sport;
-                              });
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Format / Squad Size',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        '5v5 Squad',
-                        '7v7 Squad',
-                        '11v11 Squad',
-                        'Box Cricket',
-                        'Doubles',
-                      ].map((fmt) {
-                        final isSel = selectedFormat == fmt;
-                        return ChoiceChip(
-                          label: Text(fmt),
-                          selected: isSel,
-                          selectedColor: const Color(0xFFE5F5EB),
-                          labelStyle: TextStyle(
-                            color: isSel ? const Color(0xFF0F6D38) : Colors.black87,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Squad Name',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Thunder Warriors FC',
+                          filled: true,
+                          fillColor: const Color(0xFFF3F5F1),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
-                          onSelected: (val) {
-                            if (val) {
-                              setModalState(() {
-                                selectedFormat = fmt;
-                              });
-                            }
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F6D38),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
                         ),
-                        onPressed: () async {
-                          final name = nameController.text.trim();
-                          if (name.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Please enter a team name'),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Sport',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: ['Football', 'Cricket', 'Badminton'].map((sport) {
+                          final isSel = selectedSport == sport;
+                          return ChoiceChip(
+                            label: Text(sport),
+                            selected: isSel,
+                            selectedColor: const Color(0xFFE5F5EB),
+                            labelStyle: TextStyle(
+                              color: isSel ? const Color(0xFF0F6D38) : Colors.black87,
+                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() {
+                                  selectedSport = sport;
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Format / Squad Size',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          '5v5 Squad',
+                          '7v7 Squad',
+                          '11v11 Squad',
+                          'Box Cricket',
+                          'Doubles',
+                        ].map((fmt) {
+                          final isSel = selectedFormat == fmt;
+                          return ChoiceChip(
+                            label: Text(fmt),
+                            selected: isSel,
+                            selectedColor: const Color(0xFFE5F5EB),
+                            labelStyle: TextStyle(
+                              color: isSel ? const Color(0xFF0F6D38) : Colors.black87,
+                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() {
+                                  selectedFormat = fmt;
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // MOBILE CONTACTS & PLAYERS SECTION
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Squad Players',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE5F5EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  '${selectedMembers.length} selected',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF166534),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF166534),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              elevation: 0,
+                            ),
+                            onPressed: () {
+                              ContactsPickerSheet.show(
+                                context,
+                                alreadySelected: selectedMembers,
+                                sport: selectedSport,
+                                onImport: (newContacts) {
+                                  setModalState(() {
+                                    for (final c in newContacts) {
+                                      if (!selectedMembers.any((m) => m.phone == c.phone && m.name == c.name)) {
+                                        selectedMembers.add(c);
+                                      }
+                                    }
+                                  });
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.contacts_rounded, size: 14),
+                            label: const Text(
+                              'Import Contacts 📱',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Player list / chips
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: selectedMembers.isEmpty
+                            ? const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  'No contacts imported. Tap "Import Contacts 📱" to choose players from phone.',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                              )
+                            : Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: selectedMembers.map((member) {
+                                  final isCaptain = member.role.toLowerCase().contains('captain');
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isCaptain ? const Color(0xFFE5F5EB) : Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: isCaptain ? const Color(0xFFBBE5CA) : const Color(0xFFE5E7EB),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 11,
+                                          backgroundColor:
+                                              isCaptain ? const Color(0xFF166534) : const Color(0xFF9CA3AF),
+                                          child: Text(
+                                            member.avatarInitials,
+                                            style: const TextStyle(
+                                              fontSize: 8,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          member.name,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                          decoration: BoxDecoration(
+                                            color: isCaptain ? const Color(0xFF166534) : const Color(0xFFF3F4F6),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            member.role,
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                              color: isCaptain ? Colors.white : Colors.black54,
+                                            ),
+                                          ),
+                                        ),
+                                        if (member.id != 'me') ...[
+                                          const SizedBox(width: 4),
+                                          GestureDetector(
+                                            onTap: () {
+                                              setModalState(() {
+                                                selectedMembers.removeWhere((m) => m.id == member.id);
+                                              });
+                                            },
+                                            child: const Icon(Icons.close, size: 14, color: Colors.grey),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                      ),
+
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F6D38),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final name = nameController.text.trim();
+                            if (name.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please enter a team name'),
+                                ),
+                              );
+                              return;
+                            }
+                            final nav = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+                            await TeamManager().createTeam(
+                              name: name,
+                              sport: selectedSport,
+                              squadSize: selectedFormat,
+                              members: selectedMembers,
+                            );
+                            nav.pop();
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Team "$name" created with ${selectedMembers.length} squad players!'),
+                                backgroundColor: const Color(0xFF0F6D38),
                               ),
                             );
-                            return;
-                          }
-                          final nav = Navigator.of(context);
-                          final messenger = ScaffoldMessenger.of(context);
-                          await TeamManager().createTeam(
-                            name: name,
-                            sport: selectedSport,
-                            squadSize: selectedFormat,
-                          );
-                          nav.pop();
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text('Team "$name" created successfully!'),
-                              backgroundColor: const Color(0xFF0F6D38),
+                          },
+                          child: Text(
+                            'Create Squad (${selectedMembers.length} Players)',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
-                          );
-                        },
-                        child: const Text(
-                          'Create Squad',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -740,7 +931,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TeamRosterScreen(),
+                          builder: (context) => TeamRosterScreen(team: team),
                         ),
                       );
                     },
