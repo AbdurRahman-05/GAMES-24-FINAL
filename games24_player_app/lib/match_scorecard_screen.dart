@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'match_score_manager.dart';
+import 'booking_manager.dart';
+import 'challenge_manager.dart';
+import 'contacts_picker_sheet.dart';
 
 class MatchScorecardScreen extends StatefulWidget {
   final String bookingId;
@@ -26,6 +29,17 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
+  // Match & Timing Configuration
+  bool _forceEarlyStart = false;
+  String _selectedTeamSize = '7v7';
+  int _selectedOvers = 10;
+  int _footballDurationMinutes = 60;
+  String _racketFormat = 'Best of 3 Sets';
+
+  // Open Challenge Link
+  bool _isOpenChallenge = false;
+  Challenge? _linkedChallenge;
+
   // Teams & Rosters
   String _teamAName = 'Blazing Strikers (My Team)';
   String _teamBName = 'Thunder Smashers';
@@ -35,7 +49,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // Coin Toss State
   bool _isTossing = false;
   double _tossCoinAngle = 0;
-  String? _tossCaller = 'Team A';
+  String? _tossCaller;
   String? _tossCall = 'Heads';
   String? _tossResult;
   String? _tossWinner;
@@ -87,9 +101,53 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   void _initializeDefaultTeams() {
+    _tossCaller = _teamAName;
+
+    // Detect if this match is linked to an Open Challenge
+    final challenges = ChallengeManager().challengesNotifier.value;
+    for (final c in challenges) {
+      final turfMatch =
+          c.turfName.trim().toLowerCase() == widget.turfName.trim().toLowerCase();
+      final timeMatch =
+          c.time.contains(widget.timeSlot) || widget.timeSlot.contains(c.time);
+      if (turfMatch && (timeMatch || c.date == widget.date)) {
+        _linkedChallenge = c;
+        _isOpenChallenge = true;
+        _selectedTeamSize = c.teamSize.isNotEmpty ? c.teamSize : '7v7';
+        if (c.challengerName.isNotEmpty) {
+          _teamAName = c.challengerName;
+        }
+        if (c.opponentName != null && c.opponentName!.isNotEmpty) {
+          _teamBName = c.opponentName!;
+        } else {
+          _teamBName = 'Opponent Team (Waiting)';
+        }
+        _tossCaller = _teamAName;
+        break;
+      }
+    }
+
     final contacts = MatchScoreManager().getDeviceContacts();
     _teamAPlayers.addAll(contacts.take(3));
-    _teamBPlayers.addAll(contacts.skip(3).take(3));
+    if (!_isOpenChallenge ||
+        (_linkedChallenge?.opponentName != null &&
+            _linkedChallenge!.opponentName!.isNotEmpty)) {
+      _teamBPlayers.addAll(contacts.skip(3).take(3));
+    }
+  }
+
+  bool get _isMatchStarted =>
+      BookingManager.isMatchStarted(dateStr: widget.date, timeSlot: widget.timeSlot);
+
+  bool get _canPlayMatch => _isMatchStarted || _forceEarlyStart;
+
+  int get _playersPerSide {
+    final reg = RegExp(r'(\d+)');
+    final match = reg.firstMatch(_selectedTeamSize);
+    if (match != null) {
+      return int.tryParse(match.group(1)!) ?? 7;
+    }
+    return 7;
   }
 
   bool get _isCricket =>
@@ -121,9 +179,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     Future.delayed(const Duration(milliseconds: 1400), () {
       if (!mounted) return;
+      final callerIsA = _tossCaller == _teamAName;
       final winner = (_tossCall == outcome)
-          ? (_tossCaller == 'Team A' ? _teamAName : _teamBName)
-          : (_tossCaller == 'Team A' ? _teamBName : _teamAName);
+          ? (callerIsA ? _teamAName : _teamBName)
+          : (callerIsA ? _teamBName : _teamAName);
 
       setState(() {
         _isTossing = false;
@@ -384,165 +443,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // CONTACT PICKER DIALOG
-  // ---------------------------------------------------------------------------
-  void _showContactPicker(bool forTeamA) {
-    final contacts = MatchScoreManager().getDeviceContacts();
-    final customNameCtrl = TextEditingController();
-    final customPhoneCtrl = TextEditingController();
-    String searchQuery = '';
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final filtered = contacts.where((c) {
-            return c.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                c.phone.contains(searchQuery);
-          }).toList();
-
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.75,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Add Players to ${forTeamA ? _teamAName : _teamBName}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  // Search Bar
-                  TextField(
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      hintText: 'Search contacts by name or phone...',
-                      filled: true,
-                      fillColor: const Color(0xFFF3F5F1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    onChanged: (val) => setModalState(() => searchQuery = val),
-                  ),
-                  const SizedBox(height: 14),
-                  // Manual Add Expandable Tile
-                  ExpansionTile(
-                    title: const Text('Add Custom Player by Phone', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    leading: const Icon(Icons.person_add_alt_1, color: Color(0xFF166534)),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: customNameCtrl,
-                              decoration: const InputDecoration(labelText: 'Player Name', isDense: true),
-                            ),
-                            const SizedBox(height: 8),
-                            TextField(
-                              controller: customPhoneCtrl,
-                              decoration: const InputDecoration(labelText: 'Mobile Number', isDense: true),
-                              keyboardType: TextInputType.phone,
-                            ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534), foregroundColor: Colors.white),
-                                onPressed: () {
-                                  if (customNameCtrl.text.trim().isNotEmpty) {
-                                    final newP = PlayerItem(
-                                      id: 'p_${DateTime.now().millisecondsSinceEpoch}',
-                                      name: customNameCtrl.text.trim(),
-                                      phone: customPhoneCtrl.text.trim().isEmpty ? '+91 90000 00000' : customPhoneCtrl.text.trim(),
-                                      role: 'Player',
-                                    );
-                                    setState(() {
-                                      if (forTeamA) {
-                                        _teamAPlayers.add(newP);
-                                      } else {
-                                        _teamBPlayers.add(newP);
-                                      }
-                                    });
-                                    Navigator.pop(ctx);
-                                  }
-                                },
-                                child: const Text('Add Player to Team'),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  const Text('Device & Recent Contacts', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: filtered.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
-                      itemBuilder: (context, idx) {
-                        final contact = filtered[idx];
-                        final isAlreadyInTeam = forTeamA
-                            ? _teamAPlayers.any((p) => p.name == contact.name)
-                            : _teamBPlayers.any((p) => p.name == contact.name);
-
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: const Color(0xFFE5F5EB),
-                            child: Text(contact.avatarInitials, style: const TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 13)),
-                          ),
-                          title: Text(contact.name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                          subtitle: Text('${contact.phone} • ${contact.role}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                          trailing: isAlreadyInTeam
-                              ? const Icon(Icons.check_circle, color: Color(0xFF166534))
-                              : IconButton(
-                                  icon: const Icon(Icons.add_circle_outline, color: Color(0xFF166534)),
-                                  onPressed: () {
-                                    setState(() {
-                                      if (forTeamA) {
-                                        _teamAPlayers.add(contact);
-                                      } else {
-                                        _teamBPlayers.add(contact);
-                                      }
-                                    });
-                                    Navigator.pop(ctx);
-                                  },
-                                ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   // ---------------------------------------------------------------------------
   // BUILD METHOD
@@ -599,67 +500,761 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   // ===========================================================================
+  // PRE-MATCH LOCK SCREEN HELPER
+  // ===========================================================================
+  Widget _buildPreMatchLockedCard({
+    required String featureName,
+    required IconData featureIcon,
+  }) {
+    final startSlot =
+        BookingManager.getFormattedSlotStart(timeSlot: widget.timeSlot);
+    final minsUntil = BookingManager.getMinutesUntilMatchStart(
+      dateStr: widget.date,
+      timeSlot: widget.timeSlot,
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3C7),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.lock_clock_rounded,
+                  size: 40,
+                  color: Color(0xFFD97706),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '$featureName Locked',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Text(
+                  'Match starts at $startSlot ${minsUntil > 0 ? "(in $minsUntil mins)" : ""}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFB45309),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Matches start in time only at $startSlot. Before the match begins, assemble both squads, pick team size & overs, and add players from contacts. The coin toss and scoring will unlock once match time arrives.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF166534),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.group_rounded, size: 18),
+                  label: const Text(
+                    'Go to Squad & Lineup Setup',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () => _tabController.animateTo(0),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFD97706),
+                    side: const BorderSide(color: Color(0xFFD97706)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.bolt_rounded, size: 18),
+                  label: const Text(
+                    'Start Match Early (Both Teams Ready)',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () {
+                    setState(() => _forceEarlyStart = true);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Match started early! Coin Toss and Live Scorecard are now active.',
+                        ),
+                        backgroundColor: Color(0xFF166534),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // CONTACT IMPORT & AUTO-SPLIT HELPERS
+  // ===========================================================================
+  void _openContactsPicker(bool forTeamA) {
+    final currentList = forTeamA ? _teamAPlayers : _teamBPlayers;
+    final otherList = forTeamA ? _teamBPlayers : _teamAPlayers;
+
+    ContactsPickerSheet.show(
+      context,
+      alreadySelected: currentList,
+      sport: widget.sport,
+      onImport: (selected) {
+        setState(() {
+          for (final p in selected) {
+            if (!currentList.any(
+              (item) => item.name == p.name && item.phone == p.phone,
+            )) {
+              otherList.removeWhere(
+                (item) => item.name == p.name && item.phone == p.phone,
+              );
+              currentList.add(p);
+            }
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Added ${selected.length} player(s) to ${forTeamA ? _teamAName : _teamBName}!',
+            ),
+            backgroundColor: const Color(0xFF166534),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
+  }
+
+  void _autoSplitContacts() {
+    final contacts = MatchScoreManager().getDeviceContacts();
+    final half = (contacts.length / 2).ceil();
+    setState(() {
+      _teamAPlayers.clear();
+      _teamBPlayers.clear();
+      _teamAPlayers.addAll(contacts.take(half));
+      _teamBPlayers.addAll(contacts.skip(half));
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Auto-balanced squads: ${_teamAPlayers.length} players in $_teamAName, ${_teamBPlayers.length} in $_teamBName!',
+        ),
+        backgroundColor: const Color(0xFF166534),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  // ===========================================================================
   // TAB 1: TEAMS & CONTACTS ROSTER
   // ===========================================================================
   Widget _buildTeamsTab() {
+    final startSlot =
+        BookingManager.getFormattedSlotStart(timeSlot: widget.timeSlot);
+    final minsUntil = BookingManager.getMinutesUntilMatchStart(
+      dateStr: widget.date,
+      timeSlot: widget.timeSlot,
+    );
+    final isOpponentJoined = _linkedChallenge?.isJoined == true ||
+        (_linkedChallenge?.opponentName != null &&
+            _linkedChallenge!.opponentName!.isNotEmpty);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE5F5EB),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFC6E7D2)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.contact_phone_rounded, color: Color(0xFF166534)),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Separate both teams, pick contacts from phonebook, and assemble your match squad!',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF166534), fontWeight: FontWeight.w500),
+          // Pre-Match Alert Banner
+          if (!_canPlayMatch) ...[
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFEF3C7),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.timer_outlined,
+                      color: Color(0xFFD97706),
+                      size: 20,
+                    ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pre-Match Phase: Starts at $startSlot ${minsUntil > 0 ? "(in $minsUntil mins)" : ""}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF92400E),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Prepare your squads, overs & format below. Coin Toss and Live Scorecard will unlock when match starts!',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFB45309),
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
+          // Open Challenge Status Card (if applicable)
+          if (_isOpenChallenge) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isOpponentJoined
+                    ? const Color(0xFFE5F5EB)
+                    : const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isOpponentJoined
+                      ? const Color(0xFF86EFAC)
+                      : const Color(0xFFBFDBFE),
                 ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: isOpponentJoined
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF2563EB),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isOpponentJoined
+                              ? Icons.handshake_rounded
+                              : Icons.public,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        isOpponentJoined
+                            ? '⚔️ Open Challenge Match: Opponent Joined!'
+                            : '⚔️ Open Challenge Match',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: isOpponentJoined
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF1E40AF),
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isOpponentJoined
+                              ? const Color(0xFFDCFCE7)
+                              : const Color(0xFFDBEAFE),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          isOpponentJoined
+                              ? 'Opponent Ready'
+                              : '⏳ Waiting for Team',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isOpponentJoined
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF1E40AF),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    isOpponentJoined
+                        ? 'Opponent squad "$_teamBName" is confirmed for this clash ($_selectedTeamSize).'
+                        : 'This game is posted as an Open Challenge ($_selectedTeamSize). Waiting for another squad to accept and join.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isOpponentJoined
+                          ? const Color(0xFF14532D)
+                          : const Color(0xFF1E3A8A),
+                    ),
+                  ),
+                  if (!isOpponentJoined) ...[
+                    if ((_linkedChallenge?.joinRequests.length ?? 0) > 0) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        '📬 ${_linkedChallenge!.joinRequests.length} squad(s) have requested to join!',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF166534),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF2563EB),
+                            side: const BorderSide(color: Color(0xFF2563EB)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                          ),
+                          icon: const Icon(Icons.share, size: 14),
+                          label: const Text(
+                            'Share Challenge',
+                            style: TextStyle(fontSize: 11),
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Challenge link copied to clipboard!'),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _isOpenChallenge = false;
+                              _teamBName = 'Thunder Smashers';
+                              if (_teamBPlayers.isEmpty) {
+                                final contacts =
+                                    MatchScoreManager().getDeviceContacts();
+                                _teamBPlayers.addAll(contacts.skip(3).take(3));
+                              }
+                            });
+                          },
+                          child: const Text(
+                            'Switch to Friendly (Manage 2 Teams)',
+                            style: TextStyle(fontSize: 11),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Match Configuration (Team Size & Overs)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Match Format & Rules',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    Text(
+                      '$_playersPerSide players / side',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF166534),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Team Size Selector
+                const Text(
+                  'Squad Size:',
+                  style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  children: ['5v5', '6v6', '7v7', '8v8', '11v11'].map((size) {
+                    final isSel = _selectedTeamSize == size;
+                    return ChoiceChip(
+                      label: Text(size),
+                      selected: isSel,
+                      selectedColor: const Color(0xFF166534),
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isSel ? Colors.white : Colors.black87,
+                      ),
+                      onSelected: (_) {
+                        setState(() => _selectedTeamSize = size);
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 12),
+                // Overs or Duration Selector
+                if (_isCricket) ...[
+                  const Text(
+                    'Match Overs:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: [6, 8, 10, 12, 15, 20].map((ov) {
+                      final isSel = _selectedOvers == ov;
+                      return ChoiceChip(
+                        label: Text('$ov Overs'),
+                        selected: isSel,
+                        selectedColor: const Color(0xFF166534),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isSel ? Colors.white : Colors.black87,
+                        ),
+                        onSelected: (_) {
+                          setState(() => _selectedOvers = ov);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ] else if (_isFootball) ...[
+                  const Text(
+                    'Match Duration:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: [30, 45, 60, 90].map((mins) {
+                      final isSel = _footballDurationMinutes == mins;
+                      return ChoiceChip(
+                        label: Text('$mins Mins'),
+                        selected: isSel,
+                        selectedColor: const Color(0xFF166534),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isSel ? Colors.white : Colors.black87,
+                        ),
+                        onSelected: (_) {
+                          setState(() => _footballDurationMinutes = mins);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ] else ...[
+                  const Text(
+                    'Match Format:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: ['Best of 3 Sets', '1 Set (21 Pts)', '11 Pts Rapid'].map((fmt) {
+                      final isSel = _racketFormat == fmt;
+                      return ChoiceChip(
+                        label: Text(fmt),
+                        selected: isSel,
+                        selectedColor: const Color(0xFF166534),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isSel ? Colors.white : Colors.black87,
+                        ),
+                        onSelected: (_) {
+                          setState(() => _racketFormat = fmt);
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
               ],
             ),
           ),
           const SizedBox(height: 16),
+
           // Team A
           _buildTeamCard(
             teamName: _teamAName,
             players: _teamAPlayers,
             isTeamA: true,
-            onNameChange: (val) => setState(() => _teamAName = val),
-            onAddPlayer: () => _showContactPicker(true),
+            onNameChange: (val) => setState(() {
+              if (_tossCaller == _teamAName) _tossCaller = val;
+              _teamAName = val;
+            }),
+            onAddPlayer: () => _openContactsPicker(true),
           ),
           const SizedBox(height: 16),
+
           // Team B
-          _buildTeamCard(
-            teamName: _teamBName,
-            players: _teamBPlayers,
-            isTeamA: false,
-            onNameChange: (val) => setState(() => _teamBName = val),
-            onAddPlayer: () => _showContactPicker(false),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          if (_isOpenChallenge && !isOpponentJoined)
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              icon: const Icon(Icons.toll_rounded),
-              label: const Text('Proceed to Coin Toss', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              onPressed: () => _tabController.animateTo(1),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF2563EB),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Opponent Squad (Open Challenge)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                  const Icon(
+                    Icons.groups_outlined,
+                    size: 38,
+                    color: Color(0xFF2563EB),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Waiting for Opponent Team to Join...',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Other players browsing Open Challenges can request to join. Once accepted, their team will appear here.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                  ),
+                  const SizedBox(height: 14),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.contacts, size: 16),
+                    label: const Text('Add Opponent Squad from Contacts'),
+                    onPressed: () {
+                      setState(() {
+                        _isOpenChallenge = false;
+                        _teamBName = 'Thunder Smashers';
+                      });
+                      _openContactsPicker(false);
+                    },
+                  ),
+                ],
+              ),
+            )
+          else
+            _buildTeamCard(
+              teamName: _teamBName,
+              players: _teamBPlayers,
+              isTeamA: false,
+              onNameChange: (val) => setState(() {
+                if (_tossCaller == _teamBName) _tossCaller = val;
+                _teamBName = val;
+              }),
+              onAddPlayer: () => _openContactsPicker(false),
             ),
-          ),
+          const SizedBox(height: 14),
+
+          // Quick auto split helper
+          if (!_isOpenChallenge || isOpponentJoined)
+            Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.auto_fix_high_rounded, size: 16, color: Color(0xFF166534)),
+                label: const Text(
+                  'Auto-Split Contacts between Both Teams',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                ),
+                onPressed: _autoSplitContacts,
+              ),
+            ),
+          const SizedBox(height: 14),
+
+          // Bottom Action
+          if (!_canPlayMatch) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF166534),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.timer_outlined),
+                label: Text(
+                  'Squad Ready • Match Starts at $startSlot',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Lineup is set! Coin toss and live scoring will unlock at $startSlot.',
+                      ),
+                      backgroundColor: const Color(0xFF166534),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.bolt_rounded, size: 16, color: Color(0xFFD97706)),
+                label: const Text(
+                  'Both Teams at Turf? Start Toss Early',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD97706),
+                  ),
+                ),
+                onPressed: () {
+                  setState(() => _forceEarlyStart = true);
+                  _tabController.animateTo(1);
+                },
+              ),
+            ),
+          ] else ...[
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF166534),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.toll_rounded),
+                label: const Text(
+                  'Proceed to Coin Toss 🪙',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                onPressed: () => _tabController.animateTo(1),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -695,19 +1290,25 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 height: 12,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isTeamA ? const Color(0xFF166534) : const Color(0xFF2563EB),
+                  color: isTeamA
+                      ? const Color(0xFF166534)
+                      : const Color(0xFF2563EB),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   teamName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined, size: 18),
-                onPressed: () => _showEditTeamNameDialog(teamName, onNameChange),
+                onPressed: () =>
+                    _showEditTeamNameDialog(teamName, onNameChange),
               ),
             ],
           ),
@@ -715,10 +1316,26 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${players.length} Players Selected', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(
+                '${players.length}/$_playersPerSide Players Added',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: players.length >= _playersPerSide
+                      ? const Color(0xFF166534)
+                      : Colors.grey,
+                ),
+              ),
               TextButton.icon(
                 icon: const Icon(Icons.contacts, size: 16, color: Color(0xFF166534)),
-                label: const Text('Add from Contacts', style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12)),
+                label: const Text(
+                  '+ Add from Contacts',
+                  style: TextStyle(
+                    color: Color(0xFF166534),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
                 onPressed: onAddPlayer,
               ),
             ],
@@ -727,7 +1344,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Center(
-                child: Text('No players added yet. Tap "Add from Contacts".', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+                child: Text(
+                  'No players added yet. Tap "+ Add from Contacts".',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                ),
               ),
             )
           else
@@ -737,10 +1357,24 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               children: players.map((p) {
                 return Chip(
                   avatar: CircleAvatar(
-                    backgroundColor: isTeamA ? const Color(0xFFE5F5EB) : const Color(0xFFDBEAFE),
-                    child: Text(p.avatarInitials, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isTeamA ? const Color(0xFF166534) : const Color(0xFF2563EB))),
+                    backgroundColor: isTeamA
+                        ? const Color(0xFFE5F5EB)
+                        : const Color(0xFFDBEAFE),
+                    child: Text(
+                      p.avatarInitials,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isTeamA
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF2563EB),
+                      ),
+                    ),
                   ),
-                  label: Text('${p.name} (${p.role.split(' ').first})', style: const TextStyle(fontSize: 12)),
+                  label: Text(
+                    '${p.name} (${p.role.split(' ').first})',
+                    style: const TextStyle(fontSize: 12),
+                  ),
                   deleteIcon: const Icon(Icons.close, size: 14),
                   onDeleted: () {
                     setState(() => players.remove(p));
@@ -758,11 +1392,22 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Rename Team'),
-        content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Team Name')),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(labelText: 'Team Name', border: OutlineInputBorder()),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF166534),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
               if (ctrl.text.trim().isNotEmpty) {
                 onSave(ctrl.text.trim());
@@ -779,13 +1424,104 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // ===========================================================================
   // TAB 2: COIN TOSS (Head / Tail + Sport Specific Decision)
   // ===========================================================================
+  Widget _buildCallingTeamSelector() {
+    final callerOptions = <String>{_teamAName, _teamBName}.toList();
+    if (!callerOptions.contains(_tossCaller)) {
+      _tossCaller = callerOptions.first;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Calling Team:',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              _tossCaller ?? _teamAName,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF166534),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: callerOptions.map((team) {
+            final isSel = _tossCaller == team;
+            final isA = team == _teamAName;
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: ChoiceChip(
+                  avatar: Icon(
+                    isA ? Icons.shield : Icons.shield_outlined,
+                    size: 16,
+                    color: isSel
+                        ? (isA
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF2563EB))
+                        : Colors.grey,
+                  ),
+                  label: Text(
+                    team,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                      color: isSel
+                          ? (isA
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF2563EB))
+                          : Colors.black87,
+                    ),
+                  ),
+                  selected: isSel,
+                  selectedColor: isA
+                      ? const Color(0xFFE5F5EB)
+                      : const Color(0xFFDBEAFE),
+                  side: BorderSide(
+                    color: isSel
+                        ? (isA
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF2563EB))
+                        : const Color(0xFFE5E7EB),
+                  ),
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() => _tossCaller = team);
+                    }
+                  },
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCoinTossTab() {
+    if (!_canPlayMatch) {
+      return _buildPreMatchLockedCard(
+        featureName: 'Coin Toss',
+        featureIcon: Icons.toll_rounded,
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text('Official Match Toss', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Official Match Toss',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 6),
           Text(
             '${widget.sport} • Flip the coin to decide',
@@ -804,7 +1540,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const RadialGradient(
-                  colors: [Color(0xFFFDE68A), Color(0xFFD97706), Color(0xFF92400E)],
+                  colors: [
+                    Color(0xFFFDE68A),
+                    Color(0xFFD97706),
+                    Color(0xFF92400E),
+                  ],
                   center: Alignment(-0.2, -0.2),
                 ),
                 boxShadow: [
@@ -818,9 +1558,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
               child: Center(
                 child: Text(
-                  _isTossing
-                      ? 'FLIPPING...'
-                      : (_tossResult ?? 'FLIP\nCOIN'),
+                  _isTossing ? 'FLIPPING...' : (_tossResult ?? 'FLIP\nCOIN'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 20,
@@ -840,26 +1578,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
               ),
               child: Column(
                 children: [
+                  _buildCallingTeamSelector(),
+                  const Divider(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Calling Team:', style: TextStyle(fontWeight: FontWeight.w600)),
-                      DropdownButton<String>(
-                        value: _tossCaller,
-                        underline: const SizedBox.shrink(),
-                        items: [_teamAName, _teamBName].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                        onChanged: (val) => setState(() => _tossCaller = val),
+                      const Text(
+                        'Call:',
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                    ],
-                  ),
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Call:', style: TextStyle(fontWeight: FontWeight.w600)),
                       Row(
                         children: ['Heads', 'Tails'].map((call) {
                           final isSel = _tossCall == call;
@@ -869,8 +1600,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                               label: Text(call),
                               selected: isSel,
                               selectedColor: const Color(0xFF166534),
-                              labelStyle: TextStyle(color: isSel ? Colors.white : Colors.black87),
-                              onSelected: (_) => setState(() => _tossCall = call),
+                              labelStyle: TextStyle(
+                                color: isSel ? Colors.white : Colors.black87,
+                              ),
+                              onSelected: (_) =>
+                                  setState(() => _tossCall = call),
                             ),
                           );
                         }).toList(),
@@ -888,10 +1622,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD97706),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 icon: const Icon(Icons.touch_app),
-                label: const Text('Flip Coin Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                label: const Text(
+                  'Flip Coin Now',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 onPressed: _executeCoinToss,
               ),
             ),
@@ -906,18 +1645,29 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.emoji_events_rounded, color: Color(0xFF166534), size: 36),
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    color: Color(0xFF166534),
+                    size: 36,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     '🎉 Toss Winner: $_tossWinner!',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF166534),
+                    ),
                   ),
                   Text(
                     'Coin landed on $_tossResult (Called $_tossCall by $_tossCaller)',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Select Decision:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Select Decision:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
@@ -927,7 +1677,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         label: Text(opt),
                         selected: isSel,
                         selectedColor: const Color(0xFF166534),
-                        labelStyle: TextStyle(color: isSel ? Colors.white : Colors.black87, fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(
+                          color: isSel ? Colors.white : Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
                         onSelected: (_) => setState(() => _tossDecision = opt),
                       );
                     }).toList(),
@@ -979,6 +1732,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // TAB 3: LIVE SCORECARD
   // ===========================================================================
   Widget _buildScorecardTab() {
+    if (!_canPlayMatch) {
+      return _buildPreMatchLockedCard(
+        featureName: 'Live Scorecard',
+        featureIcon: Icons.scoreboard_rounded,
+      );
+    }
+
     if (_isCricket) {
       return _buildCricketScorecard();
     } else if (_isFootball) {
@@ -1066,9 +1826,27 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   ],
                 ),
                 Text(
-                  'Overs: ${_formatOvers(activeBalls)}  •  Bowling: $bowlingTeam',
+                  'Overs: ${_formatOvers(activeBalls)} / $_selectedOvers  •  Bowling: $bowlingTeam',
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
+                if (activeBalls >= _selectedOvers * 6) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFDE68A),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '⚠️ Inning Limit Reached (Max $_selectedOvers Overs)',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF92400E),
+                      ),
+                    ),
+                  ),
+                ],
                 if (_tossDecision != null) ...[
                   const SizedBox(height: 6),
                   Text(

@@ -1139,10 +1139,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.sports_score_rounded, size: 16),
-                        label: const Text(
-                          'Scorecard & Toss 🏆',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        icon: Icon(
+                          BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot)
+                              ? Icons.sports_score_rounded
+                              : Icons.groups_rounded,
+                          size: 16,
+                        ),
+                        label: Text(
+                          BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot)
+                              ? 'Scorecard & Toss 🏆'
+                              : 'Squad & Pre-Match 🛡️',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF166534),

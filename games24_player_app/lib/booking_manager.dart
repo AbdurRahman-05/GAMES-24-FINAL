@@ -109,6 +109,49 @@ class BookingManager {
     return currentMin < endMin;
   }
 
+  static bool isMatchStarted({String? dateStr, required String timeSlot}) {
+    if (timeSlot.trim().isEmpty) return true;
+    final now = DateTime.now();
+
+    if (dateStr != null && dateStr.trim().isNotEmpty) {
+      final d = dateStr.trim().toLowerCase();
+      if (d == 'tomorrow') return false;
+      if (d == 'yesterday') return true;
+      if (d != 'today') {
+        final parsed = DateTime.tryParse(dateStr.trim());
+        if (parsed != null) {
+          final today = DateTime(now.year, now.month, now.day);
+          final matchDate = DateTime(parsed.year, parsed.month, parsed.day);
+          if (matchDate.isAfter(today)) return false; // future date -> not started
+          if (matchDate.isBefore(today)) return true; // past date -> already past start
+        }
+      }
+    }
+
+    // Date is today:
+    final startMin = parseSlotStartMinutes(timeSlot);
+    if (startMin == -1) return true; // fallback
+    final currentMin = now.hour * 60 + now.minute;
+    return currentMin >= startMin;
+  }
+
+  static int getMinutesUntilMatchStart({String? dateStr, required String timeSlot}) {
+    final startMin = parseSlotStartMinutes(timeSlot);
+    if (startMin == -1) return 0;
+    final now = DateTime.now();
+    final currentMin = now.hour * 60 + now.minute;
+    final diff = startMin - currentMin;
+    return diff > 0 ? diff : 0;
+  }
+
+  static String getFormattedSlotStart({required String timeSlot}) {
+    if (timeSlot.trim().isEmpty) return '';
+    final slotList = timeSlot.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final firstSlot = slotList.isNotEmpty ? slotList.first : timeSlot;
+    final parts = firstSlot.split('-');
+    return parts[0].trim();
+  }
+
   static bool canCancelBooking(Map<String, dynamic> booking) {
     final status = (booking['status'] ?? '').toString().toLowerCase();
     if (status == 'cancelled') return false;
