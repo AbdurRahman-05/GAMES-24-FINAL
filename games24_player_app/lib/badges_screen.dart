@@ -236,10 +236,11 @@ class BadgesScreen extends StatelessWidget {
                   ],
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: badge.isUnlocked
                             ? badge.color.withValues(alpha: 0.12)
@@ -252,18 +253,19 @@ class BadgesScreen extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Flexible(
                                 child: Text(
                                   badge.title,
                                   style: const TextStyle(
-                                    fontSize: 14,
+                                    fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                     color: Color(0xFF111827),
                                   ),
@@ -283,7 +285,7 @@ class BadgesScreen extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 11,
                               color: Color(0xFF6B7280),
-                              height: 1.3,
+                              height: 1.25,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -291,9 +293,10 @@ class BadgesScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           '+${badge.points}',
@@ -305,7 +308,7 @@ class BadgesScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                           decoration: BoxDecoration(
                             color: badge.isUnlocked ? const Color(0xFFF0FDF4) : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(6),
@@ -313,10 +316,12 @@ class BadgesScreen extends StatelessWidget {
                           child: Text(
                             badge.progressText,
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 9.5,
                               fontWeight: FontWeight.w600,
                               color: badge.isUnlocked ? const Color(0xFF166534) : const Color(0xFF64748B),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

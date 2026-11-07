@@ -44,6 +44,84 @@ class PlayerItem {
       );
 }
 
+class PlayerMatchStat {
+  final String name;
+  final String role;
+  int runs;
+  int balls;
+  int fours;
+  int sixes;
+  bool isOut;
+  int ballsBowled;
+  int runsConceded;
+  int wickets;
+  int maidens;
+  int catches;
+  int runOuts;
+
+  PlayerMatchStat({
+    required this.name,
+    this.role = 'Player',
+    this.runs = 0,
+    this.balls = 0,
+    this.fours = 0,
+    this.sixes = 0,
+    this.isOut = false,
+    this.ballsBowled = 0,
+    this.runsConceded = 0,
+    this.wickets = 0,
+    this.maidens = 0,
+    this.catches = 0,
+    this.runOuts = 0,
+  });
+
+  String get strikeRate =>
+      balls > 0 ? ((runs / balls) * 100).toStringAsFixed(1) : '0.0';
+
+  String get oversBowled => '${ballsBowled ~/ 6}.${ballsBowled % 6}';
+
+  String get economy => ballsBowled > 0
+      ? (runsConceded / (ballsBowled / 6.0)).toStringAsFixed(1)
+      : '0.0';
+
+  int get fantasyPoints => (runs * 1) + (wickets * 25) + (catches * 10) + (sixes * 2);
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'role': role,
+        'runs': runs,
+        'balls': balls,
+        'fours': fours,
+        'sixes': sixes,
+        'isOut': isOut,
+        'ballsBowled': ballsBowled,
+        'runsConceded': runsConceded,
+        'wickets': wickets,
+        'maidens': maidens,
+        'catches': catches,
+        'runOuts': runOuts,
+      };
+
+  factory PlayerMatchStat.fromJson(Map<String, dynamic> json) =>
+      PlayerMatchStat(
+        name: json['name']?.toString() ?? 'Player',
+        role: json['role']?.toString() ?? 'Player',
+        runs: int.tryParse(json['runs']?.toString() ?? '0') ?? 0,
+        balls: int.tryParse(json['balls']?.toString() ?? '0') ?? 0,
+        fours: int.tryParse(json['fours']?.toString() ?? '0') ?? 0,
+        sixes: int.tryParse(json['sixes']?.toString() ?? '0') ?? 0,
+        isOut: json['isOut'] == true,
+        ballsBowled:
+            int.tryParse(json['ballsBowled']?.toString() ?? '0') ?? 0,
+        runsConceded:
+            int.tryParse(json['runsConceded']?.toString() ?? '0') ?? 0,
+        wickets: int.tryParse(json['wickets']?.toString() ?? '0') ?? 0,
+        maidens: int.tryParse(json['maidens']?.toString() ?? '0') ?? 0,
+        catches: int.tryParse(json['catches']?.toString() ?? '0') ?? 0,
+        runOuts: int.tryParse(json['runOuts']?.toString() ?? '0') ?? 0,
+      );
+}
+
 class MatchResultItem {
   final String id;
   final String bookingId;
@@ -63,6 +141,15 @@ class MatchResultItem {
   final String winningMargin;
   final bool userWon;
   final DateTime completedAt;
+  final String? manOfTheMatch;
+  final String? highestScorer;
+  final String? bestBowler;
+  final String? bestFielder;
+  final int? overs;
+  final String? teamSize;
+  final int matchIndex;
+  final List<PlayerMatchStat> playerStatsA;
+  final List<PlayerMatchStat> playerStatsB;
 
   MatchResultItem({
     required this.id,
@@ -83,7 +170,18 @@ class MatchResultItem {
     required this.winningMargin,
     required this.userWon,
     DateTime? completedAt,
-  }) : completedAt = completedAt ?? DateTime.now();
+    this.manOfTheMatch,
+    this.highestScorer,
+    this.bestBowler,
+    this.bestFielder,
+    this.overs,
+    this.teamSize,
+    this.matchIndex = 1,
+    List<PlayerMatchStat>? playerStatsA,
+    List<PlayerMatchStat>? playerStatsB,
+  })  : completedAt = completedAt ?? DateTime.now(),
+        playerStatsA = playerStatsA ?? [],
+        playerStatsB = playerStatsB ?? [];
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -104,6 +202,15 @@ class MatchResultItem {
         'winningMargin': winningMargin,
         'userWon': userWon,
         'completedAt': completedAt.toIso8601String(),
+        'manOfTheMatch': manOfTheMatch,
+        'highestScorer': highestScorer,
+        'bestBowler': bestBowler,
+        'bestFielder': bestFielder,
+        'overs': overs,
+        'teamSize': teamSize,
+        'matchIndex': matchIndex,
+        'playerStatsA': playerStatsA.map((s) => s.toJson()).toList(),
+        'playerStatsB': playerStatsB.map((s) => s.toJson()).toList(),
       };
 
   factory MatchResultItem.fromJson(Map<String, dynamic> json) =>
@@ -134,6 +241,21 @@ class MatchResultItem {
         completedAt: json['completedAt'] != null
             ? DateTime.tryParse(json['completedAt'].toString()) ?? DateTime.now()
             : DateTime.now(),
+        manOfTheMatch: json['manOfTheMatch']?.toString(),
+        highestScorer: json['highestScorer']?.toString(),
+        bestBowler: json['bestBowler']?.toString(),
+        bestFielder: json['bestFielder']?.toString(),
+        overs: int.tryParse(json['overs']?.toString() ?? ''),
+        teamSize: json['teamSize']?.toString(),
+        matchIndex: int.tryParse(json['matchIndex']?.toString() ?? '1') ?? 1,
+        playerStatsA: (json['playerStatsA'] as List?)
+                ?.map((s) => PlayerMatchStat.fromJson(Map<String, dynamic>.from(s)))
+                .toList() ??
+            [],
+        playerStatsB: (json['playerStatsB'] as List?)
+                ?.map((s) => PlayerMatchStat.fromJson(Map<String, dynamic>.from(s)))
+                .toList() ??
+            [],
       );
 }
 
@@ -155,6 +277,18 @@ class MatchScoreManager {
   List<MatchResultItem> get matches => List.unmodifiable(_matches);
   int get extraWins => _extraWins;
   int get extraMatches => _extraMatches;
+
+  MatchResultItem? getLatestResultForBooking(String bookingId) {
+    try {
+      return _matches.firstWhere((m) => m.bookingId == bookingId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<MatchResultItem> getAllResultsForBooking(String bookingId) {
+    return _matches.where((m) => m.bookingId == bookingId).toList();
+  }
 
   Future<void> _loadFromStorage() async {
     try {

@@ -987,6 +987,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final locationOrCourt =
             (booking['courtName'] ?? booking['location'] ?? 'Turf 1')
                 .toString();
+        final isCompleted = !BookingManager.isBookingActive(booking) ||
+            (booking['status'] ?? '').toString().toLowerCase() == 'completed';
+        final isStarted = BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot);
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
@@ -1135,24 +1138,31 @@ class _HomeScreenState extends State<HomeScreen> {
                                 sport: (booking['sport'] ?? 'Cricket').toString(),
                                 date: dateStr,
                                 timeSlot: timeSlot,
+                                initialTab: isCompleted ? 3 : 0,
                               ),
                             ),
                           );
                         },
                         icon: Icon(
-                          BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot)
-                              ? Icons.sports_score_rounded
-                              : Icons.groups_rounded,
+                          isCompleted
+                              ? Icons.analytics_outlined
+                              : (isStarted
+                                  ? Icons.sports_score_rounded
+                                  : Icons.groups_rounded),
                           size: 16,
                         ),
                         label: Text(
-                          BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot)
-                              ? 'Scorecard & Toss 🏆'
-                              : 'Squad & Pre-Match 🛡️',
+                          isCompleted
+                              ? 'Match Details & Result 📋'
+                              : (isStarted
+                                  ? 'Scorecard & Toss 🏆'
+                                  : 'Squad & Pre-Match 🛡️'),
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF166534),
+                          backgroundColor: isCompleted
+                              ? const Color(0xFF0F6D38)
+                              : const Color(0xFF166534),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

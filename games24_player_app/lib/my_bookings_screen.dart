@@ -651,48 +651,67 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF166534),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MatchScorecardScreen(
-                                bookingId: bookingId.toString(),
-                                turfName: turfName,
-                                sport: booking['sport']?.toString() ?? 'Cricket',
-                                date: dateStr,
-                                timeSlot: timeSlot,
+                      Builder(
+                        builder: (context) {
+                          final isCompleted = isPast ||
+                              (booking['status'] ?? '')
+                                      .toString()
+                                      .toLowerCase() ==
+                                  'completed';
+                          final isStarted = BookingManager.isMatchStarted(
+                              dateStr: dateStr, timeSlot: timeSlot);
+
+                          return ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isCompleted
+                                  ? const Color(0xFF0F6D38)
+                                  : const Color(0xFF166534),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MatchScorecardScreen(
+                                    bookingId: bookingId.toString(),
+                                    turfName: turfName,
+                                    sport: booking['sport']?.toString() ?? 'Cricket',
+                                    date: dateStr,
+                                    timeSlot: timeSlot,
+                                    initialTab: isCompleted ? 3 : 0,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              isCompleted
+                                  ? Icons.analytics_outlined
+                                  : (isStarted
+                                      ? Icons.sports_score_rounded
+                                      : Icons.groups_rounded),
+                              size: 16,
+                            ),
+                            label: Text(
+                              isCompleted
+                                  ? 'Match Details & Result 📋'
+                                  : (isStarted
+                                      ? 'Scorecard & Toss 🏆'
+                                      : 'Squad & Pre-Match 🛡️'),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           );
                         },
-                        icon: Icon(
-                          BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot)
-                              ? Icons.sports_score_rounded
-                              : Icons.groups_rounded,
-                          size: 16,
-                        ),
-                        label: Text(
-                          BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot)
-                              ? 'Scorecard & Toss 🏆'
-                              : 'Squad & Pre-Match 🛡️',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
                       if (!isPast && BookingManager.canCancelBooking(booking))
                         TextButton.icon(
