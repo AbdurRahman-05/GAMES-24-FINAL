@@ -82,10 +82,45 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   int _currentCricketInning = 1; // 1 = 1st batting team, 2 = 2nd batting team
   int? _cricketTarget;
 
-  // Active Player Tracking (Cricket)
-  PlayerItem? _striker;
-  PlayerItem? _nonStriker;
-  PlayerItem? _currentBowler;
+  // Active Player Tracking per Inning (Cricket)
+  PlayerItem? _striker1;
+  PlayerItem? _nonStriker1;
+  PlayerItem? _currentBowler1;
+
+  PlayerItem? _striker2;
+  PlayerItem? _nonStriker2;
+  PlayerItem? _currentBowler2;
+
+  PlayerItem? get _striker =>
+      _currentCricketInning == 1 ? _striker1 : _striker2;
+  set _striker(PlayerItem? p) {
+    if (_currentCricketInning == 1) {
+      _striker1 = p;
+    } else {
+      _striker2 = p;
+    }
+  }
+
+  PlayerItem? get _nonStriker =>
+      _currentCricketInning == 1 ? _nonStriker1 : _nonStriker2;
+  set _nonStriker(PlayerItem? p) {
+    if (_currentCricketInning == 1) {
+      _nonStriker1 = p;
+    } else {
+      _nonStriker2 = p;
+    }
+  }
+
+  PlayerItem? get _currentBowler =>
+      _currentCricketInning == 1 ? _currentBowler1 : _currentBowler2;
+  set _currentBowler(PlayerItem? p) {
+    if (_currentCricketInning == 1) {
+      _currentBowler1 = p;
+    } else {
+      _currentBowler2 = p;
+    }
+  }
+
   final Map<String, PlayerMatchStat> _playerStats = {};
 
   // Football Scorecard State
@@ -433,9 +468,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Over completed! Next bowler: ${candidates.first.name}'),
+        content: Text('Over completed! Next bowler: ${candidates.first.name} ($_currentBowlingTeam)'),
         backgroundColor: const Color(0xFF166534),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: 'Change',
           textColor: Colors.amberAccent,
@@ -450,25 +485,132 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     });
   }
 
-  void _showSelectBowlerDialog(List<PlayerItem> squad) {
+  void _showSelectBowlerDialog(List<PlayerItem> squad, {bool isOpeningBowler = false}) {
+    if (squad.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No players in $_currentBowlingTeam squad. Add players in Teams tab.'),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Select Next Bowler'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: squad.map((p) {
-            return ListTile(
-              title: Text(p.name),
-              subtitle: Text(p.role),
-              selected: p == _currentBowler,
-              onTap: () {
-                setState(() => _currentBowler = p);
-                Navigator.pop(ctx);
-              },
-            );
-          }).toList(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.sports_cricket, color: Color(0xFF166534), size: 22),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                isOpeningBowler
+                    ? 'Select Opening Bowler (Inning $_currentCricketInning)'
+                    : 'Select Bowler (Inning $_currentCricketInning)',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
         ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Bowling Team: $_currentBowlingTeam',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+              ),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 320),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: squad.length,
+                  separatorBuilder: (_, index) => const Divider(height: 1),
+                  itemBuilder: (context, idx) {
+                    final p = squad[idx];
+                    final st = _getStat(p);
+                    final isCurrent = p == _currentBowler;
+
+                    return ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: isCurrent ? const Color(0xFF166534) : const Color(0xFFEFF6FF),
+                        child: Text(
+                          p.avatarInitials,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isCurrent ? Colors.white : const Color(0xFF1D4ED8),
+                          ),
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              p.name,
+                              style: TextStyle(
+                                fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isCurrent)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5F5EB),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Active',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF166534),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        st.ballsBowled > 0
+                            ? '${st.wickets}/${st.runsConceded} (${st.oversBowled} ov) • Econ: ${st.economy}'
+                            : '${p.role} • Yet to bowl',
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      onTap: () {
+                        setState(() => _currentBowler = p);
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Now Bowling: ${p.name} for $_currentBowlingTeam (Inning $_currentCricketInning)! 🎯'),
+                            backgroundColor: const Color(0xFF166534),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+        ],
       ),
     );
   }
@@ -649,10 +791,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               Navigator.pop(ctx);
               setState(() {
                 _currentCricketInning = 2;
-                _striker = null;
-                _nonStriker = null;
-                _currentBowler = null;
                 _ensureActivePlayers();
+              });
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (mounted) {
+                  _showSelectBowlerDialog(_currentBowlingSquad, isOpeningBowler: true);
+                }
               });
             },
             child: const Text('Start 2nd Innings Batting 🏏'),
@@ -977,9 +1121,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       _tossWinner = null;
       _tossDecision = null;
       _playerStats.clear();
-      _striker = null;
-      _nonStriker = null;
-      _currentBowler = null;
+      _striker1 = null;
+      _nonStriker1 = null;
+      _currentBowler1 = null;
+      _striker2 = null;
+      _nonStriker2 = null;
+      _currentBowler2 = null;
       _matchIndex = _slotMatches.length + 1;
     });
     _tabController.animateTo(1);
@@ -2113,7 +2260,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   selected: _currentCricketInning == 1,
                   selectedColor: const Color(0xFF166534),
                   labelStyle: TextStyle(color: _currentCricketInning == 1 ? Colors.white : Colors.black87),
-                  onSelected: (_) => setState(() => _currentCricketInning = 1),
+                  onSelected: (_) {
+                    setState(() {
+                      _currentCricketInning = 1;
+                      _ensureActivePlayers();
+                    });
+                  },
                 ),
               ),
               const SizedBox(width: 8),
@@ -2123,7 +2275,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   selected: _currentCricketInning == 2,
                   selectedColor: const Color(0xFF166534),
                   labelStyle: TextStyle(color: _currentCricketInning == 2 ? Colors.white : Colors.black87),
-                  onSelected: (_) => setState(() => _currentCricketInning = 2),
+                  onSelected: (_) {
+                    setState(() {
+                      _currentCricketInning = 2;
+                      _ensureActivePlayers();
+                    });
+                  },
                 ),
               ),
             ],
@@ -2238,12 +2395,38 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('On Crease & Bowling:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                    TextButton(
-                      style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(50, 24)),
-                      onPressed: () {
-                        setState(() => _swapStrike());
-                      },
-                      child: const Text('🔄 Swap Strike', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                    Row(
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            minimumSize: const Size(40, 24),
+                          ),
+                          onPressed: () {
+                            setState(() => _swapStrike());
+                          },
+                          child: const Text('🔄 Swap', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                        ),
+                        const SizedBox(width: 4),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFEFF6FF),
+                            foregroundColor: const Color(0xFF1D4ED8),
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: const Size(40, 24),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: Color(0xFFBFDBFE)),
+                            ),
+                          ),
+                          icon: const Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
+                          label: const Text('Change Bowler 🔄', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          onPressed: () {
+                            _showSelectBowlerDialog(_currentBowlingSquad);
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -2311,38 +2494,49 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Bowler
+                    // Bowler (Clickable to change bowler in both innings)
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFBFDBFE)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
-                                SizedBox(width: 4),
-                                Text('Bowler', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _currentBowler?.name ?? 'Bowler',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              _currentBowler != null
-                                  ? '${_getStat(_currentBowler!).wickets}/${_getStat(_currentBowler!).runsConceded} (${_getStat(_currentBowler!).oversBowled} ov)'
-                                  : '0/0 (0.0 ov)',
-                              style: const TextStyle(fontSize: 11, color: Colors.black87),
-                            ),
-                          ],
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => _showSelectBowlerDialog(_currentBowlingSquad),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFF93C5FD)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: const [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
+                                      SizedBox(width: 4),
+                                      Text('Bowler', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
+                                    ],
+                                  ),
+                                  Icon(Icons.swap_horiz_rounded, size: 14, color: Color(0xFF1D4ED8)),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _currentBowler?.name ?? 'Select Bowler',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                _currentBowler != null
+                                    ? '${_getStat(_currentBowler!).wickets}/${_getStat(_currentBowler!).runsConceded} (${_getStat(_currentBowler!).oversBowled} ov)'
+                                    : 'Tap to pick 🎯',
+                                style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
