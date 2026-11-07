@@ -196,6 +196,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             availabilityText: 'Available Today',
             isAvailable: true,
             sports: sportsList,
+            sportsList: turf['sportsList'],
           ),
         );
       }).toList(),
@@ -271,6 +272,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       price: option['price'] ?? '₹1,200',
                       location: option['location'] ?? 'Madurai',
                       sports: sports,
+                      sportsList: option['sportsList'],
                     ),
                   ),
                 );
@@ -455,6 +457,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     required String availabilityText,
     required bool isAvailable,
     required List<String> sports,
+    List<dynamic>? sportsList,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -715,6 +718,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               price: price,
                               location: location,
                               sports: sports,
+                              sportsList: sportsList,
                             ),
                           ),
                         );

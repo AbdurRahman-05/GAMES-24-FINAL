@@ -12,10 +12,10 @@ export interface TurfSportConfig {
 }
 
 export const DEFAULT_TURF_SPORTS: TurfSportConfig[] = [
-  { name: 'Cricket', hourlyRate: 1000.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 2 },
-  { name: 'Football', hourlyRate: 1400.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 2 },
-  { name: 'Pickle ball', hourlyRate: 800.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 2 },
-  { name: 'Badminton', hourlyRate: 450.0, weekdayRate: 1200.0, weekendRate: 1600.0, nightRate: 1400.0, courtsAvailable: 4 },
+  { name: 'Cricket', hourlyRate: 1000.0, weekdayRate: 1000.0, weekendRate: 1200.0, nightRate: 1200.0, courtsAvailable: 2 },
+  { name: 'Football', hourlyRate: 1400.0, weekdayRate: 1400.0, weekendRate: 1600.0, nightRate: 1600.0, courtsAvailable: 2 },
+  { name: 'Pickle ball', hourlyRate: 800.0, weekdayRate: 800.0, weekendRate: 1000.0, nightRate: 1000.0, courtsAvailable: 2 },
+  { name: 'Badminton', hourlyRate: 450.0, weekdayRate: 450.0, weekendRate: 550.0, nightRate: 500.0, courtsAvailable: 4 },
 ];
 
 function normalizePhotoList(urls: any): string[] {
@@ -79,6 +79,23 @@ export function parseSlotStartMinutes(slot: string): number {
   if (!slot) return -1;
   const startPart = slot.split('-')[0].trim();
   const [timePart, period] = startPart.split(' ');
+  if (!timePart) return -1;
+  const [hStr, mStr] = timePart.split(':');
+  let hour = parseInt(hStr, 10);
+  const minutes = parseInt(mStr || '0', 10);
+  if (isNaN(hour)) return -1;
+  if (period?.toUpperCase() === 'PM' && hour !== 12) hour += 12;
+  if (period?.toUpperCase() === 'AM' && hour === 12) hour = 0;
+  return hour * 60 + (isNaN(minutes) ? 0 : minutes);
+}
+
+export function parseSlotEndMinutes(slot: string): number {
+  if (!slot) return -1;
+  const slotList = slot.split(',').map((s) => s.trim()).filter(Boolean);
+  const lastSlot = slotList.length > 0 ? slotList[slotList.length - 1] : slot;
+  const parts = lastSlot.split('-');
+  const endPart = (parts.length > 1 ? parts[1] : parts[0]).trim();
+  const [timePart, period] = endPart.split(' ');
   if (!timePart) return -1;
   const [hStr, mStr] = timePart.split(':');
   let hour = parseInt(hStr, 10);
@@ -380,10 +397,17 @@ export class TurfService {
       }
     }
 
-    const dayRate = matchedSport ? matchedSport.hourlyRate : (turf.dayRate || 1000.0);
-    const nightRate = matchedSport ? matchedSport.nightRate : (turf.nightRate || 1400.0);
-    const weekdayRate = matchedSport ? matchedSport.weekdayRate : (turf.weekdayRate || 1200.0);
-    const weekendRate = matchedSport ? matchedSport.weekendRate : (turf.weekendRate || 1600.0);
+    const baseSportRate = matchedSport ? matchedSport.hourlyRate : (turf.dayRate || 1000.0);
+    const dayRate = baseSportRate;
+    const weekdayRate = (matchedSport && matchedSport.weekdayRate && Math.abs(matchedSport.weekdayRate - 1200) > 0.1)
+      ? matchedSport.weekdayRate
+      : baseSportRate;
+    const weekendRate = (matchedSport && matchedSport.weekendRate && Math.abs(matchedSport.weekendRate - 1600) > 0.1)
+      ? matchedSport.weekendRate
+      : (matchedSport ? matchedSport.hourlyRate : (turf.weekendRate || 1600.0));
+    const nightRate = (matchedSport && matchedSport.nightRate && Math.abs(matchedSport.nightRate - 1400) > 0.1)
+      ? matchedSport.nightRate
+      : (matchedSport ? matchedSport.hourlyRate : (turf.nightRate || 1400.0));
 
     const openingTime = turf.dashboard?.openingTime || '06:00 AM';
     const closingTime = turf.dashboard?.closingTime || '10:00 PM';
@@ -406,6 +430,10 @@ export class TurfService {
 
     const bookedSlotMap = new Map<string, any>();
     for (const b of bookings) {
+      const parts = (b.timeSlot || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+      for (const p of parts) {
+        bookedSlotMap.set(p, b);
+      }
       bookedSlotMap.set(b.timeSlot, b);
     }
 
@@ -581,9 +609,17 @@ export class TurfService {
   async bookSlot(id: number, body: any) {
     const { customerName, customerPhone, sport, courtName, date, timeSlot, amount, paymentMethod } = body || {};
 
-    if (!date || !timeSlot) {
-      throw new BadRequestException('Date and timeSlot are required for booking');
+    const rawSlots: string[] = Array.isArray(body?.timeSlots) && body.timeSlots.length > 0
+      ? body.timeSlots
+      : String(timeSlot || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+
+    if (!date || rawSlots.length === 0) {
+      throw new BadRequestException('Date and at least one timeSlot are required for booking');
     }
+
+    // Sort slots by start time
+    rawSlots.sort((a, b) => parseSlotStartMinutes(a) - parseSlotStartMinutes(b));
+    const combinedTimeSlot = rawSlots.join(', ');
 
     // Validate that slot is not in the past or within 5-minute cutoff
     const { todayStr, currentMinutes } = getISTDateAndMinutes();
@@ -591,9 +627,11 @@ export class TurfService {
       throw new BadRequestException('Cannot book slots for a past date');
     }
     if (date === todayStr) {
-      const startMin = parseSlotStartMinutes(timeSlot);
-      if (startMin !== -1 && currentMinutes >= startMin - 5) {
-        throw new BadRequestException('This slot is no longer available for booking (booking closes 5 minutes before slot start time)');
+      for (const s of rawSlots) {
+        const startMin = parseSlotStartMinutes(s);
+        if (startMin !== -1 && currentMinutes >= startMin - 5) {
+          throw new BadRequestException(`Slot "${s}" is no longer available for booking (booking closes 5 minutes before slot start time)`);
+        }
       }
     }
 
@@ -614,7 +652,7 @@ export class TurfService {
         verifiedAdminId_date_timeSlot: {
           verifiedAdminId,
           date,
-          timeSlot,
+          timeSlot: rawSlots[0],
         },
       },
     });
@@ -622,9 +660,11 @@ export class TurfService {
     let bookingAmount = Number(amount);
     if (!bookingAmount || isNaN(bookingAmount)) {
       if (activeOffer?.offerPrice) {
-        bookingAmount = activeOffer.offerPrice;
+        bookingAmount = activeOffer.offerPrice * rawSlots.length;
       } else {
-        bookingAmount = 1200.0;
+        const sportConfig = this.getSportsForTurf(verifiedAdminId).find(s => s.name.toLowerCase() === (sport || 'Football').toLowerCase());
+        const ratePerSlot = sportConfig?.hourlyRate || turf.dayRate || 1000.0;
+        bookingAmount = ratePerSlot * rawSlots.length;
       }
     }
 
@@ -632,32 +672,33 @@ export class TurfService {
     try {
       booking = await this.prisma.$transaction(
         async (tx) => {
-          // 1. Atomically check if slot is already booked inside transaction
-          const existing = await tx.turfBooking.findFirst({
-            where: {
-              verifiedAdminId,
-              date,
-              timeSlot,
-              status: { not: 'Cancelled' },
-            },
-          });
-          if (existing) {
-            throw new ConflictException(`Slot "${timeSlot}" on ${date} is already booked!`);
+          // 1. Atomically check each requested slot
+          for (const s of rawSlots) {
+            const existing = await tx.turfBooking.findFirst({
+              where: {
+                verifiedAdminId,
+                date,
+                timeSlot: { contains: s },
+                status: { not: 'Cancelled' },
+              },
+            });
+            if (existing) {
+              throw new ConflictException(`Slot "${s}" on ${date} is already booked!`);
+            }
+
+            const blocked = await tx.blockedSlot.findFirst({
+              where: {
+                verifiedAdminId,
+                date,
+                timeSlot: s,
+              },
+            });
+            if (blocked) {
+              throw new BadRequestException(`Slot "${s}" on ${date} is blocked for maintenance by the owner.`);
+            }
           }
 
-          // 2. Atomically check if slot is blocked by owner inside transaction
-          const blocked = await tx.blockedSlot.findFirst({
-            where: {
-              verifiedAdminId,
-              date,
-              timeSlot,
-            },
-          });
-          if (blocked) {
-            throw new BadRequestException(`Slot "${timeSlot}" on ${date} is blocked for maintenance by the owner.`);
-          }
-
-          // 3. Atomically create the booking (protected by unique index & serializable lock)
+          // 2. Atomically create the booking (protected by unique index & serializable lock)
           return await tx.turfBooking.create({
             data: {
               verifiedAdminId,
@@ -666,7 +707,7 @@ export class TurfService {
               sport: sport || 'Football',
               courtName: courtName || `${turf.venueName} Main Arena`,
               date,
-              timeSlot,
+              timeSlot: combinedTimeSlot,
               amount: bookingAmount,
               paymentMethod: paymentMethod || 'UPI (GPay)',
               status: 'Confirmed',
@@ -679,7 +720,7 @@ export class TurfService {
       );
     } catch (err: any) {
       if (err?.code === 'P2002' || err?.code === 'P2034' || err instanceof ConflictException || err?.status === 409) {
-        throw new ConflictException(`Slot "${timeSlot}" on ${date} was just booked by another user. Please choose another available slot.`);
+        throw new ConflictException(`One or more of the selected slots "${combinedTimeSlot}" on ${date} were just booked by another user. Please choose available slots.`);
       }
       throw err;
     }
@@ -1001,13 +1042,25 @@ export class TurfService {
       ],
     });
 
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const { todayStr, currentMinutes } = getISTDateAndMinutes();
 
     return bookings.map((b) => {
       const photos = normalizePhotoList(b.verifiedAdmin?.photoUrls);
 
-      const isActive = b.status !== 'Cancelled' && b.date >= todayStr;
+      let isActive = false;
+      if (b.status !== 'Cancelled') {
+        if (b.date > todayStr) {
+          isActive = true;
+        } else if (b.date === todayStr) {
+          const endMin = parseSlotEndMinutes(b.timeSlot);
+          if (endMin === -1) {
+            isActive = true;
+          } else {
+            // Once current time reaches or passes slot end time, slot is completed
+            isActive = currentMinutes < endMin;
+          }
+        }
+      }
 
       return {
         id: b.id,
@@ -1041,6 +1094,21 @@ export class TurfService {
     });
     if (!booking) {
       throw new NotFoundException(`Booking #${bookingId} not found`);
+    }
+
+    // 3-hour cancellation rule:
+    const { todayStr, currentMinutes } = getISTDateAndMinutes();
+    if (booking.date < todayStr) {
+      throw new BadRequestException('Past bookings cannot be cancelled.');
+    }
+    if (booking.date === todayStr) {
+      const startMin = parseSlotStartMinutes(booking.timeSlot);
+      if (startMin !== -1) {
+        // Must be at least 180 minutes (3 hours) prior to slot start time
+        if (currentMinutes > startMin - 180) {
+          throw new BadRequestException('Bookings can only be cancelled at least 3 hours prior to the slot start time.');
+        }
+      }
     }
 
     const updated = await this.prisma.turfBooking.update({

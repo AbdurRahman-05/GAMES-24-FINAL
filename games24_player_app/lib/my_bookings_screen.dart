@@ -687,7 +687,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           ),
                         ),
                       ),
-                      if (!isPast)
+                      if (!isPast && BookingManager.canCancelBooking(booking))
                         TextButton.icon(
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.red.shade700,
@@ -705,7 +705,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 ),
                                 title: const Text('Cancel Booking?'),
                                 content: Text(
-                                  'Are you sure you want to cancel your slot at $turfName ($formattedDateTime)?',
+                                  'Are you sure you want to cancel your slot at $turfName ($formattedDateTime)?\n\nNote: Cancellations are only permitted up to 3 hours prior to play time.',
                                 ),
                                 actions: [
                                   TextButton(
@@ -729,7 +729,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                             content: Text(
                                               success
                                                   ? 'Booking cancelled successfully.'
-                                                  : 'Failed to cancel booking.',
+                                                  : 'Failed to cancel booking (must be at least 3 hours before start time).',
                                             ),
                                           ),
                                         );
@@ -748,6 +748,30 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        )
+                      else if (!isPast)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFFDE68A)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_clock_outlined, size: 13, color: Color(0xFFB45309)),
+                              SizedBox(width: 4),
+                              Text(
+                                'Locked (<3h)',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFB45309),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],

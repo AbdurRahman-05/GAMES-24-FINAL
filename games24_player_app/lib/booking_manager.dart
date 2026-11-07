@@ -42,40 +42,113 @@ class BookingManager {
 
   List<Map<String, dynamic>> get allBookings => bookingsNotifier.value;
 
-  List<Map<String, dynamic>> get activeBookings {
+  static int parseSlotEndMinutes(String timeSlotStr) {
+    if (timeSlotStr.trim().isEmpty) return -1;
+    final slotList = timeSlotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final lastSlot = slotList.isNotEmpty ? slotList.last : timeSlotStr;
+    final parts = lastSlot.split('-');
+    final endPart = (parts.length > 1 ? parts[1] : parts[0]).trim();
+
+    final reg = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)', caseSensitive: false);
+    final match = reg.firstMatch(endPart);
+    if (match == null) return -1;
+    int hour = int.tryParse(match.group(1) ?? '') ?? 0;
+    final min = int.tryParse(match.group(2) ?? '') ?? 0;
+    final period = (match.group(3) ?? '').toUpperCase();
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+    return hour * 60 + min;
+  }
+
+  static int parseSlotStartMinutes(String timeSlotStr) {
+    if (timeSlotStr.trim().isEmpty) return -1;
+    final slotList = timeSlotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final firstSlot = slotList.isNotEmpty ? slotList.first : timeSlotStr;
+    final parts = firstSlot.split('-');
+    final startPart = parts[0].trim();
+
+    final reg = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)', caseSensitive: false);
+    final match = reg.firstMatch(startPart);
+    if (match == null) return -1;
+    int hour = int.tryParse(match.group(1) ?? '') ?? 0;
+    final min = int.tryParse(match.group(2) ?? '') ?? 0;
+    final period = (match.group(3) ?? '').toUpperCase();
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+    return hour * 60 + min;
+  }
+
+  static bool isBookingActive(Map<String, dynamic> b) {
+    final status = (b['status'] ?? '').toString().toLowerCase();
+    if (status == 'cancelled') return false;
+
     final now = DateTime.now();
     final todayStr =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final date = (b['date'] ?? '').toString().trim();
+    if (date.isEmpty) return false;
 
-    return bookingsNotifier.value.where((b) {
-      final status = (b['status'] ?? '').toString().toLowerCase();
-      if (status == 'cancelled') return false;
+    if (date.compareTo(todayStr) < 0) {
+      return false; // In the past
+    }
+    if (date.compareTo(todayStr) > 0) {
+      return true; // Future date
+    }
 
-      // If server provided isActive flag
+    // Today: check slot end time
+    final timeSlot = (b['timeSlot'] ?? '').toString();
+    final endMin = parseSlotEndMinutes(timeSlot);
+    if (endMin == -1) {
       if (b.containsKey('isActive') && b['isActive'] is bool) {
         return b['isActive'] == true;
       }
+      return true;
+    }
 
-      final date = (b['date'] ?? '').toString();
-      return date.isNotEmpty && date.compareTo(todayStr) >= 0;
-    }).toList();
+    final currentMin = now.hour * 60 + now.minute;
+    return currentMin < endMin;
+  }
+
+  static bool canCancelBooking(Map<String, dynamic> booking) {
+    final status = (booking['status'] ?? '').toString().toLowerCase();
+    if (status == 'cancelled') return false;
+
+    final dateStr = (booking['date'] ?? '').toString().trim();
+    final timeSlot = (booking['timeSlot'] ?? '').toString().trim();
+    if (dateStr.isEmpty) return false;
+
+    try {
+      final dateParts = dateStr.split('-');
+      if (dateParts.length != 3) return false;
+      final year = int.parse(dateParts[0]);
+      final month = int.parse(dateParts[1]);
+      final day = int.parse(dateParts[2]);
+
+      final startMin = parseSlotStartMinutes(timeSlot);
+      if (startMin == -1) return false;
+
+      final slotHour = startMin ~/ 60;
+      final slotMinute = startMin % 60;
+      final slotStartTime = DateTime(year, month, day, slotHour, slotMinute);
+      final cutoffTime = slotStartTime.subtract(const Duration(hours: 3));
+
+      final now = DateTime.now();
+      // Allowed only if strictly before 3 hours prior to start time
+      return now.isBefore(cutoffTime);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  List<Map<String, dynamic>> get activeBookings {
+    return bookingsNotifier.value.where((b) => isBookingActive(b)).toList();
   }
 
   List<Map<String, dynamic>> get completedBookings {
-    final now = DateTime.now();
-    final todayStr =
-        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-
     return bookingsNotifier.value.where((b) {
       final status = (b['status'] ?? '').toString().toLowerCase();
       if (status == 'cancelled') return false;
-
-      if (b.containsKey('isActive') && b['isActive'] is bool) {
-        return b['isActive'] == false;
-      }
-
-      final date = (b['date'] ?? '').toString();
-      return date.isNotEmpty && date.compareTo(todayStr) < 0;
+      return !isBookingActive(b);
     }).toList();
   }
 

@@ -516,10 +516,10 @@ class _TurfOwnerProfileScreenState
               ),
               onPressed: () {
                 final sportName = nameCtrl.text.trim().isEmpty ? selectedSportName : nameCtrl.text.trim();
-                final rate = double.tryParse(rateCtrl.text) ?? 1200.0;
+                final rate = double.tryParse(rateCtrl.text) ?? 1000.0;
                 final wkdayRate = double.tryParse(weekdayRateCtrl.text) ?? rate;
-                final wkendRate = double.tryParse(weekendRateCtrl.text) ?? (rate * 1.3);
-                final nightRate = double.tryParse(nightRateCtrl.text) ?? (rate * 1.25);
+                final wkendRate = double.tryParse(weekendRateCtrl.text) ?? rate;
+                final nightRate = double.tryParse(nightRateCtrl.text) ?? rate;
                 final courtsCount = int.tryParse(courtsCtrl.text) ?? 1;
 
                 ref.read(turfProfileProvider.notifier).addSport(
@@ -623,12 +623,17 @@ class _TurfOwnerProfileScreenState
               foregroundColor: Colors.white,
             ),
             onPressed: () {
+              final bRate = double.tryParse(baseRateCtrl.text) ?? sport.hourlyRate;
+              final wkRate = double.tryParse(weekdayRateCtrl.text) ?? bRate;
+              final wkendRate = double.tryParse(weekendRateCtrl.text) ?? bRate;
+              final nRate = double.tryParse(nightRateCtrl.text) ?? bRate;
+
               ref.read(turfProfileProvider.notifier).updateSportRate(
                     sport.name,
-                    hourlyRate: double.tryParse(baseRateCtrl.text) ?? sport.hourlyRate,
-                    weekdayRate: double.tryParse(weekdayRateCtrl.text) ?? sport.weekdayRate,
-                    weekendRate: double.tryParse(weekendRateCtrl.text) ?? sport.weekendRate,
-                    nightRate: double.tryParse(nightRateCtrl.text) ?? sport.nightRate,
+                    hourlyRate: bRate,
+                    weekdayRate: wkRate,
+                    weekendRate: wkendRate,
+                    nightRate: nRate,
                   );
               Navigator.pop(ctx);
               ToastUtils.showSuccess(context, "Updated rates for ${sport.name}!");

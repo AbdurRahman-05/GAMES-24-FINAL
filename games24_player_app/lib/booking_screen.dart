@@ -284,7 +284,9 @@ class _BookingScreenState extends State<BookingScreen> {
             _buildChallengeOption(),
             const SizedBox(height: 24),
             _buildBookingSummary(),
-            const SizedBox(height: 100),
+            const SizedBox(height: 16),
+            _buildCautionNotice(),
+            const SizedBox(height: 120),
           ],
         ),
       ),
@@ -1036,7 +1038,6 @@ class _BookingScreenState extends State<BookingScreen> {
                                   if (_selectedTimeSlots.contains(slot['time'])) {
                                     _selectedTimeSlots.remove(slot['time']);
                                   } else {
-                                    _selectedTimeSlots.clear();
                                     _selectedTimeSlots.add(slot['time']);
                                   }
                                 });
@@ -1386,7 +1387,14 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(height: 8),
             _buildSummaryRow('Selected Sport', _selectedSport),
             const SizedBox(height: 8),
-            _buildSummaryRow('Slots Count', '$slotCount slot(s)'),
+            _buildSummaryRow('Slots Count', '$slotCount slot(s) • $slotCount hr(s)'),
+            if (_selectedTimeSlots.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _buildSummaryRow(
+                'Selected Slots',
+                (_selectedTimeSlots.toList()..sort((a, b) => AppConstants.parseSlotStartMinutes(a).compareTo(AppConstants.parseSlotStartMinutes(b)))).join(', '),
+              ),
+            ],
             const SizedBox(height: 8),
             _buildSummaryRow('Court Fee (Hourly Rate)', '₹$courtFee'),
             const SizedBox(height: 8),
@@ -1416,6 +1424,55 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCautionNotice() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFFDE68A)),
+        ),
+        child: const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFD97706),
+              size: 22,
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cancellation Policy Notice',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF92400E),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '• Free cancellation is allowed only up to 3 hours before the slot start time.\n• Slots booked within 3 hours are locked and cannot be cancelled.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF78350F),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -1495,7 +1552,10 @@ class _BookingScreenState extends State<BookingScreen> {
                       return;
                     }
 
-                    final selectedSlot = _selectedTimeSlots.first;
+                    final sortedSlots = _selectedTimeSlots.toList()
+                      ..sort((a, b) => AppConstants.parseSlotStartMinutes(a)
+                          .compareTo(AppConstants.parseSlotStartMinutes(b)));
+                    final combinedSlot = sortedSlots.join(', ');
                     final selectedDate =
                         _dates[_selectedDateIndex]['fullDate']!;
 
@@ -1527,7 +1587,8 @@ class _BookingScreenState extends State<BookingScreen> {
                             'sport': _selectedSport,
                             'courtName': widget.turfName,
                             'date': selectedDate,
-                            'timeSlot': selectedSlot,
+                            'timeSlot': combinedSlot,
+                            'timeSlots': sortedSlots,
                             'amount': courtFee.toDouble(),
                             'paymentMethod': 'UPI (GPay)',
                           }),
@@ -1548,7 +1609,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               bookingObj['date'] = selectedDate;
                             }
                             if (bookingObj['timeSlot'] == null) {
-                              bookingObj['timeSlot'] = selectedSlot;
+                              bookingObj['timeSlot'] = combinedSlot;
                             }
                             if (bookingObj['status'] == null) {
                               bookingObj['status'] = 'Confirmed';
@@ -1575,7 +1636,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 id: 'ch_${DateTime.now().millisecondsSinceEpoch}',
                                 turfName: widget.turfName,
                                 date: selectedDate,
-                                time: selectedSlot,
+                                time: combinedSlot,
                                 sport: _selectedSport,
                                 challengerName: tName,
                                 challengerTeamInitials: initials,
@@ -1612,7 +1673,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                   ],
                                 ),
                                 content: Text(
-                                  'Your slot "$selectedSlot" on $selectedDate at ${widget.turfName} has been booked in realtime!\n\nIt is now saved in the database and updated in both Player and Turf Owner dashboards.',
+                                  'Your slot(s) "$combinedSlot" on $selectedDate at ${widget.turfName} (${sortedSlots.length} hr(s)) have been booked in realtime!\n\nNote: Cancellations are permitted up to 3 hours prior to play time.',
                                 ),
                                 actions: [
                                   ElevatedButton(
