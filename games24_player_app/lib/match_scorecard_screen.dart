@@ -1094,55 +1094,46 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
   }
 
-  void _startRematch() {
-    setState(() {
-      _isMatchCompleted = false;
-      _cricketRunsA = 0;
-      _cricketWicketsA = 0;
-      _cricketBallsA = 0;
-      _cricketTimelineA.clear();
-      _cricketRunsB = 0;
-      _cricketWicketsB = 0;
-      _cricketBallsB = 0;
-      _cricketTimelineB.clear();
-      _currentCricketInning = 1;
-      _cricketTarget = null;
-      _footballGoalsA = 0;
-      _footballGoalsB = 0;
-      _footballEvents.clear();
-      _pointsA = 0;
-      _pointsB = 0;
-      _setsWonA = 0;
-      _setsWonB = 0;
-      _currentSet = 1;
-      _setHistory.clear();
-      _tossCompleted = false;
-      _tossResult = null;
-      _tossWinner = null;
-      _tossDecision = null;
-      _playerStats.clear();
-      _striker1 = null;
-      _nonStriker1 = null;
-      _currentBowler1 = null;
-      _striker2 = null;
-      _nonStriker2 = null;
-      _currentBowler2 = null;
-      _matchIndex = _slotMatches.length + 1;
-    });
-    _tabController.animateTo(1);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Starting Match #$_matchIndex in this slot! Flip coin for toss.'),
-        backgroundColor: const Color(0xFF166534),
-      ),
-    );
-  }
+  bool get _isCompletedMatch =>
+      widget.initialTab == 3 ||
+      _isMatchCompleted ||
+      _loadedResult != null ||
+      _slotMatches.isNotEmpty;
 
   // ---------------------------------------------------------------------------
   // BUILD METHOD
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    if (_isCompletedMatch) {
+      // Completed Match: Show ONLY Match Details, Results, and Awards (NO TabBar, NO Toss/Scorecard tabs)
+      return Scaffold(
+        backgroundColor: const Color(0xFFF9FAFB),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Match Details & Results 📋',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
+              Text(
+                '${widget.turfName} • ${widget.timeSlot}',
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+        body: _buildResultTab(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
@@ -3093,23 +3084,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
 
-          // Detailed Batting & Bowling Scorecards
-          if (_isCricket) ...[
-            _buildDetailedScorecardTable(
-              teamName: result?.teamAName ?? _teamAName,
-              stats: (result?.playerStatsA.isNotEmpty == true) ? result!.playerStatsA : _teamAPlayers.map((p) => _getStat(p)).toList(),
-            ),
-            const SizedBox(height: 14),
-            _buildDetailedScorecardTable(
-              teamName: result?.teamBName ?? _teamBName,
-              stats: (result?.playerStatsB.isNotEmpty == true) ? result!.playerStatsB : _teamBPlayers.map((p) => _getStat(p)).toList(),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // Rematch in Slot Button
+          // Action Button: Back to My Bookings
           SizedBox(
             width: double.infinity,
             height: 48,
@@ -3118,25 +3095,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 backgroundColor: const Color(0xFF166534),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
               ),
-              icon: const Icon(Icons.replay_rounded),
-              label: Text(
-                'Start Rematch (Match #${_slotMatches.length + 1} in Slot) 🔄',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              onPressed: _startRematch,
-            ),
-          ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
+              icon: const Icon(Icons.arrow_back_rounded, size: 18),
+              label: const Text('Back to My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               onPressed: () => Navigator.pop(context),
-              child: const Text('Back to My Bookings', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
           const SizedBox(height: 20),
@@ -3181,98 +3144,6 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailedScorecardTable({
-    required String teamName,
-    required List<PlayerMatchStat> stats,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Scorecard: $teamName',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF166534)),
-          ),
-          const Divider(height: 16),
-          if (stats.isEmpty)
-            const Text('No individual stats recorded.', style: TextStyle(fontSize: 12, color: Colors.grey))
-          else ...[
-            const Row(
-              children: [
-                Expanded(flex: 3, child: Text('Batter', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('R', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('B', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('4s', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('6s', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(flex: 2, child: Text('SR', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ...stats.map((s) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        '${s.name}${s.isOut ? "" : " *"}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: s.isOut ? FontWeight.normal : FontWeight.bold,
-                          color: s.isOut ? Colors.black87 : const Color(0xFF166534),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Expanded(child: Text('${s.runs}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
-                    Expanded(child: Text('${s.balls}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.grey))),
-                    Expanded(child: Text('${s.fours}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-                    Expanded(child: Text('${s.sixes}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-                    Expanded(flex: 2, child: Text(s.strikeRate, textAlign: TextAlign.right, style: const TextStyle(fontSize: 11, color: Colors.black87))),
-                  ],
-                ),
-              );
-            }),
-            const Divider(height: 16),
-            const Row(
-              children: [
-                Expanded(flex: 3, child: Text('Bowler', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('O', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('M', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('R', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(child: Text('W', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-                Expanded(flex: 2, child: Text('Econ', textAlign: TextAlign.right, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey))),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ...stats.where((s) => s.ballsBowled > 0).map((s) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Row(
-                  children: [
-                    Expanded(flex: 3, child: Text(s.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-                    Expanded(child: Text(s.oversBowled, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-                    Expanded(child: Text('${s.maidens}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.grey))),
-                    Expanded(child: Text('${s.runsConceded}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
-                    Expanded(child: Text('${s.wickets}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)))),
-                    Expanded(flex: 2, child: Text(s.economy, textAlign: TextAlign.right, style: const TextStyle(fontSize: 11, color: Colors.black87))),
-                  ],
-                ),
-              );
-            }),
-          ],
         ],
       ),
     );
