@@ -3,7 +3,7 @@ import { PrismaService } from './prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import fs from 'fs';
 import path from 'path';
-import { DEFAULT_TURF_SPORTS } from './turf.service.js';
+import { DEFAULT_TURF_SPORTS, generateTimeSlots } from './turf.service.js';
 
 function getAdminSports(adminId: number) {
   try {
@@ -587,14 +587,23 @@ export class AuthService {
     const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
     const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
 
+    const countBookingSlots = (timeSlot?: string): number => {
+      if (!timeSlot) return 1;
+      const parts = timeSlot.split(',').map((s: string) => s.trim()).filter(Boolean);
+      return parts.length > 0 ? parts.length : 1;
+    };
+
     const todayBookingsCount = todayBookings.length;
     const todayPaidBookings = todayBookings.filter((b: any) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
     const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
-    const bookedSlotsCount = todayBookings.length;
-    const freeSlotsCount = Math.max(0, 18 - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
-    const occupancyPercent = Math.round((bookedSlotsCount / 18) * 100);
+    const bookedSlotsCount = todayBookings.reduce((acc: number, b: any) => acc + countBookingSlots(b.timeSlot), 0);
+    const openingTime = dashboard.openingTime || '05:00 AM';
+    const closingTime = dashboard.closingTime || '11:00 PM';
+    const totalSlots = generateTimeSlots(openingTime, closingTime).length || 18;
+    const freeSlotsCount = Math.max(0, totalSlots - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
+    const occupancyPercent = totalSlots > 0 ? Math.round((bookedSlotsCount / totalSlots) * 100) : 0;
     const slotsBadge = `${occupancyPercent}% Full`;
     const realCancelledCount = Math.max(cancelledBookings.length, dashboard.cancelledCount || 0);
     const shiftedCount = dashboard.shiftedCount || 0;
@@ -619,6 +628,26 @@ export class AuthService {
       todayBookingsGrowth: growthBadge,
       revenueBadge: revBadge,
     };
+
+    await this.prisma.adminDashboard.update({
+      where: { verifiedAdminId: verifiedAdmin.id },
+      data: {
+        todayBookingsCount,
+        todayPaidBookings,
+        todayCashBookings,
+        monthTotalBookings,
+        monthRevenue,
+        bookedSlotsCount,
+        freeSlotsCount,
+        slotsBadge,
+        cancelledCount: realCancelledCount,
+        shiftedCount,
+        cancelledTotal,
+        cancelledBadge,
+        todayBookingsGrowth: growthBadge,
+        revenueBadge: revBadge,
+      },
+    }).catch(() => {});
 
     return {
       success: true,
@@ -687,14 +716,23 @@ export class AuthService {
     const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
     const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
 
+    const countBookingSlots = (timeSlot?: string): number => {
+      if (!timeSlot) return 1;
+      const parts = timeSlot.split(',').map((s: string) => s.trim()).filter(Boolean);
+      return parts.length > 0 ? parts.length : 1;
+    };
+
     const todayBookingsCount = todayBookings.length;
     const todayPaidBookings = todayBookings.filter((b: any) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
     const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
-    const bookedSlotsCount = todayBookings.length;
-    const freeSlotsCount = Math.max(0, 18 - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
-    const occupancyPercent = Math.round((bookedSlotsCount / 18) * 100);
+    const bookedSlotsCount = todayBookings.reduce((acc: number, b: any) => acc + countBookingSlots(b.timeSlot), 0);
+    const openingTime = dashboard.openingTime || '05:00 AM';
+    const closingTime = dashboard.closingTime || '11:00 PM';
+    const totalSlots = generateTimeSlots(openingTime, closingTime).length || 18;
+    const freeSlotsCount = Math.max(0, totalSlots - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
+    const occupancyPercent = totalSlots > 0 ? Math.round((bookedSlotsCount / totalSlots) * 100) : 0;
     const slotsBadge = `${occupancyPercent}% Full`;
     const realCancelledCount = Math.max(cancelledBookings.length, dashboard.cancelledCount || 0);
     const shiftedCount = dashboard.shiftedCount || 0;
@@ -719,6 +757,26 @@ export class AuthService {
       todayBookingsGrowth: growthBadge,
       revenueBadge: revBadge,
     };
+
+    await this.prisma.adminDashboard.update({
+      where: { verifiedAdminId: admin.id },
+      data: {
+        todayBookingsCount,
+        todayPaidBookings,
+        todayCashBookings,
+        monthTotalBookings,
+        monthRevenue,
+        bookedSlotsCount,
+        freeSlotsCount,
+        slotsBadge,
+        cancelledCount: realCancelledCount,
+        shiftedCount,
+        cancelledTotal,
+        cancelledBadge,
+        todayBookingsGrowth: growthBadge,
+        revenueBadge: revBadge,
+      },
+    }).catch(() => {});
 
     return {
       success: true,

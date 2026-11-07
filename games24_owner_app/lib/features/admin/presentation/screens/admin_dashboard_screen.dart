@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
 import '../../providers/admin_providers.dart';
@@ -613,10 +614,32 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ? profile.monthRevenue
         : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
 
-    final dynamicFreeSlots = (18 - dynamicTodayCount - profile.blockedSlotsCount) > 0
-        ? (18 - dynamicTodayCount - profile.blockedSlotsCount)
+    int dynamicBookedSlotsCount = 0;
+    for (final b in activeTodayList) {
+      final slotStr = b.effectiveTimeSlot;
+      if (slotStr.isNotEmpty) {
+        final slots = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+        dynamicBookedSlotsCount += slots.isNotEmpty ? slots.length : 1;
+      } else {
+        dynamicBookedSlotsCount += 1;
+      }
+    }
+    if (dynamicBookedSlotsCount == 0 && activeTodayList.isNotEmpty) {
+      dynamicBookedSlotsCount = activeTodayList.length;
+    }
+
+    final operatingSlots = AppConstants.generateTimeSlots(
+      profile.openingTime.isNotEmpty ? profile.openingTime : '05:00 AM',
+      profile.closingTime.isNotEmpty ? profile.closingTime : '11:00 PM',
+    );
+    final totalDailySlots = operatingSlots.isNotEmpty ? operatingSlots.length : 18;
+
+    final dynamicFreeSlots = (totalDailySlots - dynamicBookedSlotsCount - profile.blockedSlotsCount) > 0
+        ? (totalDailySlots - dynamicBookedSlotsCount - profile.blockedSlotsCount)
         : 0;
-    final dynamicOccupancyPct = ((dynamicTodayCount / 18.0) * 100).round();
+    final dynamicOccupancyPct = totalDailySlots > 0
+        ? ((dynamicBookedSlotsCount / totalDailySlots.toDouble()) * 100).round()
+        : 0;
     final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
 
     return Column(
@@ -769,7 +792,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               child: _buildBentoMiniCard(
                 title: "Court Occupancy",
                 value: '$dynamicFreeSlots Free',
-                subtitle: '$dynamicTodayCount Booked • ${profile.blockedSlotsCount} Off',
+                subtitle: '$dynamicBookedSlotsCount of $totalDailySlots Booked • ${profile.blockedSlotsCount} Off',
                 badgeText: dynamicSlotsBadge,
                 badgeColor: const Color(0xFF0284C7),
                 icon: Icons.pie_chart_rounded,

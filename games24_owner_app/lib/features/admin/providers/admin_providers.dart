@@ -1056,8 +1056,31 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       if (b.isCancelled) return false;
       final d = b.effectiveDate;
       return d == nowStr || d.toLowerCase() == 'today';
-    }).length;
-    final finalTodayBookingsCount = activeTodayBookings > 0 ? activeTodayBookings : todayBookingsCount;
+    }).toList();
+    final finalTodayBookingsCount = activeTodayBookings.isNotEmpty ? activeTodayBookings.length : todayBookingsCount;
+
+    int activeBookedSlotsCount = 0;
+    for (final b in activeTodayBookings) {
+      final slotStr = b.effectiveTimeSlot;
+      if (slotStr.isNotEmpty) {
+        final slots = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+        activeBookedSlotsCount += slots.isNotEmpty ? slots.length : 1;
+      } else {
+        activeBookedSlotsCount += 1;
+      }
+    }
+    if (activeBookedSlotsCount == 0 && finalTodayBookingsCount > 0) {
+      activeBookedSlotsCount = finalTodayBookingsCount;
+    }
+
+    final totalDailySlots = AppConstants.generateTimeSlots(openingTime, closingTime).length;
+    final totalSlotsSafe = totalDailySlots > 0 ? totalDailySlots : 18;
+    final blockedSlotsCount = int.tryParse((dash['blockedSlotsCount'] ?? data['blockedSlotsCount'])?.toString() ?? '') ?? 0;
+    final dynamicFreeSlotsCount = (totalSlotsSafe - activeBookedSlotsCount - blockedSlotsCount) > 0
+        ? (totalSlotsSafe - activeBookedSlotsCount - blockedSlotsCount)
+        : 0;
+    final dynamicOccupancyPct = totalSlotsSafe > 0 ? ((activeBookedSlotsCount / totalSlotsSafe.toDouble()) * 100).round() : 0;
+    final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
 
     state = state.copyWith(
       venueName: venueName,
@@ -1101,10 +1124,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
       monthTotalBookings: monthTotalBookings,
       revenueBadge: (dash['revenueBadge'] ?? data['revenueBadge'])?.toString() ?? '₹0 GMV',
-      freeSlotsCount: int.tryParse((dash['freeSlotsCount'] ?? data['freeSlotsCount'])?.toString() ?? '') ?? 0,
-      bookedSlotsCount: finalTodayBookingsCount,
-      blockedSlotsCount: int.tryParse((dash['blockedSlotsCount'] ?? data['blockedSlotsCount'])?.toString() ?? '') ?? 0,
-      slotsBadge: (dash['slotsBadge'] ?? data['slotsBadge'])?.toString() ?? '0% Full',
+      freeSlotsCount: dynamicFreeSlotsCount,
+      bookedSlotsCount: activeBookedSlotsCount,
+      blockedSlotsCount: blockedSlotsCount,
+      slotsBadge: dynamicSlotsBadge,
       cancelledTotal: parsedCancelledTotal,
       cancelledCount: parsedCancelledCount,
       shiftedCount: parsedShiftedCount,

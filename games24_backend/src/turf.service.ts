@@ -132,7 +132,7 @@ export function getISTDateAndMinutes(): { todayStr: string; currentMinutes: numb
   }
 }
 
-function generateTimeSlots(openingTime: string, closingTime: string): string[] {
+export function generateTimeSlots(openingTime: string, closingTime: string): string[] {
   let startHour = parseHour(openingTime || '06:00 AM');
   let endHour = parseHour(closingTime || '11:00 PM');
   if (endHour === 0 && (closingTime || '').toUpperCase().includes('AM')) endHour = 24;
@@ -1088,6 +1088,96 @@ export class TurfService {
     });
   }
 
+  async recalculateDashboardMetrics(verifiedAdminId: number) {
+    try {
+      const { todayStr } = getISTDateAndMinutes();
+      const now = new Date();
+      const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      const allBookings = await this.prisma.turfBooking.findMany({
+        where: { verifiedAdminId },
+      });
+
+      const activeBookings = allBookings.filter((b) => b.status !== 'Cancelled');
+      const cancelledBookings = allBookings.filter((b) => b.status === 'Cancelled');
+      const todayBookings = activeBookings.filter((b) => b.date === todayStr);
+      const monthBookings = activeBookings.filter((b) => b.date && b.date.startsWith(monthPrefix));
+
+      const countBookingSlots = (timeSlot?: string): number => {
+        if (!timeSlot) return 1;
+        const parts = timeSlot.split(',').map((s) => s.trim()).filter(Boolean);
+        return parts.length > 0 ? parts.length : 1;
+      };
+
+      const todayCount = todayBookings.length;
+      const todayPaid = todayBookings.filter((b) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
+      const todayCash = todayCount - todayPaid;
+      const monthTotal = monthBookings.length;
+      const monthRev = monthBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+      const bookedSlots = todayBookings.reduce((acc, b) => acc + countBookingSlots(b.timeSlot), 0);
+
+      const blockedCount = await this.prisma.blockedSlot.count({
+        where: { verifiedAdminId, date: todayStr },
+      });
+
+      const dash = await this.prisma.adminDashboard.findUnique({
+        where: { verifiedAdminId },
+      });
+
+      const openingTime = dash?.openingTime || '05:00 AM';
+      const closingTime = dash?.closingTime || '11:00 PM';
+      const totalSlots = generateTimeSlots(openingTime, closingTime).length || 18;
+      const freeSlots = Math.max(0, totalSlots - bookedSlots - blockedCount);
+      const occPercent = totalSlots > 0 ? Math.round((bookedSlots / totalSlots) * 100) : 0;
+      const slotsBadge = `${occPercent}% Full`;
+
+      const realCancelledCount = cancelledBookings.length;
+      const shiftedCount = dash?.shiftedCount || 0;
+      const cancelledTotal = realCancelledCount + shiftedCount;
+
+      await this.prisma.adminDashboard.upsert({
+        where: { verifiedAdminId },
+        create: {
+          verifiedAdminId,
+          todayBookingsCount: todayCount,
+          todayPaidBookings: todayPaid,
+          todayCashBookings: todayCash,
+          todayBookingsGrowth: todayCount > 0 ? `+${todayCount} Today` : '0% Today',
+          monthRevenue: monthRev,
+          monthTotalBookings: monthTotal,
+          revenueBadge: `₹${monthRev.toLocaleString('en-IN')} GMV`,
+          freeSlotsCount: freeSlots,
+          bookedSlotsCount: bookedSlots,
+          blockedSlotsCount: blockedCount,
+          slotsBadge,
+          cancelledCount: realCancelledCount,
+          shiftedCount,
+          cancelledTotal,
+          cancelledBadge: `${cancelledTotal} Tracked`,
+        },
+        update: {
+          todayBookingsCount: todayCount,
+          todayPaidBookings: todayPaid,
+          todayCashBookings: todayCash,
+          todayBookingsGrowth: todayCount > 0 ? `+${todayCount} Today` : '0% Today',
+          monthRevenue: monthRev,
+          monthTotalBookings: monthTotal,
+          revenueBadge: `₹${monthRev.toLocaleString('en-IN')} GMV`,
+          freeSlotsCount: freeSlots,
+          bookedSlotsCount: bookedSlots,
+          blockedSlotsCount: blockedCount,
+          slotsBadge,
+          cancelledCount: realCancelledCount,
+          shiftedCount,
+          cancelledTotal,
+          cancelledBadge: `${cancelledTotal} Tracked`,
+        },
+      });
+    } catch (e) {
+      console.error('Error recalculating admin dashboard:', e);
+    }
+  }
+
   async cancelBooking(bookingId: number) {
     const booking = await this.prisma.turfBooking.findUnique({
       where: { id: bookingId },
@@ -1115,6 +1205,8 @@ export class TurfService {
       where: { id: bookingId },
       data: { status: 'Cancelled' },
     });
+
+    await this.recalculateDashboardMetrics(booking.verifiedAdminId);
 
     return {
       success: true,
