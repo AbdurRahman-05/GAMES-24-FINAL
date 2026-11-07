@@ -264,6 +264,8 @@ class TurfBookingHistoryItem {
   final String customerPhone;
   final String sport;
   final String courtName;
+  final String date;
+  final String timeSlot;
   final String dateTimeSlot;
   final double amount;
   final String paymentMethod;
@@ -275,11 +277,118 @@ class TurfBookingHistoryItem {
     required this.customerPhone,
     required this.sport,
     required this.courtName,
+    this.date = '',
+    this.timeSlot = '',
     required this.dateTimeSlot,
     required this.amount,
     required this.paymentMethod,
     required this.status,
   });
+
+  String get effectiveDate {
+    if (date.trim().isNotEmpty) return date.trim();
+    if (dateTimeSlot.contains(',')) {
+      return dateTimeSlot.split(',')[0].trim();
+    }
+    return '';
+  }
+
+  String get effectiveTimeSlot {
+    if (timeSlot.trim().isNotEmpty) return timeSlot.trim();
+    if (dateTimeSlot.contains(',')) {
+      final idx = dateTimeSlot.indexOf(',');
+      return dateTimeSlot.substring(idx + 1).trim();
+    }
+    return dateTimeSlot.trim();
+  }
+
+  static int parseSlotEndMinutes(String slotStr) {
+    if (slotStr.trim().isEmpty) return -1;
+    final slotList = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final lastSlot = slotList.isNotEmpty ? slotList.last : slotStr;
+    final parts = lastSlot.split('-');
+    final endPart = (parts.length > 1 ? parts[1] : parts[0]).trim();
+
+    final reg = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)', caseSensitive: false);
+    final match = reg.firstMatch(endPart);
+    if (match == null) return -1;
+    int hour = int.tryParse(match.group(1) ?? '') ?? 0;
+    final min = int.tryParse(match.group(2) ?? '') ?? 0;
+    final period = (match.group(3) ?? '').toUpperCase();
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+    return hour * 60 + min;
+  }
+
+  static int parseSlotStartMinutes(String slotStr) {
+    if (slotStr.trim().isEmpty) return -1;
+    final slotList = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final firstSlot = slotList.isNotEmpty ? slotList.first : slotStr;
+    final parts = firstSlot.split('-');
+    final startPart = parts[0].trim();
+
+    final reg = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)', caseSensitive: false);
+    final match = reg.firstMatch(startPart);
+    if (match == null) return -1;
+    int hour = int.tryParse(match.group(1) ?? '') ?? 0;
+    final min = int.tryParse(match.group(2) ?? '') ?? 0;
+    final period = (match.group(3) ?? '').toUpperCase();
+    if (period == 'PM' && hour != 12) hour += 12;
+    if (period == 'AM' && hour == 12) hour = 0;
+    return hour * 60 + min;
+  }
+
+  bool isCompleted([DateTime? nowTime]) {
+    final now = nowTime ?? DateTime.now();
+    final s = status.toLowerCase();
+    if (s == 'cancelled') return false;
+    if (s == 'completed') return true;
+
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final d = effectiveDate;
+
+    if (d.isNotEmpty) {
+      if (d.toLowerCase() == 'yesterday') return true;
+      if (d.toLowerCase() == 'tomorrow') return false;
+      if (d.compareTo(todayStr) < 0) return true;
+      if (d.compareTo(todayStr) > 0) return false;
+    }
+
+    final endMin = parseSlotEndMinutes(effectiveTimeSlot);
+    if (endMin == -1) return false;
+    final currentMin = now.hour * 60 + now.minute;
+    return currentMin >= endMin;
+  }
+
+  bool isLiveNow([DateTime? nowTime]) {
+    final now = nowTime ?? DateTime.now();
+    final s = status.toLowerCase();
+    if (s == 'cancelled') return false;
+    if (isCompleted(now)) return false;
+
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final d = effectiveDate;
+
+    if (d.isNotEmpty && d.toLowerCase() != 'today' && d != todayStr) {
+      return false;
+    }
+
+    final startMin = parseSlotStartMinutes(effectiveTimeSlot);
+    final endMin = parseSlotEndMinutes(effectiveTimeSlot);
+    if (startMin == -1 || endMin == -1) return false;
+
+    final currentMin = now.hour * 60 + now.minute;
+    return currentMin >= startMin && currentMin < endMin;
+  }
+
+  bool isUpcoming([DateTime? nowTime]) {
+    final now = nowTime ?? DateTime.now();
+    final s = status.toLowerCase();
+    if (s == 'cancelled') return false;
+    if (isCompleted(now)) return false;
+    if (isLiveNow(now)) return false;
+    return true;
+  }
 }
 
 class TurfCourtVenueItem {
@@ -887,13 +996,20 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     if (data['bookings'] is List && (data['bookings'] as List).isNotEmpty) {
       bookingHistory = (data['bookings'] as List).map((b) {
         final amt = (b['amount'] is num) ? (b['amount'] as num).toDouble() : 1000.0;
+        final dateVal = (b['date'] ?? '').toString();
+        final timeSlotVal = (b['timeSlot'] ?? '').toString();
+        final dt = dateVal.isNotEmpty && timeSlotVal.isNotEmpty
+            ? "$dateVal, $timeSlotVal"
+            : (dateVal.isNotEmpty ? dateVal : timeSlotVal);
         return TurfBookingHistoryItem(
           id: 'BK-${b['id']}',
           customerName: b['customerName']?.toString() ?? 'Player Customer',
           customerPhone: b['customerPhone']?.toString() ?? '',
           sport: b['sport']?.toString() ?? 'Football',
           courtName: b['courtName']?.toString() ?? venueName,
-          dateTimeSlot: "${b['date']}, ${b['timeSlot']}",
+          date: dateVal,
+          timeSlot: timeSlotVal,
+          dateTimeSlot: dt,
           amount: amt,
           paymentMethod: b['paymentMethod']?.toString() ?? 'UPI (GPay)',
           status: b['status']?.toString() ?? 'Confirmed',

@@ -18,7 +18,7 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   bool _isRefreshing = false;
-  String _selectedFilter = 'All'; // 'All', 'Live Now', 'Upcoming', 'Checked In'
+  String _selectedFilter = 'Upcoming'; // Default to 'Upcoming' with exact time-aware filtering
 
   @override
   void initState() {
@@ -579,6 +579,26 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   // --- 4. FINANCIAL & OPERATIONAL BENTO SECTION ---
   Widget _buildPerformanceBentoSection(TurfProfileState profile) {
+    final now = DateTime.now();
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final allList = _getAllBookingsSource(profile);
+
+    // Dynamic metrics based on actual bookings
+    final todayList = allList.where((b) {
+      final d = b.effectiveDate;
+      return d == todayStr || d.toLowerCase() == 'today';
+    }).toList();
+
+    final dynamicTodayCount = todayList.isNotEmpty ? todayList.length : profile.todayBookingsCount;
+    final dynamicTodayPaid = todayList.isNotEmpty
+        ? todayList.where((b) => !b.paymentMethod.toLowerCase().contains('cash')).length
+        : profile.todayPaidBookings;
+    final dynamicTodayCash = dynamicTodayCount - dynamicTodayPaid;
+
+    final dynamicMonthRev = profile.monthRevenue > 0
+        ? profile.monthRevenue
+        : allList.fold<double>(0.0, (sum, b) => sum + b.amount);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -662,7 +682,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       border: Border.all(color: const Color(0xFF4ADE80).withValues(alpha: 0.5)),
                     ),
                     child: Text(
-                      profile.revenueBadge.isNotEmpty ? profile.revenueBadge : 'Realtime',
+                      '₹${dynamicMonthRev.toInt()} GMV',
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -674,8 +694,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                profile.monthRevenue > 0
-                    ? '₹${NumberFormat('#,##,###').format(profile.monthRevenue.toInt())}'
+                dynamicMonthRev > 0
+                    ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
                     : '₹0',
                 style: const TextStyle(
                   fontSize: 28,
@@ -686,7 +706,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${profile.monthTotalBookings} bookings recorded this calendar month',
+                '${allList.length} bookings recorded this calendar month',
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.white.withValues(alpha: 0.75),
@@ -694,11 +714,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              // Mini progress indicator bar
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
-                  value: profile.monthRevenue > 0 ? (profile.monthRevenue / 50000.0).clamp(0.05, 1.0) : 0.05,
+                  value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
                   minHeight: 5,
                   backgroundColor: Colors.white.withValues(alpha: 0.15),
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
@@ -716,9 +735,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Today's Bookings",
-                value: '${profile.todayBookingsCount}',
-                subtitle: '${profile.todayPaidBookings} Paid • ${profile.todayCashBookings} Cash',
-                badgeText: profile.todayBookingsGrowth,
+                value: '$dynamicTodayCount',
+                subtitle: '$dynamicTodayPaid Paid • $dynamicTodayCash Cash',
+                badgeText: '+$dynamicTodayCount Today',
                 badgeColor: const Color(0xFF16A34A),
                 icon: Icons.confirmation_number_rounded,
                 iconColor: const Color(0xFF154D36),
@@ -729,9 +748,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Court Occupancy",
-                value: '${profile.freeSlotsCount} Free',
-                subtitle: '${profile.bookedSlotsCount} Booked • ${profile.blockedSlotsCount} Off',
-                badgeText: profile.slotsBadge,
+                value: '${profile.freeSlotsCount > 0 ? profile.freeSlotsCount : 12} Free',
+                subtitle: '$dynamicTodayCount Booked • ${profile.blockedSlotsCount} Off',
+                badgeText: profile.slotsBadge.isNotEmpty ? profile.slotsBadge : 'Live',
                 badgeColor: const Color(0xFF0284C7),
                 icon: Icons.pie_chart_rounded,
                 iconColor: const Color(0xFF0284C7),
@@ -1083,6 +1102,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     TurfProfileState profile,
     List<TurfBookingHistoryItem> bookings,
   ) {
+    final now = DateTime.now();
+    final allList = _getAllBookingsSource(profile);
+    final allCount = allList.length;
+    final upcomingCount = allList.where((b) => b.isUpcoming(now)).length;
+    final liveNowCount = allList.where((b) => b.isLiveNow(now)).length;
+    final completedCount = allList.where((b) => b.isCompleted(now)).length;
+    final cancelledCount = allList.where((b) => b.status.toLowerCase() == 'cancelled').length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1102,7 +1129,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 ),
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF154D36).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
@@ -1125,21 +1152,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
 
-        // Filter Pills
-        Row(
-          children: [
-            _buildFilterPill('All'),
-            const SizedBox(width: 6),
-            _buildFilterPill('Upcoming'),
-            const SizedBox(width: 6),
-            _buildFilterPill('Live Now'),
-            const SizedBox(width: 6),
-            _buildFilterPill('Checked In'),
-          ],
+        // Filter Pills with Real Dynamic Counts
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              _buildFilterPill('Upcoming', upcomingCount),
+              const SizedBox(width: 8),
+              _buildFilterPill('All', allCount),
+              const SizedBox(width: 8),
+              _buildFilterPill('Live Now', liveNowCount),
+              const SizedBox(width: 8),
+              _buildFilterPill('Completed', completedCount),
+              if (cancelledCount > 0) ...[
+                const SizedBox(width: 8),
+                _buildFilterPill('Cancelled', cancelledCount),
+              ],
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
 
         // Booking Cards List
         if (bookings.isNotEmpty)
@@ -1150,36 +1185,200 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildFilterPill(String title) {
+  Widget _buildFilterPill(String title, int count) {
     final isSelected = _selectedFilter == title;
     return InkWell(
       onTap: () => setState(() => _selectedFilter = title),
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF154D36) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.5 : 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF154D36).withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? Colors.white : const Color(0xFF64748B),
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFF475569),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: isSelected ? Colors.white : const Color(0xFF64748B),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
+  Widget _buildBookingScheduleDisplay(TurfBookingHistoryItem booking) {
+    final now = DateTime.now();
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final tomorrow = now.add(const Duration(days: 1));
+    final tomorrowStr = "${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}";
+
+    String dateLabel = booking.effectiveDate;
+    if (dateLabel == todayStr || dateLabel.toLowerCase() == 'today') {
+      dateLabel = 'Today';
+    } else if (dateLabel == tomorrowStr || dateLabel.toLowerCase() == 'tomorrow') {
+      dateLabel = 'Tomorrow';
+    } else if (dateLabel.isNotEmpty) {
+      try {
+        final parsed = DateTime.tryParse(dateLabel);
+        if (parsed != null) {
+          dateLabel = DateFormat('d MMM yyyy').format(parsed);
+        }
+      } catch (_) {}
+    }
+
+    final slotStr = booking.effectiveTimeSlot;
+    final slotList = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.calendar_today_rounded, size: 11, color: Color(0xFF64748B)),
+            const SizedBox(width: 4),
+            Text(
+              dateLabel.isNotEmpty ? dateLabel : 'Today',
+              style: const TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            if (slotList.length > 1) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${slotList.length} Slots (${slotList.length} hrs)',
+                  style: const TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF154D36),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 3),
+        if (slotList.length <= 1)
+          Row(
+            children: [
+              const Icon(Icons.access_time_rounded, size: 11.5, color: Color(0xFF154D36)),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  slotStr.isNotEmpty ? slotStr : 'Time slot confirmed',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF154D36),
+                  ),
+                ),
+              ),
+            ],
+          )
+        else
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: slotList.map((slot) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFFCBD5E1)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.access_time_rounded, size: 10, color: Color(0xFF334155)),
+                  const SizedBox(width: 3),
+                  Text(
+                    slot,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
+          ),
+      ],
+    );
+  }
+
   Widget _buildProBookingCard(BuildContext context, TurfBookingHistoryItem booking) {
+    final now = DateTime.now();
+    final isCompleted = booking.isCompleted(now);
+    final isLiveNow = booking.isLiveNow(now);
+    final isCancelled = booking.status.toLowerCase() == 'cancelled';
     final isUpi = booking.paymentMethod.toUpperCase().contains('UPI') || booking.paymentMethod.toUpperCase().contains('GPAY');
-    final isLiveNow = booking.dateTimeSlot.toLowerCase().contains('now') || booking.dateTimeSlot.toLowerCase().contains('live');
-    final isCheckedIn = booking.status.toLowerCase().contains('completed') || booking.status.toLowerCase().contains('checked');
+
+    // Dynamic Pill Badge Styling
+    Color badgeBg;
+    Color badgeTextColor;
+    String badgeLabel;
+
+    if (isCancelled) {
+      badgeBg = const Color(0xFFFEE2E2);
+      badgeTextColor = const Color(0xFFDC2626);
+      badgeLabel = 'CANCELLED';
+    } else if (isCompleted) {
+      badgeBg = const Color(0xFFF1F5F9);
+      badgeTextColor = const Color(0xFF475569);
+      badgeLabel = 'COMPLETED ✓';
+    } else if (isLiveNow) {
+      badgeBg = const Color(0xFFDCFCE7);
+      badgeTextColor = const Color(0xFF15803D);
+      badgeLabel = 'LIVE NOW 🟢';
+    } else {
+      badgeBg = isUpi ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7);
+      badgeTextColor = isUpi ? const Color(0xFF15803D) : const Color(0xFFB45309);
+      badgeLabel = isUpi ? 'PAID ONLINE' : 'PAY AT VENUE';
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1187,7 +1386,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isLiveNow ? const Color(0xFF16A34A) : const Color(0xFFE2E8F0),
+          color: isLiveNow
+              ? const Color(0xFF16A34A)
+              : (isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFCBD5E1)),
           width: isLiveNow ? 1.5 : 1,
         ),
         boxShadow: [
@@ -1243,11 +1444,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                   decoration: BoxDecoration(
-                    color: isLiveNow
-                        ? const Color(0xFFDCFCE7)
-                        : (isCheckedIn ? const Color(0xFFE0E7FF) : (isUpi ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7))),
+                    color: badgeBg,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -1265,15 +1464,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         const SizedBox(width: 4),
                       ],
                       Text(
-                        isLiveNow
-                            ? 'LIVE NOW'
-                            : (isCheckedIn ? 'CHECKED IN' : (isUpi ? 'PAID ONLINE' : 'PAY AT VENUE')),
+                        badgeLabel,
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
-                          color: isLiveNow
-                              ? const Color(0xFF15803D)
-                              : (isCheckedIn ? const Color(0xFF4338CA) : (isUpi ? const Color(0xFF15803D) : const Color(0xFFB45309))),
+                          color: badgeTextColor,
                         ),
                       ),
                     ],
@@ -1283,16 +1478,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
             const Divider(height: 16, color: Color(0xFFF1F5F9)),
 
-            // Player Info & Time Slot
+            // Player Info & Schedule Breakdown
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   radius: 18,
-                  backgroundColor: const Color(0xFFF1F5F9),
+                  backgroundColor: isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFDCFCE7),
                   child: Text(
                     booking.customerName.isNotEmpty ? booking.customerName[0].toUpperCase() : 'P',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -1308,25 +1507,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Row(
-                        children: [
-                          const Icon(Icons.access_time_rounded, size: 12, color: Color(0xFF64748B)),
-                          const SizedBox(width: 3),
-                          Expanded(
-                            child: Text(
-                              booking.dateTimeSlot,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF334155),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 4),
+                      _buildBookingScheduleDisplay(booking),
+                      const SizedBox(height: 3),
                       Text(
                         booking.courtName,
                         style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
@@ -1340,10 +1523,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   children: [
                     Text(
                       '₹${booking.amount.toInt()}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF154D36),
+                        color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1375,10 +1558,60 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Operational Action Buttons (Gate Check-In + Alter/Shift)
-            Row(
-              children: [
-                if (!isCheckedIn) ...[
+            // Operational Action Buttons
+            if (isCompleted)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF16A34A)),
+                        SizedBox(width: 6),
+                        Text(
+                          'Match Completed & Closed',
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '₹${booking.amount.toInt()} Settled',
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                    ),
+                  ],
+                ),
+              )
+            else if (isCancelled)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF2F2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFECACA)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFFDC2626)),
+                    SizedBox(width: 6),
+                    Text(
+                      'Slot Cancelled & Released',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFDC2626)),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Row(
+                children: [
                   Expanded(
                     flex: 5,
                     child: ElevatedButton.icon(
@@ -1400,34 +1633,33 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                ],
-                Expanded(
-                  flex: 5,
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF334155),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                    ),
-                    icon: const Icon(Icons.published_with_changes_rounded, size: 14),
-                    label: const Text(
-                      'Alter / Shift Slot',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                    onPressed: () => _openAlterModal(
-                      context,
-                      bookingId: booking.id,
-                      playerName: booking.customerName,
-                      time: booking.dateTimeSlot,
-                      courtName: booking.courtName,
+                  Expanded(
+                    flex: 5,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF334155),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                      ),
+                      icon: const Icon(Icons.published_with_changes_rounded, size: 14),
+                      label: const Text(
+                        'Alter / Shift Slot',
+                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () => _openAlterModal(
+                        context,
+                        bookingId: booking.id,
+                        playerName: booking.customerName,
+                        time: booking.effectiveTimeSlot,
+                        courtName: booking.courtName,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),
@@ -1447,21 +1679,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF1F5F9),
               shape: BoxShape.circle,
             ),
             child: const Icon(Icons.event_available_rounded, size: 28, color: Color(0xFF64748B)),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'No matching bookings for this filter',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+          Text(
+            _selectedFilter == 'Upcoming'
+                ? 'No more upcoming bookings today'
+                : 'No matching bookings in "$_selectedFilter"',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'All courts are open for reservations. You can create offline walk-in bookings anytime.',
-            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+          Text(
+            _selectedFilter == 'Upcoming'
+                ? 'All earlier scheduled matches for today are completed. Courts are ready for fresh walk-ins!'
+                : 'All courts are open for reservations. You can create offline walk-in bookings anytime.',
+            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1469,53 +1705,39 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  List<TurfBookingHistoryItem> _getFilteredBookings(TurfProfileState profile) {
-    // If profile has live booking history, use it. Otherwise, provide realistic sample bookings.
-    List<TurfBookingHistoryItem> source = profile.bookingHistory;
-    if (source.isEmpty) {
-      source = [
-        TurfBookingHistoryItem(
-          id: 'BK-98421',
-          customerName: 'Karthik Raja',
-          customerPhone: '9840123456',
-          sport: 'Cricket',
-          courtName: '${profile.venueName.isNotEmpty ? profile.venueName : 'Turf'} - Box Cricket Arena',
-          dateTimeSlot: 'Today, 04:00 PM - 05:00 PM',
-          amount: 1000.0,
-          paymentMethod: 'UPI (GPay)',
-          status: 'Confirmed',
-        ),
-        TurfBookingHistoryItem(
-          id: 'BK-98422',
-          customerName: 'Vigneshwaran S',
-          customerPhone: '9876543210',
-          sport: 'Football',
-          courtName: '${profile.venueName.isNotEmpty ? profile.venueName : 'Turf'} - Main Arena (7v7)',
-          dateTimeSlot: 'Today, 05:00 PM - 06:00 PM (Live Now)',
-          amount: 1400.0,
-          paymentMethod: 'Pay at Venue',
-          status: 'Confirmed',
-        ),
-        TurfBookingHistoryItem(
-          id: 'BK-98420',
-          customerName: 'Mohammed Rizwan',
-          customerPhone: '9443210987',
-          sport: 'Badminton',
-          courtName: '${profile.venueName.isNotEmpty ? profile.venueName : 'Turf'} - Court 1',
-          dateTimeSlot: 'Today, 02:00 PM - 03:00 PM',
-          amount: 450.0,
-          paymentMethod: 'UPI (PhonePe)',
-          status: 'Completed',
-        ),
-      ];
+  List<TurfBookingHistoryItem> _getAllBookingsSource(TurfProfileState profile) {
+    if (profile.bookingHistory.isNotEmpty) {
+      return profile.bookingHistory;
     }
+    return const [
+      TurfBookingHistoryItem(
+        id: 'BK-98421',
+        customerName: 'Karthik Raja',
+        customerPhone: '9840123456',
+        sport: 'Cricket',
+        courtName: 'Box Cricket Arena',
+        date: 'Today',
+        timeSlot: '07:00 PM - 08:00 PM',
+        dateTimeSlot: 'Today, 07:00 PM - 08:00 PM',
+        amount: 1000.0,
+        paymentMethod: 'UPI (GPay)',
+        status: 'Confirmed',
+      ),
+    ];
+  }
+
+  List<TurfBookingHistoryItem> _getFilteredBookings(TurfProfileState profile) {
+    final source = _getAllBookingsSource(profile);
+    final now = DateTime.now();
 
     if (_selectedFilter == 'Live Now') {
-      return source.where((b) => b.dateTimeSlot.toLowerCase().contains('live') || b.dateTimeSlot.toLowerCase().contains('now')).toList();
+      return source.where((b) => b.isLiveNow(now)).toList();
     } else if (_selectedFilter == 'Upcoming') {
-      return source.where((b) => !b.status.toLowerCase().contains('completed') && !b.dateTimeSlot.toLowerCase().contains('live')).toList();
-    } else if (_selectedFilter == 'Checked In') {
-      return source.where((b) => b.status.toLowerCase().contains('completed') || b.status.toLowerCase().contains('checked')).toList();
+      return source.where((b) => b.isUpcoming(now)).toList();
+    } else if (_selectedFilter == 'Completed') {
+      return source.where((b) => b.isCompleted(now)).toList();
+    } else if (_selectedFilter == 'Cancelled') {
+      return source.where((b) => b.status.toLowerCase() == 'cancelled').toList();
     }
     return source;
   }
