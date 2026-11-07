@@ -1234,6 +1234,77 @@ export class TurfService {
     };
   }
 
+  async checkInBooking(verifiedAdminId: number, body: any) {
+    const { bookingId, rawCode } = body || {};
+    let searchId = bookingId;
+
+    if (!searchId && rawCode) {
+      try {
+        const parsed = typeof rawCode === 'string' ? JSON.parse(rawCode) : rawCode;
+        searchId = parsed.bookingId || parsed.id || parsed.numericId;
+      } catch {
+        searchId = rawCode;
+      }
+    }
+
+    if (!searchId) {
+      throw new BadRequestException('Booking ID or QR payload is required for check-in');
+    }
+
+    let numericId: number | undefined;
+    if (typeof searchId === 'number') {
+      numericId = searchId;
+    } else if (typeof searchId === 'string') {
+      const match = searchId.match(/(\d+)/);
+      if (match) {
+        numericId = parseInt(match[1], 10);
+      }
+    }
+
+    const booking = await this.prisma.turfBooking.findFirst({
+      where: {
+        verifiedAdminId,
+        ...(numericId ? { id: numericId } : {}),
+      },
+    });
+
+    if (!booking) {
+      return {
+        success: false,
+        valid: false,
+        message: `Booking ticket "${searchId}" not found for this venue!`,
+      };
+    }
+
+    if (booking.status?.toLowerCase() === 'cancelled') {
+      return {
+        success: false,
+        valid: false,
+        booking,
+        message: `Entry Denied! Booking ${booking.id} (${booking.customerName}) was cancelled.`,
+      };
+    }
+
+    const alreadyChecked = booking.status?.toLowerCase() === 'checked in';
+
+    const updated = await this.prisma.turfBooking.update({
+      where: { id: booking.id },
+      data: { status: 'Checked In' },
+    });
+
+    await this.recalculateDashboardMetrics(verifiedAdminId);
+
+    return {
+      success: true,
+      valid: true,
+      alreadyCheckedIn: alreadyChecked,
+      booking: updated,
+      message: alreadyChecked
+        ? `Pass already checked in for ${booking.customerName}.`
+        : `Gate check-in confirmed for ${booking.customerName}! 🎉`,
+    };
+  }
+
   async getTurfSubscription(id: number) {
     const turf = await this.findVerifiedAdmin(id, true);
     if (!turf) {

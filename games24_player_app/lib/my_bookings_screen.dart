@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'booking_manager.dart';
 import 'match_scorecard_screen.dart';
+import 'booking_qr_pass_modal.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -648,8 +649,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   const SizedBox(height: 16),
                   const Divider(height: 1, color: Color(0xFFF3F4F6)),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Builder(
                         builder: (context) {
@@ -669,7 +673,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
+                                horizontal: 12,
                                 vertical: 8,
                               ),
                               shape: RoundedRectangleBorder(
@@ -701,24 +705,47 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             ),
                             label: Text(
                               isCompleted
-                                  ? 'Match Details & Result 📋'
+                                  ? 'Match Details 📋'
                                   : (isStarted
-                                      ? 'Scorecard & Toss 🏆'
-                                      : 'Squad & Pre-Match 🛡️'),
+                                      ? 'Scorecard 🏆'
+                                      : 'Squad 🛡️'),
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           );
                         },
                       ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F172A),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () => BookingQrPassModal.show(context, booking),
+                        icon: const Icon(Icons.qr_code_2_rounded, size: 16, color: Color(0xFF4ADE80)),
+                        label: const Text(
+                          'Entry Pass 🎟️',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                       if (!isPast && BookingManager.canCancelBooking(booking))
                         TextButton.icon(
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.red.shade700,
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
+                              horizontal: 10,
                               vertical: 6,
                             ),
                           ),

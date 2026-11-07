@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/app_card.dart';
+import 'package:intl/intl.dart';
+
+import '../../../../core/utils/toast_utils.dart';
 import '../../../tournaments/data/models/tournament_model.dart';
-import '../../../tournaments/providers/tournament_provider.dart';
 import '../../../tournaments/presentation/widgets/tournament_bracket_view.dart';
+import '../../../tournaments/providers/tournament_provider.dart';
 import '../../providers/admin_providers.dart';
 
 class AdminTournamentManagerScreen extends ConsumerStatefulWidget {
@@ -54,10 +53,34 @@ class _AdminTournamentManagerScreenState
   final _liveScoreCtrl = TextEditingController();
   final _liveCommentaryCtrl = TextEditingController();
 
+  // Active status filter for Tab 1
+  String _activeFilter = 'All';
+
+  final List<Map<String, String>> _sportsList = const [
+    {'name': 'Cricket', 'emoji': '🏏'},
+    {'name': 'Football', 'emoji': '⚽'},
+    {'name': 'Futsal', 'emoji': '🥅'},
+    {'name': 'Badminton', 'emoji': '🏸'},
+    {'name': 'Tennis', 'emoji': '🎾'},
+    {'name': 'Volleyball', 'emoji': '🏐'},
+    {'name': 'Basketball', 'emoji': '🏀'},
+  ];
+
+  final List<Map<String, String>> _formatsList = const [
+    {'name': 'Knockout', 'desc': 'Single loss elimination'},
+    {'name': 'Seeded Knockout', 'desc': 'Top seeds protected in early rounds'},
+    {'name': 'Double Elimination', 'desc': 'Winners & Losers brackets'},
+    {'name': 'Group Stage + Knockout', 'desc': 'Pool play into final brackets'},
+    {'name': 'Round Robin', 'desc': 'All teams face each other'},
+  ];
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -86,16 +109,25 @@ class _AdminTournamentManagerScreenState
       return;
     }
 
-    final todayStr = "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
+    final todayStr =
+        "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
 
     final newTournament = TournamentModel(
       id: 'tourn_${DateTime.now().millisecondsSinceEpoch}',
       title: _titleCtrl.text.trim(),
-      subtitle: _subtitleCtrl.text.trim().isEmpty ? 'Open Championship' : _subtitleCtrl.text.trim(),
-      bannerUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
-      logoUrl: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
-      description: _descCtrl.text.trim().isEmpty ? 'Official Games24 Tournament' : _descCtrl.text.trim(),
-      rules: _rulesCtrl.text.trim().isEmpty ? '1. Standard tournament rules apply.' : _rulesCtrl.text.trim(),
+      subtitle: _subtitleCtrl.text.trim().isEmpty
+          ? 'Open Championship'
+          : _subtitleCtrl.text.trim(),
+      bannerUrl:
+          'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
+      logoUrl:
+          'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
+      description: _descCtrl.text.trim().isEmpty
+          ? 'Official Games24 Tournament'
+          : _descCtrl.text.trim(),
+      rules: _rulesCtrl.text.trim().isEmpty
+          ? '1. Standard tournament rules apply.'
+          : _rulesCtrl.text.trim(),
       organizerName: _organizerCtrl.text.trim(),
       contactPerson: 'Venue Manager',
       phone: _phoneCtrl.text.trim(),
@@ -128,7 +160,12 @@ class _AdminTournamentManagerScreenState
     // Auto Lock Court Slots in Admin Slot Provider
     ref.read(adminSlotProvider.notifier).reserveTournamentSlots(
       todayStr,
-      ['08:00 AM - 09:00 AM', '09:00 AM - 10:00 AM', '10:00 AM - 11:00 AM', '05:00 PM - 06:00 PM'],
+      [
+        '08:00 AM - 09:00 AM',
+        '09:00 AM - 10:00 AM',
+        '10:00 AM - 11:00 AM',
+        '05:00 PM - 06:00 PM'
+      ],
       newTournament.title,
     );
 
@@ -139,11 +176,9 @@ class _AdminTournamentManagerScreenState
 
     _tabController.animateTo(0);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Tournament "${newTournament.title}" created & synced with user app!'),
-        backgroundColor: AppColors.success,
-      ),
+    ToastUtils.showSuccess(
+      context,
+      'Tournament "${newTournament.title}" created & synced with Player App!',
     );
   }
 
@@ -174,39 +209,58 @@ class _AdminTournamentManagerScreenState
               children: [
                 Expanded(
                   child: Text(
-                    'Live Control - ${t.title}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    'Live Control • ${t.title}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
               ],
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _liveScoreCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Live Score / Status',
-                prefixIcon: Icon(Icons.sports_score_rounded),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'Live Score / Current Status',
+                hintText: 'e.g. 142/3 (16.2 ov) or 2 - 1 (68\')',
+                prefixIcon: const Icon(Icons.sports_score_rounded, color: Color(0xFF154D36)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _liveCommentaryCtrl,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Live Match Commentary Update',
-                prefixIcon: Icon(Icons.record_voice_over_rounded),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: 'Match Commentary Update',
+                hintText: 'e.g. Huge six over long on! Need 14 runs from 12 balls.',
+                prefixIcon: const Icon(Icons.record_voice_over_rounded, color: Color(0xFF154D36)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             SizedBox(
               width: double.infinity,
-              child: AppButton(
-                text: 'Publish Live Update (Real-time Sync)',
-                icon: Icons.cell_tower_rounded,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF154D36),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.cell_tower_rounded, size: 18),
+                label: const Text(
+                  'Broadcast Live Update (Real-time)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
                 onPressed: () {
                   ref.read(adminTournamentProvider.notifier).updateLiveScore(
                         t.id,
@@ -228,15 +282,15 @@ class _AdminTournamentManagerScreenState
     final isCricket = t.sportType == 'Cricket';
     final isBadminton = t.sportType == 'Badminton' || t.sportType == 'Tennis';
 
-    final TextEditingController scoreACtrl = TextEditingController(text: '${fix.scoreA}');
-    final TextEditingController scoreBCtrl = TextEditingController(text: '${fix.scoreB}');
-    final TextEditingController wicketsACtrl = TextEditingController(text: '${fix.wicketsA}');
-    final TextEditingController wicketsBCtrl = TextEditingController(text: '${fix.wicketsB}');
-    final TextEditingController oversACtrl = TextEditingController(text: fix.oversA.isEmpty ? '0.0' : fix.oversA);
-    final TextEditingController oversBCtrl = TextEditingController(text: fix.oversB.isEmpty ? '0.0' : fix.oversB);
+    final scoreACtrl = TextEditingController(text: '${fix.scoreA}');
+    final scoreBCtrl = TextEditingController(text: '${fix.scoreB}');
+    final wicketsACtrl = TextEditingController(text: '${fix.wicketsA}');
+    final wicketsBCtrl = TextEditingController(text: '${fix.wicketsB}');
+    final oversACtrl = TextEditingController(text: fix.oversA.isEmpty ? '0.0' : fix.oversA);
+    final oversBCtrl = TextEditingController(text: fix.oversB.isEmpty ? '0.0' : fix.oversB);
 
-    final TextEditingController playerCtrl = TextEditingController();
-    final TextEditingController minuteCtrl = TextEditingController(text: isCricket ? '14.2 ov' : '14\'');
+    final playerCtrl = TextEditingController();
+    final minuteCtrl = TextEditingController(text: isCricket ? '14.2 ov' : '14\'');
 
     List<String> eventOptions = isCricket
         ? ['Wicket', 'Six', 'Four', 'Fifty', 'Century', 'Wide', 'No Ball']
@@ -248,318 +302,328 @@ class _AdminTournamentManagerScreenState
     String selectedEventTeam = fix.teamA;
     String selectedWinner = fix.winnerTeam.isNotEmpty ? fix.winnerTeam : fix.teamA;
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (ctx, setDialogState) {
-            return AlertDialog(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text('${t.sportType} Match Console - ${fix.matchNumber}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-                  ),
-                  IconButton(
-                    icon: Icon(fix.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, color: AppColors.primary),
-                    onPressed: () {
-                      ref.read(adminTournamentProvider.notifier).togglePauseMatch(t.id, fix.id);
-                      setDialogState(() {});
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(fix.isPaused ? 'Match Resumed!' : 'Match Paused!')),
-                      );
-                    },
-                  ),
-                ],
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
               ),
-              content: SingleChildScrollView(
+              child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Stage: ${fix.stage} • ${fix.timeSlot} • Ref: ${fix.referee}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                    const SizedBox(height: 12),
-
-                    // Quick Score Controller with Sport-Specific Buttons
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(fix.teamA, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), overflow: TextOverflow.ellipsis),
-                              const SizedBox(height: 4),
-                              TextField(
-                                controller: scoreACtrl,
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                decoration: InputDecoration(labelText: isCricket ? 'Runs A' : (isBadminton ? 'Sets A' : 'Goals A'), border: const OutlineInputBorder()),
-                              ),
-                              if (isCricket) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Expanded(child: TextField(controller: wicketsACtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Wkts', border: OutlineInputBorder()))),
-                                    const SizedBox(width: 4),
-                                    Expanded(child: TextField(controller: oversACtrl, decoration: const InputDecoration(labelText: 'Overs', border: OutlineInputBorder()))),
-                                  ],
+                              Text(
+                                '${fix.matchNumber} (${fix.stage})',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF154D36),
                                 ),
-                              ],
-                              const SizedBox(height: 6),
-                              Wrap(
-                                spacing: 4,
-                                children: isCricket
-                                    ? [
-                                        OutlinedButton(onPressed: () { scoreACtrl.text = '${(int.tryParse(scoreACtrl.text) ?? 0) + 1}'; setDialogState(() {}); }, child: const Text('+1', style: TextStyle(fontSize: 9))),
-                                        OutlinedButton(onPressed: () { scoreACtrl.text = '${(int.tryParse(scoreACtrl.text) ?? 0) + 4}'; setDialogState(() {}); }, child: const Text('+4', style: TextStyle(fontSize: 9))),
-                                        OutlinedButton(onPressed: () { scoreACtrl.text = '${(int.tryParse(scoreACtrl.text) ?? 0) + 6}'; setDialogState(() {}); }, child: const Text('+6', style: TextStyle(fontSize: 9))),
-                                        OutlinedButton(onPressed: () { wicketsACtrl.text = '${(int.tryParse(wicketsACtrl.text) ?? 0) + 1}'; setDialogState(() {}); }, child: const Text('+Wkt', style: TextStyle(fontSize: 9))),
-                                      ]
-                                    : [
-                                        OutlinedButton.icon(
-                                          icon: const Icon(Icons.add, size: 12),
-                                          label: Text(isBadminton ? '+1 Set' : '+1 Goal', style: const TextStyle(fontSize: 10)),
-                                          onPressed: () {
-                                            final val = (int.tryParse(scoreACtrl.text) ?? 0) + 1;
-                                            scoreACtrl.text = '$val';
-                                            setDialogState(() {});
-                                          },
-                                        ),
-                                      ],
+                              ),
+                              Text(
+                                '${fix.teamA} vs ${fix.teamB}',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF0F172A),
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6.0),
-                          child: Text('VS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        ),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              Text(fix.teamB, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), overflow: TextOverflow.ellipsis),
-                              const SizedBox(height: 4),
-                              TextField(
-                                controller: scoreBCtrl,
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                decoration: InputDecoration(labelText: isCricket ? 'Runs B' : (isBadminton ? 'Sets B' : 'Goals B'), border: const OutlineInputBorder()),
-                              ),
-                              if (isCricket) ...[
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Expanded(child: TextField(controller: wicketsBCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Wkts', border: OutlineInputBorder()))),
-                                    const SizedBox(width: 4),
-                                    Expanded(child: TextField(controller: oversBCtrl, decoration: const InputDecoration(labelText: 'Overs', border: OutlineInputBorder()))),
-                                  ],
-                                ),
-                              ],
-                              const SizedBox(height: 6),
-                              Wrap(
-                                spacing: 4,
-                                children: isCricket
-                                    ? [
-                                        OutlinedButton(onPressed: () { scoreBCtrl.text = '${(int.tryParse(scoreBCtrl.text) ?? 0) + 1}'; setDialogState(() {}); }, child: const Text('+1', style: TextStyle(fontSize: 9))),
-                                        OutlinedButton(onPressed: () { scoreBCtrl.text = '${(int.tryParse(scoreBCtrl.text) ?? 0) + 4}'; setDialogState(() {}); }, child: const Text('+4', style: TextStyle(fontSize: 9))),
-                                        OutlinedButton(onPressed: () { scoreBCtrl.text = '${(int.tryParse(scoreBCtrl.text) ?? 0) + 6}'; setDialogState(() {}); }, child: const Text('+6', style: TextStyle(fontSize: 9))),
-                                        OutlinedButton(onPressed: () { wicketsBCtrl.text = '${(int.tryParse(wicketsBCtrl.text) ?? 0) + 1}'; setDialogState(() {}); }, child: const Text('+Wkt', style: TextStyle(fontSize: 9))),
-                                      ]
-                                    : [
-                                        OutlinedButton.icon(
-                                          icon: const Icon(Icons.add, size: 12),
-                                          label: Text(isBadminton ? '+1 Set' : '+1 Goal', style: const TextStyle(fontSize: 10)),
-                                          onPressed: () {
-                                            final val = (int.tryParse(scoreBCtrl.text) ?? 0) + 1;
-                                            scoreBCtrl.text = '$val';
-                                            setDialogState(() {});
-                                          },
-                                        ),
-                                      ],
-                              ),
-                            ],
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () => Navigator.pop(ctx),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    const Divider(),
+                    const Divider(height: 20),
 
-                    // Match Event Logger Section
-                    Text('⚡ Log ${t.sportType} Match Event', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+                    // Scores Section
+                    Text(
+                      isCricket ? 'Batting & Innings Scores' : 'Current Match Score',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
+                    ),
                     const SizedBox(height: 8),
+
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: selectedEventTeam,
-                            decoration: const InputDecoration(labelText: 'Team', border: OutlineInputBorder()),
-                            items: [fix.teamA, fix.teamB]
-                                .map((team) => DropdownMenuItem(value: team, child: Text(team, overflow: TextOverflow.ellipsis)))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) setDialogState(() => selectedEventTeam = val);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: selectedEventType,
-                            decoration: const InputDecoration(labelText: 'Event', border: OutlineInputBorder()),
-                            items: eventOptions
-                                .map((type) => DropdownMenuItem(value: type, child: Text(type)))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) setDialogState(() => selectedEventType = val);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: playerCtrl,
-                            decoration: const InputDecoration(labelText: 'Player Name', border: OutlineInputBorder()),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 90,
-                          child: TextField(
-                            controller: minuteCtrl,
-                            decoration: InputDecoration(labelText: isCricket ? 'Over' : 'Min (\')', border: const OutlineInputBorder()),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.flash_on_rounded, size: 16),
-                      label: const Text('Add Live Event', style: TextStyle(fontSize: 11)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        if (playerCtrl.text.trim().isEmpty) return;
-                        final event = MatchEvent(
-                          id: 'evt_${DateTime.now().millisecondsSinceEpoch}',
-                          type: selectedEventType,
-                          teamName: selectedEventTeam,
-                          playerName: playerCtrl.text.trim(),
-                          minute: minuteCtrl.text.trim().isEmpty ? (isCricket ? '14.2 ov' : '14\'') : minuteCtrl.text.trim(),
-                          timestamp: DateTime.now().toString(),
-                        );
-                        ref.read(adminTournamentProvider.notifier).addMatchEvent(t.id, fix.id, event);
-                        playerCtrl.clear();
-                        setDialogState(() {});
-                        ToastUtils.showSuccess(context, "Logged ${event.type} for ${event.playerName}!");
-                      },
-                    ),
-
-                    if (fix.events.isNotEmpty) ...[
-                      const SizedBox(height: 10),
-                      const Text('Live Match Timeline:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                      const SizedBox(height: 4),
-                      Column(
-                        children: fix.events.map((e) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2.0),
-                            child: Row(
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('${e.minute} ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.grey)),
-                                Text('• ${e.teamName}: ', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                                Text('${e.type} by ${e.playerName}', style: const TextStyle(fontSize: 11)),
+                                Text(fix.teamA, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12), overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: scoreACtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: isCricket ? 'Runs' : 'Score',
+                                    border: const OutlineInputBorder(),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                  ),
+                                ),
+                                if (isCricket) ...[
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: wicketsACtrl,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Wickets',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: oversACtrl,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Overs (e.g. 15.2)',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(fix.teamB, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12), overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: scoreBCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: InputDecoration(
+                                    labelText: isCricket ? 'Runs' : 'Score',
+                                    border: const OutlineInputBorder(),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                  ),
+                                ),
+                                if (isCricket) ...[
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: wicketsBCtrl,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Wickets',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  TextFormField(
+                                    controller: oversBCtrl,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Overs (e.g. 15.2)',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
 
-                    const SizedBox(height: 14),
-                    const Divider(),
-
-                    // Winner Selection & Auto Progression
-                    const Text('Declare Final Match Winner:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    // Winner Selection
+                    const Text('Declare Winner Team (Advances in Bracket):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
                       initialValue: selectedWinner,
-                      decoration: const InputDecoration(border: OutlineInputBorder()),
-                      items: [fix.teamA, fix.teamB, 'Draw']
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      ),
+                      items: [fix.teamA, fix.teamB, 'Match Drawn / Tied']
                           .map((team) => DropdownMenuItem(value: team, child: Text(team)))
                           .toList(),
                       onChanged: (val) {
-                        if (val != null) setDialogState(() => selectedWinner = val);
+                        if (val != null) setSheetState(() => selectedWinner = val);
                       },
                     ),
-                    const SizedBox(height: 10),
-                    if (fix.nextMatchId != null)
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.auto_fix_high_rounded, color: AppColors.primary, size: 18),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                'Finishing match will automatically advance winner to the next round!',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
-                              ),
-                            ),
-                          ],
-                        ),
+                    const SizedBox(height: 16),
+
+                    // Match Event Logger
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(10),
                       ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('⚡ Log Key Match Event (Real-time)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: selectedEventType,
+                                  decoration: const InputDecoration(labelText: 'Event', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)),
+                                  items: eventOptions.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 11)))).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setSheetState(() => selectedEventType = val);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue: selectedEventTeam,
+                                  decoration: const InputDecoration(labelText: 'Team', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)),
+                                  items: [fix.teamA, fix.teamB].map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 11), overflow: TextOverflow.ellipsis))).toList(),
+                                  onChanged: (val) {
+                                    if (val != null) setSheetState(() => selectedEventTeam = val);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: TextFormField(
+                                  controller: playerCtrl,
+                                  decoration: const InputDecoration(labelText: 'Player Name', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: minuteCtrl,
+                                  decoration: const InputDecoration(labelText: 'Time / Over', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              icon: const Icon(Icons.add_circle_outline, size: 14),
+                              label: const Text('Add Event to Match Feed', style: TextStyle(fontSize: 11)),
+                              onPressed: () {
+                                if (playerCtrl.text.trim().isEmpty) {
+                                  ToastUtils.showError(context, "Enter player name");
+                                  return;
+                                }
+                                final ev = MatchEvent(
+                                  id: 'ev_${DateTime.now().millisecondsSinceEpoch}',
+                                  type: selectedEventType,
+                                  teamName: selectedEventTeam,
+                                  playerName: playerCtrl.text.trim(),
+                                  minute: minuteCtrl.text.trim(),
+                                  timestamp: DateFormat('hh:mm a').format(DateTime.now()),
+                                );
+                                ref.read(adminTournamentProvider.notifier).addMatchEvent(t.id, fix.id, ev);
+                                playerCtrl.clear();
+                                ToastUtils.showSuccess(context, "Match event logged!");
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Action Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            icon: Icon(fix.isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, size: 16),
+                            label: Text(fix.isPaused ? 'Resume' : 'Pause Match'),
+                            style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                            onPressed: () {
+                              ref.read(adminTournamentProvider.notifier).togglePauseMatch(t.id, fix.id);
+                              Navigator.pop(ctx);
+                              ToastUtils.showInfo(context, fix.isPaused ? "Match resumed" : "Match paused");
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.done_all_rounded, size: 16),
+                            label: const Text('Save Result & Advance', style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF154D36),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            onPressed: () {
+                              final scA = int.tryParse(scoreACtrl.text.trim()) ?? fix.scoreA;
+                              final scB = int.tryParse(scoreBCtrl.text.trim()) ?? fix.scoreB;
+                              final wA = int.tryParse(wicketsACtrl.text.trim()) ?? fix.wicketsA;
+                              final wB = int.tryParse(wicketsBCtrl.text.trim()) ?? fix.wicketsB;
+
+                              ref.read(adminTournamentProvider.notifier).finishMatchAndAdvanceWinner(
+                                    t.id,
+                                    fix.id,
+                                    scA,
+                                    scB,
+                                    selectedWinner,
+                                    wicketsA: wA,
+                                    wicketsB: wB,
+                                    oversA: oversACtrl.text.trim(),
+                                    oversB: oversBCtrl.text.trim(),
+                                  );
+                              Navigator.pop(ctx);
+                              ToastUtils.showSuccess(context, "Match completed! Winner $selectedWinner advanced.");
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Close'),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () {
-                    final scA = int.tryParse(scoreACtrl.text.trim()) ?? 0;
-                    final scB = int.tryParse(scoreBCtrl.text.trim()) ?? 0;
-                    final wA = int.tryParse(wicketsACtrl.text.trim()) ?? 0;
-                    final wB = int.tryParse(wicketsBCtrl.text.trim()) ?? 0;
-                    final oA = oversACtrl.text.trim();
-                    final oB = oversBCtrl.text.trim();
-                    final winner = selectedWinner == 'Draw' ? '' : selectedWinner;
-
-                    ref.read(adminTournamentProvider.notifier).finishMatchAndAdvanceWinner(
-                          t.id,
-                          fix.id,
-                          scA,
-                          scB,
-                          winner,
-                          wicketsA: wA,
-                          wicketsB: wB,
-                          oversA: oA,
-                          oversB: oB,
-                        );
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Finished Match ${fix.matchNumber}! ${winner.isNotEmpty ? "$winner advanced to Next Round 🏆" : ""}')),
-                    );
-                  },
-                  child: const Text('Finish Match & Advance Winner'),
-                ),
-              ],
             );
           },
         );
@@ -572,250 +636,22 @@ class _AdminTournamentManagerScreenState
     final tournState = ref.watch(adminTournamentProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tournament Management Hub'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              context.pop();
-            } else {
-              context.go('/admin/dashboard');
-            }
-          },
-          tooltip: 'Back to Dashboard',
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: const [
-            Tab(icon: Icon(Icons.emoji_events_rounded), text: 'Tournaments'),
-            Tab(icon: Icon(Icons.add_circle_outline_rounded), text: 'Create Tournament'),
-            Tab(icon: Icon(Icons.live_tv_rounded), text: 'Live & Fixtures'),
-            Tab(icon: Icon(Icons.bar_chart_rounded), text: 'Analytics'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: _buildExecutiveAppBar(context),
+      body: Column(
         children: [
-          // Tab 1: Tournament Dashboard & List
-          _buildTournamentDashboardTab(tournState),
+          // Custom Segmented Capsule Navigation Tabs
+          _buildSegmentedTabCapsules(tournState),
 
-          // Tab 2: Create Tournament Wizard Form
-          _buildCreateTournamentTab(),
-
-          // Tab 3: Live Score Controller & Fixture Brackets
-          _buildLiveAndFixturesTab(tournState),
-
-          // Tab 4: Analytics & Revenue Summary
-          _buildAnalyticsTab(tournState),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTournamentDashboardTab(AdminTournamentState tournState) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // KPI Summary Grid
-          GridView.count(
-            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 2.1,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _buildKpiCard('Total Tournaments', '${tournState.totalTournaments}', Icons.emoji_events_rounded, Colors.purple),
-              _buildKpiCard('Live Tournaments', '${tournState.liveCount}', Icons.sensors_rounded, Colors.red),
-              _buildKpiCard('Upcoming', '${tournState.upcomingCount}', Icons.upcoming_rounded, Colors.blue),
-              _buildKpiCard('Completed', '${tournState.completedCount}', Icons.task_alt_rounded, Colors.green),
-              _buildKpiCard('Total Participants', '${tournState.totalParticipants}', Icons.groups_rounded, Colors.orange),
-              _buildKpiCard('Total Revenue', '₹${tournState.totalRevenue.toInt()}', Icons.payments_rounded, Colors.teal),
-              _buildKpiCard('Pending Approvals', '${tournState.pendingApprovals}', Icons.pending_actions_rounded, Colors.amber.shade800),
-              _buildKpiCard('Available Slots', '${tournState.availableSlots}', Icons.event_seat_rounded, Colors.indigo),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Status Filter Strip
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                child: Text(
-                  'Active Tournaments',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('New Tournament', style: TextStyle(fontSize: 12)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                onPressed: () => _tabController.animateTo(1),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Tournament List Cards
-          if (tournState.tournaments.isEmpty)
-            const Center(child: Text('No tournaments created yet.'))
-          else
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: tournState.tournaments.length,
-              itemBuilder: (ctx, idx) {
-                final t = tournState.tournaments[idx];
-                return AppCard(
-                  margin: const EdgeInsets.only(bottom: 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(t.bannerUrl, width: 70, height: 70, fit: BoxFit.cover),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        t.title,
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                      decoration: BoxDecoration(
-                                        color: t.status == 'Live'
-                                            ? Colors.red.withValues(alpha: 0.15)
-                                            : AppColors.primary.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        t.status.toUpperCase(),
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: t.status == 'Live' ? Colors.red : AppColors.primary,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text('${t.sportType} • ${t.tournamentType} • ${t.courtAllocation}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                const SizedBox(height: 4),
-                                Text('Teams: ${t.registeredTeamsCount}/${t.maxTeams} • Fee: ₹${t.teamEntryFee.toInt()}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      if (t.liveScore.isNotEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.red.shade200),
-                          ),
-                          child: Text('🔴 LIVE SCORE: ${t.liveScore}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red.shade900)),
-                        ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 6,
-                        alignment: WrapAlignment.spaceBetween,
-                        children: [
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.cell_tower, size: 14),
-                            label: const Text('Live Score', style: TextStyle(fontSize: 11)),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () => _showLiveScoreDialog(t),
-                          ),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.account_tree_rounded, size: 14),
-                            label: const Text('Fixtures', style: TextStyle(fontSize: 11)),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: () {
-                              ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
-                              ToastUtils.showSuccess(context, "Generated Knockout Fixtures for ${t.title}");
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
-                            constraints: const BoxConstraints(),
-                            padding: const EdgeInsets.all(6),
-                            onPressed: () {
-                              ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildKpiCard(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 6),
+          // Main View
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color)),
-                Text(label, style: const TextStyle(fontSize: 9.5, color: Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
+                _buildTournamentDashboardTab(tournState),
+                _buildCreateTournamentTab(),
+                _buildLiveAndFixturesTab(tournState),
+                _buildAnalyticsTab(tournState),
               ],
             ),
           ),
@@ -824,206 +660,950 @@ class _AdminTournamentManagerScreenState
     );
   }
 
+  // --- 1. PRO EXECUTIVE APP BAR ---
+  PreferredSizeWidget _buildExecutiveAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Color(0xFF0F172A)),
+        onPressed: () {
+          if (Navigator.of(context).canPop()) {
+            context.pop();
+          } else {
+            context.go('/admin/dashboard');
+          }
+        },
+        tooltip: 'Back to Dashboard',
+      ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Championship & Leagues',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0F172A),
+              letterSpacing: -0.3,
+            ),
+          ),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF10B981),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 5),
+              const Text(
+                'Live Fixture & Bracket Engine',
+                style: TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF154D36),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              minimumSize: Size.zero,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 15),
+            label: const Text(
+              'New Tourney',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+            onPressed: () => _tabController.animateTo(1),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- 2. CUSTOM SEGMENTED CAPSULE TAB BAR ---
+  Widget _buildSegmentedTabCapsules(AdminTournamentState tournState) {
+    final tabs = [
+      {'label': 'Tournaments (${tournState.tournaments.length})', 'icon': Icons.emoji_events_rounded},
+      {'label': 'Create Tourney', 'icon': Icons.add_circle_outline_rounded},
+      {'label': 'Live & Fixtures', 'icon': Icons.live_tv_rounded},
+      {'label': 'Financials', 'icon': Icons.bar_chart_rounded},
+    ];
+
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: List.generate(tabs.length, (index) {
+            final isSelected = _tabController.index == index;
+            final item = tabs[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                onTap: () {
+                  _tabController.animateTo(index);
+                  setState(() {});
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        item['icon'] as IconData,
+                        size: 14,
+                        color: isSelected ? Colors.white : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        item['label'] as String,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? Colors.white : const Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+
+  // --- TAB 1: TOURNAMENT DASHBOARD & CARDS ---
+  Widget _buildTournamentDashboardTab(AdminTournamentState tournState) {
+    final filteredList = tournState.tournaments.where((t) {
+      if (_activeFilter == 'Live Now') return t.status == 'Live';
+      if (_activeFilter == 'Upcoming') return t.status == 'Upcoming';
+      if (_activeFilter == 'Completed') return t.status == 'Completed';
+      return true; // 'All'
+    }).toList();
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hero Bento Operations Card
+          _buildHeroBentoOperations(tournState),
+          const SizedBox(height: 16),
+
+          // Filter Pills Bar
+          _buildFilterPillsBar(tournState),
+          const SizedBox(height: 14),
+
+          // Tournaments List
+          if (filteredList.isEmpty)
+            _buildEmptyTournamentsState()
+          else
+            ...filteredList.map((t) => _buildProTournamentCard(t)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroBentoOperations(AdminTournamentState tournState) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF154D36).withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Tournament Command Hub',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFE2E8F0),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'FIFA / ICC Standard',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '₹${NumberFormat('#,##,###').format(tournState.totalRevenue.toInt())}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Gross Tournament Revenue • ${tournState.tournaments.length} Active Competitions',
+            style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 14),
+
+          // Mini Metric Counter Bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildHeroMiniStat('Total', '${tournState.totalTournaments}', const Color(0xFFE2E8F0)),
+                _buildStatDivider(),
+                _buildHeroMiniStat('Live Now', '${tournState.liveCount}', const Color(0xFFF87171)),
+                _buildStatDivider(),
+                _buildHeroMiniStat('Upcoming', '${tournState.upcomingCount}', const Color(0xFF60A5FA)),
+                _buildStatDivider(),
+                _buildHeroMiniStat('Completed', '${tournState.completedCount}', const Color(0xFF4ADE80)),
+                _buildStatDivider(),
+                _buildHeroMiniStat('Teams', '${tournState.totalParticipants}', const Color(0xFFFBBF24)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroMiniStat(String label, String value, Color color) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
+        const SizedBox(height: 1),
+        Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600)),
+      ],
+    );
+  }
+
+  Widget _buildStatDivider() {
+    return Container(width: 1, height: 18, color: Colors.white.withValues(alpha: 0.15));
+  }
+
+  Widget _buildFilterPillsBar(AdminTournamentState tournState) {
+    final filters = [
+      {'label': 'All', 'count': tournState.totalTournaments, 'color': const Color(0xFF154D36)},
+      {'label': 'Live Now', 'count': tournState.liveCount, 'color': const Color(0xFFDC2626)},
+      {'label': 'Upcoming', 'count': tournState.upcomingCount, 'color': const Color(0xFF2563EB)},
+      {'label': 'Completed', 'count': tournState.completedCount, 'color': const Color(0xFF16A34A)},
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: filters.map((f) {
+          final isSelected = _activeFilter == f['label'];
+          final color = f['color'] as Color;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              onTap: () => setState(() => _activeFilter = f['label'] as String),
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isSelected ? color : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? color : const Color(0xFFE2E8F0),
+                    width: isSelected ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (f['label'] == 'Live Now' && isSelected) ...[
+                      Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                      const SizedBox(width: 4),
+                    ],
+                    Text(
+                      f['label'] as String,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                        color: isSelected ? Colors.white : const Color(0xFF475569),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '${f['count']}',
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: isSelected ? Colors.white : const Color(0xFF64748B),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildEmptyTournamentsState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF154D36).withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.emoji_events_outlined, size: 36, color: Color(0xFF154D36)),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No $_activeFilter Tournaments Found',
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Create your next championship or tournament to start accepting team registrations.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+          ),
+          const SizedBox(height: 14),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF154D36),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.add_rounded, size: 16),
+            label: const Text('Create Tournament Now', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            onPressed: () => _tabController.animateTo(1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProTournamentCard(TournamentModel t) {
+    final isLive = t.status == 'Live';
+    final progress = t.maxTeams > 0 ? (t.registeredTeamsCount / t.maxTeams).clamp(0.0, 1.0) : 0.0;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isLive ? const Color(0xFFFECDD3) : const Color(0xFFE2E8F0), width: isLive ? 1.5 : 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Banner Image & Badges
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Image.network(
+                  t.bannerUrl,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 120,
+                    color: const Color(0xFF154D36),
+                    child: const Center(child: Icon(Icons.stadium_rounded, color: Colors.white, size: 40)),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                    gradient: LinearGradient(
+                      colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent, Colors.black.withValues(alpha: 0.8)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ),
+              // Top Badges
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(t.sportType == 'Cricket' ? '🏏' : '⚽', style: const TextStyle(fontSize: 12)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${t.sportType} • ${t.tournamentType}',
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isLive ? const Color(0xFFDC2626) : const Color(0xFF154D36),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      if (isLive) ...[
+                        Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        isLive ? 'LIVE NOW' : t.status.toUpperCase(),
+                        style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Bottom Title inside banner
+              Positioned(
+                bottom: 10,
+                left: 12,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.title,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      '${t.courtAllocation} • ${t.startDate} to ${t.endDate}',
+                      style: TextStyle(fontSize: 10.5, color: Colors.white.withValues(alpha: 0.85), fontWeight: FontWeight.w500),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          // Content Area
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Prize Pool & Entry Fee Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFFDE68A)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.emoji_events_rounded, color: Color(0xFFD97706), size: 13),
+                          const SizedBox(width: 4),
+                          Text(
+                            t.championPrize,
+                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF92400E)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '₹${t.teamEntryFee.toInt()} / Team',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Team Registration Progress
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Registrations: ${t.registeredTeamsCount} / ${t.maxTeams} Teams',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+                    ),
+                    Text(
+                      '${(progress * 100).toInt()}% Filled',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: const Color(0xFFF1F5F9),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFF154D36),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Quick Action Bar
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFF154D36),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.live_tv_rounded, size: 14),
+                        label: Text(
+                          isLive ? 'Live Controller' : 'Manage Live',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () => _showLiveScoreDialog(t),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF154D36),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.account_tree_rounded, size: 14),
+                        label: const Text('Fixtures', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        onPressed: () {
+                          _tabController.animateTo(2);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
+                      tooltip: 'Delete Tournament',
+                      onPressed: () {
+                        ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
+                        ToastUtils.showInfo(context, 'Tournament "${t.title}" deleted');
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- TAB 2: CREATE TOURNAMENT WIZARD ---
   Widget _buildCreateTournamentTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Section 1: Basic Information
-            _buildFormSectionHeader('1. Basic Tournament Information', Icons.info_outline),
-            const SizedBox(height: 8),
-            TextFormField(controller: _titleCtrl, decoration: const InputDecoration(labelText: 'Tournament Name *', border: OutlineInputBorder())),
-            const SizedBox(height: 10),
-            TextFormField(controller: _subtitleCtrl, decoration: const InputDecoration(labelText: 'Subtitle / Tagline', border: OutlineInputBorder())),
-            const SizedBox(height: 10),
-            TextFormField(controller: _descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder())),
-            const SizedBox(height: 10),
-            TextFormField(controller: _rulesCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Rules & Guidelines', border: OutlineInputBorder())),
-            const SizedBox(height: 16),
-
-            // Section 2: Sport & Format
-            _buildFormSectionHeader('2. Sport & Tournament Format', Icons.sports),
-            const SizedBox(height: 8),
-            Row(
+            _buildWizardCard(
+              title: '1. Basic Tournament Information',
+              icon: Icons.info_outline_rounded,
               children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedSport,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Sport Type', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-                    items: ['Cricket', 'Football', 'Futsal', 'Volleyball', 'Basketball', 'Badminton', 'Tennis']
-                        .map((s) => DropdownMenuItem(value: s, child: Text(s, overflow: TextOverflow.ellipsis)))
-                        .toList(),
-                    onChanged: (val) => setState(() => _selectedSport = val!),
-                  ),
+                TextFormField(
+                  controller: _titleCtrl,
+                  decoration: _inputDecoration('Tournament Name *', 'e.g. Madurai Super Cup 2026', Icons.emoji_events_outlined),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedType,
-                    isExpanded: true,
-                    decoration: const InputDecoration(labelText: 'Tournament Format', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-                    items: ['Knockout', 'Seeded Knockout', 'Double Elimination', 'Group Stage + Knockout', 'Round Robin']
-                        .map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis)))
-                        .toList(),
-                    onChanged: (val) => setState(() => _selectedType = val!),
-                  ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _subtitleCtrl,
+                  decoration: _inputDecoration('Subtitle / Tagline', 'e.g. Under-19 League Championship', Icons.subtitles_outlined),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _descCtrl,
+                  maxLines: 2,
+                  decoration: _inputDecoration('Description', 'Provide details about the tournament...', Icons.description_outlined),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _rulesCtrl,
+                  maxLines: 2,
+                  decoration: _inputDecoration('Rules & Regulations', 'e.g. 8 overs per side, standard ICC rules...', Icons.gavel_rounded),
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedCourt,
-              isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Court Allocation', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-              items: ['Turf A (Football / Cricket)', 'Turf B (Box Cricket)', 'Badminton Court 1', 'Entire Venue']
-                  .map((c) => DropdownMenuItem(value: c, child: Text(c, overflow: TextOverflow.ellipsis)))
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedCourt = val!),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
-            // Section 3: Tournament Dates & Registration Deadline
-            _buildFormSectionHeader('3. Tournament Dates & Registration Deadline', Icons.calendar_month_rounded),
-            const SizedBox(height: 8),
-            Row(
+            // Section 2: Sport & Format Selection
+            _buildWizardCard(
+              title: '2. Sport & Format Setup',
+              icon: Icons.sports_soccer_rounded,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _startDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                const Text('Choose Sport Type:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: _sportsList.map((s) {
+                      final isSelected = _selectedSport == s['name'];
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          avatar: Text(s['emoji']!, style: const TextStyle(fontSize: 13)),
+                          label: Text(s['name']!, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600)),
+                          selected: isSelected,
+                          selectedColor: const Color(0xFF154D36),
+                          labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFF334155)),
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          onSelected: (val) {
+                            if (val) setState(() => _selectedSport = s['name']!);
+                          },
+                        ),
                       );
-                      if (picked != null) setState(() => _startDate = picked);
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.calendar_today_rounded, size: 14),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Column(
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text('Tournament Format:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedType,
+                  isExpanded: true,
+                  decoration: _inputDecoration('Select Format', '', Icons.alt_route_rounded),
+                  items: _formatsList.map((f) {
+                    return DropdownMenuItem(
+                      value: f['name'],
+                      child: Text('${f['name']} (${f['desc']})', style: const TextStyle(fontSize: 11.5), overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedType = val);
+                  },
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedCourt,
+                  isExpanded: true,
+                  decoration: _inputDecoration('Court Allocation', '', Icons.stadium_outlined),
+                  items: ['Turf A (Football / Cricket)', 'Turf B (Box Cricket)', 'Badminton Court 1', 'Entire Venue']
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedCourt = val);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Section 3: Schedule & Deadlines
+            _buildWizardCard(
+              title: '3. Competition Dates & Deadlines',
+              icon: Icons.calendar_month_rounded,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildDateCapsuleButton(
+                        label: 'Tournament Start',
+                        date: _startDate,
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _startDate,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                          );
+                          if (picked != null) setState(() => _startDate = picked);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildDateCapsuleButton(
+                        label: 'Tournament End',
+                        date: _endDate,
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _endDate,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                          );
+                          if (picked != null) setState(() => _endDate = picked);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFECDD3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.timer_outlined, color: Color(0xFFDC2626), size: 16),
+                          const SizedBox(width: 6),
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('Start Date', style: TextStyle(fontSize: 8.5, color: Colors.grey)),
-                              Text(_formatDate(_startDate), style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                              const Text('Registration Deadline', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFDC2626))),
+                              Text(_formatDate(_regEndDate), style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF991B1B))),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(visualDensity: VisualDensity.compact, padding: EdgeInsets.zero),
+                        onPressed: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: _regEndDate,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                          );
+                          if (picked != null) setState(() => _regEndDate = picked);
+                        },
+                        child: const Text('Change Date', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFDC2626))),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8)),
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _endDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (picked != null) setState(() => _endDate = picked);
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.event_available_rounded, size: 14),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Section 4: Teams & Financials
+            _buildWizardCard(
+              title: '4. Entry Fee, Teams & Prize Pool',
+              icon: Icons.payments_outlined,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _entryFeeCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: _inputDecoration('Entry Fee (₹)', '1500', Icons.currency_rupee_rounded),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _maxTeamsCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: _inputDecoration('Max Teams', '12', Icons.groups_rounded),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _playersPerTeamCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: _inputDecoration('Players Per Squad', '8 + 2 Substitutes', Icons.person_rounded),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _championPrizeCtrl,
+                  decoration: _inputDecoration('Champion Prize 🏆', '₹15,000 Cash + Trophy', Icons.emoji_events_outlined),
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _runnerUpPrizeCtrl,
+                  decoration: _inputDecoration('Runner-Up Prize 🥈', '₹7,000 Cash', Icons.workspace_premium_outlined),
+                ),
+                const SizedBox(height: 12),
+
+                // Projected Pool Calculation
+                Builder(
+                  builder: (context) {
+                    final fee = double.tryParse(_entryFeeCtrl.text.trim()) ?? 0;
+                    final teams = int.tryParse(_maxTeamsCtrl.text.trim()) ?? 0;
+                    final gross = fee * teams;
+                    return Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFBBF7D0)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Row(
                             children: [
-                              const Text('End Date', style: TextStyle(fontSize: 8.5, color: Colors.grey)),
-                              Text(_formatDate(_endDate), style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                              Icon(Icons.auto_awesome_rounded, color: Color(0xFF16A34A), size: 15),
+                              SizedBox(width: 6),
+                              Text('Projected Gross Pool:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
+                          Text('₹${NumberFormat('#,##,###').format(gross.toInt())}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF15803D))),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.red.shade200),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Last Date for Registration', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.red)),
-                        Text(_formatDate(_regEndDate), style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red.shade900)),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 30)),
-                    onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: _regEndDate,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (picked != null) setState(() => _regEndDate = picked);
-                    },
-                    child: const Text('Change', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Section 4: Pricing & Team Settings
-            _buildFormSectionHeader('4. Entry Fee & Team Settings', Icons.payments_outlined),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: TextFormField(controller: _entryFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Fee (₹)', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
-                const SizedBox(width: 6),
-                Expanded(child: TextFormField(controller: _maxTeamsCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Teams', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
-                const SizedBox(width: 6),
-                Expanded(child: TextFormField(controller: _playersPerTeamCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Players', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Section 5: Prizes
-            _buildFormSectionHeader('5. Prize Pool & Awards', Icons.workspace_premium_outlined),
-            const SizedBox(height: 8),
-            TextFormField(controller: _championPrizeCtrl, decoration: const InputDecoration(labelText: 'Champion Prize 🏆', border: OutlineInputBorder())),
-            const SizedBox(height: 10),
-            TextFormField(controller: _runnerUpPrizeCtrl, decoration: const InputDecoration(labelText: 'Runner-up Prize 🥈', border: OutlineInputBorder())),
             const SizedBox(height: 20),
 
+            // Submit Button
             SizedBox(
               width: double.infinity,
-              height: 46,
-              child: AppButton(
-                text: 'Publish Tournament & Lock Slots',
-                icon: Icons.rocket_launch_rounded,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF154D36),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+                label: const Text(
+                  'Publish Tournament & Reserve Slots',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
                 onPressed: _submitCreateTournament,
               ),
             ),
@@ -1033,25 +1613,128 @@ class _AdminTournamentManagerScreenState
     );
   }
 
-  Widget _buildFormSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppColors.primary),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
-            overflow: TextOverflow.ellipsis,
+  Widget _buildWizardCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
-        ),
-      ],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: const Color(0xFF154D36)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
     );
   }
 
+  InputDecoration _inputDecoration(String label, String hint, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon, size: 16, color: const Color(0xFF64748B)),
+      labelStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+      hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF154D36), width: 1.5)),
+    );
+  }
+
+  Widget _buildDateCapsuleButton({
+    required String label,
+    required DateTime date,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.event_rounded, size: 16, color: Color(0xFF154D36)),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF64748B))),
+                  Text(
+                    _formatDate(date),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- TAB 3: LIVE & FIXTURES CONSOLE ---
   Widget _buildLiveAndFixturesTab(AdminTournamentState tournState) {
+    if (tournState.tournaments.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.live_tv_rounded, size: 40, color: Color(0xFF94A3B8)),
+            const SizedBox(height: 8),
+            const Text('No tournaments available to manage fixtures.', style: TextStyle(color: Color(0xFF64748B))),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF154D36), foregroundColor: Colors.white),
+              onPressed: () => _tabController.animateTo(1),
+              child: const Text('Create Tournament'),
+            ),
+          ],
+        ),
+      );
+    }
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1062,34 +1745,46 @@ class _AdminTournamentManagerScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('📺 Live Match Controller & Bracket Fixtures', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                    SizedBox(height: 2),
-                    Text('Update match scores & view generated fixtures in real time.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                    Text('Live Arena Console & Fixtures', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF0F172A))),
+                    Text('Update scores & trigger knockouts in real-time.', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: const Color(0xFFDCFCE7),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.shade300),
+                  border: Border.all(color: const Color(0xFF86EFAC)),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
-                    const Icon(Icons.sensors_rounded, color: Colors.green, size: 14),
-                    const SizedBox(width: 4),
-                    Text('REAL-TIME SYNC', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.green.shade900)),
+                    Icon(Icons.sensors_rounded, color: Color(0xFF16A34A), size: 12),
+                    SizedBox(width: 4),
+                    Text('SYNC ACTIVE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF15803D))),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
           ...tournState.tournaments.map((t) {
-            return AppCard(
+            return Container(
               margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1097,206 +1792,163 @@ class _AdminTournamentManagerScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(t.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15), overflow: TextOverflow.ellipsis),
+                        child: Text(t.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A)), overflow: TextOverflow.ellipsis),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: const Color(0xFF154D36).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(t.tournamentType.toUpperCase(), style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        child: Text(t.tournamentType.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('Sport: ${t.sportType} • Registered Teams: ${t.registeredTeams.length} • Fixtures: ${t.fixtures.length} matches generated', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text('${t.sportType} • ${t.registeredTeams.length} Registered Teams • ${t.fixtures.length} Fixtures', style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B))),
                   const SizedBox(height: 12),
 
-                  // Format Selector Action Chips
-                  const Text('⚡ Switch / Re-generate Advanced Fixture Engine:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  // Engine Selector Chips
+                  const Text('⚡ Generate / Switch Fixture Engine:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
                   const SizedBox(height: 6),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      ActionChip(
-                        avatar: const Icon(Icons.alt_route_rounded, size: 14, color: AppColors.primary),
-                        label: const Text('Seeded Knockout', style: TextStyle(fontSize: 10)),
-                        onPressed: () {
-                          ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Seeded Knockout');
-                          ToastUtils.showSuccess(context, "Generated Top Seed Protection Bracket for ${t.title}");
-                        },
-                      ),
-                      ActionChip(
-                        avatar: const Icon(Icons.shield_outlined, size: 14, color: Colors.amber),
-                        label: const Text('Double Elimination', style: TextStyle(fontSize: 10)),
-                        onPressed: () {
-                          ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Double Elimination');
-                          ToastUtils.showSuccess(context, "Generated Double Elimination (Winners & Losers Brackets) for ${t.title}");
-                        },
-                      ),
-                      ActionChip(
-                        avatar: const Icon(Icons.groups_rounded, size: 14, color: Colors.purple),
-                        label: const Text('Group Stage + Knockout', style: TextStyle(fontSize: 10)),
-                        onPressed: () {
-                          ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Group Stage + Knockout');
-                          ToastUtils.showSuccess(context, "Generated Group Stage + Knockout Hybrid Fixtures for ${t.title}");
-                        },
-                      ),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        ActionChip(
+                          avatar: const Icon(Icons.alt_route_rounded, size: 12, color: Color(0xFF154D36)),
+                          label: const Text('Seeded Knockout', style: TextStyle(fontSize: 10)),
+                          onPressed: () {
+                            ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Seeded Knockout');
+                            ToastUtils.showSuccess(context, "Generated Top Seed Protection Bracket for ${t.title}");
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        ActionChip(
+                          avatar: const Icon(Icons.shield_outlined, size: 12, color: Colors.amber),
+                          label: const Text('Double Elimination', style: TextStyle(fontSize: 10)),
+                          onPressed: () {
+                            ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Double Elimination');
+                            ToastUtils.showSuccess(context, "Generated Double Elimination Bracket for ${t.title}");
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        ActionChip(
+                          avatar: const Icon(Icons.groups_rounded, size: 12, color: Colors.purple),
+                          label: const Text('Group Stage + Knockout', style: TextStyle(fontSize: 10)),
+                          onPressed: () {
+                            ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Group Stage + Knockout');
+                            ToastUtils.showSuccess(context, "Generated Hybrid Group + Knockout for ${t.title}");
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
+
                   if (t.fixtures.isEmpty)
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.auto_awesome),
-                      label: const Text('Auto-Generate Fixtures & Brackets'),
-                      onPressed: () {
-                        ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
-                        ToastUtils.showSuccess(context, "Auto-generated Brackets & Bye rounds for ${t.title}");
-                      },
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF154D36),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.auto_awesome_rounded, size: 14),
+                        label: const Text('Auto-Generate Fixtures & Brackets', style: TextStyle(fontSize: 11.5)),
+                        onPressed: () {
+                          ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
+                          ToastUtils.showSuccess(context, "Auto-generated Fixtures for ${t.title}");
+                        },
+                      ),
                     )
                   else ...[
-                    // FIFA/UEFA Interactive Visual Bracket Tree
-                    const Text('🏆 Visual Tournament Bracket Tree', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+                    // Interactive Visual Bracket View
+                    const Text('🏆 Visual Tournament Bracket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF154D36))),
                     const SizedBox(height: 8),
                     TournamentBracketView(
                       tournament: t,
                       onMatchTap: (fix) => _showUpdateMatchResultDialog(t, fix),
                     ),
-                    const SizedBox(height: 16),
-                    const Text('📋 Match Console List', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    const SizedBox(height: 14),
+
+                    // Fixture Match Console Cards
+                    const Text('📋 Match Operations List', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                     const SizedBox(height: 8),
-                    Column(
-                      children: t.fixtures.map((fix) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: fix.status == 'Live'
-                                ? Colors.red.shade50
-                                : (fix.winnerTeam.isNotEmpty ? Colors.green.shade50 : Colors.grey.shade50),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: fix.status == 'Live'
-                                  ? Colors.red
-                                  : (fix.winnerTeam.isNotEmpty ? Colors.green : Colors.grey.shade300),
-                            ),
+                    ...t.fixtures.map((fix) {
+                      final isLiveFix = fix.status == 'Live';
+                      final hasWinner = fix.winnerTeam.isNotEmpty;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isLiveFix ? const Color(0xFFFEF2F2) : (hasWinner ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC)),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isLiveFix ? const Color(0xFFFECDD3) : (hasWinner ? const Color(0xFFBBF7D0) : const Color(0xFFE2E8F0)),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text('${fix.matchNumber} (${fix.stage})', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                                        const SizedBox(height: 2),
-                                        Text('${fix.teamA} vs ${fix.teamB}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis),
-                                        Text('Time: ${fix.timeSlot} • Court: ${fix.courtName}', style: const TextStyle(fontSize: 10, color: Colors.grey), overflow: TextOverflow.ellipsis),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: fix.status == 'Live' ? Colors.red : (fix.winnerTeam.isNotEmpty ? Colors.green : AppColors.primary),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text('${fix.scoreA} - ${fix.scoreB}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      InkWell(
-                                        onTap: () => _showUpdateMatchResultDialog(t, fix),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: const Text('Edit Score & Winner ➔', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              if (fix.winnerTeam.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.shade100,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(Icons.emoji_events_rounded, color: Colors.green, size: 14),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced to Next Round ➔)" : "(TOURNAMENT CHAMPION 🥇)"}',
-                                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade900),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
+                                      Text('${fix.matchNumber} • ${fix.stage}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                                      Text('${fix.teamA} vs ${fix.teamB}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)), overflow: TextOverflow.ellipsis),
+                                      Text('${fix.timeSlot} • ${fix.courtName}', style: const TextStyle(fontSize: 9.5, color: Color(0xFF64748B))),
                                     ],
                                   ),
                                 ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: isLiveFix ? const Color(0xFFDC2626) : (hasWinner ? const Color(0xFF16A34A) : const Color(0xFF154D36)),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${fix.scoreA} - ${fix.scoreB}',
+                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    InkWell(
+                                      onTap: () => _showUpdateMatchResultDialog(t, fix),
+                                      child: const Text('Edit Score ➔', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                                    ),
+                                  ],
+                                ),
                               ],
+                            ),
+                            if (hasWinner) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced ➔)" : "(CHAMPION 🥇)"}',
+                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                ),
+                              ),
                             ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    if (t.standings.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      const Text('📊 Live Points Table Standings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      const SizedBox(height: 8),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: DataTable(
-                          columnSpacing: 16,
-                          headingRowHeight: 36,
-                          dataRowMinHeight: 36,
-                          dataRowMaxHeight: 40,
-                          columns: const [
-                            DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('Team', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('P', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('W', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('L', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('D', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('GD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                            DataColumn(label: Text('PTS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
                           ],
-                          rows: t.standings.asMap().entries.map((entry) {
-                            final idx = entry.key + 1;
-                            final row = entry.value;
-                            return DataRow(
-                              cells: [
-                                DataCell(Text('$idx', style: const TextStyle(fontSize: 11))),
-                                DataCell(Text(row.teamName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11))),
-                                DataCell(Text('${row.played}', style: const TextStyle(fontSize: 11))),
-                                DataCell(Text('${row.won}', style: const TextStyle(fontSize: 11, color: Colors.green))),
-                                DataCell(Text('${row.lost}', style: const TextStyle(fontSize: 11, color: Colors.red))),
-                                DataCell(Text('${row.drawn}', style: const TextStyle(fontSize: 11))),
-                                DataCell(Text('${row.goalDifference}', style: const TextStyle(fontSize: 11))),
-                                DataCell(Text('${row.points}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary))),
-                              ],
-                            );
-                          }).toList(),
                         ),
-                      ),
-                    ],
+                      );
+                    }),
                   ],
                 ],
               ),
@@ -1307,67 +1959,103 @@ class _AdminTournamentManagerScreenState
     );
   }
 
+  // --- TAB 4: ANALYTICS & FINANCIALS ---
   Widget _buildAnalyticsTab(AdminTournamentState tournState) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('📈 Tournament Analytics & Financials', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text('Tournament Financial Performance', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF0F172A))),
           const SizedBox(height: 12),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Revenue Breakdown', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Total Gross Registrations:'),
-                    Text('₹${tournState.totalRevenue.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 16)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Platform & GST Deduction:'),
-                    Text('₹${(tournState.totalRevenue * 0.18).toInt()}', style: const TextStyle(color: Colors.grey)),
-                  ],
-                ),
-                const Divider(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Net Venue Profit:', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('₹${(tournState.totalRevenue * 0.82).toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 18)),
-                  ],
-                ),
-              ],
-            ),
+
+          // 2x2 Bento Financial Grid
+          Row(
+            children: [
+              Expanded(child: _buildAnalyticsMetricCard('Gross Entry Fees', '₹${NumberFormat('#,##,###').format(tournState.totalRevenue.toInt())}', Icons.payments_rounded, const Color(0xFF154D36))),
+              const SizedBox(width: 8),
+              Expanded(child: _buildAnalyticsMetricCard('Total Competitions', '${tournState.totalTournaments}', Icons.emoji_events_rounded, const Color(0xFF0284C7))),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(child: _buildAnalyticsMetricCard('Participating Teams', '${tournState.totalParticipants}', Icons.groups_rounded, const Color(0xFFD97706))),
+              const SizedBox(width: 8),
+              Expanded(child: _buildAnalyticsMetricCard('Matches Concluded', '${tournState.completedCount}', Icons.task_alt_rounded, const Color(0xFF16A34A))),
+            ],
           ),
           const SizedBox(height: 16),
-          AppCard(
+
+          // Payout Breakdown Card
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Participation Conversion Rate', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: tournState.totalTournaments == 0 ? 0 : (tournState.totalParticipants / 200).clamp(0.0, 1.0),
-                  minHeight: 12,
-                  borderRadius: BorderRadius.circular(6),
-                  backgroundColor: Colors.grey.shade200,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(height: 8),
-                Text('${tournState.totalParticipants} Players Registered across ${tournState.totalTournaments} tournaments', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                const Text('Revenue & Settlement Split', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A))),
+                const SizedBox(height: 10),
+                _buildFinanceRow('Venue Net Share (90%)', '₹${NumberFormat('#,##,###').format((tournState.totalRevenue * 0.90).toInt())}', isBold: true),
+                const Divider(height: 16),
+                _buildFinanceRow('Platform & Tech Fee (10%)', '₹${NumberFormat('#,##,###').format((tournState.totalRevenue * 0.10).toInt())}'),
+                const Divider(height: 16),
+                _buildFinanceRow('Settlement Status', 'Settled to Bank (Direct Payout)', isStatus: true),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAnalyticsMetricCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 16),
+          ),
+          const SizedBox(height: 8),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color)),
+          const SizedBox(height: 1),
+          Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinanceRow(String label, String value, {bool isBold = false, bool isStatus = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(fontSize: 11.5, color: isBold ? const Color(0xFF0F172A) : const Color(0xFF64748B), fontWeight: isBold ? FontWeight.bold : FontWeight.w500)),
+        if (isStatus)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(6)),
+            child: Text(value, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D))),
+          )
+        else
+          Text(value, style: TextStyle(fontSize: 12, fontWeight: isBold ? FontWeight.w900 : FontWeight.w700, color: const Color(0xFF0F172A))),
+      ],
     );
   }
 }

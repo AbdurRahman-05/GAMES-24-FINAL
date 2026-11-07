@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_constants.dart';
 import 'booking_manager.dart';
 import 'challenge_manager.dart';
+import 'booking_qr_pass_modal.dart';
 
 class BookingScreen extends StatefulWidget {
   final int? turfId;
@@ -1595,9 +1596,10 @@ class _BookingScreenState extends State<BookingScreen> {
                         );
 
                         if (res.statusCode == 200 || res.statusCode == 201) {
+                          Map<String, dynamic> bookingObj = {};
                           try {
                             final resData = jsonDecode(res.body);
-                            final bookingObj = resData['booking'] is Map
+                            bookingObj = resData['booking'] is Map
                                 ? Map<String, dynamic>.from(resData['booking'])
                                 : <String, dynamic>{};
                             bookingObj['turfName'] = widget.turfName;
@@ -1650,47 +1652,9 @@ class _BookingScreenState extends State<BookingScreen> {
                           }
 
                           if (mounted) {
-                            showDialog(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                title: const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: Color(0xFF166534),
-                                      size: 28,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        'Booking Confirmed!',
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                content: Text(
-                                  'Your slot(s) "$combinedSlot" on $selectedDate at ${widget.turfName} (${sortedSlots.length} hr(s)) have been booked in realtime!\n\nNote: Cancellations are permitted up to 3 hours prior to play time.',
-                                ),
-                                actions: [
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF166534),
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    onPressed: () {
-                                      Navigator.pop(ctx);
-                                      _selectedTimeSlots.clear();
-                                      _loadSlots();
-                                    },
-                                    child: const Text('OK'),
-                                  ),
-                                ],
-                              ),
-                            );
+                            _selectedTimeSlots.clear();
+                            _loadSlots();
+                            BookingQrPassModal.show(context, bookingObj);
                             return;
                           }
                         } else {

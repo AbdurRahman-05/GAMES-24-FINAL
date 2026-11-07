@@ -1485,213 +1485,431 @@ class _TurfOwnerProfileScreenState
     );
   }
   @override
+  @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final profile = ref.watch(turfProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Turf Owner Profile & Portal'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_rounded),
-            tooltip: 'Edit Profile Details',
-            onPressed: () => _showEditProfileDialog(profile),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            tooltip: 'Logout to Login Screen',
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('owner_logged_in', false);
-              await prefs.remove('owner_phone');
-              await prefs.remove('verified_admin_data');
-              await prefs.remove('owner_venue_name');
-              ref.read(isAdminModeProvider.notifier).setMode(false);
-              if (context.mounted) {
-                context.go('/login');
-              }
-            },
-          ),
-        ],
-      ),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: _buildProAppBar(context, profile),
       body: Column(
         children: [
-          // Header Profile Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.12),
-                  AppColors.secondary.withValues(alpha: 0.05),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 36,
-                      backgroundColor: AppColors.primary,
-                      child: const Icon(Icons.stadium_rounded, size: 40, color: Colors.white),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  profile.venueName,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.success.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.verified_rounded, size: 12, color: AppColors.success),
-                                    SizedBox(width: 4),
-                                    Text('Verified KYC',
-                                        style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.success)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text('Owner: ${profile.ownerName} • ${profile.ownerPhone}',
-                              style: theme.textTheme.bodySmall),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on_rounded, size: 13, color: AppColors.primary),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  profile.address,
-                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
+          // 1. Executive Partner Passport Header
+          _buildExecutivePassportHeader(profile),
 
-                // Quick Actions Button Bar
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.edit, size: 14),
-                        label: const Text('Edit Details', style: TextStyle(fontSize: 11)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        ),
-                        onPressed: () => _showEditProfileDialog(profile),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.stadium_rounded, size: 14),
-                        label: const Text('Edit Turf', style: TextStyle(fontSize: 11)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        ),
-                        onPressed: _showEditTurfDialog,
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.access_time_rounded, size: 14),
-                        label: Text(
-                            profile.openingTime == '24 Hours'
-                                ? 'Timings (24 Hours Open)'
-                                : 'Timings (${profile.openingTime} - ${profile.closingTime})',
-                            style: const TextStyle(fontSize: 11)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        ),
-                        onPressed: () => _showEditTimingsDialog(profile),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.sports_soccer_rounded, size: 14),
-                        label: const Text('Add Sport', style: TextStyle(fontSize: 11)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        ),
-                        onPressed: _showAddSportDialog,
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.add_business_rounded, size: 14),
-                        label: const Text('Add Venue Court', style: TextStyle(fontSize: 11)),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        ),
-                        onPressed: () => _showAddVenueCourtDialog(profile),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // 2. Modern Quick Actions Carousel
+          _buildQuickActionsCarousel(profile),
 
-          // Tab Bar
-          TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            labelColor: AppColors.primary,
-            indicatorColor: AppColors.primary,
-            tabs: const [
-              Tab(icon: Icon(Icons.storefront_rounded), text: 'Venue Overview'),
-              Tab(icon: Icon(Icons.receipt_long_rounded), text: 'Booking History'),
-              Tab(icon: Icon(Icons.security_rounded), text: 'KYC Details (Locked)'),
-            ],
-          ),
+          // 3. Segmented Capsule Tab Bar
+          _buildSegmentedTabBar(profile),
 
-          // Tab Contents
+          // 4. Tab Views
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Tab 1: Venue Overview & Courts
                 _buildVenueOverviewTab(profile),
-
-                // Tab 2: Booking History
                 _buildBookingHistoryTab(profile),
-
-                // Tab 3: KYC Details (Locked / Non-Editable)
                 _buildKycDetailsTab(profile),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildProAppBar(BuildContext context, TurfProfileState profile) {
+    return AppBar(
+      backgroundColor: const Color(0xFF0C2B1E),
+      elevation: 0,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Partner Passport & Hub',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(
+            '${profile.venueName} • Operations Hub',
+            style: const TextStyle(
+              color: Color(0xFF86EFAC),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF86EFAC)),
+          tooltip: 'Open Gate QR Scanner',
+          onPressed: () => context.push('/admin/qr-scanner'),
+        ),
+        IconButton(
+          icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
+          tooltip: 'Edit Profile Details',
+          onPressed: () => _showEditProfileDialog(profile),
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+          tooltip: 'Logout to Login Screen',
+          onPressed: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('owner_logged_in', false);
+            await prefs.remove('owner_phone');
+            await prefs.remove('verified_admin_data');
+            await prefs.remove('owner_venue_name');
+            ref.read(isAdminModeProvider.notifier).setMode(false);
+            if (context.mounted) {
+              context.go('/login');
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExecutivePassportHeader(TurfProfileState profile) {
+    final isActive = profile.isSubscriptionActive;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Glowing Stadium Avatar
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFBBF24), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFBBF24).withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: const CircleAvatar(
+                  radius: 28,
+                  backgroundColor: Color(0xFF1E3A2F),
+                  child: Icon(Icons.stadium_rounded, size: 30, color: Color(0xFFFBBF24)),
+                ),
+              ),
+              const SizedBox(width: 14),
+
+              // Title and Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            profile.venueName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.3,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_rounded, size: 11, color: Color(0xFF16A34A)),
+                              SizedBox(width: 3),
+                              Text(
+                                'VERIFIED',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF16A34A),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Owner: ${profile.ownerName} • ${profile.ownerPhone}',
+                      style: const TextStyle(
+                        color: Color(0xFF86EFAC),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on_rounded, size: 12, color: Color(0xFF4ADE80)),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            profile.address.isNotEmpty ? profile.address : 'Location verified',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.75),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Bento Metric Pills Strip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.22),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildHeaderMiniMetric('Arenas', '${profile.courts.length} Active', const Color(0xFF4ADE80)),
+                _buildHeaderDivider(),
+                _buildHeaderMiniMetric('Sports', '${profile.sports.length} Active', const Color(0xFF38BDF8)),
+                _buildHeaderDivider(),
+                _buildHeaderMiniMetric('GMV', profile.revenueBadge, const Color(0xFFFBBF24)),
+                _buildHeaderDivider(),
+                _buildHeaderMiniMetric(
+                  'Plan',
+                  isActive ? 'Active 🟢' : 'Expired 🔴',
+                  isActive ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderMiniMetric(String label, String value, Color color) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 1),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w600,
+            color: Colors.white.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeaderDivider() {
+    return Container(
+      width: 1,
+      height: 20,
+      color: Colors.white.withValues(alpha: 0.15),
+    );
+  }
+
+  Widget _buildQuickActionsCarousel(TurfProfileState profile) {
+    return Container(
+      height: 44,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        children: [
+          _buildQuickActionPill(
+            icon: Icons.tune_rounded,
+            label: 'Edit Profile',
+            color: const Color(0xFF154D36),
+            onTap: () => _showEditProfileDialog(profile),
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionPill(
+            icon: Icons.schedule_rounded,
+            label: profile.openingTime == '24 Hours' ? '24 Hours Open' : '${profile.openingTime} - ${profile.closingTime}',
+            color: const Color(0xFF0F172A),
+            onTap: () => _showEditTimingsDialog(profile),
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionPill(
+            icon: Icons.qr_code_scanner_rounded,
+            label: 'Gate Scanner',
+            color: const Color(0xFF16A34A),
+            onTap: () => context.push('/admin/qr-scanner'),
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionPill(
+            icon: Icons.sports_soccer_rounded,
+            label: 'Add Sport',
+            color: const Color(0xFF0369A1),
+            onTap: _showAddSportDialog,
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionPill(
+            icon: Icons.add_business_rounded,
+            label: 'Add Arena',
+            color: const Color(0xFF7C3AED),
+            onTap: () => _showAddVenueCourtDialog(profile),
+          ),
+          const SizedBox(width: 8),
+          _buildQuickActionPill(
+            icon: Icons.stadium_rounded,
+            label: 'Edit Turf Info',
+            color: const Color(0xFF475569),
+            onTap: _showEditTurfDialog,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionPill({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSegmentedTabBar(TurfProfileState profile) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE2E8F0),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: const Color(0xFF154D36),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF154D36).withValues(alpha: 0.25),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        unselectedLabelColor: const Color(0xFF475569),
+        labelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
+        unselectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+        dividerColor: Colors.transparent,
+        tabs: [
+          const Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.storefront_rounded, size: 14),
+                SizedBox(width: 5),
+                Text('Venue Hub'),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.receipt_long_rounded, size: 14),
+                const SizedBox(width: 5),
+                Text('Bookings (${profile.bookingHistory.length})'),
+              ],
+            ),
+          ),
+          const Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.security_rounded, size: 14),
+                SizedBox(width: 5),
+                Text('KYC Details'),
               ],
             ),
           ),

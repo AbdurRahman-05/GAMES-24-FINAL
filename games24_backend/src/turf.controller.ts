@@ -34,6 +34,14 @@ export class TurfController {
     return this.turfService.cancelBooking(bookingId);
   }
 
+  @Post(':id/check-in')
+  async checkInBooking(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.checkInBooking(id, body);
+  }
+
   @Get(':id')
   async getTurfById(@Param('id', ParseIntPipe) id: number) {
     return this.turfService.getTurfById(id);
