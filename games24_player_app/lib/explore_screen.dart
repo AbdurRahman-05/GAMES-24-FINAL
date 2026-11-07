@@ -655,97 +655,92 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: sports.map((sport) {
-                            return Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: const Color(0xFFE5E7EB),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    sport.toLowerCase().contains('cricket')
-                                        ? Icons.sports_cricket
-                                        : Icons.sports_soccer,
-                                    size: 12,
-                                    color: const Color(0xFF4B5563),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    sport,
-                                    style: const TextStyle(
-                                      color: Color(0xFF4B5563),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BookingScreen(
-                              turfId: turfId,
-                              turfName: name,
-                              imageUrl: imageUrl,
-                              photoUrls: photoUrls,
-                              amenities: amenities,
-                              openingTime: openingTime,
-                              closingTime: closingTime,
-                              price: price,
-                              location: location,
-                              sports: sports,
-                              sportsList: sportsList,
+                const SizedBox(height: 14),
+                if (sports.isNotEmpty) ...[
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: sports.map((sport) {
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9FAFB),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFE5E7EB),
                             ),
                           ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getSportIcon(sport),
+                                size: 13,
+                                color: const Color(0xFF166534),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                sport,
+                                style: const TextStyle(
+                                  color: Color(0xFF374151),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0F6D38),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookingScreen(
+                            turfId: turfId,
+                            turfName: name,
+                            imageUrl: imageUrl,
+                            photoUrls: photoUrls,
+                            amenities: amenities,
+                            openingTime: openingTime,
+                            closingTime: closingTime,
+                            price: price,
+                            location: location,
+                            sports: sports,
+                            sportsList: sportsList,
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        minimumSize: Size.zero,
-                      ),
-                      child: const Text(
-                        'Book Slot',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F6D38),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                  ],
+                    child: const Text(
+                      'Book Slot',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -753,5 +748,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getSportIcon(String sport) {
+    final s = sport.toLowerCase();
+    if (s.contains('cricket')) return Icons.sports_cricket;
+    if (s.contains('football') || s.contains('soccer')) return Icons.sports_soccer;
+    if (s.contains('pickle')) return Icons.sports_tennis_rounded;
+    if (s.contains('badminton')) return Icons.sports_tennis;
+    if (s.contains('tennis')) return Icons.sports_tennis;
+    if (s.contains('basket')) return Icons.sports_basketball;
+    return Icons.sports;
   }
 }
