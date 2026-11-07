@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'booking_manager.dart';
+import 'match_score_manager.dart';
 
 class PerformanceScreen extends StatefulWidget {
   const PerformanceScreen({super.key});
@@ -31,14 +32,17 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bookings = BookingManager().allBookings;
-    final totalMatches = bookings.length;
-    final wins = totalMatches > 0 ? (totalMatches * 0.6).round() : 0;
-    final winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toStringAsFixed(0) : '0';
-    final formIndex = totalMatches > 0 ? '8.2' : '0.0';
-    final hoursPlayed = (totalMatches * 1.5).toStringAsFixed(1);
+    return ValueListenableBuilder<int>(
+      valueListenable: MatchScoreManager().statsNotifier,
+      builder: (context, statsTick, child) {
+        final bookings = BookingManager().allBookings;
+        final totalMatches = MatchScoreManager().getTotalMatches(bookings.length);
+        final wins = MatchScoreManager().getTotalWins(bookings.length);
+        final winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toStringAsFixed(0) : '0';
+        final formIndex = MatchScoreManager().getFormIndex(bookings.length);
+        final hoursPlayed = (totalMatches * 1.5).toStringAsFixed(1);
 
-    return Scaffold(
+        return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
@@ -337,6 +341,8 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 

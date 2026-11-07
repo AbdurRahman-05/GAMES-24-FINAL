@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'booking_manager.dart';
+import 'match_scorecard_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({super.key});
@@ -643,75 +644,112 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     ),
                   ],
                 ),
-                if (!isPast && !isCancelled && bookingId != null) ...[
+                if (!isCancelled && bookingId != null) ...[
                   const SizedBox(height: 16),
                   const Divider(height: 1, color: Color(0xFFF3F4F6)),
                   const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.red.shade700,
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF166534),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                         onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MatchScorecardScreen(
+                                bookingId: bookingId.toString(),
+                                turfName: turfName,
+                                sport: booking['sport']?.toString() ?? 'Cricket',
+                                date: dateStr,
+                                timeSlot: timeSlot,
                               ),
-                              title: const Text('Cancel Booking?'),
-                              content: Text(
-                                'Are you sure you want to cancel your slot at $turfName ($formattedDateTime)?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('Keep Booking'),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red.shade700,
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  onPressed: () async {
-                                    Navigator.pop(ctx);
-                                    final success = await BookingManager()
-                                        .cancelBooking(bookingId);
-                                    if (mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            success
-                                                ? 'Booking cancelled successfully.'
-                                                : 'Failed to cancel booking.',
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                  child: const Text('Confirm Cancel'),
-                                ),
-                              ],
                             ),
                           );
                         },
-                        icon: const Icon(Icons.cancel_outlined, size: 16),
+                        icon: const Icon(Icons.sports_score_rounded, size: 16),
                         label: const Text(
-                          'Cancel Slot',
+                          'Scorecard & Toss 🏆',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
+                      if (!isPast)
+                        TextButton.icon(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red.shade700,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                title: const Text('Cancel Booking?'),
+                                content: Text(
+                                  'Are you sure you want to cancel your slot at $turfName ($formattedDateTime)?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('Keep Booking'),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red.shade700,
+                                      foregroundColor: Colors.white,
+                                    ),
+                                    onPressed: () async {
+                                      Navigator.pop(ctx);
+                                      final success = await BookingManager()
+                                          .cancelBooking(bookingId);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'Booking cancelled successfully.'
+                                                  : 'Failed to cancel booking.',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: const Text('Confirm Cancel'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.cancel_outlined, size: 16),
+                          label: const Text(
+                            'Cancel Slot',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ],

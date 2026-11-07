@@ -8,6 +8,8 @@ import 'package:games24_player_app/badges_screen.dart';
 import 'package:games24_player_app/settings_screen.dart';
 import 'package:games24_player_app/support_screen.dart';
 import 'package:games24_player_app/booking_manager.dart';
+import 'package:games24_player_app/match_score_manager.dart';
+import 'package:games24_player_app/match_scorecard_screen.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -88,6 +90,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const TeamsHubScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            _buildMenuItem(
+              context: context,
+              icon: Icons.sports_score_outlined,
+              title: 'Match Center & Scorecard',
+              subtitle: 'Live scoring, coin toss & squad roster',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MatchScorecardScreen(
+                      bookingId: 'P-RECENT',
+                      turfName: 'Community Arena',
+                      sport: 'Cricket',
+                      date: 'Today',
+                      timeSlot: 'Live Session',
+                    ),
+                  ),
                 );
               },
             ),
@@ -285,34 +308,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildStatsRow() {
-    return ValueListenableBuilder<List<Map<String, dynamic>>>(
-      valueListenable: BookingManager().bookingsNotifier,
-      builder: (context, bookings, _) {
-        final totalMatches = bookings.length;
-        final wins = totalMatches > 0 ? (totalMatches * 0.6).round() : 0;
-        final form = totalMatches > 0 ? '8.2' : '0.0';
+    return ValueListenableBuilder<int>(
+      valueListenable: MatchScoreManager().statsNotifier,
+      builder: (context, statsTick, child) {
+        return ValueListenableBuilder<List<Map<String, dynamic>>>(
+          valueListenable: BookingManager().bookingsNotifier,
+          builder: (context, bookings, _) {
+            final baseCount = bookings.length;
+            final totalMatches = MatchScoreManager().getTotalMatches(baseCount);
+            final wins = MatchScoreManager().getTotalWins(baseCount);
+            final form = MatchScoreManager().getFormIndex(baseCount);
 
-        return Row(
-          children: [
-            _buildStatCard(
-              icon: Icons.sports_soccer,
-              value: '$totalMatches',
-              label: 'Total Matches',
-            ),
-            const SizedBox(width: 12),
-            _buildStatCard(
-              icon: Icons.emoji_events_outlined,
-              value: '$wins',
-              label: 'Wins',
-            ),
-            const SizedBox(width: 12),
-            _buildStatCard(
-              icon: Icons.local_fire_department_outlined,
-              value: form,
-              label: 'Form Index',
-              isOrange: true,
-            ),
-          ],
+            return Row(
+              children: [
+                _buildStatCard(
+                  icon: Icons.sports_soccer,
+                  value: '$totalMatches',
+                  label: 'Total Matches',
+                ),
+                const SizedBox(width: 12),
+                _buildStatCard(
+                  icon: Icons.emoji_events_outlined,
+                  value: '$wins',
+                  label: 'Wins',
+                ),
+                const SizedBox(width: 12),
+                _buildStatCard(
+                  icon: Icons.local_fire_department_outlined,
+                  value: form,
+                  label: 'Form Index',
+                  isOrange: true,
+                ),
+              ],
+            );
+          },
         );
       },
     );
