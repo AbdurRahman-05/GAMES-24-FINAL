@@ -147,7 +147,12 @@ export class TurfService {
   }
 
   async getAllTurfs() {
+    // Only return turfs whose owner subscription is active and verified (not on hold)
     const verified = await this.prisma.verifiedAdmin.findMany({
+      where: {
+        status: 'VERIFIED',
+        isBookingHold: false,
+      },
       include: {
         dashboard: true,
       },
@@ -937,6 +942,116 @@ export class TurfService {
       success: true,
       message: 'Booking cancelled successfully',
       booking: updated,
+    };
+  }
+
+  async getTurfSubscription(id: number) {
+    const turf = await this.findVerifiedAdmin(id, true);
+    if (!turf) {
+      throw new NotFoundException(`Turf with ID ${id} not found`);
+    }
+
+    const isSubscribed = !turf.isBookingHold && turf.status === 'VERIFIED';
+    const now = new Date();
+    const nextRenew = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    const renewDateStr = nextRenew.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    return {
+      turfId: turf.id,
+      venueName: turf.venueName,
+      ownerName: turf.ownerName,
+      ownerPhone: turf.ownerPhone,
+      planName: 'Monthly Turf Partner Subscription',
+      baseFee: 1000.0,
+      gstRate: 18,
+      gstAmount: 180.0,
+      totalAmount: 1180.0,
+      isSubscriptionActive: isSubscribed,
+      status: isSubscribed ? 'ACTIVE' : 'EXPIRED',
+      isLiveOnPlayerApp: isSubscribed,
+      billingCycle: 'Monthly',
+      nextBillingDate: renewDateStr,
+      description: 'Platform listing fee for turf discovery and slot bookings on Games24 Player App.',
+    };
+  }
+
+  async payTurfSubscription(id: number, body: any) {
+    const turf = await this.findVerifiedAdmin(id, true);
+    if (!turf) {
+      throw new NotFoundException(`Turf with ID ${id} not found`);
+    }
+
+    // Activate subscription and unhold turf so it is visible to players
+    const updated = await this.prisma.verifiedAdmin.update({
+      where: { id: turf.id },
+      data: {
+        isBookingHold: false,
+        status: 'VERIFIED',
+      },
+      include: { dashboard: true },
+    });
+
+    const now = new Date();
+    const nextRenew = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    const renewDateStr = nextRenew.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    return {
+      success: true,
+      message: 'Monthly subscription of ₹1,180 (₹1,000 + 18% GST) paid successfully. Your turf is now LIVE on Games24 Player App!',
+      subscription: {
+        turfId: updated.id,
+        venueName: updated.venueName,
+        baseFee: 1000.0,
+        gstRate: 18,
+        gstAmount: 180.0,
+        totalAmount: 1180.0,
+        isSubscriptionActive: true,
+        status: 'ACTIVE',
+        isLiveOnPlayerApp: true,
+        paidAt: now.toISOString(),
+        paymentMethod: body?.paymentMethod || 'UPI',
+        utr: body?.utr || `UPI${Date.now()}`,
+        nextBillingDate: renewDateStr,
+      },
+    };
+  }
+
+  async toggleTurfSubscription(id: number) {
+    const turf = await this.findVerifiedAdmin(id, true);
+    if (!turf) {
+      throw new NotFoundException(`Turf with ID ${id} not found`);
+    }
+
+    const currentHold = turf.isBookingHold || turf.status !== 'VERIFIED';
+    const newHold = !currentHold;
+
+    const updated = await this.prisma.verifiedAdmin.update({
+      where: { id: turf.id },
+      data: {
+        isBookingHold: newHold,
+        status: newHold ? 'HOLD' : 'VERIFIED',
+      },
+      include: { dashboard: true },
+    });
+
+    const isSubscribed = !updated.isBookingHold && updated.status === 'VERIFIED';
+
+    return {
+      success: true,
+      message: isSubscribed
+        ? 'Subscription marked ACTIVE. Turf is now visible on Player App.'
+        : 'Subscription marked EXPIRED/HOLD. Turf is now HIDDEN on Player App.',
+      isSubscriptionActive: isSubscribed,
+      status: isSubscribed ? 'ACTIVE' : 'EXPIRED',
+      isLiveOnPlayerApp: isSubscribed,
     };
   }
 }

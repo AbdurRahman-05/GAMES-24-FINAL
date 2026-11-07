@@ -102,7 +102,11 @@ class Challenge {
     sport: json['sport']?.toString() ?? 'Football',
     challengerName: json['challengerName']?.toString() ?? '',
     challengerTeamInitials: json['challengerTeamInitials']?.toString() ?? 'TC',
-    challengerColor: Color(json['challengerColor'] is int ? json['challengerColor'] as int : 0xFF166534),
+    challengerColor: Color(
+      json['challengerColor'] is int
+          ? json['challengerColor'] as int
+          : 0xFF166534,
+    ),
     creatorPhone: json['creatorPhone']?.toString() ?? '',
     teamSize: json['teamSize']?.toString() ?? '7v7',
     isCreator: json['isCreator'] == true,
@@ -111,7 +115,9 @@ class Challenge {
     opponentTeamSize: json['opponentTeamSize']?.toString(),
     opponentContact: json['opponentContact']?.toString(),
     joinRequests: (json['joinRequests'] is List)
-        ? (json['joinRequests'] as List).map((r) => JoinRequest.fromJson(Map<String, dynamic>.from(r))).toList()
+        ? (json['joinRequests'] as List)
+              .map((r) => JoinRequest.fromJson(Map<String, dynamic>.from(r)))
+              .toList()
         : [],
     userHasRequested: json['userHasRequested'] == true,
   );
@@ -125,7 +131,11 @@ class Challenge {
       if (dStr == 'today') {
         challengeDate = DateTime(now.year, now.month, now.day);
       } else if (dStr == 'tomorrow') {
-        challengeDate = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+        challengeDate = DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).add(const Duration(days: 1));
       } else if (dStr == 'yesterday') {
         return true;
       } else {
@@ -164,7 +174,10 @@ class Challenge {
         timeStr = timeStr.split('-').first.trim();
       }
 
-      final timeRegex = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)?', caseSensitive: false);
+      final timeRegex = RegExp(
+        r'(\d{1,2}):(\d{2})\s*(AM|PM)?',
+        caseSensitive: false,
+      );
       final match = timeRegex.firstMatch(timeStr);
       if (match != null) {
         int hour = int.parse(match.group(1)!);
@@ -205,7 +218,8 @@ class ChallengeManager {
   static const String _storageKey = 'saved_open_challenges';
   String _currentUserPhone = '';
 
-  final ValueNotifier<List<Challenge>> challengesNotifier = ValueNotifier<List<Challenge>>([]);
+  final ValueNotifier<List<Challenge>> challengesNotifier =
+      ValueNotifier<List<Challenge>>([]);
 
   List<Challenge> get activeChallenges =>
       challengesNotifier.value.where((c) => !c.isExpired).toList();
@@ -240,7 +254,9 @@ class ChallengeManager {
   Future<void> _saveToStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final str = jsonEncode(challengesNotifier.value.map((c) => c.toJson()).toList());
+      final str = jsonEncode(
+        challengesNotifier.value.map((c) => c.toJson()).toList(),
+      );
       await prefs.setString(_storageKey, str);
     } catch (e) {
       debugPrint("Error saving challenges: $e");
@@ -276,7 +292,8 @@ class ChallengeManager {
     final clean2 = p2.replaceAll(RegExp(r'[^0-9]'), '');
     if (clean1 == clean2 && clean1.isNotEmpty) return true;
     if (clean1.length >= 10 && clean2.length >= 10) {
-      return clean1.substring(clean1.length - 10) == clean2.substring(clean2.length - 10);
+      return clean1.substring(clean1.length - 10) ==
+          clean2.substring(clean2.length - 10);
     }
     return false;
   }
@@ -286,7 +303,12 @@ class ChallengeManager {
     _saveToStorage();
   }
 
-  void requestToJoin(String id, String teamName, String teamSize, String contactDetails) {
+  void requestToJoin(
+    String id,
+    String teamName,
+    String teamSize,
+    String contactDetails,
+  ) {
     final list = List<Challenge>.from(challengesNotifier.value);
     final index = list.indexWhere((c) => c.id == id);
     if (index != -1) {
@@ -297,7 +319,8 @@ class ChallengeManager {
         contactDetails: contactDetails,
         requestedAt: 'Just now',
       );
-      final updatedRequests = List<JoinRequest>.from(list[index].joinRequests)..add(req);
+      final updatedRequests = List<JoinRequest>.from(list[index].joinRequests)
+        ..add(req);
 
       list[index] = Challenge(
         id: list[index].id,
@@ -356,7 +379,9 @@ class ChallengeManager {
     final list = List<Challenge>.from(challengesNotifier.value);
     final index = list.indexWhere((c) => c.id == challengeId);
     if (index != -1) {
-      final updatedRequests = list[index].joinRequests.where((r) => r.id != requestId).toList();
+      final updatedRequests = list[index].joinRequests
+          .where((r) => r.id != requestId)
+          .toList();
       list[index] = Challenge(
         id: list[index].id,
         turfName: list[index].turfName,

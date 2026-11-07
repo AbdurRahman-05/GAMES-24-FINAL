@@ -1695,12 +1695,291 @@ class _TurfOwnerProfileScreenState
     );
   }
 
+  Widget _buildSubscriptionOverviewCard(TurfProfileState profile) {
+    final isActive = profile.isSubscriptionActive;
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isActive ? const Color(0xFFDCFCE7) : const Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isActive ? Icons.verified_rounded : Icons.warning_amber_rounded,
+                      color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Platform Subscription',
+                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                      ),
+                      Text(
+                        isActive ? 'Active • Live on Player App' : 'Expired • Turf Hidden from Players',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (isActive ? const Color(0xFF166534) : const Color(0xFFDC2626)).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isActive ? const Color(0xFF166534) : const Color(0xFFDC2626),
+                  ),
+                ),
+                child: Text(
+                  isActive ? 'LIVE' : 'HIDDEN',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    color: isActive ? const Color(0xFF166534) : const Color(0xFFDC2626),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5E7EB)),
+            ),
+            child: Column(
+              children: const [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Base Platform Listing Fee', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+                    Text('₹1,000.00 / mo', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Government GST (18%)', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+                    Text('₹180.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                Divider(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Total Platform Fee', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+                    Text('₹1,180 / month', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF166534))),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.info_outline, size: 14, color: Color(0xFF6B7280)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  isActive
+                      ? 'Players pay zero convenience & tax fees. Your turf is fully discoverable on Games24 Player App.'
+                      : 'Payment required to list your turf. Unpaid turfs are hidden from players.',
+                  style: const TextStyle(fontSize: 10.5, color: Color(0xFF6B7280)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isActive ? const Color(0xFF166534) : const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  icon: const Icon(Icons.payment_rounded, size: 16),
+                  label: Text(
+                    isActive ? 'Renew Plan (₹1,180)' : 'Pay ₹1,180 & Go Live ⚡',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () => _showSubscriptionPaymentDialog(profile),
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () async {
+                  await ref.read(turfProfileProvider.notifier).toggleSubscription();
+                  if (mounted) {
+                    final newSub = ref.read(turfProfileProvider).isSubscriptionActive;
+                    if (newSub) {
+                      ToastUtils.showSuccess(context, 'Turf marked ACTIVE & visible on Player App!');
+                    } else {
+                      ToastUtils.showWarning(context, 'Turf marked HOLD & hidden from Player App!');
+                    }
+                  }
+                },
+                child: Text(
+                  isActive ? 'Hold Turf' : 'Unhold Turf',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: isActive ? Colors.grey.shade700 : AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSubscriptionPaymentDialog(TurfProfileState profile) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF166534).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFF166534), size: 22),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Partner Subscription',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Zero fee for players — owners pay a monthly ₹1,000 + 18% GST (₹1,180) platform subscription to keep their venue discoverable.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(
+                children: const [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Monthly Listing Fee', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+                      Text('₹1,000.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('GST (18% Applicable)', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+                      Text('₹180.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  Divider(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Total Amount Payable', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+                      Text('₹1,180 / month', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF166534))),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF166534),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                icon: const Icon(Icons.payment_rounded, size: 18),
+                label: Text(
+                  profile.isSubscriptionActive ? 'Renew Platform Plan (₹1,180)' : 'Pay ₹1,180 & Go Live ⚡',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  final success = await ref.read(turfProfileProvider.notifier).payPlatformSubscription();
+                  if (mounted) {
+                    if (success) {
+                      ToastUtils.showSuccess(
+                        context,
+                        'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Games24 Player App.',
+                      );
+                    } else {
+                      ToastUtils.showError(context, 'Payment failed. Please retry.');
+                    }
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildVenueOverviewTab(TurfProfileState profile) {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Monthly Platform Subscription Card
+          _buildSubscriptionOverviewCard(profile),
+          const SizedBox(height: 16),
+
           // Timings & Pricing Summary Card
           AppCard(
             child: Column(

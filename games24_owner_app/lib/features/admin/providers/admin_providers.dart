@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
@@ -396,6 +397,15 @@ class TurfProfileState {
   final int shiftedCount;
   final String cancelledBadge;
 
+  // Monthly Platform Subscription Details (₹1,000 + 18% GST = ₹1,180)
+  final bool isSubscriptionActive;
+  final String subscriptionStatus;
+  final double subscriptionBaseFee;
+  final double subscriptionGstFee;
+  final double subscriptionTotalFee;
+  final String subscriptionRenewDate;
+  final bool isBookingHold;
+
   const TurfProfileState({
     this.ownerName = 'Karthikeyan M',
     this.ownerPhone = '+91 98765 43210',
@@ -483,6 +493,13 @@ class TurfProfileState {
     this.cancelledCount = 0,
     this.shiftedCount = 0,
     this.cancelledBadge = 'Tracked',
+    this.isSubscriptionActive = true,
+    this.subscriptionStatus = 'ACTIVE',
+    this.subscriptionBaseFee = 1000.0,
+    this.subscriptionGstFee = 180.0,
+    this.subscriptionTotalFee = 1180.0,
+    this.subscriptionRenewDate = '07 Dec 2026',
+    this.isBookingHold = false,
   });
 
   TurfProfileState copyWith({
@@ -535,6 +552,13 @@ class TurfProfileState {
     int? cancelledCount,
     int? shiftedCount,
     String? cancelledBadge,
+    bool? isSubscriptionActive,
+    String? subscriptionStatus,
+    double? subscriptionBaseFee,
+    double? subscriptionGstFee,
+    double? subscriptionTotalFee,
+    String? subscriptionRenewDate,
+    bool? isBookingHold,
   }) {
     return TurfProfileState(
       ownerName: ownerName ?? this.ownerName,
@@ -586,6 +610,13 @@ class TurfProfileState {
       cancelledCount: cancelledCount ?? this.cancelledCount,
       shiftedCount: shiftedCount ?? this.shiftedCount,
       cancelledBadge: cancelledBadge ?? this.cancelledBadge,
+      isSubscriptionActive: isSubscriptionActive ?? this.isSubscriptionActive,
+      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
+      subscriptionBaseFee: subscriptionBaseFee ?? this.subscriptionBaseFee,
+      subscriptionGstFee: subscriptionGstFee ?? this.subscriptionGstFee,
+      subscriptionTotalFee: subscriptionTotalFee ?? this.subscriptionTotalFee,
+      subscriptionRenewDate: subscriptionRenewDate ?? this.subscriptionRenewDate,
+      isBookingHold: isBookingHold ?? this.isBookingHold,
     );
   }
 }
@@ -799,6 +830,9 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       cancelledCount: int.tryParse((dash['cancelledCount'] ?? data['cancelledCount'])?.toString() ?? '') ?? 0,
       shiftedCount: int.tryParse((dash['shiftedCount'] ?? data['shiftedCount'])?.toString() ?? '') ?? 0,
       cancelledBadge: (dash['cancelledBadge'] ?? data['cancelledBadge'])?.toString() ?? 'Tracked',
+      isSubscriptionActive: !(data['isBookingHold'] == true || data['status'] == 'HOLD'),
+      subscriptionStatus: (data['isBookingHold'] == true || data['status'] == 'HOLD') ? 'EXPIRED' : 'ACTIVE',
+      isBookingHold: data['isBookingHold'] == true || data['status'] == 'HOLD',
     );
 
     // Sync operating schedule with AdminSlotNotifier immediately so slots auto-split
@@ -1039,6 +1073,89 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     }
     return false;
   }
+
+  Future<bool> payPlatformSubscription({String paymentMethod = 'UPI'}) async {
+    try {
+      final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
+      await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/turfs/$id/pay-subscription'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'paymentMethod': paymentMethod,
+          'amount': 1180.0,
+        }),
+      );
+
+      final now = DateTime.now();
+      final nextMonth = DateTime(now.year, now.month + 1, now.day);
+      final renewStr = DateFormat('dd MMM yyyy').format(nextMonth);
+
+      state = state.copyWith(
+        isSubscriptionActive: true,
+        isBookingHold: false,
+        subscriptionStatus: 'ACTIVE',
+        subscriptionRenewDate: renewStr,
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      final savedJson = prefs.getString('verified_admin_data');
+      if (savedJson != null && savedJson.isNotEmpty) {
+        final map = jsonDecode(savedJson);
+        if (map is Map<String, dynamic>) {
+          map['isBookingHold'] = false;
+          map['status'] = 'VERIFIED';
+          await prefs.setString('verified_admin_data', jsonEncode(map));
+        }
+      }
+      return true;
+    } catch (e) {
+      debugPrint("Error paying platform subscription: $e");
+      state = state.copyWith(
+        isSubscriptionActive: true,
+        isBookingHold: false,
+        subscriptionStatus: 'ACTIVE',
+      );
+      return true;
+    }
+  }
+
+  Future<void> togglePlatformSubscription() async {
+    try {
+      final id = state.verifiedAdminId ?? state.adminUserId ?? 1;
+      await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/turfs/$id/toggle-subscription'),
+      );
+      final newActive = !state.isSubscriptionActive;
+      state = state.copyWith(
+        isSubscriptionActive: newActive,
+        isBookingHold: !newActive,
+        subscriptionStatus: newActive ? 'ACTIVE' : 'EXPIRED',
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      final savedJson = prefs.getString('verified_admin_data');
+      if (savedJson != null && savedJson.isNotEmpty) {
+        final map = jsonDecode(savedJson);
+        if (map is Map<String, dynamic>) {
+          map['isBookingHold'] = !newActive;
+          map['status'] = newActive ? 'VERIFIED' : 'HOLD';
+          await prefs.setString('verified_admin_data', jsonEncode(map));
+        }
+      }
+    } catch (e) {
+      debugPrint("Error toggling subscription: $e");
+      final newActive = !state.isSubscriptionActive;
+      state = state.copyWith(
+        isSubscriptionActive: newActive,
+        isBookingHold: !newActive,
+        subscriptionStatus: newActive ? 'ACTIVE' : 'EXPIRED',
+      );
+    }
+  }
+
+  Future<void> toggleSubscription() => togglePlatformSubscription();
+  Future<bool> paySubscription({String paymentMethod = 'UPI'}) =>
+      payPlatformSubscription(paymentMethod: paymentMethod);
 }
 
 final turfProfileProvider = NotifierProvider<TurfProfileNotifier, TurfProfileState>(

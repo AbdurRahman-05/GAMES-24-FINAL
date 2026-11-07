@@ -64,8 +64,8 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
     );
 
     final double courtPrice = venue.pricePerHour;
-    final double serviceFee = 35.0;
-    final double totalPrice = courtPrice + serviceFee;
+    // Zero convenience fee and zero taxes for players - only cost of the hours!
+    final double totalPrice = courtPrice;
 
     final availableSlots = ref.watch(adminSlotProvider).getUpcomingSlotsForDate(_selectedDate);
 
@@ -220,9 +220,9 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Convenience & Lights Fee'),
-                      Text('₹${serviceFee.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    children: const [
+                      Text('Convenience & Tax Fee'),
+                      Text('₹0 (Free)', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary)),
                     ],
                   ),
                   const Divider(height: 24),

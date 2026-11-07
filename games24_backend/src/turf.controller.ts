@@ -70,4 +70,22 @@ export class TurfController {
   ) {
     return this.turfService.setSlotOffer(id, body);
   }
+
+  @Get(':id/subscription')
+  async getTurfSubscription(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.getTurfSubscription(id);
+  }
+
+  @Post(':id/pay-subscription')
+  async payTurfSubscription(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.payTurfSubscription(id, body);
+  }
+
+  @Post(':id/toggle-subscription')
+  async toggleTurfSubscription(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.toggleTurfSubscription(id);
+  }
 }

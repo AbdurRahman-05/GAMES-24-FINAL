@@ -1329,9 +1329,8 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget _buildBookingSummary() {
     final slotCount = _selectedTimeSlots.length;
     final courtFee = _calculateCourtFee();
-    final convFee = slotCount > 0 ? 50 : 0;
-    final taxes = slotCount > 0 ? 40 : 0;
-    final total = courtFee + convFee + taxes;
+    // Zero convenience fee and zero taxes for players - only cost of the hours!
+    final total = courtFee;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1363,9 +1362,13 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(height: 8),
             _buildSummaryRow('Slots Count', '$slotCount slot(s)'),
             const SizedBox(height: 8),
-            _buildSummaryRow('Court Fee', '₹$courtFee'),
+            _buildSummaryRow('Court Fee (Hourly Rate)', '₹$courtFee'),
             const SizedBox(height: 8),
-            _buildSummaryRow('Convenience & Taxes', '₹${convFee + taxes}'),
+            _buildSummaryRow(
+              'Convenience & Tax Fee',
+              '₹0 (Free • No Extra Taxes)',
+              valueColor: const Color(0xFF166534),
+            ),
             const Divider(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1394,7 +1397,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value) {
+  Widget _buildSummaryRow(String label, String value, {Color? valueColor}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1408,9 +1411,9 @@ class _BookingScreenState extends State<BookingScreen> {
             value,
             textAlign: TextAlign.end,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF111827),
+              color: valueColor ?? const Color(0xFF111827),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1421,7 +1424,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Widget _buildBottomButton() {
     final courtFee = _calculateCourtFee();
-    final total = courtFee + (_selectedTimeSlots.isNotEmpty ? 90 : 0);
+    final total = courtFee; // Only the cost of the hours! No added fees or taxes
 
     return Container(
       padding: const EdgeInsets.all(16),
