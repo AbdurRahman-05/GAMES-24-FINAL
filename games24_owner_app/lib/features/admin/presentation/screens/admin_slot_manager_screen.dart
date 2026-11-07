@@ -82,16 +82,20 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     final dateKey = _getDateKey(date);
     final profile = ref.read(turfProfileProvider);
     final isToday = DateUtils.isSameDay(date, DateTime.now());
+    final normSlot = slot.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
 
     for (final b in profile.bookingHistory) {
       if (b.isCancelled) continue;
-      final d = b.effectiveDate;
-      final isMatchingDate = d == dateKey || (isToday && d.toLowerCase() == 'today');
+      final d = b.effectiveDate.trim();
+      final isMatchingDate = d == dateKey || (isToday && (d.toLowerCase() == 'today' || d.isEmpty));
       if (isMatchingDate) {
-        final slotStr = b.effectiveTimeSlot;
-        if (slotStr.contains(slot)) return b;
-        final bSlots = slotStr.split(',').map((x) => x.trim());
-        if (bSlots.contains(slot)) return b;
+        final bSlots = b.effectiveTimeSlot.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty);
+        for (final bs in bSlots) {
+          final normBs = bs.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+          if (normBs == normSlot || normBs.contains(normSlot) || normSlot.contains(normBs)) {
+            return b;
+          }
+        }
       }
     }
     return null;
@@ -108,10 +112,36 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     final totalSlotsCount = allSlotsForDate.length;
 
     final blockedSet = adminSlotState.getBlockedSlotsForDate(dateKey);
-    final bookedSet = adminSlotState.getBookedSlotsForDate(dateKey);
+    final remoteBooked = adminSlotState.getBookedSlotsForDate(dateKey);
+    final historyBooked = <String>{};
+    final isToday = DateUtils.isSameDay(_selectedDate, DateTime.now());
+
+    for (final b in profile.bookingHistory) {
+      if (b.isCancelled) continue;
+      final d = b.effectiveDate.trim();
+      final isMatchingDate = d == dateKey || (isToday && (d.toLowerCase() == 'today' || d.isEmpty));
+      if (isMatchingDate) {
+        final bSlots = b.effectiveTimeSlot.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty);
+        for (final bs in bSlots) {
+          final normBs = bs.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+          for (final actualSlot in allSlotsForDate) {
+            final normActual = actualSlot.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+            if (normActual == normBs || normActual.contains(normBs) || normBs.contains(normActual)) {
+              historyBooked.add(actualSlot);
+            }
+          }
+          historyBooked.add(bs);
+        }
+      }
+    }
+    final bookedSet = {...remoteBooked, ...historyBooked};
     final offerMap = adminSlotState.getDiscountedSlotsForDate(dateKey);
 
-    // Compute classification for every slot on the selected date
+    // Compute classification for every slot on the selected date:
+    // 1. Booked: any slot reserved on this date (takes priority so owner sees true booked count)
+    // 2. Blocked: owner maintenance hold
+    // 3. Passed: unbooked slot whose time has expired
+    // 4. Available: actionable upcoming bookable slot
     int passedCount = 0;
     int bookedCount = 0;
     int blockedCount = 0;
@@ -124,12 +154,12 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
       final isBlocked = blockedSet.contains(slot);
       final hasOffer = offerMap.containsKey(slot);
 
-      if (isPast) {
-        passedCount++;
-      } else if (isBooked) {
+      if (isBooked) {
         bookedCount++;
       } else if (isBlocked) {
         blockedCount++;
+      } else if (isPast) {
+        passedCount++;
       } else {
         availableCount++;
         if (hasOffer) offerCount++;
@@ -148,11 +178,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
       } else if (_selectedSlotFilter == 'Booked') {
         return isBooked;
       } else if (_selectedSlotFilter == 'Blocked') {
-        return isBlocked && !isPast;
+        return isBlocked;
       } else if (_selectedSlotFilter == 'Offers') {
         return hasOffer && !isPast && !isBooked;
       } else if (_selectedSlotFilter == 'Passed') {
-        return isPast;
+        return isPast && !isBooked;
       }
       return true; // 'All'
     }).toList();
@@ -890,35 +920,43 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
 
   Widget _buildSlotsHeaderGuide(int total, int displayed) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Slots Roster',
               style: TextStyle(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF0F172A),
                 letterSpacing: -0.3,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Text(
-              '($displayed of $total)',
-              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+              '($displayed/$total)',
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
             ),
           ],
         ),
-        const Row(
-          children: [
-            Icon(Icons.touch_app_rounded, size: 13, color: Color(0xFF64748B)),
-            SizedBox(width: 4),
-            Text(
-              'Tap to Toggle Block • Long Press for Offer',
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
-            ),
-          ],
+        const Spacer(),
+        const Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Icon(Icons.touch_app_rounded, size: 12, color: Color(0xFF64748B)),
+              SizedBox(width: 3),
+              Flexible(
+                child: Text(
+                  'Tap to Block • Hold for Offer',
+                  style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -985,22 +1023,32 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     String statusTitle;
     IconData statusIcon;
 
-    if (isPast) {
+    if (isBooked) {
+      if (isPast) {
+        cardBg = const Color(0xFFF1F5F9);
+        borderColor = const Color(0xFFCBD5E1);
+        titleColor = const Color(0xFF1E293B);
+        statusBadgeBg = const Color(0xFFE2E8F0);
+        statusBadgeText = const Color(0xFF334155);
+        statusTitle = booking != null ? '${booking.customerName} • Done' : 'Booked • Completed';
+        statusIcon = Icons.task_alt_rounded;
+      } else {
+        cardBg = const Color(0xFFFFF1F2);
+        borderColor = const Color(0xFFFECDD3);
+        titleColor = const Color(0xFF9F1239);
+        statusBadgeBg = const Color(0xFFFFE4E6);
+        statusBadgeText = const Color(0xFFE11D48);
+        statusTitle = booking != null ? booking.customerName : 'Booked Online';
+        statusIcon = Icons.confirmation_number_rounded;
+      }
+    } else if (isPast) {
       cardBg = const Color(0xFFF8FAFC);
       borderColor = const Color(0xFFE2E8F0);
       titleColor = const Color(0xFF94A3B8);
       statusBadgeBg = const Color(0xFFF1F5F9);
       statusBadgeText = const Color(0xFF64748B);
-      statusTitle = isBooked ? 'Completed' : 'Time Passed';
+      statusTitle = 'Time Passed';
       statusIcon = Icons.history_rounded;
-    } else if (isBooked) {
-      cardBg = const Color(0xFFFFF1F2);
-      borderColor = const Color(0xFFFECDD3);
-      titleColor = const Color(0xFF9F1239);
-      statusBadgeBg = const Color(0xFFFFE4E6);
-      statusBadgeText = const Color(0xFFE11D48);
-      statusTitle = booking != null ? booking.customerName : 'Booked Online';
-      statusIcon = Icons.confirmation_number_rounded;
     } else if (isBlocked) {
       cardBg = const Color(0xFFFFFBEB);
       borderColor = const Color(0xFFFDE68A);
@@ -1029,17 +1077,17 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
 
     return InkWell(
       borderRadius: BorderRadius.circular(14),
-      onTap: isPast
+      onTap: isBooked
           ? () {
-              ToastUtils.showWarning(context, "Slot $slot has already passed for today.");
+              if (booking != null) {
+                _openBookingDetailsSheet(context, booking, slot);
+              } else {
+                ToastUtils.showInfo(context, "Slot $slot is reserved.");
+              }
             }
-          : isBooked
+          : isPast
               ? () {
-                  if (booking != null) {
-                    _openBookingDetailsSheet(context, booking, slot);
-                  } else {
-                    ToastUtils.showError(context, "Slot $slot is booked by customer and locked.");
-                  }
+                  ToastUtils.showWarning(context, "Slot $slot has already passed for today.");
                 }
               : () async {
                   final profile = ref.read(turfProfileProvider);
@@ -1144,17 +1192,17 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             const SizedBox(height: 6),
             // Subtitle Guidance Hint
             Text(
-              isPast
-                  ? 'Expired time'
-                  : isBooked
-                      ? (booking != null ? '₹${booking.amount.toInt()} • Tap details' : 'Active reservation')
+              isBooked
+                  ? (booking != null ? '₹${booking.amount.toInt()} • Tap for details' : 'Reserved • Tap details')
+                  : isPast
+                      ? 'Expired time'
                       : isBlocked
                           ? 'Tap to unblock'
                           : 'Tap to block',
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w500,
-                color: isPast ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: (isPast && !isBooked) ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

@@ -13,6 +13,10 @@ class ToastUtils {
     _showCustomToast(context, message, Colors.orange.shade600, Icons.warning_amber_rounded);
   }
 
+  static void showInfo(BuildContext context, String message) {
+    _showCustomToast(context, message, const Color(0xFF0284C7), Icons.info_outline_rounded);
+  }
+
   static void _showCustomToast(BuildContext context, String message, Color color, IconData icon) {
     final snackBar = SnackBar(
       content: Row(
