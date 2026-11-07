@@ -3,7 +3,7 @@ import { PrismaService } from './prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import fs from 'fs';
 import path from 'path';
-import { DEFAULT_TURF_SPORTS, generateTimeSlots } from './turf.service.js';
+import { DEFAULT_TURF_SPORTS, generateTimeSlots, getISTDateAndMinutes, parseSlotStartMinutes } from './turf.service.js';
 
 function getAdminSports(adminId: number) {
   try {
@@ -598,11 +598,31 @@ export class AuthService {
     const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+    const { currentMinutes } = getISTDateAndMinutes();
     const bookedSlotsCount = todayBookings.reduce((acc: number, b: any) => acc + countBookingSlots(b.timeSlot), 0);
     const openingTime = dashboard.openingTime || '05:00 AM';
     const closingTime = dashboard.closingTime || '11:00 PM';
-    const totalSlots = generateTimeSlots(openingTime, closingTime).length || 18;
-    const freeSlotsCount = Math.max(0, totalSlots - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
+    const allSlots = generateTimeSlots(openingTime, closingTime);
+    const totalSlots = allSlots.length || 18;
+
+    const passedSlots = allSlots.filter((slot: string) => {
+      const startMin = parseSlotStartMinutes(slot);
+      return startMin !== -1 && currentMinutes >= startMin;
+    });
+
+    const upcomingBookedSlots = todayBookings.filter((b: any) => {
+      const startMin = parseSlotStartMinutes(b.timeSlot);
+      return startMin === -1 || currentMinutes < startMin;
+    });
+    const upcomingBookedSlotsCount = upcomingBookedSlots.reduce(
+      (acc: number, b: any) => acc + countBookingSlots(b.timeSlot),
+      0
+    );
+
+    const freeSlotsCount = Math.max(
+      0,
+      totalSlots - passedSlots.length - upcomingBookedSlotsCount - (dashboard.blockedSlotsCount || 0)
+    );
     const occupancyPercent = totalSlots > 0 ? Math.round((bookedSlotsCount / totalSlots) * 100) : 0;
     const slotsBadge = `${occupancyPercent}% Full`;
     const realCancelledCount = Math.max(cancelledBookings.length, dashboard.cancelledCount || 0);
@@ -727,11 +747,31 @@ export class AuthService {
     const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+    const { currentMinutes } = getISTDateAndMinutes();
     const bookedSlotsCount = todayBookings.reduce((acc: number, b: any) => acc + countBookingSlots(b.timeSlot), 0);
     const openingTime = dashboard.openingTime || '05:00 AM';
     const closingTime = dashboard.closingTime || '11:00 PM';
-    const totalSlots = generateTimeSlots(openingTime, closingTime).length || 18;
-    const freeSlotsCount = Math.max(0, totalSlots - bookedSlotsCount - (dashboard.blockedSlotsCount || 0));
+    const allSlots = generateTimeSlots(openingTime, closingTime);
+    const totalSlots = allSlots.length || 18;
+
+    const passedSlots = allSlots.filter((slot: string) => {
+      const startMin = parseSlotStartMinutes(slot);
+      return startMin !== -1 && currentMinutes >= startMin;
+    });
+
+    const upcomingBookedSlots = todayBookings.filter((b: any) => {
+      const startMin = parseSlotStartMinutes(b.timeSlot);
+      return startMin === -1 || currentMinutes < startMin;
+    });
+    const upcomingBookedSlotsCount = upcomingBookedSlots.reduce(
+      (acc: number, b: any) => acc + countBookingSlots(b.timeSlot),
+      0
+    );
+
+    const freeSlotsCount = Math.max(
+      0,
+      totalSlots - passedSlots.length - upcomingBookedSlotsCount - (dashboard.blockedSlotsCount || 0)
+    );
     const occupancyPercent = totalSlots > 0 ? Math.round((bookedSlotsCount / totalSlots) * 100) : 0;
     const slotsBadge = `${occupancyPercent}% Full`;
     const realCancelledCount = Math.max(cancelledBookings.length, dashboard.cancelledCount || 0);

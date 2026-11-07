@@ -634,8 +634,32 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
     final totalDailySlots = operatingSlots.isNotEmpty ? operatingSlots.length : 18;
 
-    final dynamicFreeSlots = (totalDailySlots - dynamicBookedSlotsCount - profile.blockedSlotsCount) > 0
-        ? (totalDailySlots - dynamicBookedSlotsCount - profile.blockedSlotsCount)
+    // Time-aware slot availability: total slots - passed slots - upcoming booked slots = remaining
+    final currentMinutes = now.hour * 60 + now.minute;
+    int passedSlotsCount = 0;
+    for (final s in operatingSlots) {
+      final startMin = AppConstants.parseSlotStartMinutes(s);
+      if (startMin != -1 && currentMinutes >= startMin) {
+        passedSlotsCount++;
+      }
+    }
+
+    int upcomingBookedSlots = 0;
+    for (final b in activeTodayList) {
+      final startMin = TurfBookingHistoryItem.parseSlotStartMinutes(b.effectiveTimeSlot);
+      if (startMin == -1 || currentMinutes < startMin) {
+        final slotStr = b.effectiveTimeSlot;
+        if (slotStr.isNotEmpty) {
+          final slots = slotStr.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty).toList();
+          upcomingBookedSlots += slots.isNotEmpty ? slots.length : 1;
+        } else {
+          upcomingBookedSlots += 1;
+        }
+      }
+    }
+
+    final dynamicRemainingSlots = (totalDailySlots - passedSlotsCount - upcomingBookedSlots - profile.blockedSlotsCount) > 0
+        ? (totalDailySlots - passedSlotsCount - upcomingBookedSlots - profile.blockedSlotsCount)
         : 0;
     final dynamicOccupancyPct = totalDailySlots > 0
         ? ((dynamicBookedSlotsCount / totalDailySlots.toDouble()) * 100).round()
@@ -787,12 +811,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            // 2. Slot Utilization
+            // 2. Slot Utilization & Time-Aware Remaining
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Court Occupancy",
-                value: '$dynamicFreeSlots Free',
-                subtitle: '$dynamicBookedSlotsCount of $totalDailySlots Booked • ${profile.blockedSlotsCount} Off',
+                value: '$dynamicRemainingSlots Remaining',
+                subtitle: '$passedSlotsCount Passed • $dynamicBookedSlotsCount Booked',
                 badgeText: dynamicSlotsBadge,
                 badgeColor: const Color(0xFF0284C7),
                 icon: Icons.pie_chart_rounded,

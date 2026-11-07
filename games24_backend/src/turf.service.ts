@@ -1090,7 +1090,7 @@ export class TurfService {
 
   async recalculateDashboardMetrics(verifiedAdminId: number) {
     try {
-      const { todayStr } = getISTDateAndMinutes();
+      const { todayStr, currentMinutes } = getISTDateAndMinutes();
       const now = new Date();
       const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
@@ -1126,8 +1126,27 @@ export class TurfService {
 
       const openingTime = dash?.openingTime || '05:00 AM';
       const closingTime = dash?.closingTime || '11:00 PM';
-      const totalSlots = generateTimeSlots(openingTime, closingTime).length || 18;
-      const freeSlots = Math.max(0, totalSlots - bookedSlots - blockedCount);
+      const allSlots = generateTimeSlots(openingTime, closingTime);
+      const totalSlots = allSlots.length || 18;
+
+      const passedSlots = allSlots.filter((slot) => {
+        const startMin = parseSlotStartMinutes(slot);
+        return startMin !== -1 && currentMinutes >= startMin;
+      });
+
+      const upcomingBookedSlots = todayBookings.filter((b: any) => {
+        const startMin = parseSlotStartMinutes(b.timeSlot);
+        return startMin === -1 || currentMinutes < startMin;
+      });
+      const upcomingBookedSlotsCount = upcomingBookedSlots.reduce(
+        (acc: number, b: any) => acc + countBookingSlots(b.timeSlot),
+        0
+      );
+
+      const freeSlots = Math.max(
+        0,
+        totalSlots - passedSlots.length - upcomingBookedSlotsCount - blockedCount
+      );
       const occPercent = totalSlots > 0 ? Math.round((bookedSlots / totalSlots) * 100) : 0;
       const slotsBadge = `${occPercent}% Full`;
 

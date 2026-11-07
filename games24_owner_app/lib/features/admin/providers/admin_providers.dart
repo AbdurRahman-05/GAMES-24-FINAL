@@ -1076,8 +1076,34 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     final totalDailySlots = AppConstants.generateTimeSlots(openingTime, closingTime).length;
     final totalSlotsSafe = totalDailySlots > 0 ? totalDailySlots : 18;
     final blockedSlotsCount = int.tryParse((dash['blockedSlotsCount'] ?? data['blockedSlotsCount'])?.toString() ?? '') ?? 0;
-    final dynamicFreeSlotsCount = (totalSlotsSafe - activeBookedSlotsCount - blockedSlotsCount) > 0
-        ? (totalSlotsSafe - activeBookedSlotsCount - blockedSlotsCount)
+
+    // Time-aware slot availability: total slots - passed slots - upcoming booked slots = remaining
+    final now = DateTime.now();
+    final currentMinutes = now.hour * 60 + now.minute;
+    int passedSlotsCount = 0;
+    for (final s in AppConstants.generateTimeSlots(openingTime, closingTime)) {
+      final startMin = AppConstants.parseSlotStartMinutes(s);
+      if (startMin != -1 && currentMinutes >= startMin) {
+        passedSlotsCount++;
+      }
+    }
+
+    int upcomingBookedSlots = 0;
+    for (final b in activeTodayBookings) {
+      final startMin = TurfBookingHistoryItem.parseSlotStartMinutes(b.effectiveTimeSlot);
+      if (startMin == -1 || currentMinutes < startMin) {
+        final slotStr = b.effectiveTimeSlot;
+        if (slotStr.isNotEmpty) {
+          final slots = slotStr.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty).toList();
+          upcomingBookedSlots += slots.isNotEmpty ? slots.length : 1;
+        } else {
+          upcomingBookedSlots += 1;
+        }
+      }
+    }
+
+    final dynamicRemainingSlots = (totalSlotsSafe - passedSlotsCount - upcomingBookedSlots - blockedSlotsCount) > 0
+        ? (totalSlotsSafe - passedSlotsCount - upcomingBookedSlots - blockedSlotsCount)
         : 0;
     final dynamicOccupancyPct = totalSlotsSafe > 0 ? ((activeBookedSlotsCount / totalSlotsSafe.toDouble()) * 100).round() : 0;
     final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
@@ -1124,7 +1150,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
       monthTotalBookings: monthTotalBookings,
       revenueBadge: (dash['revenueBadge'] ?? data['revenueBadge'])?.toString() ?? '₹0 GMV',
-      freeSlotsCount: dynamicFreeSlotsCount,
+      freeSlotsCount: dynamicRemainingSlots,
       bookedSlotsCount: activeBookedSlotsCount,
       blockedSlotsCount: blockedSlotsCount,
       slotsBadge: dynamicSlotsBadge,
