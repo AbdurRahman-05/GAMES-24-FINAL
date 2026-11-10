@@ -736,7 +736,7 @@ export class TurfService {
                 sport: sport || 'Football',
                 challengerName: teamName,
                 challengerTeamInitials: initials,
-                challengerColor: 4280148788, // 0xFF166534
+                challengerColor: String(body?.challengerColor ?? '4280148788'),
                 creatorPhone: customerPhone?.trim() || '9876543210',
                 teamSize,
                 isJoined: false,
@@ -1542,7 +1542,7 @@ export class TurfService {
         sport: body.sport || 'Football',
         challengerName: body.challengerName || 'Player Team',
         challengerTeamInitials: body.challengerTeamInitials || 'TC',
-        challengerColor: typeof body.challengerColor === 'number' ? body.challengerColor : 4280148788,
+        challengerColor: String(body.challengerColor ?? '4280148788'),
         creatorPhone: body.creatorPhone || '',
         teamSize: body.teamSize || '7v7',
         isJoined: false,

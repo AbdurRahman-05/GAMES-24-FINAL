@@ -160,7 +160,7 @@ model OpenChallenge {
   sport                  String        @default("Football")
   challengerName         String
   challengerTeamInitials String        @default("TC")
-  challengerColor        Int           @default(4280148788) // 0xFF166534
+  challengerColor        String        @default("4280148788") // 0xFF166534
   creatorPhone           String
   teamSize               String        @default("7v7")
   isJoined               Boolean       @default(false)
