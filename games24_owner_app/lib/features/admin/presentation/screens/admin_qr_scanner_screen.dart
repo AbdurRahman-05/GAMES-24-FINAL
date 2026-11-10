@@ -57,12 +57,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
   }
 
   Future<void> _handleBarcodeDetected(BarcodeCapture capture) async {
-    if (_isProcessing) return;
+    if (_isProcessing || _scannedResult != null) return;
     final barcodes = capture.barcodes;
     if (barcodes.isEmpty) return;
 
     for (final barcode in barcodes) {
-      final raw = barcode.rawValue;
+      final raw = barcode.rawValue ?? barcode.displayValue;
       if (raw != null && raw.trim().isNotEmpty) {
         await _processCheckIn(raw.trim());
         break;
@@ -70,7 +70,84 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
     }
   }
 
+  Map<String, dynamic>? _parseLocalWindow(String dateStr, String timeSlot) {
+    try {
+      if (dateStr.trim().isEmpty || timeSlot.trim().isEmpty) return null;
+      final dateParts = dateStr.trim().split(RegExp(r'[-/]'));
+      if (dateParts.length < 3) return null;
+      final y = int.tryParse(dateParts[0]);
+      final m = int.tryParse(dateParts[1]);
+      final d = int.tryParse(dateParts[2]);
+      if (y == null || m == null || d == null) return null;
+
+      final slotParts = timeSlot.split('-');
+      final startStr = slotParts[0].trim();
+      final endStr = slotParts.length > 1 ? slotParts[1].trim() : null;
+
+      TimeOfDay? parseTod(String str) {
+        final isPm = str.toLowerCase().contains('pm');
+        final isAm = str.toLowerCase().contains('am');
+        final digits = str.replaceAll(RegExp(r'[^\d:]'), '');
+        final parts = digits.split(':');
+        if (parts.isEmpty) return null;
+        var h = int.tryParse(parts[0]);
+        final min = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+        if (h == null) return null;
+        if (isPm && h < 12) h += 12;
+        if (isAm && h == 12) h = 0;
+        return TimeOfDay(hour: h, minute: min);
+      }
+
+      final startTod = parseTod(startStr);
+      if (startTod == null) return null;
+      final startDt = DateTime(y, m, d, startTod.hour, startTod.minute);
+      DateTime endDt;
+      final endTod = endStr != null ? parseTod(endStr) : null;
+      if (endTod != null) {
+        endDt = DateTime(y, m, d, endTod.hour, endTod.minute);
+        if (endDt.isBefore(startDt) || endDt.isAtSameMomentAs(startDt)) {
+          endDt = endDt.add(const Duration(days: 1));
+        }
+      } else {
+        endDt = startDt.add(const Duration(hours: 1));
+      }
+
+      final checkInOpensAt = startDt.subtract(const Duration(minutes: 20));
+      final checkInClosesAt = endDt.add(const Duration(minutes: 30));
+
+      String formatTod(DateTime dt) {
+        var h = dt.hour;
+        final min = dt.minute;
+        final ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h == 0) h = 12;
+        final mm = min.toString().padLeft(2, '0');
+        final hh = h.toString().padLeft(2, '0');
+        return '$hh:$mm $ampm';
+      }
+
+      return {
+        'startDt': startDt,
+        'endDt': endDt,
+        'opensAt': checkInOpensAt,
+        'closesAt': checkInClosesAt,
+        'opensAtStr': formatTod(checkInOpensAt),
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _processCheckIn(String tokenOrBookingId) async {
+    final cleanInput = tokenOrBookingId.trim();
+    if (cleanInput.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please scan a valid QR code or enter a Booking ID.';
+        _isProcessing = false;
+      });
+      return;
+    }
+
     if (_isProcessing) return;
     setState(() {
       _isProcessing = true;
@@ -79,35 +156,82 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
 
     HapticFeedback.mediumImpact();
 
+    final profile = ref.read(turfProfileProvider);
+    final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+
+    String resolvedBookingId = cleanInput;
     try {
-      final profile = ref.read(turfProfileProvider);
-      final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+      final parsed = jsonDecode(cleanInput);
+      if (parsed is Map) {
+        resolvedBookingId = (parsed['bookingCode'] ??
+                parsed['bookingId'] ??
+                parsed['id'] ??
+                parsed['numericId'])
+            ?.toString() ??
+            resolvedBookingId;
+      }
+    } catch (_) {}
 
-      String resolvedBookingId = tokenOrBookingId.trim();
-      try {
-        final parsed = jsonDecode(tokenOrBookingId);
-        if (parsed is Map) {
-          resolvedBookingId = (parsed['bookingCode'] ?? parsed['bookingId'] ?? parsed['id'])?.toString() ?? resolvedBookingId;
-        }
-      } catch (_) {}
-
+    try {
       final res = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/check-in'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'ticketToken': tokenOrBookingId,
+          'ticketToken': cleanInput,
           'bookingId': resolvedBookingId,
-          'rawCode': tokenOrBookingId,
+          'rawCode': cleanInput,
         }),
       );
 
       final data = jsonDecode(res.body);
 
-      if (res.statusCode == 200 || res.statusCode == 201) {
+      final isSuccess = res.statusCode == 200 || res.statusCode == 201;
+      final bool notYetOpen = data['notYetOpen'] == true;
+      final bool alreadyCheckedIn = data['alreadyCheckedIn'] == true;
+      final bool isGranted = isSuccess && data['success'] == true && !notYetOpen && !alreadyCheckedIn;
+
+      if (notYetOpen) {
+        HapticFeedback.selectionClick();
         setState(() {
-          _scannedResult = data['booking'] != null
-              ? Map<String, dynamic>.from(data['booking'])
-              : {'id': resolvedBookingId, 'bookingCode': resolvedBookingId, 'status': 'Checked In'};
+          _scannedResult = {
+            ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
+            '_resultType': 'NOT_YET_OPEN',
+            'opensAt': data['opensAt'] ?? '',
+            'slotTime': data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
+            'date': data['bookingDate'] ?? (data['booking']?['date'] ?? ''),
+            'countdownStr': data['countdownStr'] ?? '',
+            'message': data['message'] ?? 'Check-in window not open yet.',
+          };
+          _errorMessage = null;
+          _isProcessing = false;
+        });
+        if (mounted) {
+          ToastUtils.showInfo(context, data['message'] ?? 'Check-in opens 15-20 min before slot.');
+        }
+      } else if (alreadyCheckedIn) {
+        HapticFeedback.vibrate();
+        setState(() {
+          _scannedResult = {
+            ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
+            '_resultType': 'ALREADY_VERIFIED',
+            'checkedInAt': data['checkedInAt'] ?? 'Earlier today',
+            'message': data['message'] ?? 'Pass already verified. Duplicate entry blocked.',
+          };
+          _errorMessage = null;
+          _isProcessing = false;
+        });
+        if (mounted) {
+          ToastUtils.showWarning(context, data['message'] ?? 'Pass already verified! Single-use entry.');
+        }
+      } else if (isGranted) {
+        HapticFeedback.heavyImpact();
+        setState(() {
+          _scannedResult = {
+            ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
+            '_resultType': 'GRANTED',
+            'checkedInAt': data['checkedInAt'] ?? 'Just now',
+          };
+          _errorMessage = null;
           _isProcessing = false;
         });
 
@@ -121,12 +245,13 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         if (mounted) {
           ToastUtils.showSuccess(
             context,
-            data['message'] ?? 'Ticket Pass Verified & Checked In! 🎟️',
+            data['message'] ?? 'Ticket Pass Verified & Entry Granted! 🎟️',
           );
         }
       } else {
         setState(() {
           _errorMessage = data['message'] ?? 'Invalid or unverified ticket pass.';
+          _scannedResult = null;
           _isProcessing = false;
         });
         if (mounted) {
@@ -137,8 +262,111 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         }
       }
     } catch (e) {
+      // Local fallback verification against loaded turf bookings
+      final cleanResolved = resolvedBookingId.toLowerCase();
+      final digitsResolved = resolvedBookingId.replaceAll(RegExp(r'\D'), '');
+
+      TurfBookingHistoryItem? matchedItem;
+      for (final b in profile.bookingHistory) {
+        if (b.id.toLowerCase() == cleanResolved ||
+            (digitsResolved.isNotEmpty && b.id.replaceAll(RegExp(r'\D'), '') == digitsResolved)) {
+          matchedItem = b;
+          break;
+        }
+      }
+
+      if (matchedItem != null) {
+        final isChecked = matchedItem.status.toLowerCase() == 'checked in';
+        if (isChecked) {
+          setState(() {
+            _scannedResult = {
+              'id': matchedItem!.id,
+              'bookingCode': matchedItem.id,
+              'customerName': matchedItem.customerName,
+              'customerPhone': matchedItem.customerPhone,
+              'sport': matchedItem.sport,
+              'courtName': matchedItem.courtName,
+              'date': matchedItem.effectiveDate,
+              'timeSlot': matchedItem.effectiveTimeSlot,
+              'amount': matchedItem.amount,
+              'status': 'Checked In',
+              '_resultType': 'ALREADY_VERIFIED',
+              'checkedInAt': 'Earlier today',
+            };
+            _errorMessage = null;
+            _isProcessing = false;
+          });
+          if (mounted) {
+            ToastUtils.showWarning(context, 'Pass already verified! Single-use entry.');
+          }
+          return;
+        }
+
+        final w = _parseLocalWindow(matchedItem.effectiveDate, matchedItem.effectiveTimeSlot);
+        if (w != null) {
+          final now = DateTime.now();
+          final opensAt = w['opensAt'] as DateTime;
+          if (now.isBefore(opensAt)) {
+            final diff = opensAt.difference(now);
+            final mLeft = diff.inMinutes;
+            final hLeft = diff.inHours;
+            final countdown = hLeft > 0 ? '${hLeft}h ${mLeft % 60}m' : '$mLeft mins';
+
+            setState(() {
+              _scannedResult = {
+                'id': matchedItem!.id,
+                'bookingCode': matchedItem.id,
+                'customerName': matchedItem.customerName,
+                'customerPhone': matchedItem.customerPhone,
+                'sport': matchedItem.sport,
+                'courtName': matchedItem.courtName,
+                'date': matchedItem.effectiveDate,
+                'timeSlot': matchedItem.effectiveTimeSlot,
+                'amount': matchedItem.amount,
+                'status': 'Confirmed',
+                '_resultType': 'NOT_YET_OPEN',
+                'opensAt': w['opensAtStr'],
+                'countdownStr': countdown,
+                'message': 'Check-in window opens 15-20 mins before slot start at ${w['opensAtStr']}.',
+              };
+              _errorMessage = null;
+              _isProcessing = false;
+            });
+            if (mounted) {
+              ToastUtils.showInfo(context, 'Check-in window opens at ${w['opensAtStr']} (in $countdown).');
+            }
+            return;
+          }
+        }
+
+        // Within window: Mark as granted
+        setState(() {
+          _scannedResult = {
+            'id': matchedItem!.id,
+            'bookingCode': matchedItem.id,
+            'customerName': matchedItem.customerName,
+            'customerPhone': matchedItem.customerPhone,
+            'sport': matchedItem.sport,
+            'courtName': matchedItem.courtName,
+            'date': matchedItem.effectiveDate,
+            'timeSlot': matchedItem.effectiveTimeSlot,
+            'amount': matchedItem.amount,
+            'status': 'Checked In',
+            '_resultType': 'GRANTED',
+            'checkedInAt': 'Just now',
+          };
+          _errorMessage = null;
+          _isProcessing = false;
+        });
+        if (mounted) {
+          ToastUtils.showSuccess(context, 'Entry Granted! Verified offline.');
+        }
+        return;
+      }
+
       setState(() {
-        _errorMessage = 'Network connection error: $e';
+        _errorMessage = 'Unable to connect to check-in server: $e';
+        _scannedResult = null;
         _isProcessing = false;
       });
       if (mounted) {
@@ -454,6 +682,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
   }
 
   Widget _buildVerificationResultCard(Map<String, dynamic> booking) {
+    final resultType = booking['_resultType']?.toString() ?? 'GRANTED';
     final bookingId = booking['bookingCode']?.toString() ??
         booking['bookingId']?.toString() ??
         (booking['id'] != null ? 'G24-BK-${booking['id'].toString().padLeft(4, '0')}' : 'G24-BK-0001');
@@ -464,8 +693,327 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
     final date = booking['date']?.toString() ?? '';
     final timeSlot = booking['timeSlot']?.toString() ?? '';
     final amount = booking['amount']?.toString() ?? '1200';
-    final status = booking['status']?.toString() ?? 'Checked In';
+    final opensAt = booking['opensAt']?.toString() ?? '';
+    final countdownStr = booking['countdownStr']?.toString() ?? '';
+    final checkedInAt = booking['checkedInAt']?.toString() ?? 'Earlier today';
 
+    if (resultType == 'NOT_YET_OPEN') {
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFBEB),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFFCD34D), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD97706).withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFD97706),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.hourglass_top_rounded, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'CHECK-IN NOT OPEN YET ⏳',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF92400E),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Scan unlocks 10-20 min before slot start',
+                        style: TextStyle(fontSize: 11.5, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
+                  ),
+                  child: Text(
+                    '#$bookingId',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFB45309),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Time Details Highlight Banner
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFEF3C7), Color(0xFFFFFBEB)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Check-In Opens At:',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78350F)),
+                      ),
+                      Text(
+                        opensAt.isNotEmpty ? opensAt : '20 min before slot',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFFB45309)),
+                      ),
+                    ],
+                  ),
+                  if (countdownStr.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Time Until Unlocks:',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78350F)),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD97706),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'in $countdownStr',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Booked Slot:',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF78350F)),
+                      ),
+                      Text(
+                        timeSlot,
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Informational Note
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 16),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Pass is valid & confirmed. Gate verification opens 10-20 minutes before slot start. Only booking time details are shown for early scans.',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF475569), height: 1.35),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            _buildDetailRow('Customer Name', customer),
+            _buildDetailRow('Sport & Court', '$sport • $court'),
+            _buildDetailRow('Match Date', date),
+            _buildDetailRow('Slot Timing', timeSlot),
+
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD97706),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: _resetScanner,
+                icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                label: const Text('Scan Next Ticket', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (resultType == 'ALREADY_VERIFIED') {
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7ED),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFFDBA74), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFEA580C).withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEA580C),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'PASS ALREADY VERIFIED ⚠️',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFC2410C),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Entry Previously Granted • Single-Use Only',
+                        style: TextStyle(fontSize: 11.5, color: Color(0xFF9A3412), fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEDD5),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFED7AA)),
+                  ),
+                  child: Text(
+                    '#$bookingId',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFC2410C),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Warning Notice Box
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEDD5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFDBA74)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.history_rounded, color: Color(0xFFC2410C), size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Checked in: $checkedInAt',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF7C2D12)),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'This ticket pass has already been scanned. Duplicate entry is denied.',
+                          style: TextStyle(fontSize: 11, color: Color(0xFF9A3412)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            _buildDetailRow('Customer Name', customer),
+            if (phone.isNotEmpty) _buildDetailRow('Contact Phone', phone),
+            _buildDetailRow('Sport & Court', '$sport • $court'),
+            _buildDetailRow('Date & Slot', '$date • $timeSlot'),
+
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEA580C),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: _resetScanner,
+                icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                label: const Text('Scan Next Ticket', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Default: ENTRY GRANTED (First Time Scan)
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -508,8 +1056,8 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       ),
                     ),
                     Text(
-                      'Status: $status • Valid Pass',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                      'Verified at gate ($checkedInAt) • Valid Pass',
+                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -598,7 +1146,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: _resetScanner,
-              child: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Try Again / Scan Next', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],

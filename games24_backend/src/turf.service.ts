@@ -1283,6 +1283,80 @@ export class TurfService {
     };
   }
 
+  private parseBookingWindow(dateStr: string, timeSlot: string) {
+    try {
+      if (!dateStr || !timeSlot) return null;
+
+      // Extract Year, Month, Day (e.g. "2026-11-20")
+      const dateParts = dateStr.trim().split(/[-/]/).map((p) => parseInt(p, 10));
+      if (dateParts.length < 3) return null;
+      const [year, month, day] = dateParts;
+
+      // Slot times (e.g. "07:00 AM - 08:00 AM" or "06:00 PM")
+      const slotParts = timeSlot.split('-').map((s) => s.trim());
+      const startStr = slotParts[0];
+      const endStr = slotParts.length > 1 ? slotParts[1] : null;
+
+      const parseTime = (tStr: string) => {
+        if (!tStr) return null;
+        const isPM = /pm/i.test(tStr);
+        const isAM = /am/i.test(tStr);
+        const digitsOnly = tStr.replace(/[^\d:]/g, '');
+        const [hRaw, mRaw] = digitsOnly.split(':').map((p) => parseInt(p, 10));
+        if (isNaN(hRaw)) return null;
+        let hours = hRaw;
+        const minutes = !isNaN(mRaw) ? mRaw : 0;
+        if (isPM && hours < 12) hours += 12;
+        if (isAM && hours === 12) hours = 0;
+        return { hours, minutes };
+      };
+
+      const start = parseTime(startStr);
+      if (!start) return null;
+
+      const startDateTime = new Date(year, month - 1, day, start.hours, start.minutes, 0, 0);
+      let endDateTime: Date;
+
+      const end = endStr ? parseTime(endStr) : null;
+      if (end) {
+        endDateTime = new Date(year, month - 1, day, end.hours, end.minutes, 0, 0);
+        if (endDateTime <= startDateTime) {
+          endDateTime = new Date(endDateTime.getTime() + 24 * 60 * 60 * 1000);
+        }
+      } else {
+        endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
+      }
+
+      // Check-in opens 20 minutes before slot start
+      const checkInOpensAt = new Date(startDateTime.getTime() - 20 * 60 * 1000);
+      // Check-in closes 30 minutes after slot end (allows check-in for ongoing match)
+      const checkInClosesAt = new Date(endDateTime.getTime() + 30 * 60 * 1000);
+
+      const formatTimeStr = (d: Date) => {
+        let h = d.getHours();
+        const m = d.getMinutes();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        const mm = m.toString().padStart(2, '0');
+        const hh = h.toString().padStart(2, '0');
+        return `${hh}:${mm} ${ampm}`;
+      };
+
+      return {
+        startDateTime,
+        endDateTime,
+        checkInOpensAt,
+        checkInClosesAt,
+        opensAtStr: formatTimeStr(checkInOpensAt),
+        startStr: formatTimeStr(startDateTime),
+        endStr: formatTimeStr(endDateTime),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   async checkInBooking(verifiedAdminId: number, body: any) {
     const { bookingId, rawCode, ticketToken, id, code, payload } = body || {};
     let searchId = bookingId || ticketToken || rawCode || id || code || payload;
@@ -1319,7 +1393,7 @@ export class TurfService {
     }
 
     // 1. Search for booking belonging to this verifiedAdminId
-    const booking = await this.prisma.turfBooking.findFirst({
+    let booking = await this.prisma.turfBooking.findFirst({
       where: {
         verifiedAdminId,
         OR: [
@@ -1349,11 +1423,15 @@ export class TurfService {
         };
       }
 
-      return {
-        success: false,
-        valid: false,
-        message: `Booking ticket "${cleanSearchId}" not found for this venue!`,
-      };
+      if (globalBooking) {
+        booking = globalBooking;
+      } else {
+        return {
+          success: false,
+          valid: false,
+          message: `Booking ticket "${cleanSearchId}" not found for this venue!`,
+        };
+      }
     }
 
     const formalCode = booking.bookingCode || `G24-BK-${booking.id.toString().padStart(4, '0')}`;
@@ -1371,8 +1449,96 @@ export class TurfService {
       };
     }
 
-    const alreadyChecked = booking.status?.toLowerCase() === 'checked in';
+    const formatTimestamp = (d: Date) => {
+      let h = d.getHours();
+      const m = d.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      if (h === 0) h = 12;
+      const mm = m.toString().padStart(2, '0');
+      const hh = h.toString().padStart(2, '0');
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${d.getDate()} ${months[d.getMonth()]}, ${hh}:${mm} ${ampm}`;
+    };
 
+    // 1. Single-Use Verification Check: Pass can only be verified ONCE!
+    // If scanned a second time (or subsequent time), show already verified warning with time details
+    const alreadyChecked = booking.status?.toLowerCase() === 'checked in';
+    if (alreadyChecked) {
+      const checkedInTimeStr = booking.updatedAt
+        ? formatTimestamp(new Date(booking.updatedAt))
+        : 'Earlier today';
+
+      return {
+        success: false,
+        valid: true,
+        alreadyCheckedIn: true,
+        notYetOpen: false,
+        checkedInAt: checkedInTimeStr,
+        booking: {
+          ...booking,
+          bookingCode: formalCode,
+          bookingId: formalCode,
+          checkedInAt: checkedInTimeStr,
+        },
+        message: `Pass Already Verified ⚠️! Gate check-in was previously recorded at ${checkedInTimeStr}. Single-use entry pass.`,
+      };
+    }
+
+    // 2. Timing Window Check: QR scan ONLY verifies 10-20 minutes before slot start
+    const window = this.parseBookingWindow(booking.date, booking.timeSlot);
+    const now = new Date();
+
+    if (window) {
+      if (now < window.checkInOpensAt) {
+        // Scanned before the 10-20 min window: Do NOT verify! Show time details only
+        const diffMs = window.checkInOpensAt.getTime() - now.getTime();
+        const minsLeft = Math.max(1, Math.ceil(diffMs / (60 * 1000)));
+        const hoursLeft = Math.floor(minsLeft / 60);
+        const remMins = minsLeft % 60;
+        const countdownStr = hoursLeft > 0 ? `${hoursLeft}h ${remMins}m` : `${minsLeft} mins`;
+
+        return {
+          success: false,
+          valid: true,
+          notYetOpen: true,
+          alreadyCheckedIn: false,
+          opensAt: window.opensAtStr,
+          slotTime: booking.timeSlot,
+          bookingDate: booking.date,
+          minsUntilOpen: minsLeft,
+          countdownStr,
+          booking: {
+            ...booking,
+            bookingCode: formalCode,
+            bookingId: formalCode,
+            opensAt: window.opensAtStr,
+            slotTime: booking.timeSlot,
+            date: booking.date,
+          },
+          message: `Check-in window not open yet ⏳. QR scan unlocks 15-20 mins before slot start at ${window.opensAtStr} (in ${countdownStr}).`,
+        };
+      }
+
+      if (now > window.checkInClosesAt) {
+        // Past slot end time
+        return {
+          success: false,
+          valid: false,
+          expired: true,
+          alreadyCheckedIn: false,
+          notYetOpen: false,
+          booking: {
+            ...booking,
+            bookingCode: formalCode,
+            bookingId: formalCode,
+          },
+          message: `Booking Pass Expired ❌! Slot (${booking.timeSlot} on ${booking.date}) has already ended.`,
+        };
+      }
+    }
+
+    // 3. Valid Check-in during the 10-20m window (First time entry)
     const updated = await this.prisma.turfBooking.update({
       where: { id: booking.id },
       data: {
@@ -1383,18 +1549,21 @@ export class TurfService {
 
     await this.recalculateDashboardMetrics(verifiedAdminId);
 
+    const verifiedAtStr = formatTimestamp(new Date());
+
     return {
       success: true,
       valid: true,
-      alreadyCheckedIn: alreadyChecked,
+      alreadyCheckedIn: false,
+      notYetOpen: false,
+      checkedInAt: verifiedAtStr,
       booking: {
         ...updated,
         bookingCode: formalCode,
         bookingId: formalCode,
+        checkedInAt: verifiedAtStr,
       },
-      message: alreadyChecked
-        ? `Pass already checked in for ${booking.customerName} (${formalCode}).`
-        : `Gate check-in confirmed for ${booking.customerName}! (${formalCode}) 🎉`,
+      message: `Gate check-in confirmed for ${booking.customerName}! (${formalCode}) 🎉`,
     };
   }
 

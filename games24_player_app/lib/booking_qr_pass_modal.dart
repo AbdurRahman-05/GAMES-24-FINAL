@@ -72,6 +72,73 @@ class BookingQrPassModal extends StatelessWidget {
     });
   }
 
+  Map<String, dynamic>? _getBookingWindow(String dateStr, String timeSlot) {
+    try {
+      if (dateStr.trim().isEmpty || timeSlot.trim().isEmpty) return null;
+      final dateParts = dateStr.trim().split(RegExp(r'[-/]'));
+      if (dateParts.length < 3) return null;
+      final y = int.tryParse(dateParts[0]);
+      final m = int.tryParse(dateParts[1]);
+      final d = int.tryParse(dateParts[2]);
+      if (y == null || m == null || d == null) return null;
+
+      final slotParts = timeSlot.split('-');
+      final startStr = slotParts[0].trim();
+      final endStr = slotParts.length > 1 ? slotParts[1].trim() : null;
+
+      TimeOfDay? parseTod(String str) {
+        final isPm = str.toLowerCase().contains('pm');
+        final isAm = str.toLowerCase().contains('am');
+        final digits = str.replaceAll(RegExp(r'[^\d:]'), '');
+        final parts = digits.split(':');
+        if (parts.isEmpty) return null;
+        var h = int.tryParse(parts[0]);
+        final min = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+        if (h == null) return null;
+        if (isPm && h < 12) h += 12;
+        if (isAm && h == 12) h = 0;
+        return TimeOfDay(hour: h, minute: min);
+      }
+
+      final startTod = parseTod(startStr);
+      if (startTod == null) return null;
+      final startDt = DateTime(y, m, d, startTod.hour, startTod.minute);
+      DateTime endDt;
+      final endTod = endStr != null ? parseTod(endStr) : null;
+      if (endTod != null) {
+        endDt = DateTime(y, m, d, endTod.hour, endTod.minute);
+        if (endDt.isBefore(startDt) || endDt.isAtSameMomentAs(startDt)) {
+          endDt = endDt.add(const Duration(days: 1));
+        }
+      } else {
+        endDt = startDt.add(const Duration(hours: 1));
+      }
+
+      final checkInOpensAt = startDt.subtract(const Duration(minutes: 20));
+      final checkInClosesAt = endDt.add(const Duration(minutes: 30));
+
+      String formatTod(DateTime dt) {
+        var h = dt.hour;
+        final min = dt.minute;
+        final ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h == 0) h = 12;
+        final mm = min.toString().padLeft(2, '0');
+        final hh = h.toString().padLeft(2, '0');
+        return '$hh:$mm $ampm';
+      }
+
+      return {
+        'opensAtDt': checkInOpensAt,
+        'closesAtDt': checkInClosesAt,
+        'opensAtStr': formatTod(checkInOpensAt),
+        'startStr': formatTod(startDt),
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookingId = displayBookingId;
@@ -83,8 +150,15 @@ class BookingQrPassModal extends StatelessWidget {
     final timeSlot = (booking['timeSlot'] ?? '').toString();
     final amount = (booking['amount'] ?? 1200).toString();
     final paymentMethod = (booking['paymentMethod'] ?? 'UPI').toString();
+    final bookingStatus = (booking['status'] ?? 'Confirmed').toString();
 
     final isCricket = sport.toLowerCase().contains('cricket');
+    final isCheckedIn = bookingStatus.toLowerCase() == 'checked in';
+    final window = _getBookingWindow(dateStr, timeSlot);
+    final now = DateTime.now();
+
+    final bool isBeforeWindow = window != null && now.isBefore(window['opensAtDt'] as DateTime);
+    final String opensAtStr = window != null ? (window['opensAtStr'] as String) : '';
 
     return Container(
       decoration: const BoxDecoration(
@@ -114,31 +188,82 @@ class BookingQrPassModal extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Top Status Pill
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFDCFCE7),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF86EFAC)),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 14),
-                  SizedBox(width: 5),
-                  Text(
-                    'OFFICIAL GATE ENTRY PASS',
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF166534),
-                      letterSpacing: 0.5,
+            // Dynamic Top Status Pill
+            if (isCheckedIn)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF86EFAC)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified_rounded, color: Color(0xFF16A34A), size: 15),
+                    SizedBox(width: 6),
+                    Text(
+                      'ENTRY VERIFIED & CHECKED IN ✅',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF166534),
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              )
+            else if (isBeforeWindow)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.access_time_rounded, color: Color(0xFFB45309), size: 15),
+                    const SizedBox(width: 6),
+                    Text(
+                      'CHECK-IN OPENS AT $opensAtStr (20m BEFORE) ⏳',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF92400E),
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF86EFAC)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF16A34A), size: 15),
+                    SizedBox(width: 6),
+                    Text(
+                      'GATE CHECK-IN OPEN NOW 🟢',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF166534),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             const SizedBox(height: 16),
 
             // Ticket Board Card
@@ -263,21 +388,63 @@ class BookingQrPassModal extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFF166534)),
-                            SizedBox(width: 5),
-                            Text(
-                              'Present this QR at turf gate for check-in',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF166534),
+                        if (isCheckedIn)
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF166534)),
+                              SizedBox(width: 6),
+                              Text(
+                                'Pass verified at gate. Enjoy your game! 🏆',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF166534),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          )
+                        else if (isBeforeWindow)
+                          Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.hourglass_top_rounded, size: 14, color: Color(0xFFB45309)),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'Check-in unlocks at $opensAtStr (20m before match)',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFB45309),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              const Text(
+                                'Gate scan only verifies within 20m of start time • Single-use pass',
+                                style: TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                              ),
+                            ],
+                          )
+                        else
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFF166534)),
+                              SizedBox(width: 5),
+                              Text(
+                                'Present this QR at turf gate for check-in',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF166534),
+                                ),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                   ),
