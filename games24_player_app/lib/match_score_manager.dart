@@ -264,12 +264,66 @@ class MatchResultItem {
       );
 }
 
+class SavedSquadConfig {
+  final String bookingId;
+  final String teamAName;
+  final String teamBName;
+  final List<PlayerItem> teamAPlayers;
+  final List<PlayerItem> teamBPlayers;
+  final String teamSize;
+  final int overs;
+  final DateTime updatedAt;
+
+  SavedSquadConfig({
+    required this.bookingId,
+    required this.teamAName,
+    required this.teamBName,
+    required this.teamAPlayers,
+    required this.teamBPlayers,
+    required this.teamSize,
+    required this.overs,
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
+
+  Map<String, dynamic> toJson() => {
+        'bookingId': bookingId,
+        'teamAName': teamAName,
+        'teamBName': teamBName,
+        'teamAPlayers': teamAPlayers.map((p) => p.toJson()).toList(),
+        'teamBPlayers': teamBPlayers.map((p) => p.toJson()).toList(),
+        'teamSize': teamSize,
+        'overs': overs,
+        'updatedAt': updatedAt.toIso8601String(),
+      };
+
+  factory SavedSquadConfig.fromJson(Map<String, dynamic> json) =>
+      SavedSquadConfig(
+        bookingId: json['bookingId']?.toString() ?? '',
+        teamAName: json['teamAName']?.toString() ?? 'Team A',
+        teamBName: json['teamBName']?.toString() ?? 'Team B',
+        teamAPlayers: (json['teamAPlayers'] as List?)
+                ?.map((p) => PlayerItem.fromJson(Map<String, dynamic>.from(p)))
+                .toList() ??
+            [],
+        teamBPlayers: (json['teamBPlayers'] as List?)
+                ?.map((p) => PlayerItem.fromJson(Map<String, dynamic>.from(p)))
+                .toList() ??
+            [],
+        teamSize: json['teamSize']?.toString() ?? '7v7',
+        overs: int.tryParse(json['overs']?.toString() ?? '10') ?? 10,
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+      );
+}
+
 class MatchScoreManager {
   static final MatchScoreManager _instance = MatchScoreManager._internal();
   factory MatchScoreManager() => _instance;
 
   final ValueNotifier<int> statsNotifier = ValueNotifier<int>(0);
   final List<MatchResultItem> _matches = [];
+  final Map<String, SavedSquadConfig> _savedSquads = {};
 
   int _extraWins = 0;
   int _extraMatches = 0;
@@ -295,6 +349,40 @@ class MatchScoreManager {
     return _matches.where((m) => m.bookingId == bookingId).toList();
   }
 
+  SavedSquadConfig? getBookingSquad(String bookingId) {
+    return _savedSquads[bookingId];
+  }
+
+  Future<SavedSquadConfig?> getOrLoadBookingSquad(String bookingId) async {
+    if (_savedSquads.containsKey(bookingId)) {
+      return _savedSquads[bookingId];
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final squadsJson = prefs.getString('player_saved_squads_v1');
+      if (squadsJson != null && squadsJson.isNotEmpty) {
+        final Map<String, dynamic> map = jsonDecode(squadsJson);
+        map.forEach((k, v) {
+          _savedSquads[k] = SavedSquadConfig.fromJson(Map<String, dynamic>.from(v));
+        });
+      }
+    } catch (e) {
+      debugPrint('Error reading saved squads: $e');
+    }
+    return _savedSquads[bookingId];
+  }
+
+  Future<void> saveBookingSquad(SavedSquadConfig squad) async {
+    _savedSquads[squad.bookingId] = squad;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final squadsMap = _savedSquads.map((k, v) => MapEntry(k, v.toJson()));
+      await prefs.setString('player_saved_squads_v1', jsonEncode(squadsMap));
+    } catch (e) {
+      debugPrint('Error saving booking squad: $e');
+    }
+  }
+
   Future<void> _loadFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -309,6 +397,15 @@ class MatchScoreManager {
         for (final item in list) {
           _matches.add(MatchResultItem.fromJson(Map<String, dynamic>.from(item)));
         }
+      }
+
+      final squadsJson = prefs.getString('player_saved_squads_v1');
+      if (squadsJson != null && squadsJson.isNotEmpty) {
+        final Map<String, dynamic> map = jsonDecode(squadsJson);
+        _savedSquads.clear();
+        map.forEach((k, v) {
+          _savedSquads[k] = SavedSquadConfig.fromJson(Map<String, dynamic>.from(v));
+        });
       }
       statsNotifier.value++;
     } catch (e) {
@@ -325,6 +422,9 @@ class MatchScoreManager {
 
       final jsonStr = jsonEncode(_matches.map((m) => m.toJson()).toList());
       await prefs.setString('player_scorecard_history_v1', jsonStr);
+
+      final squadsMap = _savedSquads.map((k, v) => MapEntry(k, v.toJson()));
+      await prefs.setString('player_saved_squads_v1', jsonEncode(squadsMap));
     } catch (e) {
       debugPrint('Error saving MatchScoreManager data: $e');
     }

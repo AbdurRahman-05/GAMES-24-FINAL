@@ -13,6 +13,7 @@ class MatchScorecardScreen extends StatefulWidget {
   final String date;
   final String timeSlot;
   final int initialTab;
+  final bool? isOpenMatch;
 
   const MatchScorecardScreen({
     super.key,
@@ -22,6 +23,7 @@ class MatchScorecardScreen extends StatefulWidget {
     required this.date,
     required this.timeSlot,
     this.initialTab = 0,
+    this.isOpenMatch,
   });
 
   @override
@@ -262,12 +264,80 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
     _initializeDefaultTeams();
     _loadHistoricalMatches();
+    _loadSavedSquad();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadSavedSquad() async {
+    final saved = await MatchScoreManager().getOrLoadBookingSquad(widget.bookingId);
+    if (saved != null && mounted) {
+      setState(() {
+        _teamAName = saved.teamAName;
+        _teamAPlayers.clear();
+        _teamAPlayers.addAll(saved.teamAPlayers);
+        _selectedTeamSize = saved.teamSize;
+        _selectedOvers = saved.overs;
+
+        if (!_isOpenChallenge) {
+          _teamBName = saved.teamBName;
+          _teamBPlayers.clear();
+          _teamBPlayers.addAll(saved.teamBPlayers);
+        } else {
+          // Open Match: Opponent team is never overwritten with user's custom saved squad
+          if (_linkedChallenge?.opponentName != null &&
+              _linkedChallenge!.opponentName!.trim().isNotEmpty) {
+            _teamBName = _linkedChallenge!.opponentName!.trim();
+          } else {
+            _teamBName = 'Opponent Team (Waiting)';
+          }
+        }
+      });
+    }
+  }
+
+  Future<void> _saveSquad({bool showFeedback = true}) async {
+    final config = SavedSquadConfig(
+      bookingId: widget.bookingId,
+      teamAName: _teamAName,
+      teamBName: _teamBName,
+      teamAPlayers: _teamAPlayers,
+      teamBPlayers: _isOpenChallenge ? [] : _teamBPlayers,
+      teamSize: _selectedTeamSize,
+      overs: _selectedOvers,
+    );
+
+    await MatchScoreManager().saveBookingSquad(config);
+
+    if (showFeedback && mounted) {
+      HapticFeedback.lightImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF166534),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  _isOpenChallenge
+                      ? 'Squad lineup for $_teamAName saved! 💾'
+                      : 'Squad lineup saved successfully! 💾',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _loadHistoricalMatches() {
@@ -291,35 +361,78 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     _tossCaller = _teamAName;
 
     // Detect if this match is linked to an Open Challenge
-    final challenges = ChallengeManager().challengesNotifier.value;
-    for (final c in challenges) {
-      final turfMatch =
-          c.turfName.trim().toLowerCase() == widget.turfName.trim().toLowerCase();
-      final timeMatch =
-          c.time.contains(widget.timeSlot) || widget.timeSlot.contains(c.time);
-      if (turfMatch && (timeMatch || c.date == widget.date)) {
-        _linkedChallenge = c;
-        _isOpenChallenge = true;
-        _selectedTeamSize = c.teamSize.isNotEmpty ? c.teamSize : '7v7';
-        if (c.challengerName.isNotEmpty) {
-          _teamAName = c.challengerName;
+    bool isOpen = widget.isOpenMatch == true;
+
+    final bList = BookingManager().bookingsNotifier.value;
+    for (final b in bList) {
+      final bId = (b['id'] ?? b['bookingId'] ?? b['booking_id'])?.toString();
+      if (bId == widget.bookingId) {
+        if (b['isOpenMatch'] == true ||
+            b['is_open_match'] == true ||
+            (b['openMatchStatus'] != null && b['openMatchStatus'].toString().isNotEmpty)) {
+          isOpen = true;
+          if (b['teamName'] != null && b['teamName'].toString().isNotEmpty) {
+            _teamAName = b['teamName'].toString();
+          }
+          if (b['teamSize'] != null && b['teamSize'].toString().isNotEmpty) {
+            _selectedTeamSize = b['teamSize'].toString();
+          }
         }
-        if (c.opponentName != null && c.opponentName!.isNotEmpty) {
-          _teamBName = c.opponentName!;
-        } else {
-          _teamBName = 'Opponent Team (Waiting)';
-        }
-        _tossCaller = _teamAName;
         break;
       }
     }
 
+    final challenges = ChallengeManager().challengesNotifier.value;
+    for (final c in challenges) {
+      final idMatch = c.id == widget.bookingId;
+      final turfMatch =
+          c.turfName.trim().toLowerCase() == widget.turfName.trim().toLowerCase();
+      final timeMatch =
+          c.time.contains(widget.timeSlot) || widget.timeSlot.contains(c.time);
+      if (idMatch || (turfMatch && (timeMatch || c.date == widget.date))) {
+        _linkedChallenge = c;
+        isOpen = true;
+        _selectedTeamSize = c.teamSize.isNotEmpty ? c.teamSize : '7v7';
+        if (c.challengerName.isNotEmpty) {
+          _teamAName = c.challengerName;
+        }
+        break;
+      }
+    }
+
+    _isOpenChallenge = isOpen;
+
+    if (_isOpenChallenge) {
+      if (_linkedChallenge?.opponentName != null &&
+          _linkedChallenge!.opponentName!.trim().isNotEmpty) {
+        _teamBName = _linkedChallenge!.opponentName!.trim();
+      } else {
+        _teamBName = 'Opponent Team (Waiting)';
+      }
+      _tossCaller = _teamAName;
+    } else {
+      _teamAName = 'Blazing Strikers (My Team)';
+      _teamBName = 'Thunder Smashers';
+      _tossCaller = _teamAName;
+    }
+
     final contacts = MatchScoreManager().getDeviceContacts();
     _teamAPlayers.addAll(contacts.take(3));
-    if (!_isOpenChallenge ||
-        (_linkedChallenge?.opponentName != null &&
-            _linkedChallenge!.opponentName!.isNotEmpty)) {
+    if (!_isOpenChallenge) {
       _teamBPlayers.addAll(contacts.skip(3).take(3));
+    } else {
+      // In Open Match: Team B is NOT populated with the user's contacts!
+      if (_linkedChallenge?.opponentName != null &&
+          _linkedChallenge!.opponentName!.trim().isNotEmpty) {
+        _teamBPlayers.add(
+          PlayerItem(
+            id: 'opp_captain',
+            name: _linkedChallenge!.opponentName!,
+            phone: _linkedChallenge!.opponentContact ?? '',
+            role: 'Opponent Captain',
+          ),
+        );
+      }
     }
   }
 
@@ -1273,6 +1386,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Save Squad Lineup',
+            icon: const Icon(Icons.save_rounded, color: Color(0xFF166534)),
+            onPressed: () => _saveSquad(showFeedback: true),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: const Color(0xFF166534),
@@ -1423,6 +1543,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // CONTACT IMPORT & AUTO-SPLIT HELPERS
   // ===========================================================================
   void _openContactsPicker(bool forTeamA) {
+    if (_isOpenChallenge && !forTeamA) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('In Open Matches, the opponent team is set when another squad joins!'),
+          backgroundColor: Color(0xFFD97706),
+        ),
+      );
+      return;
+    }
+
     final currentList = forTeamA ? _teamAPlayers : _teamBPlayers;
     final otherList = forTeamA ? _teamBPlayers : _teamAPlayers;
 
@@ -1439,6 +1569,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             }
           }
         });
+        _saveSquad(showFeedback: false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Added ${selected.length} player(s) to ${forTeamA ? _teamAName : _teamBName}!'),
@@ -1450,6 +1581,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   void _autoSplitContacts() {
+    if (_isOpenChallenge) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Auto Split is not available for Open Matches. Opponents join via Open Challenges!'),
+          backgroundColor: Color(0xFFD97706),
+        ),
+      );
+      return;
+    }
+
     final contacts = MatchScoreManager().getDeviceContacts();
     final half = (contacts.length / 2).ceil();
     setState(() {
@@ -1458,6 +1599,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       _teamAPlayers.addAll(contacts.take(half));
       _teamBPlayers.addAll(contacts.skip(half));
     });
+    _saveSquad(showFeedback: false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Auto-balanced squads: ${_teamAPlayers.length} in $_teamAName, ${_teamBPlayers.length} in $_teamBName!'),
@@ -1490,6 +1632,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               final val = int.tryParse(ctrl.text.trim());
               if (val != null && val >= 1 && val <= 25) {
                 setState(() => _selectedTeamSize = '${val}v$val');
+                _saveSquad(showFeedback: false);
                 Navigator.pop(ctx);
               }
             },
@@ -1524,6 +1667,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               final val = int.tryParse(ctrl.text.trim());
               if (val != null && val >= 1 && val <= 100) {
                 setState(() => _selectedOvers = val);
+                _saveSquad(showFeedback: false);
                 Navigator.pop(ctx);
               }
             },
@@ -1858,26 +2002,40 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           // Squads & Contacts Section
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Team Squads & Contacts',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  _isOpenChallenge ? 'My Team Squad & Contacts' : 'Team Squads & Contacts',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  visualDensity: VisualDensity.compact,
+              if (!_isOpenChallenge)
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  icon: const Icon(Icons.shuffle, size: 14, color: Color(0xFF166534)),
+                  label: const Text(
+                    'Auto Split',
+                    style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                  onPressed: _autoSplitContacts,
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                  ),
+                  child: const Text(
+                    '⚔️ Open Match',
+                    style: TextStyle(color: Color(0xFF1D4ED8), fontWeight: FontWeight.bold, fontSize: 11),
+                  ),
                 ),
-                icon: const Icon(Icons.shuffle, size: 14, color: Color(0xFF166534)),
-                label: const Text(
-                  'Auto Split',
-                  style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
-                ),
-                onPressed: _autoSplitContacts,
-              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -1886,19 +2044,51 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             teamName: _teamAName,
             players: _teamAPlayers,
             isTeamA: true,
-            onNameChange: (val) => setState(() => _teamAName = val),
+            isLocked: false,
+            onNameChange: (val) {
+              setState(() => _teamAName = val);
+              _saveSquad(showFeedback: false);
+            },
             onAddPlayer: () => _openContactsPicker(true),
           ),
           const SizedBox(height: 16),
 
-          _buildTeamCard(
-            teamName: _teamBName,
-            players: _teamBPlayers,
-            isTeamA: false,
-            onNameChange: (val) => setState(() => _teamBName = val),
-            onAddPlayer: () => _openContactsPicker(false),
+          if (_isOpenChallenge)
+            _buildOpenMatchOpponentCard()
+          else
+            _buildTeamCard(
+              teamName: _teamBName,
+              players: _teamBPlayers,
+              isTeamA: false,
+              isLocked: false,
+              onNameChange: (val) {
+                setState(() => _teamBName = val);
+                _saveSquad(showFeedback: false);
+              },
+              onAddPlayer: () => _openContactsPicker(false),
+            ),
+          const SizedBox(height: 20),
+
+          // Save Squad Lineup Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF166534),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              icon: const Icon(Icons.save_rounded, size: 20),
+              label: Text(
+                _isOpenChallenge ? 'Save My Squad Lineup 💾' : 'Save Squad Lineup 💾',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              onPressed: () => _saveSquad(showFeedback: true),
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
 
           // Proceed to Toss Button
           if (!_canPlayMatch) ...[
@@ -1917,6 +2107,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 onPressed: () {
+                  _saveSquad(showFeedback: true);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Lineup is set! Coin toss and live scoring will unlock at $startSlot.'),
@@ -1952,7 +2143,169 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 ),
                 icon: const Icon(Icons.toll_rounded),
                 label: const Text('Proceed to Coin Toss 🪙', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                onPressed: () => _tabController.animateTo(1),
+                onPressed: () {
+                  _saveSquad(showFeedback: false);
+                  _tabController.animateTo(1);
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOpenMatchOpponentCard() {
+    final hasOpponent = _linkedChallenge?.isJoined == true ||
+        (_linkedChallenge?.opponentName != null &&
+            _linkedChallenge!.opponentName!.trim().isNotEmpty);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: hasOpponent ? const Color(0xFFBBF7D0) : const Color(0xFFE2E8F0),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: hasOpponent ? const Color(0xFF166534) : const Color(0xFF94A3B8),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  hasOpponent ? _teamBName : 'Opponent Team (Waiting to Join)',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: hasOpponent ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: hasOpponent ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: hasOpponent ? const Color(0xFF86EFAC) : const Color(0xFFFDE68A),
+                  ),
+                ),
+                child: Text(
+                  hasOpponent ? '👥 Opponent Joined' : '⏳ Open Challenge Slot',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: hasOpponent ? const Color(0xFF15803D) : const Color(0xFFB45309),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+
+          // Open Match Notice Banner
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: hasOpponent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: hasOpponent ? const Color(0xFFDCFCE7) : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  hasOpponent ? Icons.verified_user_rounded : Icons.info_outline_rounded,
+                  size: 18,
+                  color: hasOpponent ? const Color(0xFF166534) : const Color(0xFF64748B),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hasOpponent
+                            ? 'Opponent Squad Joined'
+                            : 'Opponent Joins via Open Challenge',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: hasOpponent ? const Color(0xFF166534) : const Color(0xFF334155),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasOpponent
+                            ? 'Team $_teamBName has accepted this challenge. Opponent roster is managed by their squad.'
+                            : 'This court booking is an Open Match. You only manage your own squad (Team A). Opponents cannot be manually set or edited.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: hasOpponent ? const Color(0xFF15803D) : const Color(0xFF64748B),
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          if (hasOpponent && _teamBPlayers.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              '${_teamBPlayers.length}/$_playersPerSide Players Registered',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _teamBPlayers.map((p) {
+                return Chip(
+                  avatar: CircleAvatar(
+                    backgroundColor: const Color(0xFFDBEAFE),
+                    child: Text(
+                      p.avatarInitials,
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                    ),
+                  ),
+                  label: Text('${p.name} (${p.role.split(' ').first})', style: const TextStyle(fontSize: 12)),
+                );
+              }).toList(),
+            ),
+          ] else if (!hasOpponent) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                'Waiting for an opponent squad to accept and join your open challenge...',
+                style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic, color: Colors.grey.shade500),
+                textAlign: TextAlign.center,
               ),
             ),
           ],
@@ -1967,6 +2320,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     required bool isTeamA,
     required Function(String) onNameChange,
     required VoidCallback onAddPlayer,
+    bool isLocked = false,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -2001,10 +2355,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                onPressed: () => _showEditTeamNameDialog(teamName, onNameChange),
-              ),
+              if (!isLocked)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  onPressed: () => _showEditTeamNameDialog(teamName, onNameChange),
+                )
+              else
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.lock_outline_rounded, size: 16, color: Colors.grey),
+                ),
             ],
           ),
           const Divider(),
@@ -2022,25 +2382,41 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 ),
               ),
               const SizedBox(width: 6),
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  visualDensity: VisualDensity.compact,
+              if (!isLocked)
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  icon: const Icon(Icons.contacts, size: 14, color: Color(0xFF166534)),
+                  label: const Text(
+                    '+ Add Contacts',
+                    style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 11.5),
+                  ),
+                  onPressed: onAddPlayer,
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    '🔒 Locked',
+                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
+                  ),
                 ),
-                icon: const Icon(Icons.contacts, size: 14, color: Color(0xFF166534)),
-                label: const Text(
-                  '+ Add Contacts',
-                  style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 11.5),
-                ),
-                onPressed: onAddPlayer,
-              ),
             ],
           ),
           if (players.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Center(
-                child: Text('No players added yet. Tap "+ Add from Contacts".', style: TextStyle(fontSize: 12, color: Colors.grey.shade400)),
+                child: Text(
+                  isLocked ? 'Opponent roster managed by joining player.' : 'No players added yet. Tap "+ Add Contacts".',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                ),
               ),
             )
           else
@@ -2061,10 +2437,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     ),
                   ),
                   label: Text('${p.name} (${p.role.split(' ').first})', style: const TextStyle(fontSize: 12)),
-                  deleteIcon: const Icon(Icons.close, size: 14),
-                  onDeleted: () {
-                    setState(() => players.remove(p));
-                  },
+                  deleteIcon: isLocked ? null : const Icon(Icons.close, size: 14),
+                  onDeleted: isLocked
+                      ? null
+                      : () {
+                          setState(() => players.remove(p));
+                          _saveSquad(showFeedback: false);
+                        },
                 );
               }).toList(),
             ),
@@ -2091,6 +2470,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             onPressed: () {
               if (ctrl.text.trim().isNotEmpty) {
                 onSave(ctrl.text.trim());
+                _saveSquad(showFeedback: false);
                 Navigator.pop(ctx);
               }
             },
@@ -2181,7 +2561,32 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           const Text('Official Match Toss', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 6),
           Text('$_currentSport • Flip the coin to decide who plays first', style: const TextStyle(fontSize: 13, color: Colors.grey)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+
+          if (_isOpenChallenge &&
+              (_linkedChallenge?.opponentName == null ||
+                  _linkedChallenge!.opponentName!.isEmpty))
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.hourglass_top_rounded, color: Color(0xFF1D4ED8), size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Open Match: Waiting for Opponent Team to join. Official toss will be active once accepted.',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF1E40AF), fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Interactive Coin
           GestureDetector(

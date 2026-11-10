@@ -694,6 +694,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                     date: dateStr,
                                     timeSlot: timeSlot,
                                     initialTab: isCompleted ? 3 : 0,
+                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                        booking['is_open_match'] == true ||
+                                        (booking['openMatchStatus'] != null &&
+                                            booking['openMatchStatus'].toString().isNotEmpty),
                                   ),
                                 ),
                               );

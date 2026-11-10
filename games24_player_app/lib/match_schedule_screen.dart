@@ -545,6 +545,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                 sport: sport,
                                 date: date,
                                 timeSlot: timeSlot,
+                                isOpenMatch: booking['isOpenMatch'] == true ||
+                                    booking['is_open_match'] == true,
                               ),
                             ),
                           );
@@ -695,6 +697,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             sport: challenge.sport,
                             date: challenge.date,
                             timeSlot: challenge.time,
+                            isOpenMatch: true,
                           ),
                         ),
                       );
@@ -842,6 +845,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                 sport: sport,
                                 date: date,
                                 timeSlot: timeSlot,
+                                isOpenMatch: booking['isOpenMatch'] == true ||
+                                    booking['is_open_match'] == true,
                               ),
                             ),
                           );
