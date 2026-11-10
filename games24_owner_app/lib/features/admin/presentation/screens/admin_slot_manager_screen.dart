@@ -12,16 +12,27 @@ class AdminSlotManagerScreen extends ConsumerStatefulWidget {
   const AdminSlotManagerScreen({super.key});
 
   @override
-  ConsumerState<AdminSlotManagerScreen> createState() => _AdminSlotManagerScreenState();
+  ConsumerState<AdminSlotManagerScreen> createState() =>
+      _AdminSlotManagerScreenState();
 }
 
-class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen> {
+class _AdminSlotManagerScreenState
+    extends ConsumerState<AdminSlotManagerScreen> {
   String? _selectedCourt;
   DateTime _selectedDate = DateTime.now();
-  String _selectedSlotFilter = 'All'; // 'All', 'Available', 'Booked', 'Blocked', 'Offers', 'Passed'
+  String _selectedSlotFilter =
+      'All'; // 'All', 'Available', 'Booked', 'Blocked', 'Offers', 'Passed'
   bool _isRefreshing = false;
 
-  final List<String> _weekdays = const ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  final List<String> _weekdays = const [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
 
   late final TextEditingController _discountPercentController;
   late final TextEditingController _offerLabelController;
@@ -29,10 +40,27 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
   late final TextEditingController _discountedPriceController;
 
   static const List<String> _scheduleTimeOptions = [
-    '04:00 AM', '05:00 AM', '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM',
-    '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM',
-    '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM',
-    '10:00 PM', '11:00 PM', '12:00 AM',
+    '04:00 AM',
+    '05:00 AM',
+    '06:00 AM',
+    '07:00 AM',
+    '08:00 AM',
+    '09:00 AM',
+    '10:00 AM',
+    '11:00 AM',
+    '12:00 PM',
+    '01:00 PM',
+    '02:00 PM',
+    '03:00 PM',
+    '04:00 PM',
+    '05:00 PM',
+    '06:00 PM',
+    '07:00 PM',
+    '08:00 PM',
+    '09:00 PM',
+    '10:00 PM',
+    '11:00 PM',
+    '12:00 AM',
   ];
 
   @override
@@ -67,9 +95,13 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     try {
       final profile = ref.read(turfProfileProvider);
       final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-      await ref.read(adminSlotProvider.notifier).fetchSlotsForDate(adminId, _getDateKey(_selectedDate));
+      await ref
+          .read(adminSlotProvider.notifier)
+          .fetchSlotsForDate(adminId, _getDateKey(_selectedDate));
       if (profile.ownerPhone.isNotEmpty) {
-        await ref.read(turfProfileProvider.notifier).fetchVerifiedAdminByPhone(profile.ownerPhone);
+        await ref
+            .read(turfProfileProvider.notifier)
+            .fetchVerifiedAdminByPhone(profile.ownerPhone);
       }
     } catch (e) {
       debugPrint("Error loading realtime slots: $e");
@@ -82,17 +114,32 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     final dateKey = _getDateKey(date);
     final profile = ref.read(turfProfileProvider);
     final isToday = DateUtils.isSameDay(date, DateTime.now());
-    final normSlot = slot.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+    final normSlot = slot
+        .replaceAll(RegExp(r'\s*-\s*'), '-')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim()
+        .toLowerCase();
 
     for (final b in profile.bookingHistory) {
       if (b.isCancelled) continue;
       final d = b.effectiveDate.trim();
-      final isMatchingDate = d == dateKey || (isToday && (d.toLowerCase() == 'today' || d.isEmpty));
+      final isMatchingDate =
+          d == dateKey ||
+          (isToday && (d.toLowerCase() == 'today' || d.isEmpty));
       if (isMatchingDate) {
-        final bSlots = b.effectiveTimeSlot.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty);
+        final bSlots = b.effectiveTimeSlot
+            .split(',')
+            .map((x) => x.trim())
+            .where((x) => x.isNotEmpty);
         for (final bs in bSlots) {
-          final normBs = bs.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
-          if (normBs == normSlot || normBs.contains(normSlot) || normSlot.contains(normBs)) {
+          final normBs = bs
+              .replaceAll(RegExp(r'\s*-\s*'), '-')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim()
+              .toLowerCase();
+          if (normBs == normSlot ||
+              normBs.contains(normSlot) ||
+              normSlot.contains(normBs)) {
             return b;
           }
         }
@@ -108,7 +155,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     final adminSlotState = ref.watch(adminSlotProvider);
     final dateKey = _getDateKey(_selectedDate);
 
-    final allSlotsForDate = adminSlotState.getAvailableSlotsForDate(_selectedDate);
+    final allSlotsForDate = adminSlotState.getAvailableSlotsForDate(
+      _selectedDate,
+    );
     final totalSlotsCount = allSlotsForDate.length;
 
     final blockedSet = adminSlotState.getBlockedSlotsForDate(dateKey);
@@ -119,14 +168,29 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     for (final b in profile.bookingHistory) {
       if (b.isCancelled) continue;
       final d = b.effectiveDate.trim();
-      final isMatchingDate = d == dateKey || (isToday && (d.toLowerCase() == 'today' || d.isEmpty));
+      final isMatchingDate =
+          d == dateKey ||
+          (isToday && (d.toLowerCase() == 'today' || d.isEmpty));
       if (isMatchingDate) {
-        final bSlots = b.effectiveTimeSlot.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty);
+        final bSlots = b.effectiveTimeSlot
+            .split(',')
+            .map((x) => x.trim())
+            .where((x) => x.isNotEmpty);
         for (final bs in bSlots) {
-          final normBs = bs.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
+          final normBs = bs
+              .replaceAll(RegExp(r'\s*-\s*'), '-')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim()
+              .toLowerCase();
           for (final actualSlot in allSlotsForDate) {
-            final normActual = actualSlot.replaceAll(RegExp(r'\s*-\s*'), '-').replaceAll(RegExp(r'\s+'), ' ').trim().toLowerCase();
-            if (normActual == normBs || normActual.contains(normBs) || normBs.contains(normActual)) {
+            final normActual = actualSlot
+                .replaceAll(RegExp(r'\s*-\s*'), '-')
+                .replaceAll(RegExp(r'\s+'), ' ')
+                .trim()
+                .toLowerCase();
+            if (normActual == normBs ||
+                normActual.contains(normBs) ||
+                normBs.contains(normActual)) {
               historyBooked.add(actualSlot);
             }
           }
@@ -196,7 +260,12 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
         backgroundColor: Colors.white,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 120),
+          padding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: 120,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -234,7 +303,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               const SizedBox(height: 14),
 
               // 5. Section Header & Quick Status Guide
-              _buildSlotsHeaderGuide(allSlotsForDate.length, filteredSlots.length),
+              _buildSlotsHeaderGuide(
+                allSlotsForDate.length,
+                filteredSlots.length,
+              ),
               const SizedBox(height: 12),
 
               // 6. Responsive 2-Column Slots Bento Grid
@@ -257,7 +329,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
   }
 
   // --- 1. PRO APP BAR ---
-  PreferredSizeWidget _buildProAppBar(BuildContext context, TurfProfileState profile) {
+  PreferredSizeWidget _buildProAppBar(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -273,7 +348,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             color: const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: Color(0xFF1E293B)),
+          child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 16,
+            color: Color(0xFF1E293B),
+          ),
         ),
         onPressed: () => context.pop(),
       ),
@@ -302,8 +381,14 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               ),
               const SizedBox(width: 5),
               Text(
-                profile.venueName.isNotEmpty ? '${profile.venueName} • Live Controls' : 'Live Operating Control',
-                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF16A34A)),
+                profile.venueName.isNotEmpty
+                    ? '${profile.venueName} • Live Controls'
+                    : 'Live Operating Control',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF16A34A),
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -324,9 +409,16 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF154D36)),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF154D36),
+                    ),
                   )
-                : const Icon(Icons.sync_rounded, size: 18, color: Color(0xFF154D36)),
+                : const Icon(
+                    Icons.sync_rounded,
+                    size: 18,
+                    color: Color(0xFF154D36),
+                  ),
           ),
         ),
         const SizedBox(width: 8),
@@ -346,8 +438,12 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     required int offerCount,
     required int passedCount,
   }) {
-    final opening = adminSlotState.weekdayOpeningTime.isNotEmpty ? adminSlotState.weekdayOpeningTime : profile.weekdayOpeningTime;
-    final closing = adminSlotState.weekdayClosingTime.isNotEmpty ? adminSlotState.weekdayClosingTime : profile.weekdayClosingTime;
+    final opening = adminSlotState.weekdayOpeningTime.isNotEmpty
+        ? adminSlotState.weekdayOpeningTime
+        : profile.weekdayOpeningTime;
+    final closing = adminSlotState.weekdayClosingTime.isNotEmpty
+        ? adminSlotState.weekdayClosingTime
+        : profile.weekdayClosingTime;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -380,7 +476,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.schedule_rounded, color: Color(0xFFFBBF24), size: 16),
+                    child: const Icon(
+                      Icons.schedule_rounded,
+                      color: Color(0xFFFBBF24),
+                      size: 16,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -397,20 +497,33 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                 onTap: () => _openEditScheduleDialog(context, opening, closing),
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4.5,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                    ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit_calendar_rounded, color: Colors.white, size: 12),
+                      Icon(
+                        Icons.edit_calendar_rounded,
+                        color: Colors.white,
+                        size: 12,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Edit Hours',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
@@ -420,7 +533,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
           ),
           const SizedBox(height: 10),
           Text(
-            opening == '24 Hours' ? 'Open 24 Hours (All Day)' : '$opening – $closing',
+            opening == '24 Hours'
+                ? 'Open 24 Hours (All Day)'
+                : '$opening – $closing',
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w900,
@@ -450,15 +565,35 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildHeroMiniStat('Available', '$availableCount', const Color(0xFF4ADE80)),
+                _buildHeroMiniStat(
+                  'Available',
+                  '$availableCount',
+                  const Color(0xFF4ADE80),
+                ),
                 _buildStatDivider(),
-                _buildHeroMiniStat('Booked', '$bookedCount', const Color(0xFFF87171)),
+                _buildHeroMiniStat(
+                  'Booked',
+                  '$bookedCount',
+                  const Color(0xFFF87171),
+                ),
                 _buildStatDivider(),
-                _buildHeroMiniStat('Blocked', '$blockedCount', const Color(0xFFFBBF24)),
+                _buildHeroMiniStat(
+                  'Blocked',
+                  '$blockedCount',
+                  const Color(0xFFFBBF24),
+                ),
                 _buildStatDivider(),
-                _buildHeroMiniStat('Deals', '$offerCount', const Color(0xFF38BDF8)),
+                _buildHeroMiniStat(
+                  'Deals',
+                  '$offerCount',
+                  const Color(0xFF38BDF8),
+                ),
                 _buildStatDivider(),
-                _buildHeroMiniStat('Passed', '$passedCount', const Color(0xFF94A3B8)),
+                _buildHeroMiniStat(
+                  'Passed',
+                  '$passedCount',
+                  const Color(0xFF94A3B8),
+                ),
               ],
             ),
           ),
@@ -527,7 +662,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             ),
             Text(
               '${courts.length} Arenas Active',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
             ),
           ],
         ),
@@ -563,13 +702,17 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     color: isSelected ? const Color(0xFF154D36) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+                      color: isSelected
+                          ? const Color(0xFF154D36)
+                          : const Color(0xFFE2E8F0),
                       width: isSelected ? 1.5 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: const Color(0xFF154D36).withValues(alpha: 0.2),
+                              color: const Color(
+                                0xFF154D36,
+                              ).withValues(alpha: 0.2),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -596,7 +739,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: isSelected ? Colors.white : const Color(0xFF0F172A),
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                             ),
                           ),
                           Text(
@@ -604,7 +749,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: isSelected ? const Color(0xFF86EFAC) : const Color(0xFF16A34A),
+                              color: isSelected
+                                  ? const Color(0xFF86EFAC)
+                                  : const Color(0xFF16A34A),
                             ),
                           ),
                         ],
@@ -649,7 +796,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             children: [
               Row(
                 children: [
-                  const Icon(Icons.event_rounded, size: 16, color: Color(0xFF154D36)),
+                  const Icon(
+                    Icons.event_rounded,
+                    size: 16,
+                    color: Color(0xFF154D36),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     DateFormat('EEEE, d MMMM yyyy').format(_selectedDate),
@@ -666,12 +817,18 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
                 tooltip: 'Select Custom Date',
-                icon: const Icon(Icons.calendar_month_rounded, color: Color(0xFF154D36), size: 20),
+                icon: const Icon(
+                  Icons.calendar_month_rounded,
+                  color: Color(0xFF154D36),
+                  size: 20,
+                ),
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
                     initialDate: _selectedDate,
-                    firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                    firstDate: DateTime.now().subtract(
+                      const Duration(days: 30),
+                    ),
                     lastDate: DateTime.now().add(const Duration(days: 365)),
                     builder: (context, child) {
                       return Theme(
@@ -719,10 +876,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               const SizedBox(width: 6),
               _buildQuickDatePresetPill(
                 label: 'This Weekend',
-                isSelected: _selectedDate.weekday == DateTime.saturday || _selectedDate.weekday == DateTime.sunday,
+                isSelected:
+                    _selectedDate.weekday == DateTime.saturday ||
+                    _selectedDate.weekday == DateTime.sunday,
                 onTap: () {
-                  final daysUntilSat = (DateTime.saturday - now.weekday + 7) % 7;
-                  final nextSat = now.add(Duration(days: daysUntilSat == 0 ? 7 : daysUntilSat));
+                  final daysUntilSat =
+                      (DateTime.saturday - now.weekday + 7) % 7;
+                  final nextSat = now.add(
+                    Duration(days: daysUntilSat == 0 ? 7 : daysUntilSat),
+                  );
                   setState(() => _selectedDate = nextSat);
                   _loadRealtimeSlots();
                 },
@@ -754,16 +916,22 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     width: 48,
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF8FAFC),
+                      color: isSelected
+                          ? const Color(0xFF154D36)
+                          : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+                        color: isSelected
+                            ? const Color(0xFF154D36)
+                            : const Color(0xFFE2E8F0),
                         width: isSelected ? 1.5 : 1,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                                color: const Color(
+                                  0xFF154D36,
+                                ).withValues(alpha: 0.25),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -778,7 +946,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: isSelected ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF64748B),
+                            color: isSelected
+                                ? Colors.white.withValues(alpha: 0.8)
+                                : const Color(0xFF64748B),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -787,7 +957,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
-                            color: isSelected ? Colors.white : const Color(0xFF0F172A),
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
                           ),
                         ),
                       ],
@@ -813,7 +985,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF154D36).withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+          color: isSelected
+              ? const Color(0xFF154D36).withValues(alpha: 0.1)
+              : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? const Color(0xFF154D36) : Colors.transparent,
@@ -824,7 +998,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
           style: TextStyle(
             fontSize: 10.5,
             fontWeight: FontWeight.w700,
-            color: isSelected ? const Color(0xFF154D36) : const Color(0xFF475569),
+            color: isSelected
+                ? const Color(0xFF154D36)
+                : const Color(0xFF475569),
           ),
         ),
       ),
@@ -847,7 +1023,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
         children: [
           _buildFilterPill('All', totalCount, const Color(0xFF154D36)),
           const SizedBox(width: 8),
-          _buildFilterPill('Available', availableCount, const Color(0xFF16A34A)),
+          _buildFilterPill(
+            'Available',
+            availableCount,
+            const Color(0xFF16A34A),
+          ),
           const SizedBox(width: 8),
           _buildFilterPill('Booked', bookedCount, const Color(0xFFDC2626)),
           const SizedBox(width: 8),
@@ -900,7 +1080,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFF1F5F9),
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.25)
+                    : const Color(0xFFF1F5F9),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -936,7 +1118,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             const SizedBox(width: 4),
             Text(
               '($displayed/$total)',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF64748B),
+              ),
             ),
           ],
         ),
@@ -951,7 +1137,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               Flexible(
                 child: Text(
                   'Tap to Block • Hold for Offer',
-                  style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                  style: TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF64748B),
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -983,7 +1173,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             final isBooked = bookedSet.contains(slot);
             final isPast = AppConstants.isSlotPast(slot, _selectedDate);
             final offerTag = offerMap[slot];
-            final matchingBooking = isBooked ? _findBookingForSlot(slot, _selectedDate) : null;
+            final matchingBooking = isBooked
+                ? _findBookingForSlot(slot, _selectedDate)
+                : null;
 
             return SizedBox(
               width: cardWidth,
@@ -1030,7 +1222,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
         titleColor = const Color(0xFF1E293B);
         statusBadgeBg = const Color(0xFFE2E8F0);
         statusBadgeText = const Color(0xFF334155);
-        statusTitle = booking != null ? '${booking.customerName} • Done' : 'Booked • Completed';
+        statusTitle = booking != null
+            ? '${booking.customerName} • Done'
+            : 'Booked • Completed';
         statusIcon = Icons.task_alt_rounded;
       } else {
         cardBg = const Color(0xFFFFF1F2);
@@ -1086,31 +1280,47 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               }
             }
           : isPast
-              ? () {
-                  ToastUtils.showWarning(context, "Slot $slot has already passed for today.");
+          ? () {
+              ToastUtils.showWarning(
+                context,
+                "Slot $slot has already passed for today.",
+              );
+            }
+          : () async {
+              final profile = ref.read(turfProfileProvider);
+              final adminId =
+                  profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+              final success = await ref
+                  .read(adminSlotProvider.notifier)
+                  .toggleBlockSlotRealtime(adminId, slot, dateKey);
+              if (context.mounted) {
+                if (success) {
+                  ToastUtils.showSuccess(
+                    context,
+                    isBlocked
+                        ? 'Slot $slot unblocked and ready for bookings!'
+                        : 'Slot $slot blocked for maintenance.',
+                  );
+                } else {
+                  ToastUtils.showError(
+                    context,
+                    "Cannot toggle slot $slot (already reserved).",
+                  );
                 }
-              : () async {
-                  final profile = ref.read(turfProfileProvider);
-                  final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-                  final success = await ref.read(adminSlotProvider.notifier).toggleBlockSlotRealtime(adminId, slot, dateKey);
-                  if (context.mounted) {
-                    if (success) {
-                      ToastUtils.showSuccess(
-                        context,
-                        isBlocked ? 'Slot $slot unblocked and ready for bookings!' : 'Slot $slot blocked for maintenance.',
-                      );
-                    } else {
-                      ToastUtils.showError(context, "Cannot toggle slot $slot (already reserved).");
-                    }
-                  }
-                },
-      onLongPress: (isBooked || isPast) ? null : () => _showOfferActions(slot, offerTag),
+              }
+            },
+      onLongPress: (isBooked || isPast)
+          ? null
+          : () => _showOfferActions(slot, offerTag),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor, width: (isBlocked || offerTag != null || isBooked) ? 1.5 : 1),
+          border: Border.all(
+            color: borderColor,
+            width: (isBlocked || offerTag != null || isBooked) ? 1.5 : 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -1144,13 +1354,19 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     child: Container(
                       padding: const EdgeInsets.all(3.5),
                       decoration: BoxDecoration(
-                        color: offerTag != null ? const Color(0xFFDCFCE7) : const Color(0xFFF1F5F9),
+                        color: offerTag != null
+                            ? const Color(0xFFDCFCE7)
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
-                        offerTag != null ? Icons.discount_rounded : Icons.more_horiz_rounded,
+                        offerTag != null
+                            ? Icons.discount_rounded
+                            : Icons.more_horiz_rounded,
                         size: 13,
-                        color: offerTag != null ? const Color(0xFF15803D) : const Color(0xFF64748B),
+                        color: offerTag != null
+                            ? const Color(0xFF15803D)
+                            : const Color(0xFF64748B),
                       ),
                     ),
                   ),
@@ -1193,16 +1409,20 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             // Subtitle Guidance Hint
             Text(
               isBooked
-                  ? (booking != null ? '₹${booking.amount.toInt()} • Tap for details' : 'Reserved • Tap details')
+                  ? (booking != null
+                        ? '₹${booking.amount.toInt()} • Tap for details'
+                        : 'Reserved • Tap details')
                   : isPast
-                      ? 'Expired time'
-                      : isBlocked
-                          ? 'Tap to unblock'
-                          : 'Tap to block',
+                  ? 'Expired time'
+                  : isBlocked
+                  ? 'Tap to unblock'
+                  : 'Tap to block',
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w500,
-                color: (isPast && !isBooked) ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                color: (isPast && !isBooked)
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1231,7 +1451,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
             const SizedBox(width: 3),
             Text(
               '$percent% OFF ${label.isNotEmpty ? "• $label" : ""}',
-              style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, color: Color(0xFF15803D)),
+              style: const TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF15803D),
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1274,7 +1498,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
     } else {
       return Text(
         offerText,
-        style: TextStyle(fontSize: 9.5, color: textColor, fontWeight: FontWeight.w800),
+        style: TextStyle(
+          fontSize: 9.5,
+          color: textColor,
+          fontWeight: FontWeight.w800,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
@@ -1298,12 +1526,20 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               color: Color(0xFFF1F5F9),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.event_busy_rounded, size: 28, color: Color(0xFF64748B)),
+            child: const Icon(
+              Icons.event_busy_rounded,
+              size: 28,
+              color: Color(0xFF64748B),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
             'No slots match "$_selectedSlotFilter"',
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E293B),
+            ),
           ),
           const SizedBox(height: 4),
           const Text(
@@ -1317,7 +1553,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
   }
 
   // --- 7. BOOKING DETAILS QUICK SHEET ---
-  void _openBookingDetailsSheet(BuildContext context, TurfBookingHistoryItem booking, String slot) {
+  void _openBookingDetailsSheet(
+    BuildContext context,
+    TurfBookingHistoryItem booking,
+    String slot,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -1354,7 +1594,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             color: const Color(0xFFDCFCE7),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.confirmation_number_rounded, color: Color(0xFF15803D), size: 20),
+                          child: const Icon(
+                            Icons.confirmation_number_rounded,
+                            color: Color(0xFF15803D),
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Column(
@@ -1362,25 +1606,40 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           children: [
                             Text(
                               booking.id,
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF0F172A),
+                              ),
                             ),
                             Text(
                               '${booking.sport} • ${booking.courtName}',
-                              style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFDCFCE7),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '₹${booking.amount.toInt()} PAID',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF15803D)),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF15803D),
+                        ),
                       ),
                     ),
                   ],
@@ -1395,13 +1654,29 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                   ),
                   child: Column(
                     children: [
-                      _buildBookingDetailRow('Customer Name', booking.customerName, Icons.person_rounded),
+                      _buildBookingDetailRow(
+                        'Customer Name',
+                        booking.customerName,
+                        Icons.person_rounded,
+                      ),
                       const Divider(height: 16),
-                      _buildBookingDetailRow('Phone Number', booking.customerPhone, Icons.phone_rounded),
+                      _buildBookingDetailRow(
+                        'Phone Number',
+                        booking.customerPhone,
+                        Icons.phone_rounded,
+                      ),
                       const Divider(height: 16),
-                      _buildBookingDetailRow('Reserved Slot', slot, Icons.access_time_rounded),
+                      _buildBookingDetailRow(
+                        'Reserved Slot',
+                        slot,
+                        Icons.access_time_rounded,
+                      ),
                       const Divider(height: 16),
-                      _buildBookingDetailRow('Payment Mode', booking.paymentMethod, Icons.payment_rounded),
+                      _buildBookingDetailRow(
+                        'Payment Mode',
+                        booking.paymentMethod,
+                        Icons.payment_rounded,
+                      ),
                     ],
                   ),
                 ),
@@ -1413,11 +1688,16 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       backgroundColor: const Color(0xFF154D36),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                     onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Close', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
@@ -1436,10 +1716,24 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
           children: [
             Icon(icon, size: 14, color: const Color(0xFF64748B)),
             const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
-        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+          ),
+        ),
       ],
     );
   }
@@ -1462,7 +1756,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -1471,11 +1768,19 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         children: [
                           const Text(
                             'Manage Slot Deal',
-                            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                              color: Color(0xFF0F172A),
+                            ),
                           ),
                           Text(
                             slot,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF16A34A)),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF16A34A),
+                            ),
                           ),
                         ],
                       ),
@@ -1494,17 +1799,38 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       color: const Color(0xFFDCFCE7),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.bolt_rounded, color: Color(0xFF15803D), size: 18),
+                    child: const Icon(
+                      Icons.bolt_rounded,
+                      color: Color(0xFF15803D),
+                      size: 18,
+                    ),
                   ),
-                  title: const Text('Apply 20% Happy Hour Tag', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                  subtitle: const Text('Quick preset: 20% OFF Happy Hour deal tag', style: TextStyle(fontSize: 11)),
+                  title: const Text(
+                    'Apply 20% Happy Hour Tag',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                  subtitle: const Text(
+                    'Quick preset: 20% OFF Happy Hour deal tag',
+                    style: TextStyle(fontSize: 11),
+                  ),
                   onTap: () {
                     final dateKey = _getDateKey(_selectedDate);
                     final profile = ref.read(turfProfileProvider);
-                    final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-                    ref.read(adminSlotProvider.notifier).toggleSlotOfferRealtime(adminId, slot, 'PERCENT|20|Happy Hour', dateKey);
+                    final adminId =
+                        profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                    ref
+                        .read(adminSlotProvider.notifier)
+                        .toggleSlotOfferRealtime(
+                          adminId,
+                          slot,
+                          'PERCENT|20|Happy Hour',
+                          dateKey,
+                        );
                     Navigator.pop(context);
-                    ToastUtils.showSuccess(context, "Applied 20% Happy Hour deal tag to $slot.");
+                    ToastUtils.showSuccess(
+                      context,
+                      "Applied 20% Happy Hour deal tag to $slot.",
+                    );
                   },
                 ),
                 ListTile(
@@ -1514,10 +1840,20 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       color: const Color(0xFFEFF6FF),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.tune_rounded, color: Color(0xFF0284C7), size: 18),
+                    child: const Icon(
+                      Icons.tune_rounded,
+                      color: Color(0xFF0284C7),
+                      size: 18,
+                    ),
                   ),
-                  title: const Text('Configure Custom Offer', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                  subtitle: const Text('Set custom percentage discount or fixed price cut', style: TextStyle(fontSize: 11)),
+                  title: const Text(
+                    'Configure Custom Offer',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                  subtitle: const Text(
+                    'Set custom percentage discount or fixed price cut',
+                    style: TextStyle(fontSize: 11),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     _showCustomOfferConfiguratorSheet(slot);
@@ -1531,17 +1867,37 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         color: const Color(0xFFFEE2E2),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.delete_sweep_rounded, color: Color(0xFFDC2626), size: 18),
+                      child: const Icon(
+                        Icons.delete_sweep_rounded,
+                        color: Color(0xFFDC2626),
+                        size: 18,
+                      ),
                     ),
-                    title: const Text('Remove Offer Tag', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
-                    subtitle: const Text('Reset slot to normal turf rate', style: TextStyle(fontSize: 11)),
+                    title: const Text(
+                      'Remove Offer Tag',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: Color(0xFFDC2626),
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Reset slot to normal turf rate',
+                      style: TextStyle(fontSize: 11),
+                    ),
                     onTap: () {
                       final dateKey = _getDateKey(_selectedDate);
                       final profile = ref.read(turfProfileProvider);
-                      final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-                      ref.read(adminSlotProvider.notifier).toggleSlotOfferRealtime(adminId, slot, '', dateKey);
+                      final adminId =
+                          profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                      ref
+                          .read(adminSlotProvider.notifier)
+                          .toggleSlotOfferRealtime(adminId, slot, '', dateKey);
                       Navigator.pop(context);
-                      ToastUtils.showSuccess(context, "Offer deal removed from $slot.");
+                      ToastUtils.showSuccess(
+                        context,
+                        "Offer deal removed from $slot.",
+                      );
                     },
                   ),
               ],
@@ -1563,10 +1919,14 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
       ),
       builder: (context) {
         String sheetOfferType = 'percent';
-        final TextEditingController sheetPercentController = TextEditingController(text: _discountPercentController.text);
-        final TextEditingController sheetLabelController = TextEditingController(text: _offerLabelController.text);
-        final TextEditingController sheetOriginalPriceController = TextEditingController(text: _originalPriceController.text);
-        final TextEditingController sheetDiscountedPriceController = TextEditingController(text: _discountedPriceController.text);
+        final TextEditingController sheetPercentController =
+            TextEditingController(text: _discountPercentController.text);
+        final TextEditingController sheetLabelController =
+            TextEditingController(text: _offerLabelController.text);
+        final TextEditingController sheetOriginalPriceController =
+            TextEditingController(text: _originalPriceController.text);
+        final TextEditingController sheetDiscountedPriceController =
+            TextEditingController(text: _discountedPriceController.text);
 
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -1598,7 +1958,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       child: Container(
                         width: 36,
                         height: 4,
-                        decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -1607,7 +1970,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       children: [
                         Text(
                           'Configure Deal - $slot',
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            color: Color(0xFF0F172A),
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
@@ -1622,11 +1989,14 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => setSheetState(() => sheetOfferType = 'percent'),
+                            onTap: () =>
+                                setSheetState(() => sheetOfferType = 'percent'),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 9),
                               decoration: BoxDecoration(
-                                color: sheetOfferType == 'percent' ? const Color(0xFF154D36) : const Color(0xFFF1F5F9),
+                                color: sheetOfferType == 'percent'
+                                    ? const Color(0xFF154D36)
+                                    : const Color(0xFFF1F5F9),
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(10),
                                   bottomLeft: Radius.circular(10),
@@ -1638,7 +2008,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
-                                  color: sheetOfferType == 'percent' ? Colors.white : const Color(0xFF475569),
+                                  color: sheetOfferType == 'percent'
+                                      ? Colors.white
+                                      : const Color(0xFF475569),
                                 ),
                               ),
                             ),
@@ -1646,11 +2018,14 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         ),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => setSheetState(() => sheetOfferType = 'price'),
+                            onTap: () =>
+                                setSheetState(() => sheetOfferType = 'price'),
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 9),
                               decoration: BoxDecoration(
-                                color: sheetOfferType == 'price' ? const Color(0xFF154D36) : const Color(0xFFF1F5F9),
+                                color: sheetOfferType == 'price'
+                                    ? const Color(0xFF154D36)
+                                    : const Color(0xFFF1F5F9),
                                 borderRadius: const BorderRadius.only(
                                   topRight: Radius.circular(10),
                                   bottomRight: Radius.circular(10),
@@ -1662,7 +2037,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
-                                  color: sheetOfferType == 'price' ? Colors.white : const Color(0xFF475569),
+                                  color: sheetOfferType == 'price'
+                                      ? Colors.white
+                                      : const Color(0xFF475569),
                                 ),
                               ),
                             ),
@@ -1683,9 +2060,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               decoration: const InputDecoration(
                                 labelText: 'Discount %',
                                 hintText: 'e.g. 20',
-                                prefixIcon: Icon(Icons.percent_rounded, size: 18),
+                                prefixIcon: Icon(
+                                  Icons.percent_rounded,
+                                  size: 18,
+                                ),
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                               ),
                               onChanged: (_) => setSheetState(() {}),
                             ),
@@ -1698,9 +2081,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               decoration: const InputDecoration(
                                 labelText: 'Tag Label',
                                 hintText: 'e.g. Happy Hour',
-                                prefixIcon: Icon(Icons.label_outline_rounded, size: 18),
+                                prefixIcon: Icon(
+                                  Icons.label_outline_rounded,
+                                  size: 18,
+                                ),
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                               ),
                               onChanged: (_) => setSheetState(() {}),
                             ),
@@ -1711,10 +2100,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       // Preset discount pills
                       Wrap(
                         spacing: 6,
-                        children: ['10', '15', '20', '25', '30', '50'].map((pct) {
+                        children: ['10', '15', '20', '25', '30', '50'].map((
+                          pct,
+                        ) {
                           return ActionChip(
                             label: Text('$pct%'),
-                            labelStyle: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                            labelStyle: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                             padding: EdgeInsets.zero,
                             onPressed: () {
                               sheetPercentController.text = pct;
@@ -1733,9 +2127,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               decoration: const InputDecoration(
                                 labelText: 'Base Price (₹)',
                                 hintText: 'e.g. 1000',
-                                prefixIcon: Icon(Icons.currency_rupee_rounded, size: 18),
+                                prefixIcon: Icon(
+                                  Icons.currency_rupee_rounded,
+                                  size: 18,
+                                ),
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                               ),
                               onChanged: (_) => setSheetState(() {}),
                             ),
@@ -1748,9 +2148,15 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               decoration: const InputDecoration(
                                 labelText: 'Offer Price (₹)',
                                 hintText: 'e.g. 800',
-                                prefixIcon: Icon(Icons.local_offer_rounded, size: 18),
+                                prefixIcon: Icon(
+                                  Icons.local_offer_rounded,
+                                  size: 18,
+                                ),
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
                               ),
                               onChanged: (_) => setSheetState(() {}),
                             ),
@@ -1774,10 +2180,17 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         children: [
                           const Text(
                             'Player App Preview:',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
                           const SizedBox(height: 8),
-                          _buildOfferContent(buildOfferString(), const Color(0xFF15803D)),
+                          _buildOfferContent(
+                            buildOfferString(),
+                            const Color(0xFF15803D),
+                          ),
                         ],
                       ),
                     ),
@@ -1790,18 +2203,36 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           backgroundColor: const Color(0xFF154D36),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         onPressed: () {
                           final newOffer = buildOfferString();
                           final dateKey = _getDateKey(_selectedDate);
                           final profile = ref.read(turfProfileProvider);
-                          final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-                          ref.read(adminSlotProvider.notifier).toggleSlotOfferRealtime(adminId, slot, newOffer, dateKey);
+                          final adminId =
+                              profile.verifiedAdminId ??
+                              profile.adminUserId ??
+                              1;
+                          ref
+                              .read(adminSlotProvider.notifier)
+                              .toggleSlotOfferRealtime(
+                                adminId,
+                                slot,
+                                newOffer,
+                                dateKey,
+                              );
                           Navigator.pop(context);
-                          ToastUtils.showSuccess(context, "Applied custom deal tag to $slot!");
+                          ToastUtils.showSuccess(
+                            context,
+                            "Applied custom deal tag to $slot!",
+                          );
                         },
-                        child: const Text('Apply Deal Tag', style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Apply Deal Tag',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -1815,9 +2246,17 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
   }
 
   // --- 10. EDIT OPERATING SCHEDULE MODAL ---
-  void _openEditScheduleDialog(BuildContext context, String currentOpening, String currentClosing) {
-    String selectedStart = _scheduleTimeOptions.contains(currentOpening) ? currentOpening : '05:00 AM';
-    String selectedEnd = _scheduleTimeOptions.contains(currentClosing) ? currentClosing : '11:00 PM';
+  void _openEditScheduleDialog(
+    BuildContext context,
+    String currentOpening,
+    String currentClosing,
+  ) {
+    String selectedStart = _scheduleTimeOptions.contains(currentOpening)
+        ? currentOpening
+        : '05:00 AM';
+    String selectedEnd = _scheduleTimeOptions.contains(currentClosing)
+        ? currentClosing
+        : '11:00 PM';
     bool isSaving = false;
 
     showModalBottomSheet(
@@ -1830,7 +2269,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
       builder: (ctx) {
         return StatefulBuilder(
           builder: (modalContext, setSheetState) {
-            final generatedSlots = AppConstants.generateTimeSlots(selectedStart, selectedEnd);
+            final generatedSlots = AppConstants.generateTimeSlots(
+              selectedStart,
+              selectedEnd,
+            );
 
             return Padding(
               padding: EdgeInsets.only(
@@ -1847,7 +2289,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                     child: Container(
                       width: 40,
                       height: 4,
-                      decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1859,7 +2304,11 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           color: const Color(0xFF154D36).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.schedule_rounded, color: Color(0xFF154D36), size: 22),
+                        child: const Icon(
+                          Icons.schedule_rounded,
+                          color: Color(0xFF154D36),
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       const Expanded(
@@ -1868,11 +2317,18 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           children: [
                             Text(
                               'Edit Operating Hours',
-                              style: TextStyle(fontSize: 16.5, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                              style: TextStyle(
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF0F172A),
+                              ),
                             ),
                             Text(
                               'Auto-splits into 1-hour slots & syncs across platforms',
-                              style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF64748B),
+                              ),
                             ),
                           ],
                         ),
@@ -1892,28 +2348,50 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Opening Time', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF334155))),
+                            const Text(
+                              'Opening Time',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF334155),
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                border: Border.all(
+                                  color: const Color(0xFFCBD5E1),
+                                ),
                                 color: const Color(0xFFF8FAFC),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: selectedStart,
                                   isExpanded: true,
-                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF154D36)),
+                                  icon: const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: Color(0xFF154D36),
+                                  ),
                                   items: _scheduleTimeOptions.map((time) {
                                     return DropdownMenuItem<String>(
                                       value: time,
-                                      child: Text(time, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                                      child: Text(
+                                        time,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                        ),
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (val) {
-                                    if (val != null) setSheetState(() => selectedStart = val);
+                                    if (val != null) {
+                                      setSheetState(() => selectedStart = val);
+                                    }
                                   },
                                 ),
                               ),
@@ -1927,28 +2405,50 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Closing Time', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF334155))),
+                            const Text(
+                              'Closing Time',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF334155),
+                              ),
+                            ),
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                border: Border.all(
+                                  color: const Color(0xFFCBD5E1),
+                                ),
                                 color: const Color(0xFFF8FAFC),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
                                   value: selectedEnd,
                                   isExpanded: true,
-                                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF154D36)),
+                                  icon: const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: Color(0xFF154D36),
+                                  ),
                                   items: _scheduleTimeOptions.map((time) {
                                     return DropdownMenuItem<String>(
                                       value: time,
-                                      child: Text(time, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                                      child: Text(
+                                        time,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                        ),
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (val) {
-                                    if (val != null) setSheetState(() => selectedEnd = val);
+                                    if (val != null) {
+                                      setSheetState(() => selectedEnd = val);
+                                    }
                                   },
                                 ),
                               ),
@@ -1973,11 +2473,19 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.auto_awesome_rounded, color: Color(0xFF154D36), size: 15),
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              color: Color(0xFF154D36),
+                              size: 15,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               'Auto-Generated Slots (${generatedSlots.length} Total)',
-                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF154D36),
+                              ),
                             ),
                           ],
                         ),
@@ -1990,13 +2498,25 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               runSpacing: 6,
                               children: generatedSlots.map((slot) {
                                 return Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                                    border: Border.all(
+                                      color: const Color(0xFFCBD5E1),
+                                    ),
                                   ),
-                                  child: Text(slot, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
+                                  child: Text(
+                                    slot,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  ),
                                 );
                               }).toList(),
                             ),
@@ -2014,7 +2534,9 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF154D36),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
                       onPressed: isSaving
@@ -2022,10 +2544,12 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                           : () async {
                               setSheetState(() => isSaving = true);
                               try {
-                                await ref.read(turfProfileProvider.notifier).updateOperatingSchedule(
-                                  openingTime: selectedStart,
-                                  closingTime: selectedEnd,
-                                );
+                                await ref
+                                    .read(turfProfileProvider.notifier)
+                                    .updateOperatingSchedule(
+                                      openingTime: selectedStart,
+                                      closingTime: selectedEnd,
+                                    );
                                 if (modalContext.mounted) {
                                   Navigator.pop(ctx);
                                   ToastUtils.showSuccess(
@@ -2036,13 +2560,29 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                               } catch (e) {
                                 setSheetState(() => isSaving = false);
                                 if (modalContext.mounted) {
-                                  ToastUtils.showError(context, 'Failed to update schedule: $e');
+                                  ToastUtils.showError(
+                                    context,
+                                    'Failed to update schedule: $e',
+                                  );
                                 }
                               }
                             },
                       child: isSaving
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('Save & Update Operating Schedule', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold)),
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Save & Update Operating Schedule',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ],

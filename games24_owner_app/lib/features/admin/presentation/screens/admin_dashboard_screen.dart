@@ -147,11 +147,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               _buildPerformanceBentoSection(profile),
               const SizedBox(height: 20),
 
-              // 4. Quick Operational Command Center
-              _buildQuickActionsCommandCenter(context),
-              const SizedBox(height: 20),
-
-              // 5. Active Sports Catalog Quick Bar
+              // 4. Active Sports Catalog Quick Bar
               if (profile.sports.isNotEmpty) ...[
                 _buildActiveSportsBar(profile),
                 const SizedBox(height: 20),
@@ -969,133 +965,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- 5. QUICK ACTIONS COMMAND CENTER ---
-  Widget _buildQuickActionsCommandCenter(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Operational Command Center',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCommandCard(
-                icon: Icons.edit_calendar_rounded,
-                iconColor: const Color(0xFF154D36),
-                title: 'Slots & Pricing',
-                subtitle: 'Block / Offers',
-                onTap: () => context.push('/admin/slots'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildActionCommandCard(
-                icon: Icons.qr_code_scanner_rounded,
-                iconColor: const Color(0xFF0284C7),
-                title: 'Gate Check-in',
-                subtitle: 'Scan Player QR',
-                onTap: () => context.push('/admin/qr-scanner'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildActionCommandCard(
-                icon: Icons.emoji_events_rounded,
-                iconColor: const Color(0xFFD97706),
-                title: 'Tournaments',
-                subtitle: 'Sync Leagues',
-                onTap: () => context.go('/admin/tournaments'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildActionCommandCard(
-                icon: Icons.tune_rounded,
-                iconColor: const Color(0xFF7C3AED),
-                title: 'Turf Setup',
-                subtitle: 'Courts & Rates',
-                onTap: () => context.go('/admin/profile'),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionCommandCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 20),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 10.5,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 9,
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- 6. ACTIVE SPORTS CATALOG BAR ---
+  // --- 4. ACTIVE SPORTS CATALOG BAR ---
   Widget _buildActiveSportsBar(TurfProfileState profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
