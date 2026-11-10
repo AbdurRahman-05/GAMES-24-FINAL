@@ -3,7 +3,8 @@ import 'package:games24_player_app/tournament_manager.dart';
 import 'package:games24_player_app/tournament_details_screen.dart';
 
 class TournamentsScreen extends StatefulWidget {
-  const TournamentsScreen({super.key});
+  final bool isStandalone;
+  const TournamentsScreen({super.key, this.isStandalone = false});
 
   @override
   State<TournamentsScreen> createState() => _TournamentsScreenState();
@@ -30,20 +31,51 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSegmentedControl(),
-            const SizedBox(height: 24),
-            _buildContent(),
-            const SizedBox(height: 80), // padding for FAB
-          ],
+    final canPop = ModalRoute.of(context)?.canPop ?? false;
+    final isPushRoute = widget.isStandalone || canPop;
+
+    final Widget content = Material(
+      color: Colors.white,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSegmentedControl(),
+              const SizedBox(height: 24),
+              _buildContent(),
+              const SizedBox(height: 80), // padding for FAB
+            ],
+          ),
         ),
       ),
     );
+
+    if (isPushRoute) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF166534)),
+            onPressed: () => Navigator.maybePop(context),
+          ),
+          title: const Text(
+            'Tournaments',
+            style: TextStyle(
+              color: Color(0xFF111827),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ),
+        body: content,
+      );
+    }
+
+    return content;
   }
 
   Widget _buildContent() {

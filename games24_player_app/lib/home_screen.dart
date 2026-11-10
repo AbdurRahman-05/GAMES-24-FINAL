@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:games24_player_app/booking_screen.dart';
 import 'package:games24_player_app/challenge_manager.dart';
-import 'package:games24_player_app/tournaments_screen.dart';
 import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/booking_manager.dart';
 import 'package:games24_player_app/match_scorecard_screen.dart';
+import 'package:games24_player_app/match_schedule_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
@@ -229,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onActionTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const TournamentsScreen(),
+                          builder: (context) => const MatchScheduleScreen(),
                         ),
                       ),
                     ),
@@ -713,63 +713,69 @@ class _HomeScreenState extends State<HomeScreen> {
     final matches = <Map<String, dynamic>>[];
 
     if (matches.isEmpty) {
-      return Container(
-        width: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 16.0),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+      return GestureDetector(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MatchScheduleScreen()),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFE5E7EB)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              child: const Icon(
-                Icons.sports_soccer_outlined,
-                color: Color(0xFF166534),
-                size: 26,
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.sports_soccer_outlined,
+                  color: Color(0xFF166534),
+                  size: 26,
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'No Upcoming Matches',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'No Upcoming Matches',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1F2937),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Book a turf slot or join an open game to play!',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
+                    SizedBox(height: 4),
+                    Text(
+                      'Book a turf slot or join an open game to play!',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF6B7280),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }

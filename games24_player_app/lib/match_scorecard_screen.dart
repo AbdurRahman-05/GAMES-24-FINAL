@@ -1734,12 +1734,25 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
           // Squads & Contacts Section
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Team Squads & Contacts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const Expanded(
+                child: Text(
+                  'Team Squads & Contacts',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
               TextButton.icon(
-                icon: const Icon(Icons.shuffle, size: 16, color: Color(0xFF166534)),
-                label: const Text('Auto Split Contacts', style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  visualDensity: VisualDensity.compact,
+                ),
+                icon: const Icon(Icons.shuffle, size: 14, color: Color(0xFF166534)),
+                label: const Text(
+                  'Auto Split',
+                  style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
+                ),
                 onPressed: _autoSplitContacts,
               ),
             ],
@@ -1873,21 +1886,28 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
           const Divider(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${players.length}/$_playersPerSide Players Added',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: players.length >= _playersPerSide ? const Color(0xFF166534) : Colors.grey,
+              Expanded(
+                child: Text(
+                  '${players.length}/$_playersPerSide Players Added',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: players.length >= _playersPerSide ? const Color(0xFF166534) : Colors.grey,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 6),
               TextButton.icon(
-                icon: const Icon(Icons.contacts, size: 16, color: Color(0xFF166534)),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  visualDensity: VisualDensity.compact,
+                ),
+                icon: const Icon(Icons.contacts, size: 14, color: Color(0xFF166534)),
                 label: const Text(
-                  '+ Add from Contacts',
-                  style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
+                  '+ Add Contacts',
+                  style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 11.5),
                 ),
                 onPressed: onAddPlayer,
               ),
@@ -1971,10 +1991,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Calling Team:', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text(_tossCaller ?? _teamAName, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+            const Text('Calling Team: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            Expanded(
+              child: Text(
+                _tossCaller ?? _teamAName,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534), fontSize: 13),
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -2383,41 +2409,41 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('On Crease & Bowling:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
-                    Row(
-                      children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            minimumSize: const Size(40, 24),
-                          ),
-                          onPressed: () {
-                            setState(() => _swapStrike());
-                          },
-                          child: const Text('🔄 Swap', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                    const Expanded(
+                      child: Text(
+                        'On Crease & Bowling',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        minimumSize: const Size(36, 24),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () => setState(() => _swapStrike()),
+                      child: const Text('🔄 Swap', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                    ),
+                    const SizedBox(width: 4),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFEFF6FF),
+                        foregroundColor: const Color(0xFF1D4ED8),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        minimumSize: const Size(36, 24),
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFFBFDBFE)),
                         ),
-                        const SizedBox(width: 4),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFEFF6FF),
-                            foregroundColor: const Color(0xFF1D4ED8),
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            minimumSize: const Size(40, 24),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(color: Color(0xFFBFDBFE)),
-                            ),
-                          ),
-                          icon: const Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
-                          label: const Text('Change Bowler 🔄', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                          onPressed: () {
-                            _showSelectBowlerDialog(_currentBowlingSquad);
-                          },
-                        ),
-                      ],
+                      ),
+                      icon: const Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
+                      label: const Text('Bowler 🔄', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                      onPressed: () => _showSelectBowlerDialog(_currentBowlingSquad),
                     ),
                   ],
                 ),
@@ -2427,7 +2453,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     // Striker
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE5F5EB),
                           borderRadius: BorderRadius.circular(10),
@@ -2438,30 +2464,37 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           children: [
                             Row(
                               children: const [
-                                Icon(Icons.star, size: 12, color: Color(0xFF166534)),
-                                SizedBox(width: 4),
-                                Text('Striker *', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                                Icon(Icons.star, size: 11, color: Color(0xFF166534)),
+                                SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    'Striker *',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 2),
                             Text(
                               _striker?.name ?? 'Batter 1',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               _striker != null ? '${_getStat(_striker!).runs} (${_getStat(_striker!).balls}b)' : '0 (0b)',
-                              style: const TextStyle(fontSize: 11, color: Colors.black87),
+                              style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     // Non-Striker
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(10),
@@ -2469,29 +2502,34 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Non-Striker', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                            const Text(
+                              'Non-Striker',
+                              style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             const SizedBox(height: 2),
                             Text(
                               _nonStriker?.name ?? 'Batter 2',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
                               _nonStriker != null ? '${_getStat(_nonStriker!).runs} (${_getStat(_nonStriker!).balls}b)' : '0 (0b)',
-                              style: const TextStyle(fontSize: 11, color: Colors.black87),
+                              style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     // Bowler (Clickable to change bowler in both innings)
                     Expanded(
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
                         onTap: () => _showSelectBowlerDialog(_currentBowlingSquad),
                         child: Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEFF6FF),
                             borderRadius: BorderRadius.circular(10),
@@ -2501,29 +2539,30 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: const [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
-                                      SizedBox(width: 4),
-                                      Text('Bowler', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
-                                    ],
+                                  Icon(Icons.sports_cricket, size: 11, color: Color(0xFF1D4ED8)),
+                                  SizedBox(width: 3),
+                                  Expanded(
+                                    child: Text(
+                                      'Bowler',
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  Icon(Icons.swap_horiz_rounded, size: 14, color: Color(0xFF1D4ED8)),
+                                  Icon(Icons.swap_horiz_rounded, size: 13, color: Color(0xFF1D4ED8)),
                                 ],
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 _currentBowler?.name ?? 'Select Bowler',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 _currentBowler != null
                                     ? '${_getStat(_currentBowler!).wickets}/${_getStat(_currentBowler!).runsConceded} (${_getStat(_currentBowler!).oversBowled} ov)'
                                     : 'Tap to pick 🎯',
-                                style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                                style: const TextStyle(fontSize: 10, color: Colors.black87),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -2670,10 +2709,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             backgroundColor: color ?? const Color(0xFFF3F5F1),
             foregroundColor: color != null ? Colors.white : Colors.black87,
             elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           onPressed: onTap,
-          child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ),
     );
@@ -2793,22 +2838,38 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 Text('SET $_currentSet IN PROGRESS', style: const TextStyle(color: Color(0xFF86EFAC), fontWeight: FontWeight.bold)),
                 const SizedBox(height: 12),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Column(
-                      children: [
-                        Text(_teamAName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        Text('$_pointsA', style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white)),
-                        Text('Sets Won: $_setsWonA', style: const TextStyle(color: Colors.white70)),
-                      ],
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            _teamAName,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                          Text('$_pointsA', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w900, color: Colors.white)),
+                          Text('Sets Won: $_setsWonA', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
                     ),
-                    const Text('VS', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white70)),
-                    Column(
-                      children: [
-                        Text(_teamBName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        Text('$_pointsB', style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white)),
-                        Text('Sets Won: $_setsWonB', style: const TextStyle(color: Colors.white70)),
-                      ],
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text('VS', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white70)),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            _teamBName,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                          Text('$_pointsB', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w900, color: Colors.white)),
+                          Text('Sets Won: $_setsWonB', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
