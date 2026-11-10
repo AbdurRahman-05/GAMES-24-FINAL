@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'match_score_manager.dart';
 import 'booking_manager.dart';
 import 'challenge_manager.dart';
@@ -144,6 +145,111 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   String? _finalWinner;
   String? _finalMargin;
   MatchResultItem? _loadedResult;
+  bool _isStartingNewMatch = false;
+
+  String _formatCompletedTime(DateTime dt) {
+    int hour = dt.hour;
+    final period = hour >= 12 ? 'PM' : 'AM';
+    if (hour > 12) hour -= 12;
+    if (hour == 0) hour = 12;
+    final min = dt.minute.toString().padLeft(2, '0');
+    return '$hour:$min $period';
+  }
+
+  int get _remainingSlotMinutes {
+    final now = DateTime.now();
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final date = widget.date.trim();
+
+    if (date.isNotEmpty && date.compareTo(todayStr) < 0) {
+      return 0; // Past date
+    }
+
+    final endMin = BookingManager.parseSlotEndMinutes(widget.timeSlot);
+    if (endMin == -1) return 0;
+
+    final currentMin = now.hour * 60 + now.minute;
+    final diff = endMin - currentMin;
+    return diff > 0 ? diff : 0;
+  }
+
+  void _startNewMatch() {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isStartingNewMatch = true;
+      _isMatchCompleted = false;
+      _forceEarlyStart = true;
+      _finalWinner = null;
+      _finalMargin = null;
+      _matchIndex = _slotMatches.length + 1;
+
+      // Reset Coin Toss
+      _tossCompleted = false;
+      _tossWinner = null;
+      _tossDecision = null;
+      _tossResult = null;
+
+      // Reset Cricket
+      _cricketRunsA = 0;
+      _cricketWicketsA = 0;
+      _cricketBallsA = 0;
+      _cricketTimelineA.clear();
+
+      _cricketRunsB = 0;
+      _cricketWicketsB = 0;
+      _cricketBallsB = 0;
+      _cricketTimelineB.clear();
+
+      _currentCricketInning = 1;
+      _cricketTarget = null;
+
+      _striker1 = null;
+      _nonStriker1 = null;
+      _currentBowler1 = null;
+      _striker2 = null;
+      _nonStriker2 = null;
+      _currentBowler2 = null;
+
+      _playerStats.clear();
+
+      // Reset Football
+      _footballGoalsA = 0;
+      _footballGoalsB = 0;
+      _footballEvents.clear();
+
+      // Reset Rackets
+      _pointsA = 0;
+      _pointsB = 0;
+      _setsWonA = 0;
+      _setsWonB = 0;
+      _currentSet = 1;
+      _setHistory.clear();
+    });
+
+    // Animate to Coin Toss Tab
+    _tabController.animateTo(1);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF166534),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
+          children: [
+            const Icon(Icons.sports_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Starting Match #$_matchIndex in this slot! Flip coin to begin 🪙',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -1095,10 +1201,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   bool get _isCompletedMatch =>
-      widget.initialTab == 3 ||
-      _isMatchCompleted ||
-      _loadedResult != null ||
-      _slotMatches.isNotEmpty;
+      !_isStartingNewMatch &&
+      (widget.initialTab == 3 && _slotMatches.isNotEmpty);
 
   // ---------------------------------------------------------------------------
   // BUILD METHOD
@@ -1106,7 +1210,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   @override
   Widget build(BuildContext context) {
     if (_isCompletedMatch) {
-      // Completed Match: Show ONLY Match Details, Results, and Awards (NO TabBar, NO Toss/Scorecard tabs)
+      // Completed Match: Show Match Details, Results, Timing, and option to launch a new match
       return Scaffold(
         backgroundColor: const Color(0xFFF9FAFB),
         appBar: AppBar(
@@ -1129,6 +1233,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
             ],
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton.icon(
+                onPressed: _startNewMatch,
+                icon: const Icon(Icons.bolt_rounded, color: Color(0xFF166534), size: 18),
+                label: Text(
+                  'Match #${_slotMatches.length + 1} ⚡',
+                  style: const TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            ),
+          ],
         ),
         body: _buildResultTab(),
       );
@@ -1458,6 +1575,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         Text(
                           'Pre-Match Phase: Starts at $startSlot ${minsUntil > 0 ? "(in $minsUntil mins)" : ""}',
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         const Text(
@@ -1500,15 +1619,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        isOpponentJoined ? '⚔️ Open Challenge: Opponent Joined!' : '⚔️ Open Challenge Match',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF1E40AF),
+                      Expanded(
+                        child: Text(
+                          isOpponentJoined ? '⚔️ Open Challenge: Opponent Joined!' : '⚔️ Open Challenge Match',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                            color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF1E40AF),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
@@ -3041,7 +3164,57 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   'Won $marginText',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
                 ),
-                const Divider(height: 28),
+                const SizedBox(height: 12),
+                // Match Timing Bar inside Winner Card
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.calendar_today_rounded, size: 12, color: Color(0xFF166534)),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.date,
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                          ),
+                        ],
+                      ),
+                      Container(width: 1, height: 14, color: const Color(0xFFCBD5E1)),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.access_time_rounded, size: 12, color: Color(0xFF166534)),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.timeSlot,
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                          ),
+                        ],
+                      ),
+                      Container(width: 1, height: 14, color: const Color(0xFFCBD5E1)),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle_outline_rounded, size: 12, color: Color(0xFF166534)),
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatCompletedTime(result?.completedAt ?? DateTime.now()),
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF166534)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -3099,6 +3272,103 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
           const SizedBox(height: 16),
 
+          // Slot Time Status & Next Match Launcher Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: _remainingSlotMinutes > 0
+                    ? [const Color(0xFFF0FDF4), const Color(0xFFECFDF5)]
+                    : [const Color(0xFFF8FAFC), const Color(0xFFF1F5F9)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: _remainingSlotMinutes > 0 ? const Color(0xFF86EFAC) : const Color(0xFFCBD5E1),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: _remainingSlotMinutes > 0 ? const Color(0xFFDCFCE7) : const Color(0xFFE2E8F0),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _remainingSlotMinutes > 0 ? Icons.timer_outlined : Icons.replay_circle_filled_rounded,
+                        color: _remainingSlotMinutes > 0 ? const Color(0xFF166534) : const Color(0xFF475569),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _remainingSlotMinutes > 0
+                                ? 'Slot Active • ~$_remainingSlotMinutes mins left in court booking ⏱️'
+                                : 'Slot Time Concluded 🏁',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: _remainingSlotMinutes > 0 ? const Color(0xFF166534) : const Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _remainingSlotMinutes > 0
+                                ? 'You have time left in your booked slot! Start another match with your squad.'
+                                : 'Slot has ended. You can start a friendly rematch or record another game.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: _remainingSlotMinutes > 0 ? const Color(0xFF15803D) : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF166534),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    onPressed: _startNewMatch,
+                    icon: const Icon(Icons.bolt_rounded, size: 20, color: Color(0xFF86EFAC)),
+                    label: Text(
+                      _remainingSlotMinutes > 0
+                          ? 'Start Match #${_slotMatches.length + 1} in this Slot ⚡'
+                          : 'Start Rematch / New Game 🔄',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Match Awards Grid (Player of Match, Top Scorer, Best Bowler, Best Fielder)
           const Text('Match Awards & Top Performers 🌟', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 10),
@@ -3147,21 +3417,45 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
           const SizedBox(height: 24),
 
-          // Action Button: Back to My Bookings
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                elevation: 0,
+          // Action Buttons: Next Match & Back to Bookings
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF166534),
+                      side: const BorderSide(color: Color(0xFF166534)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    icon: const Icon(Icons.bolt_rounded, size: 18),
+                    label: Text(
+                      'Match #${_slotMatches.length + 1} ⚡',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    onPressed: _startNewMatch,
+                  ),
+                ),
               ),
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: const Text('Back to My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              onPressed: () => Navigator.pop(context),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF166534),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                    label: const Text('My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
         ],
