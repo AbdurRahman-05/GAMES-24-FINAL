@@ -124,6 +124,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
         final List list = jsonDecode(savedStr);
         customList = list
             .map((e) => PlayerItem.fromJson(Map<String, dynamic>.from(e)))
+            .where((p) => !MatchScoreManager.isDemoPlayer(p))
             .toList();
       }
     } catch (e) {

@@ -489,7 +489,7 @@ class MatchScoreManager {
 
   static bool isDemoPlayer(PlayerItem player) {
     final lowerName = player.name.trim().toLowerCase();
-    const demoNames = {
+    const demoKeywords = [
       'alex hunter',
       'karthik raja',
       'rohan sharma',
@@ -500,9 +500,15 @@ class MatchScoreManager {
       'mohamed imran',
       'pradeep chandran',
       'dinesh balaji',
-    };
-    if (demoNames.contains(lowerName)) return true;
+      'alex',
+      'demo',
+      'dummy',
+      'sample player',
+      'test player',
+    ];
+    if (demoKeywords.any((k) => lowerName.contains(k))) return true;
     if (RegExp(r'^c\d+$').hasMatch(player.id)) return true;
+    if (player.id.startsWith('demo_')) return true;
     return false;
   }
 

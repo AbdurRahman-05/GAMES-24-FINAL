@@ -35,12 +35,12 @@ class _TurfOwnerRegistrationScreenState
 
   // Step 3 Facilities State
 
-  bool _hasWater = true;
-  bool _hasParking = true;
-  bool _hasToilet = true;
-  bool _hasFloodlights = true;
-  bool _hasChangingRoom = true;
-  bool _hasFirstAid = true;
+  bool _hasWater = false;
+  bool _hasParking = false;
+  bool _hasToilet = false;
+  bool _hasFloodlights = false;
+  bool _hasChangingRoom = false;
+  bool _hasFirstAid = false;
   int _photosUploadedCount = 0;
 
   // Step 4 KYC & Bank Controllers

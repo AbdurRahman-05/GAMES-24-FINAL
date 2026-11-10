@@ -1405,9 +1405,11 @@ export class TurfService {
       if (!year || !month || !day) {
         const parsed = new Date(trimmedDate);
         if (!isNaN(parsed.getTime())) {
-          year = parsed.getFullYear();
-          month = parsed.getMonth() + 1;
-          day = parsed.getDate();
+          // If server operates in UTC, adjust by Indian Standard Time (+05:30) to preserve local day
+          const istDate = new Date(parsed.getTime() + (5 * 60 + 30) * 60 * 1000);
+          year = istDate.getUTCFullYear();
+          month = istDate.getUTCMonth() + 1;
+          day = istDate.getUTCDate();
         }
       }
 

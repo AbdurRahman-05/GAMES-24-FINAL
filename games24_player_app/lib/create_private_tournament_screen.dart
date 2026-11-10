@@ -32,8 +32,8 @@ class _CreatePrivateTournamentScreenState
   // Schedule & Venue
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 5));
   String _selectedTimeSlot = '06:00 PM - 10:00 PM';
-  String _selectedVenue = 'Grand Arena Turf';
-  String _selectedLocation = 'Downtown Sports Complex, Madurai';
+  String _selectedVenue = '';
+  String _selectedLocation = '';
 
   // Toggleable Rules
   final Map<String, bool> _rulesMap = {
@@ -122,6 +122,13 @@ class _CreatePrivateTournamentScreenState
 
   void _proceedToStep2() {
     if (_formKey.currentState?.validate() != true) return;
+
+    if (_selectedVenue.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a tournament venue')),
+      );
+      return;
+    }
 
     HapticFeedback.lightImpact();
 
@@ -511,9 +518,19 @@ class _CreatePrivateTournamentScreenState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(_selectedVenue, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                              Text(
+                                _selectedVenue.isNotEmpty ? _selectedVenue : 'Select Venue / Turf Ground',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                  color: _selectedVenue.isNotEmpty ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              Text(_selectedLocation, style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B))),
+                              Text(
+                                _selectedLocation.isNotEmpty ? _selectedLocation : 'Tap to choose tournament venue',
+                                style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                              ),
                             ],
                           ),
                         ),

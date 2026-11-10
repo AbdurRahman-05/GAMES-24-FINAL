@@ -554,8 +554,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       }
       _tossCaller = _teamAName;
     } else {
-      _teamAName = 'Blazing Strikers (My Team)';
-      _teamBName = 'Thunder Smashers';
+      _teamAName = 'My Team';
+      _teamBName = 'Opponent Team';
       _tossCaller = _teamAName;
     }
 

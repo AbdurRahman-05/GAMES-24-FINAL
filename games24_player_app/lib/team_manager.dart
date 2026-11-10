@@ -69,6 +69,7 @@ class PlayerTeam {
     dateText: json['dateText']?.toString() ?? 'Joined Recently',
     members: (json['members'] as List?)
         ?.map((m) => PlayerItem.fromJson(Map<String, dynamic>.from(m)))
+        .where((p) => !MatchScoreManager.isDemoPlayer(p))
         .toList() ?? [],
   );
 }
