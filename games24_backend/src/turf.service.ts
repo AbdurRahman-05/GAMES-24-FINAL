@@ -1051,6 +1051,7 @@ export class TurfService {
 
   async getUserBookings(phone?: string, name?: string) {
     const orConditions: any[] = [];
+    const challengeOrConditions: any[] = [];
 
     if (phone && phone.trim()) {
       const trimmedPhone = phone.trim();
@@ -1059,15 +1060,24 @@ export class TurfService {
 
       if (last10.length >= 7) {
         orConditions.push({ customerPhone: { contains: last10 } });
+        orConditions.push({ opponentPhone: { contains: last10 } });
+        challengeOrConditions.push({ creatorPhone: { contains: last10 } });
+        challengeOrConditions.push({ opponentContact: { contains: last10 } });
       }
       orConditions.push({ customerPhone: trimmedPhone });
+      orConditions.push({ opponentPhone: trimmedPhone });
+      challengeOrConditions.push({ creatorPhone: trimmedPhone });
+      challengeOrConditions.push({ opponentContact: trimmedPhone });
     }
 
     if (name && name.trim()) {
       orConditions.push({ customerName: { equals: name.trim(), mode: 'insensitive' } });
+      orConditions.push({ opponentName: { equals: name.trim(), mode: 'insensitive' } });
+      challengeOrConditions.push({ challengerName: { equals: name.trim(), mode: 'insensitive' } });
+      challengeOrConditions.push({ opponentName: { equals: name.trim(), mode: 'insensitive' } });
     }
 
-    if (orConditions.length === 0) {
+    if (orConditions.length === 0 && challengeOrConditions.length === 0) {
       return [];
     }
 
@@ -1092,13 +1102,28 @@ export class TurfService {
       ],
     });
 
+    // Check for matched open challenges for this user/opponent that might not yet be in bookings
+    let acceptedChallenges: any[] = [];
+    if (challengeOrConditions.length > 0) {
+      acceptedChallenges = await this.prisma.openChallenge.findMany({
+        where: {
+          status: 'ACCEPTED',
+          OR: challengeOrConditions,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
     const { todayStr, currentMinutes } = getISTDateAndMinutes();
 
-    return bookings.map((b) => {
+    const existingBookingIds = new Set<string>();
+
+    const mappedBookings = bookings.map((b) => {
       const photos = normalizePhotoList(b.verifiedAdmin?.photoUrls);
 
       let isActive = false;
-      if (b.status !== 'Cancelled') {
+      const statusLower = (b.status || '').toLowerCase();
+      if (statusLower !== 'cancelled' && statusLower !== 'completed') {
         if (b.date > todayStr) {
           isActive = true;
         } else if (b.date === todayStr) {
@@ -1113,6 +1138,8 @@ export class TurfService {
       }
 
       const formalCode = b.bookingCode || `G24-BK-${b.id.toString().padStart(4, '0')}`;
+      existingBookingIds.add(b.id.toString());
+      existingBookingIds.add(formalCode);
 
       return {
         id: b.id,
@@ -1130,16 +1157,78 @@ export class TurfService {
         status: b.status,
         customerName: b.customerName,
         customerPhone: b.customerPhone,
+        isOpenMatch: b.isOpenMatch,
+        openMatchStatus: b.openMatchStatus,
+        teamName: b.teamName,
+        teamSize: b.teamSize,
+        opponentName: b.opponentName,
+        opponentPhone: b.opponentPhone,
         isActive,
         location: b.verifiedAdmin
           ? `${b.verifiedAdmin.neighborhoodArea} • ${b.verifiedAdmin.streetAddress}`
           : (b.courtName || 'Main Arena'),
-        imageUrl: photos[0],
+        imageUrl: photos[0] || '',
         photoUrls: photos,
         createdAt: b.createdAt,
         updatedAt: b.updatedAt,
       };
     });
+
+    // Append any accepted challenges not already represented by a TurfBooking
+    for (const c of acceptedChallenges) {
+      if (c.bookingId && existingBookingIds.has(c.bookingId.toString())) {
+        continue;
+      }
+      if (existingBookingIds.has(c.id)) {
+        continue;
+      }
+
+      let isActive = false;
+      if (c.status !== 'CANCELLED' && c.status !== 'COMPLETED') {
+        if (c.date > todayStr) {
+          isActive = true;
+        } else if (c.date === todayStr) {
+          const endMin = parseSlotEndMinutes(c.time);
+          if (endMin === -1) {
+            isActive = true;
+          } else {
+            isActive = currentMinutes < endMin;
+          }
+        }
+      }
+
+      mappedBookings.push({
+        id: c.bookingId || c.id,
+        bookingId: `G24-CH-${c.id}`,
+        bookingCode: `G24-CH-${c.id}`,
+        verifiedAdminId: c.turfId || 1,
+        turfId: c.turfId || 1,
+        turfName: c.turfName,
+        courtName: 'Main Arena',
+        sport: c.sport,
+        date: c.date,
+        timeSlot: c.time,
+        amount: 0,
+        paymentMethod: 'UPI',
+        status: c.status === 'COMPLETED' ? 'Completed' : 'Confirmed',
+        customerName: c.challengerName,
+        customerPhone: c.creatorPhone,
+        isOpenMatch: true,
+        openMatchStatus: 'OPPONENT_JOINED',
+        teamName: c.challengerName,
+        teamSize: c.teamSize,
+        opponentName: c.opponentName,
+        opponentPhone: c.opponentContact,
+        isActive,
+        location: c.location || 'Madurai',
+        imageUrl: '',
+        photoUrls: [],
+        createdAt: c.createdAt,
+        updatedAt: c.createdAt,
+      });
+    }
+
+    return mappedBookings;
   }
 
   async recalculateDashboardMetrics(verifiedAdminId: number) {
@@ -2038,10 +2127,27 @@ export class TurfService {
       },
     });
 
-    // If there is an associated TurfBooking, update it too
-    if (challenge.bookingId) {
+    let bookingId = challenge.bookingId;
+    if (!bookingId) {
+      const matchBooking = await this.prisma.turfBooking.findFirst({
+        where: {
+          isOpenMatch: true,
+          date: challenge.date,
+          timeSlot: { contains: challenge.time },
+        },
+      });
+      if (matchBooking) {
+        bookingId = matchBooking.id;
+        await this.prisma.openChallenge.update({
+          where: { id: challengeId },
+          data: { bookingId: matchBooking.id },
+        }).catch(() => null);
+      }
+    }
+
+    if (bookingId) {
       await this.prisma.turfBooking.update({
-        where: { id: challenge.bookingId },
+        where: { id: bookingId },
         data: {
           openMatchStatus: 'OPPONENT_JOINED',
           opponentName,
@@ -2054,6 +2160,33 @@ export class TurfService {
       success: true,
       message: 'Opponent accepted! Match is now locked and confirmed.',
       challenge: updated,
+    };
+  }
+
+  async completeBooking(bookingId: number) {
+    const booking = await this.prisma.turfBooking.findUnique({
+      where: { id: bookingId },
+    });
+    if (!booking) {
+      throw new NotFoundException(`Booking with ID ${bookingId} not found`);
+    }
+    const updated = await this.prisma.turfBooking.update({
+      where: { id: bookingId },
+      data: {
+        status: 'Completed',
+        openMatchStatus: 'COMPLETED',
+      },
+    });
+
+    await this.prisma.openChallenge.updateMany({
+      where: { bookingId },
+      data: { status: 'COMPLETED' },
+    }).catch(() => null);
+
+    return {
+      success: true,
+      message: 'Booking completed successfully',
+      booking: updated,
     };
   }
 }

@@ -894,15 +894,21 @@ class _AdminTournamentManagerScreenState
                 ),
               ),
               const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'FIFA / ICC Standard',
-                  style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.white),
+              Flexible(
+                fit: FlexFit.loose,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'FIFA / ICC Standard',
+                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
                 ),
               ),
             ],

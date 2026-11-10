@@ -1797,6 +1797,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
         contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -1870,12 +1871,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           'Total Subscription Due',
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       SizedBox(width: 8),
                       Text(
-                        '₹1,180 / month',
+                        '₹1,180 / mo',
                         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
                       ),
                     ],

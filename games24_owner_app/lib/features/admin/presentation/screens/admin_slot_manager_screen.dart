@@ -678,7 +678,7 @@ class _AdminSlotManagerScreenState
         ),
         const SizedBox(height: 8),
         SizedBox(
-          height: 60,
+          height: 66,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -703,7 +703,7 @@ class _AdminSlotManagerScreenState
                 onTap: () => setState(() => _selectedCourt = court.name),
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFF154D36) : Colors.white,
                     borderRadius: BorderRadius.circular(12),

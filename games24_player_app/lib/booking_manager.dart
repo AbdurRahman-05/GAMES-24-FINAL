@@ -80,7 +80,7 @@ class BookingManager {
 
   static bool isBookingActive(Map<String, dynamic> b) {
     final status = (b['status'] ?? '').toString().toLowerCase();
-    if (status == 'cancelled') return false;
+    if (status == 'cancelled' || status == 'completed') return false;
 
     final now = DateTime.now();
     final todayStr =
@@ -248,5 +248,39 @@ class BookingManager {
       debugPrint('Error cancelling booking: $e');
     }
     return false;
+  }
+
+  Future<void> markBookingCompleted(dynamic bookingId) async {
+    final strId = bookingId?.toString() ?? '';
+    if (strId.isEmpty) return;
+
+    final current = List<Map<String, dynamic>>.from(bookingsNotifier.value);
+    bool found = false;
+    for (int i = 0; i < current.length; i++) {
+      final b = Map<String, dynamic>.from(current[i]);
+      final bId = (b['id'] ?? b['bookingId'] ?? b['booking_code'])?.toString();
+      final bCode = b['bookingCode']?.toString();
+      if (bId == strId || bCode == strId) {
+        b['status'] = 'Completed';
+        b['isActive'] = false;
+        b['openMatchStatus'] = 'COMPLETED';
+        current[i] = b;
+        found = true;
+        break;
+      }
+    }
+
+    if (found) {
+      bookingsNotifier.value = current;
+      await _saveToCache(current);
+    }
+
+    final intId = int.tryParse(strId.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (intId != null) {
+      try {
+        final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$intId/complete');
+        await http.post(uri).timeout(const Duration(seconds: 4));
+      } catch (_) {}
+    }
   }
 }

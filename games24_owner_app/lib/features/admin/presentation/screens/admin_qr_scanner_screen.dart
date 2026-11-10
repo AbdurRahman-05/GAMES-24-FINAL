@@ -294,7 +294,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         setState(() {
           _scannedResult = {
             ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
-            if (parsedQrMap != null) ...parsedQrMap,
+            ...?parsedQrMap,
             '_resultType': 'NOT_YET_OPEN',
             'opensAt': data['opensAt'] ?? '',
             'startTime': data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
@@ -315,7 +315,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         setState(() {
           _scannedResult = {
             ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
-            if (parsedQrMap != null) ...parsedQrMap,
+            ...?parsedQrMap,
             '_resultType': 'ALREADY_VERIFIED',
             'checkedInAt': data['checkedInAt'] ?? 'Earlier today',
             'startTime': data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
@@ -335,7 +335,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         setState(() {
           _scannedResult = {
             ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
-            if (parsedQrMap != null) ...parsedQrMap,
+            ...?parsedQrMap,
             '_resultType': 'GRANTED',
             'checkedInAt': data['checkedInAt'] ?? 'Just now',
             'startTime': data['startTime'] ?? (data['booking']?['startTime'] ?? ''),

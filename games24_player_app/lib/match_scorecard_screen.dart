@@ -231,6 +231,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     });
 
     // Animate to Coin Toss Tab
+    MatchScoreManager().clearMatchLiveState(widget.bookingId);
     _tabController.animateTo(1);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -286,23 +287,154 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         _selectedTeamSize = saved.teamSize;
         _selectedOvers = saved.overs;
 
-        if (!_isOpenChallenge) {
+        if (saved.teamBName.isNotEmpty && saved.teamBName != 'Opponent Team (Waiting)') {
           _teamBName = saved.teamBName;
+        } else if (_linkedChallenge?.opponentName != null &&
+            _linkedChallenge!.opponentName!.trim().isNotEmpty) {
+          _teamBName = _linkedChallenge!.opponentName!.trim();
+        }
+
+        if (saved.teamBPlayers.isNotEmpty) {
           _teamBPlayers.clear();
           _teamBPlayers.addAll(
             saved.teamBPlayers.where((p) => !MatchScoreManager.isDemoPlayer(p)),
           );
-        } else {
-          // Open Match: Opponent team is never overwritten with user's custom saved squad
-          if (_linkedChallenge?.opponentName != null &&
-              _linkedChallenge!.opponentName!.trim().isNotEmpty) {
-            _teamBName = _linkedChallenge!.opponentName!.trim();
-          } else {
-            _teamBName = 'Opponent Team (Waiting)';
+        }
+
+        // Apply captain designations if saved
+        if (saved.captainAName != null && saved.captainAName!.isNotEmpty) {
+          for (int i = 0; i < _teamAPlayers.length; i++) {
+            if (_teamAPlayers[i].name == saved.captainAName) {
+              _teamAPlayers[i] = PlayerItem(
+                id: _teamAPlayers[i].id,
+                name: _teamAPlayers[i].name,
+                phone: _teamAPlayers[i].phone,
+                role: 'Captain',
+                avatarInitials: _teamAPlayers[i].avatarInitials,
+                isPhysicalContact: _teamAPlayers[i].isPhysicalContact,
+              );
+              break;
+            }
+          }
+        }
+        if (saved.captainBName != null && saved.captainBName!.isNotEmpty) {
+          for (int i = 0; i < _teamBPlayers.length; i++) {
+            if (_teamBPlayers[i].name == saved.captainBName) {
+              _teamBPlayers[i] = PlayerItem(
+                id: _teamBPlayers[i].id,
+                name: _teamBPlayers[i].name,
+                phone: _teamBPlayers[i].phone,
+                role: 'Captain',
+                avatarInitials: _teamBPlayers[i].avatarInitials,
+                isPhysicalContact: _teamBPlayers[i].isPhysicalContact,
+              );
+              break;
+            }
           }
         }
       });
     }
+    await _loadLiveState();
+  }
+
+  Future<void> _loadLiveState() async {
+    final state = await MatchScoreManager().getOrLoadMatchLiveState(widget.bookingId);
+    if (state != null && mounted) {
+      setState(() {
+        if (state.tossCompleted) {
+          _tossCompleted = true;
+          _tossWinner = state.tossWinner;
+          _tossDecision = state.tossDecision;
+          _tossResult = state.tossResult;
+          _tossCaller = state.tossCaller;
+          _tossCall = state.tossCall;
+        }
+
+        _currentCricketInning = state.currentInning;
+        _cricketRunsA = state.cricketRunsA;
+        _cricketWicketsA = state.cricketWicketsA;
+        _cricketBallsA = state.cricketBallsA;
+        _cricketTimelineA.clear();
+        _cricketTimelineA.addAll(state.cricketTimelineA);
+
+        _cricketRunsB = state.cricketRunsB;
+        _cricketWicketsB = state.cricketWicketsB;
+        _cricketBallsB = state.cricketBallsB;
+        _cricketTimelineB.clear();
+        _cricketTimelineB.addAll(state.cricketTimelineB);
+
+        _cricketTarget = state.cricketTarget;
+
+        if (state.isMatchCompleted) {
+          _isMatchCompleted = true;
+          _finalWinner = state.finalWinner;
+          _finalMargin = state.finalMargin;
+        }
+
+        // Restore player stats
+        state.playerStatsMap.forEach((key, val) {
+          if (val is Map) {
+            _playerStats[key] = PlayerMatchStat.fromJson(Map<String, dynamic>.from(val));
+          }
+        });
+
+        // Restore active players by name
+        final battingSquad = _currentBattingSquad;
+        final bowlingSquad = _currentBowlingSquad;
+
+        if (state.strikerName != null) {
+          try {
+            _striker = battingSquad.firstWhere((p) => p.name == state.strikerName);
+          } catch (_) {}
+        }
+        if (state.nonStrikerName != null) {
+          try {
+            _nonStriker = battingSquad.firstWhere((p) => p.name == state.nonStrikerName);
+          } catch (_) {}
+        }
+        if (state.bowlerName != null) {
+          try {
+            _currentBowler = bowlingSquad.firstWhere((p) => p.name == state.bowlerName);
+          } catch (_) {}
+        }
+      });
+    }
+  }
+
+  void _saveCurrentLiveState() {
+    final statsMap = <String, dynamic>{};
+    _playerStats.forEach((k, v) {
+      statsMap[k] = v.toJson();
+    });
+
+    final state = SavedMatchLiveState(
+      bookingId: widget.bookingId,
+      tossCompleted: _tossCompleted,
+      tossWinner: _tossWinner,
+      tossDecision: _tossDecision,
+      tossResult: _tossResult,
+      tossCaller: _tossCaller,
+      tossCall: _tossCall,
+      currentInning: _currentCricketInning,
+      cricketRunsA: _cricketRunsA,
+      cricketWicketsA: _cricketWicketsA,
+      cricketBallsA: _cricketBallsA,
+      cricketTimelineA: List<String>.from(_cricketTimelineA),
+      cricketRunsB: _cricketRunsB,
+      cricketWicketsB: _cricketWicketsB,
+      cricketBallsB: _cricketBallsB,
+      cricketTimelineB: List<String>.from(_cricketTimelineB),
+      cricketTarget: _cricketTarget,
+      strikerName: _striker?.name,
+      nonStrikerName: _nonStriker?.name,
+      bowlerName: _currentBowler?.name,
+      playerStatsMap: statsMap,
+      isMatchCompleted: _isMatchCompleted,
+      finalWinner: _finalWinner,
+      finalMargin: _finalMargin,
+    );
+
+    MatchScoreManager().saveMatchLiveState(state);
   }
 
   Future<void> _saveSquad({bool showFeedback = true}) async {
@@ -311,12 +443,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       teamAName: _teamAName,
       teamBName: _teamBName,
       teamAPlayers: _teamAPlayers,
-      teamBPlayers: _isOpenChallenge ? [] : _teamBPlayers,
+      teamBPlayers: _teamBPlayers,
       teamSize: _selectedTeamSize,
       overs: _selectedOvers,
+      captainAName: _teamACaptain?.name,
+      captainBName: _teamBCaptain?.name,
     );
 
     await MatchScoreManager().saveBookingSquad(config);
+    _saveCurrentLiveState();
 
     if (showFeedback && mounted) {
       HapticFeedback.lightImpact();
@@ -332,7 +467,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               Expanded(
                 child: Text(
                   _isOpenChallenge
-                      ? 'Squad lineup for $_teamAName saved! 💾'
+                      ? 'Squad lineups saved successfully! 💾'
                       : 'Squad lineup saved successfully! 💾',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
@@ -378,6 +513,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           isOpen = true;
           if (b['teamName'] != null && b['teamName'].toString().isNotEmpty) {
             _teamAName = b['teamName'].toString();
+          }
+          if (b['opponentName'] != null && b['opponentName'].toString().isNotEmpty) {
+            _teamBName = b['opponentName'].toString();
           }
           if (b['teamSize'] != null && b['teamSize'].toString().isNotEmpty) {
             _selectedTeamSize = b['teamSize'].toString();
@@ -433,11 +571,296 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             id: 'opp_captain',
             name: _linkedChallenge!.opponentName!,
             phone: _linkedChallenge!.opponentContact ?? '',
-            role: 'Opponent Captain',
+            role: 'Captain',
           ),
         );
       }
     }
+  }
+
+  PlayerItem? get _teamACaptain {
+    try {
+      return _teamAPlayers.firstWhere((p) => p.role.toLowerCase().contains('captain'));
+    } catch (_) {
+      return _teamAPlayers.isNotEmpty ? _teamAPlayers.first : null;
+    }
+  }
+
+  PlayerItem? get _teamBCaptain {
+    try {
+      return _teamBPlayers.firstWhere((p) => p.role.toLowerCase().contains('captain'));
+    } catch (_) {
+      return _teamBPlayers.isNotEmpty ? _teamBPlayers.first : null;
+    }
+  }
+
+  void _setCaptain(bool forTeamA, PlayerItem player) {
+    setState(() {
+      final list = forTeamA ? _teamAPlayers : _teamBPlayers;
+      for (int i = 0; i < list.length; i++) {
+        final p = list[i];
+        if (p.name == player.name && (p.phone == player.phone || p.id == player.id)) {
+          list[i] = PlayerItem(
+            id: p.id,
+            name: p.name,
+            phone: p.phone,
+            role: 'Captain',
+            avatarInitials: p.avatarInitials,
+            isPhysicalContact: p.isPhysicalContact,
+          );
+        } else if (p.role.toLowerCase().contains('captain')) {
+          list[i] = PlayerItem(
+            id: p.id,
+            name: p.name,
+            phone: p.phone,
+            role: 'Player',
+            avatarInitials: p.avatarInitials,
+            isPhysicalContact: p.isPhysicalContact,
+          );
+        }
+      }
+    });
+    _saveSquad(showFeedback: false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('👑 ${player.name} is now Captain of ${forTeamA ? _teamAName : _teamBName}!'),
+        backgroundColor: const Color(0xFF166534),
+      ),
+    );
+  }
+
+  void _showSelectCaptainDialog(bool forTeamA) {
+    final teamName = forTeamA ? _teamAName : _teamBName;
+    final players = forTeamA ? _teamAPlayers : _teamBPlayers;
+    final currentCaptain = forTeamA ? _teamACaptain : _teamBCaptain;
+
+    if (players.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Add players to $teamName before choosing a Captain!'),
+          backgroundColor: const Color(0xFFD97706),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Text('👑', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Select Captain for $teamName',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300),
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: players.length,
+              separatorBuilder: (_, index) => const Divider(height: 1),
+              itemBuilder: (context, idx) {
+                final p = players[idx];
+                final isCurrent = p == currentCaptain || p.role.toLowerCase().contains('captain');
+                return ListTile(
+                  dense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  leading: CircleAvatar(
+                    backgroundColor: isCurrent ? const Color(0xFFFEF3C7) : const Color(0xFFF1F5F9),
+                    child: Text(
+                      isCurrent ? '👑' : p.avatarInitials,
+                      style: TextStyle(
+                        fontSize: isCurrent ? 14 : 11,
+                        fontWeight: FontWeight.bold,
+                        color: isCurrent ? const Color(0xFFB45309) : const Color(0xFF1E293B),
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    p.name,
+                    style: TextStyle(
+                      fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  subtitle: Text(p.role, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  trailing: isCurrent
+                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFF166534), size: 20)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _setCaptain(forTeamA, p);
+                  },
+                );
+              },
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+        ],
+      ),
+    );
+  }
+
+  void _showSelectBatterDialog({required bool isStriker}) {
+    final squad = _currentBattingSquad;
+    if (squad.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No players in $_currentBattingTeam squad. Add players in Teams tab.'),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.sports_cricket, color: Color(0xFF166534), size: 22),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                isStriker
+                    ? 'Select Striker * (Inning $_currentCricketInning)'
+                    : 'Select Non-Striker (Inning $_currentCricketInning)',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Batting Team: $_currentBattingTeam',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+              ),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 320),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: squad.length,
+                  separatorBuilder: (_, index) => const Divider(height: 1),
+                  itemBuilder: (context, idx) {
+                    final p = squad[idx];
+                    final st = _getStat(p);
+                    final isThis = isStriker ? (p == _striker) : (p == _nonStriker);
+                    final isOther = isStriker ? (p == _nonStriker) : (p == _striker);
+
+                    return ListTile(
+                      dense: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: isThis
+                            ? const Color(0xFF166534)
+                            : (isOther ? const Color(0xFFFEF3C7) : const Color(0xFFE5F5EB)),
+                        child: Text(
+                          p.avatarInitials,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isThis
+                                ? Colors.white
+                                : (isOther ? const Color(0xFFB45309) : const Color(0xFF166534)),
+                          ),
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              p.name,
+                              style: TextStyle(
+                                fontWeight: isThis ? FontWeight.bold : FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (st.isOut)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEE2E2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text('OUT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFDC2626))),
+                            )
+                          else if (isThis)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5F5EB),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                isStriker ? 'Striker *' : 'Non-Striker',
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                              ),
+                            )
+                          else if (isOther)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                isStriker ? 'Non-Striker' : 'Striker *',
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309)),
+                              ),
+                            ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        '${st.runs} runs (${st.balls}b, ${st.fours}x4, ${st.sixes}x6)',
+                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        setState(() {
+                          if (isStriker) {
+                            if (p == _nonStriker) {
+                              _nonStriker = _striker;
+                            }
+                            _striker = p;
+                          } else {
+                            if (p == _striker) {
+                              _striker = _nonStriker;
+                            }
+                            _nonStriker = p;
+                          }
+                        });
+                        _saveCurrentLiveState();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   bool get _isMatchStarted =>
@@ -573,6 +996,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             : (_isFootball ? 'Kick-Off ⚽' : 'Serve First 🏸');
       });
       _ensureActivePlayers();
+      _saveCurrentLiveState();
     });
   }
 
@@ -621,6 +1045,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     });
 
     _checkCricketInningsProgress();
+    _saveCurrentLiveState();
   }
 
   void _addCricketWicket() {
@@ -663,6 +1088,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     _promptFielderAndNextBatter(dismissed);
     _checkCricketInningsProgress();
+    _saveCurrentLiveState();
   }
 
   void _addCricketExtra(String type) {
@@ -680,6 +1106,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       }
     });
     _checkCricketInningsProgress();
+    _saveCurrentLiveState();
   }
 
   void _promptNewBowler() {
@@ -812,6 +1239,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       ),
                       onTap: () {
                         setState(() => _currentBowler = p);
+                        _saveCurrentLiveState();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1016,6 +1444,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 _currentCricketInning = 2;
                 _ensureActivePlayers();
               });
+              _saveCurrentLiveState();
               Future.delayed(const Duration(milliseconds: 300), () {
                 if (mounted) {
                   _showSelectBowlerDialog(_currentBowlingSquad, isOpeningBowler: true);
@@ -1214,6 +1643,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
 
     MatchScoreManager().recordMatchResult(matchResult);
+    BookingManager().markBookingCompleted(widget.bookingId);
+    _saveSquad(showFeedback: false);
+    _saveCurrentLiveState();
 
     setState(() {
       _isMatchCompleted = true;
@@ -1563,16 +1995,6 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // CONTACT IMPORT & AUTO-SPLIT HELPERS
   // ===========================================================================
   void _openContactsPicker(bool forTeamA) {
-    if (_isOpenChallenge && !forTeamA) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('In Open Matches, the opponent team is set when another squad joins!'),
-          backgroundColor: Color(0xFFD97706),
-        ),
-      );
-      return;
-    }
-
     final currentList = forTeamA ? _teamAPlayers : _teamBPlayers;
     final otherList = forTeamA ? _teamBPlayers : _teamAPlayers;
 
@@ -1717,6 +2139,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     final minsUntil = BookingManager.getMinutesUntilMatchStart(dateStr: widget.date, timeSlot: widget.timeSlot);
     final isOpponentJoined = _linkedChallenge?.isJoined == true ||
         (_linkedChallenge?.opponentName != null && _linkedChallenge!.opponentName!.isNotEmpty);
+    final hasOpponent = isOpponentJoined ||
+        (_linkedChallenge?.opponentName != null && _linkedChallenge!.opponentName!.trim().isNotEmpty) ||
+        _teamBPlayers.isNotEmpty;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -2084,7 +2509,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
           const SizedBox(height: 16),
 
-          if (_isOpenChallenge)
+          if (_isOpenChallenge && !hasOpponent)
             _buildOpenMatchOpponentCard()
           else
             _buildTeamCard(
@@ -2112,9 +2537,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 elevation: 0,
               ),
               icon: const Icon(Icons.save_rounded, size: 20),
-              label: Text(
-                _isOpenChallenge ? 'Save My Squad Lineup 💾' : 'Save Squad Lineup 💾',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              label: const Text(
+                'Save Squad Lineup 💾',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
               onPressed: () => _saveSquad(showFeedback: true),
             ),
@@ -2353,6 +2778,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     required VoidCallback onAddPlayer,
     bool isLocked = false,
   }) {
+    final captain = isTeamA ? _teamACaptain : _teamBCaptain;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2399,6 +2826,51 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             ],
           ),
           const Divider(),
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isTeamA ? const Color(0xFFE5F5EB) : const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isTeamA ? const Color(0xFF86EFAC) : const Color(0xFFBFDBFE),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Text('👑', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    captain != null
+                        ? 'Captain: ${captain.name}'
+                        : 'No Captain Selected',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isTeamA ? const Color(0xFF166534) : const Color(0xFF1D4ED8),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (!isLocked)
+                  InkWell(
+                    onTap: () => _showSelectCaptainDialog(isTeamA),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isTeamA ? const Color(0xFF166534) : const Color(0xFF1D4ED8),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        captain != null ? 'Change 👑' : 'Pick Captain 👑',
+                        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           Row(
             children: [
               Expanded(
@@ -2501,19 +2973,30 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               spacing: 8,
               runSpacing: 8,
               children: players.map((p) {
+                final isCapt = p.role.toLowerCase().contains('captain') || (isTeamA ? _teamACaptain == p : _teamBCaptain == p);
                 return Chip(
                   avatar: CircleAvatar(
-                    backgroundColor: isTeamA ? const Color(0xFFE5F5EB) : const Color(0xFFDBEAFE),
+                    backgroundColor: isCapt
+                        ? const Color(0xFFFEF3C7)
+                        : (isTeamA ? const Color(0xFFE5F5EB) : const Color(0xFFDBEAFE)),
                     child: Text(
-                      p.avatarInitials,
+                      isCapt ? '👑' : p.avatarInitials,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: isCapt ? 12 : 10,
                         fontWeight: FontWeight.bold,
-                        color: isTeamA ? const Color(0xFF166534) : const Color(0xFF2563EB),
+                        color: isCapt
+                            ? const Color(0xFFB45309)
+                            : (isTeamA ? const Color(0xFF166534) : const Color(0xFF2563EB)),
                       ),
                     ),
                   ),
-                  label: Text('${p.name} (${p.role.split(' ').first})', style: const TextStyle(fontSize: 12)),
+                  label: Text(
+                    isCapt ? '${p.name} (👑 Captain)' : '${p.name} (${p.role.split(' ').first})',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isCapt ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
                   deleteIcon: isLocked ? null : const Icon(Icons.close, size: 14),
                   onDeleted: isLocked
                       ? null
@@ -2566,6 +3049,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     if (!callerOptions.contains(_tossCaller)) {
       _tossCaller = callerOptions.first;
     }
+    final teamACapt = _teamACaptain?.name;
+    final teamBCapt = _teamBCaptain?.name;
+    final activeCapt = (_tossCaller == _teamAName ? teamACapt : teamBCapt);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2575,7 +3061,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             const Text('Calling Team: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             Expanded(
               child: Text(
-                _tossCaller ?? _teamAName,
+                activeCapt != null && activeCapt.isNotEmpty
+                    ? '${_tossCaller ?? _teamAName} (👑 $activeCapt)'
+                    : (_tossCaller ?? _teamAName),
                 style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534), fontSize: 13),
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
@@ -2588,6 +3076,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           children: callerOptions.map((team) {
             final isSel = _tossCaller == team;
             final isA = team == _teamAName;
+            final capt = isA ? teamACapt : teamBCapt;
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -2598,10 +3087,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     color: isSel ? (isA ? const Color(0xFF166534) : const Color(0xFF2563EB)) : Colors.grey,
                   ),
                   label: Text(
-                    team,
+                    capt != null ? '$team (👑 $capt)' : team,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
                       color: isSel ? (isA ? const Color(0xFF166534) : const Color(0xFF2563EB)) : Colors.black87,
                     ),
@@ -2629,6 +3118,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     if (!_canPlayMatch) {
       return _buildPreMatchLockedCard(featureName: 'Coin Toss', featureIcon: Icons.toll_rounded);
     }
+    final winnerCapt = (_tossWinner == _teamAName ? _teamACaptain?.name : _teamBCaptain?.name);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -2766,7 +3256,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   const Icon(Icons.emoji_events_rounded, color: Color(0xFF166534), size: 36),
                   const SizedBox(height: 8),
                   Text(
-                    '🎉 Toss Winner: $_tossWinner!',
+                    winnerCapt != null && winnerCapt.isNotEmpty
+                        ? '🎉 Toss Winner: $_tossWinner (👑 $winnerCapt)!'
+                        : '🎉 Toss Winner: $_tossWinner!',
                     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
                   ),
                   Text(
@@ -3029,8 +3521,29 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         minimumSize: const Size(36, 24),
                         visualDensity: VisualDensity.compact,
                       ),
-                      onPressed: () => setState(() => _swapStrike()),
+                      onPressed: () {
+                        setState(() => _swapStrike());
+                        _saveCurrentLiveState();
+                      },
                       child: const Text('🔄 Swap', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                    ),
+                    const SizedBox(width: 4),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE5F5EB),
+                        foregroundColor: const Color(0xFF166534),
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        minimumSize: const Size(36, 24),
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(color: Color(0xFF86EFAC)),
+                        ),
+                      ),
+                      icon: const Icon(Icons.sports_cricket, size: 12, color: Color(0xFF166534)),
+                      label: const Text('Batters 🏏', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                      onPressed: () => _showSelectBatterDialog(isStriker: true),
                     ),
                     const SizedBox(width: 4),
                     ElevatedButton.icon(
@@ -3055,75 +3568,92 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    // Striker
+                    // Striker (Interactive selection from batting squad)
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE5F5EB),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFF86EFAC)),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: const [
-                                Icon(Icons.star, size: 11, color: Color(0xFF166534)),
-                                SizedBox(width: 3),
-                                Expanded(
-                                  child: Text(
-                                    'Striker *',
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
-                                    overflow: TextOverflow.ellipsis,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => _showSelectBatterDialog(isStriker: true),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE5F5EB),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFF86EFAC)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: const [
+                                  Icon(Icons.star, size: 11, color: Color(0xFF166534)),
+                                  SizedBox(width: 3),
+                                  Expanded(
+                                    child: Text(
+                                      'Striker *',
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _striker?.name ?? 'Batter 1',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              _striker != null ? '${_getStat(_striker!).runs} (${_getStat(_striker!).balls}b)' : '0 (0b)',
-                              style: const TextStyle(fontSize: 10.5, color: Colors.black87),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                                  Icon(Icons.swap_horiz_rounded, size: 13, color: Color(0xFF166534)),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _striker?.name ?? 'Select Striker',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                _striker != null ? '${_getStat(_striker!).runs} (${_getStat(_striker!).balls}b)' : 'Tap to pick 🎯',
+                                style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 6),
-                    // Non-Striker
+                    // Non-Striker (Interactive selection from batting squad)
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F4F6),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Non-Striker',
-                              style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _nonStriker?.name ?? 'Batter 2',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              _nonStriker != null ? '${_getStat(_nonStriker!).runs} (${_getStat(_nonStriker!).balls}b)' : '0 (0b)',
-                              style: const TextStyle(fontSize: 10.5, color: Colors.black87),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => _showSelectBatterDialog(isStriker: false),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE5E7EB)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: const [
+                                  Expanded(
+                                    child: Text(
+                                      'Non-Striker',
+                                      style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Icon(Icons.swap_horiz_rounded, size: 13, color: Colors.grey),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _nonStriker?.name ?? 'Select Non-Striker',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                _nonStriker != null ? '${_getStat(_nonStriker!).runs} (${_getStat(_nonStriker!).balls}b)' : 'Tap to pick 🎯',
+                                style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

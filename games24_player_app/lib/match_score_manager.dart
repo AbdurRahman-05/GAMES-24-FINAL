@@ -272,6 +272,8 @@ class SavedSquadConfig {
   final List<PlayerItem> teamBPlayers;
   final String teamSize;
   final int overs;
+  final String? captainAName;
+  final String? captainBName;
   final DateTime updatedAt;
 
   SavedSquadConfig({
@@ -282,6 +284,8 @@ class SavedSquadConfig {
     required this.teamBPlayers,
     required this.teamSize,
     required this.overs,
+    this.captainAName,
+    this.captainBName,
     DateTime? updatedAt,
   }) : updatedAt = updatedAt ?? DateTime.now();
 
@@ -293,6 +297,8 @@ class SavedSquadConfig {
         'teamBPlayers': teamBPlayers.map((p) => p.toJson()).toList(),
         'teamSize': teamSize,
         'overs': overs,
+        'captainAName': captainAName,
+        'captainBName': captainBName,
         'updatedAt': updatedAt.toIso8601String(),
       };
 
@@ -311,6 +317,138 @@ class SavedSquadConfig {
             [],
         teamSize: json['teamSize']?.toString() ?? '7v7',
         overs: int.tryParse(json['overs']?.toString() ?? '10') ?? 10,
+        captainAName: json['captainAName']?.toString(),
+        captainBName: json['captainBName']?.toString(),
+        updatedAt: json['updatedAt'] != null
+            ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
+            : DateTime.now(),
+      );
+}
+
+class SavedMatchLiveState {
+  final String bookingId;
+  final bool tossCompleted;
+  final String? tossWinner;
+  final String? tossDecision;
+  final String? tossResult;
+  final String? tossCaller;
+  final String? tossCall;
+  final int currentInning;
+  final int cricketRunsA;
+  final int cricketWicketsA;
+  final int cricketBallsA;
+  final List<String> cricketTimelineA;
+  final int cricketRunsB;
+  final int cricketWicketsB;
+  final int cricketBallsB;
+  final List<String> cricketTimelineB;
+  final int? cricketTarget;
+  final String? strikerName;
+  final String? nonStrikerName;
+  final String? bowlerName;
+  final Map<String, dynamic> playerStatsMap;
+  final bool isMatchCompleted;
+  final String? finalWinner;
+  final String? finalMargin;
+  final DateTime updatedAt;
+
+  SavedMatchLiveState({
+    required this.bookingId,
+    this.tossCompleted = false,
+    this.tossWinner,
+    this.tossDecision,
+    this.tossResult,
+    this.tossCaller,
+    this.tossCall,
+    this.currentInning = 1,
+    this.cricketRunsA = 0,
+    this.cricketWicketsA = 0,
+    this.cricketBallsA = 0,
+    this.cricketTimelineA = const [],
+    this.cricketRunsB = 0,
+    this.cricketWicketsB = 0,
+    this.cricketBallsB = 0,
+    this.cricketTimelineB = const [],
+    this.cricketTarget,
+    this.strikerName,
+    this.nonStrikerName,
+    this.bowlerName,
+    this.playerStatsMap = const {},
+    this.isMatchCompleted = false,
+    this.finalWinner,
+    this.finalMargin,
+    DateTime? updatedAt,
+  }) : updatedAt = updatedAt ?? DateTime.now();
+
+  Map<String, dynamic> toJson() => {
+        'bookingId': bookingId,
+        'tossCompleted': tossCompleted,
+        'tossWinner': tossWinner,
+        'tossDecision': tossDecision,
+        'tossResult': tossResult,
+        'tossCaller': tossCaller,
+        'tossCall': tossCall,
+        'currentInning': currentInning,
+        'cricketRunsA': cricketRunsA,
+        'cricketWicketsA': cricketWicketsA,
+        'cricketBallsA': cricketBallsA,
+        'cricketTimelineA': cricketTimelineA,
+        'cricketRunsB': cricketRunsB,
+        'cricketWicketsB': cricketWicketsB,
+        'cricketBallsB': cricketBallsB,
+        'cricketTimelineB': cricketTimelineB,
+        'cricketTarget': cricketTarget,
+        'strikerName': strikerName,
+        'nonStrikerName': nonStrikerName,
+        'bowlerName': bowlerName,
+        'playerStatsMap': playerStatsMap,
+        'isMatchCompleted': isMatchCompleted,
+        'finalWinner': finalWinner,
+        'finalMargin': finalMargin,
+        'updatedAt': updatedAt.toIso8601String(),
+      };
+
+  factory SavedMatchLiveState.fromJson(Map<String, dynamic> json) =>
+      SavedMatchLiveState(
+        bookingId: json['bookingId']?.toString() ?? '',
+        tossCompleted: json['tossCompleted'] == true,
+        tossWinner: json['tossWinner']?.toString(),
+        tossDecision: json['tossDecision']?.toString(),
+        tossResult: json['tossResult']?.toString(),
+        tossCaller: json['tossCaller']?.toString(),
+        tossCall: json['tossCall']?.toString(),
+        currentInning:
+            int.tryParse(json['currentInning']?.toString() ?? '1') ?? 1,
+        cricketRunsA:
+            int.tryParse(json['cricketRunsA']?.toString() ?? '0') ?? 0,
+        cricketWicketsA:
+            int.tryParse(json['cricketWicketsA']?.toString() ?? '0') ?? 0,
+        cricketBallsA:
+            int.tryParse(json['cricketBallsA']?.toString() ?? '0') ?? 0,
+        cricketTimelineA: (json['cricketTimelineA'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        cricketRunsB:
+            int.tryParse(json['cricketRunsB']?.toString() ?? '0') ?? 0,
+        cricketWicketsB:
+            int.tryParse(json['cricketWicketsB']?.toString() ?? '0') ?? 0,
+        cricketBallsB:
+            int.tryParse(json['cricketBallsB']?.toString() ?? '0') ?? 0,
+        cricketTimelineB: (json['cricketTimelineB'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        cricketTarget: int.tryParse(json['cricketTarget']?.toString() ?? ''),
+        strikerName: json['strikerName']?.toString(),
+        nonStrikerName: json['nonStrikerName']?.toString(),
+        bowlerName: json['bowlerName']?.toString(),
+        playerStatsMap: (json['playerStatsMap'] is Map)
+            ? Map<String, dynamic>.from(json['playerStatsMap'])
+            : {},
+        isMatchCompleted: json['isMatchCompleted'] == true,
+        finalWinner: json['finalWinner']?.toString(),
+        finalMargin: json['finalMargin']?.toString(),
         updatedAt: json['updatedAt'] != null
             ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
             : DateTime.now(),
@@ -379,6 +517,8 @@ class MatchScoreManager {
       teamBPlayers: s.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
       teamSize: s.teamSize,
       overs: s.overs,
+      captainAName: s.captainAName,
+      captainBName: s.captainBName,
     );
   }
 
@@ -393,6 +533,8 @@ class MatchScoreManager {
         teamBPlayers: s.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
         teamSize: s.teamSize,
         overs: s.overs,
+        captainAName: s.captainAName,
+        captainBName: s.captainBName,
       );
     }
     try {
@@ -410,6 +552,8 @@ class MatchScoreManager {
             teamBPlayers: loaded.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
             teamSize: loaded.teamSize,
             overs: loaded.overs,
+            captainAName: loaded.captainAName,
+            captainBName: loaded.captainBName,
           );
         });
       }
@@ -426,6 +570,8 @@ class MatchScoreManager {
       teamBPlayers: s.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
       teamSize: s.teamSize,
       overs: s.overs,
+      captainAName: s.captainAName,
+      captainBName: s.captainBName,
     );
   }
 
@@ -438,6 +584,8 @@ class MatchScoreManager {
       teamBPlayers: squad.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
       teamSize: squad.teamSize,
       overs: squad.overs,
+      captainAName: squad.captainAName,
+      captainBName: squad.captainBName,
     );
     _savedSquads[squad.bookingId] = cleanSquad;
     try {
@@ -447,6 +595,40 @@ class MatchScoreManager {
     } catch (e) {
       debugPrint('Error saving booking squad: $e');
     }
+  }
+
+  final Map<String, SavedMatchLiveState> _savedLiveStates = {};
+
+  Future<SavedMatchLiveState?> getOrLoadMatchLiveState(String bookingId) async {
+    if (_savedLiveStates.containsKey(bookingId)) {
+      return _savedLiveStates[bookingId];
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final str = prefs.getString('live_state_$bookingId');
+      if (str != null && str.isNotEmpty) {
+        final state = SavedMatchLiveState.fromJson(Map<String, dynamic>.from(jsonDecode(str)));
+        _savedLiveStates[bookingId] = state;
+        return state;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  Future<void> saveMatchLiveState(SavedMatchLiveState state) async {
+    _savedLiveStates[state.bookingId] = state;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('live_state_${state.bookingId}', jsonEncode(state.toJson()));
+    } catch (_) {}
+  }
+
+  Future<void> clearMatchLiveState(String bookingId) async {
+    _savedLiveStates.remove(bookingId);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('live_state_$bookingId');
+    } catch (_) {}
   }
 
   Future<void> _loadFromStorage() async {

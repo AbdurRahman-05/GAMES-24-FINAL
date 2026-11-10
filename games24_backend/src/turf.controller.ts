@@ -63,6 +63,13 @@ export class TurfController {
     return this.turfService.cancelBooking(bookingId);
   }
 
+  @Post('bookings/:bookingId/complete')
+  async completeBooking(
+    @Param('bookingId', ParseIntPipe) bookingId: number,
+  ) {
+    return this.turfService.completeBooking(bookingId);
+  }
+
   @Post('check-in')
   async checkInGlobal(
     @Body() body: any,

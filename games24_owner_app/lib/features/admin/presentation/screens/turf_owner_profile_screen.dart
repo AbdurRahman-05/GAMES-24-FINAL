@@ -1878,7 +1878,7 @@ class _TurfOwnerProfileScreenState
       ),
       child: TabBar(
         controller: _tabController,
-        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+        labelPadding: EdgeInsets.zero,
         indicator: BoxDecoration(
           color: const Color(0xFF154D36),
           borderRadius: BorderRadius.circular(10),
@@ -1898,54 +1898,66 @@ class _TurfOwnerProfileScreenState
         dividerColor: Colors.transparent,
         tabs: [
           const Tab(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.storefront_rounded, size: 13),
-                SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    'Venue Hub',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.storefront_rounded, size: 13),
+                    SizedBox(width: 4),
+                    Text(
+                      'Venue Hub',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
           Tab(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.receipt_long_rounded, size: 13),
-                const SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    'Bookings (${profile.bookingHistory.length})',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.receipt_long_rounded, size: 13),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Bookings (${profile.bookingHistory.length})',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
           const Tab(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.security_rounded, size: 13),
-                SizedBox(width: 4),
-                Flexible(
-                  child: Text(
-                    'KYC Details',
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.security_rounded, size: 13),
+                    SizedBox(width: 4),
+                    Text(
+                      'KYC Details',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
