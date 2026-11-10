@@ -133,6 +133,7 @@ class BookingQrPassModal extends StatelessWidget {
         'closesAtDt': checkInClosesAt,
         'opensAtStr': formatTod(checkInOpensAt),
         'startStr': formatTod(startDt),
+        'endStr': formatTod(endDt),
       };
     } catch (_) {
       return null;
@@ -474,7 +475,15 @@ class BookingQrPassModal extends StatelessWidget {
                         const SizedBox(height: 8),
                         _buildDetailRow('Date', dateStr, Icons.calendar_today_rounded),
                         const SizedBox(height: 8),
-                        _buildDetailRow('Time Slot', timeSlot, Icons.access_time_rounded),
+                        _buildDetailRow('Slot Duration', timeSlot, Icons.access_time_rounded),
+                        if (window != null && window['startStr'] != null) ...[
+                          const SizedBox(height: 8),
+                          _buildDetailRow('Start Time', window['startStr'].toString(), Icons.play_circle_outline_rounded),
+                        ],
+                        if (window != null && window['endStr'] != null) ...[
+                          const SizedBox(height: 8),
+                          _buildDetailRow('End Time', window['endStr'].toString(), Icons.stop_circle_outlined),
+                        ],
                         const SizedBox(height: 8),
                         _buildDetailRow('Payment Mode', '₹$amount • Paid Online ($paymentMethod)', Icons.verified_rounded, isSuccess: true),
                       ],
