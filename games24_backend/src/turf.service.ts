@@ -722,6 +722,13 @@ export class TurfService {
             },
           });
 
+          // Generate formal, permanent booking ID (e.g. G24-BK-0013)
+          const formalBookingCode = `G24-BK-${createdBooking.id.toString().padStart(4, '0')}`;
+          const updatedWithCode = await tx.turfBooking.update({
+            where: { id: createdBooking.id },
+            data: { bookingCode: formalBookingCode },
+          });
+
           if (isOpenMatch) {
             const initials = teamName.length >= 2 ? teamName.substring(0, 2).toUpperCase() : 'TC';
             await tx.openChallenge.create({
@@ -746,7 +753,11 @@ export class TurfService {
             });
           }
 
-          return createdBooking;
+          return {
+            ...updatedWithCode,
+            bookingId: formalBookingCode,
+            bookingCode: formalBookingCode,
+          };
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -1096,8 +1107,12 @@ export class TurfService {
         }
       }
 
+      const formalCode = b.bookingCode || `G24-BK-${b.id.toString().padStart(4, '0')}`;
+
       return {
         id: b.id,
+        bookingId: formalCode,
+        bookingCode: formalCode,
         verifiedAdminId: b.verifiedAdminId,
         turfId: b.verifiedAdminId,
         turfName: b.verifiedAdmin?.venueName || b.courtName || 'Turf Arena',
@@ -1269,53 +1284,90 @@ export class TurfService {
   }
 
   async checkInBooking(verifiedAdminId: number, body: any) {
-    const { bookingId, rawCode } = body || {};
-    let searchId = bookingId;
+    const { bookingId, rawCode, ticketToken, id, code, payload } = body || {};
+    let searchId = bookingId || ticketToken || rawCode || id || code || payload;
 
     if (!searchId && rawCode) {
+      searchId = rawCode;
+    }
+
+    // If searchId is a JSON payload from the QR code, parse it!
+    if (typeof searchId === 'string' && searchId.trim().startsWith('{')) {
       try {
-        const parsed = typeof rawCode === 'string' ? JSON.parse(rawCode) : rawCode;
-        searchId = parsed.bookingId || parsed.id || parsed.numericId;
-      } catch {
-        searchId = rawCode;
-      }
+        const parsed = JSON.parse(searchId);
+        if (parsed && typeof parsed === 'object') {
+          searchId = parsed.bookingId || parsed.bookingCode || parsed.id || parsed.numericId || searchId;
+        }
+      } catch {}
     }
 
     if (!searchId) {
       throw new BadRequestException('Booking ID or QR payload is required for check-in');
     }
 
+    const cleanSearchId = String(searchId).trim();
+
+    // Extract numeric ID from the LAST group of digits (e.g. G24-BK-0013 -> 13)
     let numericId: number | undefined;
     if (typeof searchId === 'number') {
       numericId = searchId;
-    } else if (typeof searchId === 'string') {
-      const match = searchId.match(/(\d+)/);
-      if (match) {
-        numericId = parseInt(match[1], 10);
+    } else {
+      const lastDigitsMatch = cleanSearchId.match(/(\d+)(?!.*\d)/);
+      if (lastDigitsMatch) {
+        numericId = parseInt(lastDigitsMatch[1], 10);
       }
     }
 
+    // 1. Search for booking belonging to this verifiedAdminId
     const booking = await this.prisma.turfBooking.findFirst({
       where: {
         verifiedAdminId,
-        ...(numericId ? { id: numericId } : {}),
+        OR: [
+          ...(numericId ? [{ id: numericId }] : []),
+          { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
+        ],
       },
     });
 
     if (!booking) {
+      // Check if ticket belongs to another venue to provide clear error
+      const globalBooking = await this.prisma.turfBooking.findFirst({
+        where: {
+          OR: [
+            ...(numericId ? [{ id: numericId }] : []),
+            { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
+          ],
+        },
+        include: { verifiedAdmin: true },
+      });
+
+      if (globalBooking && globalBooking.verifiedAdminId !== verifiedAdminId) {
+        return {
+          success: false,
+          valid: false,
+          message: `Invalid Venue! Ticket is for "${globalBooking.verifiedAdmin?.venueName || 'another turf'}", not this court.`,
+        };
+      }
+
       return {
         success: false,
         valid: false,
-        message: `Booking ticket "${searchId}" not found for this venue!`,
+        message: `Booking ticket "${cleanSearchId}" not found for this venue!`,
       };
     }
+
+    const formalCode = booking.bookingCode || `G24-BK-${booking.id.toString().padStart(4, '0')}`;
 
     if (booking.status?.toLowerCase() === 'cancelled') {
       return {
         success: false,
         valid: false,
-        booking,
-        message: `Entry Denied! Booking ${booking.id} (${booking.customerName}) was cancelled.`,
+        booking: {
+          ...booking,
+          bookingCode: formalCode,
+          bookingId: formalCode,
+        },
+        message: `Entry Denied! Booking ${formalCode} (${booking.customerName}) was cancelled.`,
       };
     }
 
@@ -1323,7 +1375,10 @@ export class TurfService {
 
     const updated = await this.prisma.turfBooking.update({
       where: { id: booking.id },
-      data: { status: 'Checked In' },
+      data: {
+        status: 'Checked In',
+        bookingCode: formalCode,
+      },
     });
 
     await this.recalculateDashboardMetrics(verifiedAdminId);
@@ -1332,10 +1387,14 @@ export class TurfService {
       success: true,
       valid: true,
       alreadyCheckedIn: alreadyChecked,
-      booking: updated,
+      booking: {
+        ...updated,
+        bookingCode: formalCode,
+        bookingId: formalCode,
+      },
       message: alreadyChecked
-        ? `Pass already checked in for ${booking.customerName}.`
-        : `Gate check-in confirmed for ${booking.customerName}! 🎉`,
+        ? `Pass already checked in for ${booking.customerName} (${formalCode}).`
+        : `Gate check-in confirmed for ${booking.customerName}! (${formalCode}) 🎉`,
     };
   }
 

@@ -631,7 +631,14 @@ export class SuperAdminService {
     ]);
 
     return {
-      items,
+      items: items.map((b) => {
+        const formalCode = b.bookingCode || `G24-BK-${b.id.toString().padStart(4, '0')}`;
+        return {
+          ...b,
+          bookingCode: formalCode,
+          bookingId: formalCode,
+        };
+      }),
       pagination: {
         page,
         limit,

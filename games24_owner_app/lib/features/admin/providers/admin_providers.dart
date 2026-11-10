@@ -1003,8 +1003,11 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         final dt = dateVal.isNotEmpty && timeSlotVal.isNotEmpty
             ? "$dateVal, $timeSlotVal"
             : (dateVal.isNotEmpty ? dateVal : timeSlotVal);
+        final bookingCode = b['bookingCode']?.toString() ??
+            b['bookingId']?.toString() ??
+            (b['id'] != null ? 'G24-BK-${b['id'].toString().padLeft(4, '0')}' : 'G24-BK-0001');
         return TurfBookingHistoryItem(
-          id: 'BK-${b['id']}',
+          id: bookingCode,
           customerName: b['customerName']?.toString() ?? 'Player Customer',
           customerPhone: b['customerPhone']?.toString() ?? '',
           sport: b['sport']?.toString() ?? 'Football',

@@ -431,18 +431,21 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         : 'https://picsum.photos/seed/${bookingId ?? 'football'}/600/200';
     final amount = (booking['amount'] ?? 1200).toString();
     final paymentMethod = (booking['paymentMethod'] ?? 'UPI').toString();
+    final formalBookingCode = booking['bookingCode']?.toString() ??
+        booking['bookingId']?.toString() ??
+        (bookingId != null ? 'G24-BK-${bookingId.toString().padLeft(4, '0')}' : 'G24-BK-0001');
 
     Color badgeBg;
     String badgeText;
     if (isCancelled) {
       badgeBg = Colors.red.shade700;
-      badgeText = 'Cancelled • #G24-${bookingId ?? '00'}';
+      badgeText = 'Cancelled • #$formalBookingCode';
     } else if (isPast) {
       badgeBg = const Color(0xFF4B5563);
-      badgeText = 'Completed • #G24-${bookingId ?? '00'}';
+      badgeText = 'Completed • #$formalBookingCode';
     } else {
       badgeBg = const Color(0xFF166534);
-      badgeText = 'Confirmed • #G24-${bookingId ?? '00'}';
+      badgeText = 'Confirmed • #$formalBookingCode';
     }
 
     return Container(

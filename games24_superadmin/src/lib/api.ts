@@ -157,6 +157,8 @@ export interface DashboardOverview {
 
 export interface BookingItem {
   id: number;
+  bookingCode?: string | null;
+  bookingId?: string | null;
   verifiedAdminId: number;
   customerName: string;
   customerPhone: string;

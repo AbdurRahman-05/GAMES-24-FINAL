@@ -127,6 +127,7 @@ model AdminDashboard {
 
 model TurfBooking {
   id              Int           @id @default(autoincrement())
+  bookingCode     String?       // e.g. "G24-BK-0013"
   verifiedAdminId Int
   verifiedAdmin   VerifiedAdmin @relation(fields: [verifiedAdminId], references: [id], onDelete: Cascade)
   customerName    String

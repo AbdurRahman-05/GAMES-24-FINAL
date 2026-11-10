@@ -83,10 +83,22 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       final profile = ref.read(turfProfileProvider);
       final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
 
+      String resolvedBookingId = tokenOrBookingId.trim();
+      try {
+        final parsed = jsonDecode(tokenOrBookingId);
+        if (parsed is Map) {
+          resolvedBookingId = (parsed['bookingCode'] ?? parsed['bookingId'] ?? parsed['id'])?.toString() ?? resolvedBookingId;
+        }
+      } catch (_) {}
+
       final res = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/check-in'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'ticketToken': tokenOrBookingId}),
+        body: jsonEncode({
+          'ticketToken': tokenOrBookingId,
+          'bookingId': resolvedBookingId,
+          'rawCode': tokenOrBookingId,
+        }),
       );
 
       final data = jsonDecode(res.body);
@@ -95,7 +107,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         setState(() {
           _scannedResult = data['booking'] != null
               ? Map<String, dynamic>.from(data['booking'])
-              : {'id': tokenOrBookingId, 'status': 'Checked In'};
+              : {'id': resolvedBookingId, 'bookingCode': resolvedBookingId, 'status': 'Checked In'};
           _isProcessing = false;
         });
 
@@ -401,7 +413,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   controller: _manualPassIdController,
                   textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
-                    hintText: 'Enter Pass ID (e.g. BK-2)',
+                    hintText: 'Enter Pass ID (e.g. G24-BK-0001)',
                     hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     filled: true,
@@ -442,7 +454,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
   }
 
   Widget _buildVerificationResultCard(Map<String, dynamic> booking) {
-    final bookingId = booking['id']?.toString() ?? 'BK-G24';
+    final bookingId = booking['bookingCode']?.toString() ??
+        booking['bookingId']?.toString() ??
+        (booking['id'] != null ? 'G24-BK-${booking['id'].toString().padLeft(4, '0')}' : 'G24-BK-0001');
     final customer = booking['customerName']?.toString() ?? 'Player Customer';
     final phone = booking['customerPhone']?.toString() ?? '';
     final sport = booking['sport']?.toString() ?? 'Football';

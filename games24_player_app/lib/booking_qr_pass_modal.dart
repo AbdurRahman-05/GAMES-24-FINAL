@@ -16,8 +16,30 @@ class BookingQrPassModal extends StatelessWidget {
     );
   }
 
+  static String formatBookingId(dynamic raw) {
+    if (raw == null) return 'G24-BK-0001';
+    final str = raw.toString().trim();
+    if (str.startsWith('G24-BK-')) return str;
+    final numMatch = RegExp(r'(\d+)').allMatches(str).toList();
+    if (numMatch.isNotEmpty) {
+      final lastMatch = numMatch.last.group(0)!;
+      return 'G24-BK-${lastMatch.padLeft(4, '0')}';
+    }
+    return 'G24-BK-$str';
+  }
+
+  String get displayBookingId {
+    if (booking['bookingCode'] != null && booking['bookingCode'].toString().isNotEmpty) {
+      return booking['bookingCode'].toString();
+    }
+    if (booking['bookingId'] != null && booking['bookingId'].toString().isNotEmpty) {
+      return formatBookingId(booking['bookingId']);
+    }
+    return formatBookingId(booking['id']);
+  }
+
   String get qrPayload {
-    final bookingId = (booking['id'] ?? booking['bookingId'] ?? 'BK-G24').toString();
+    final bookingId = displayBookingId;
     final turfId = booking['turfId'] ?? booking['verifiedAdminId'] ?? 1;
     final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
     final customerName = (booking['customerName'] ?? booking['userName'] ?? 'Player Customer').toString();
@@ -33,6 +55,8 @@ class BookingQrPassModal extends StatelessWidget {
       'app': 'GAMES24',
       'type': 'TICKET_PASS',
       'bookingId': bookingId,
+      'bookingCode': bookingId,
+      'numericId': booking['id'],
       'turfId': turfId,
       'turfName': turfName,
       'customerName': customerName,
@@ -50,7 +74,7 @@ class BookingQrPassModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bookingId = (booking['id'] ?? booking['bookingId'] ?? 'BK-G24').toString();
+    final bookingId = displayBookingId;
     final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
     final customerName = (booking['customerName'] ?? booking['userName'] ?? 'Player Customer').toString();
     final sport = (booking['sport'] ?? 'Football').toString();

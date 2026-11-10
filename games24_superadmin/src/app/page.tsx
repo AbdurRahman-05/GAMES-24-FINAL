@@ -956,7 +956,7 @@ export default function SuperAdminDashboard() {
                     bookings.map((b) => (
                       <tr key={b.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3 px-3 font-mono font-bold text-slate-700">
-                          #{b.id}
+                          {b.bookingCode || b.bookingId || `G24-BK-${b.id.toString().padStart(4, '0')}`}
                         </td>
                         <td className="py-3 px-3">
                           <div className="font-bold text-slate-900">{b.customerName}</div>
