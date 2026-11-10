@@ -147,13 +147,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               _buildPerformanceBentoSection(profile),
               const SizedBox(height: 20),
 
-              // 4. Active Sports Catalog Quick Bar
-              if (profile.sports.isNotEmpty) ...[
-                _buildActiveSportsBar(profile),
-                const SizedBox(height: 20),
-              ],
-
-              // 6. Live Customer Bookings Stream & Filter Header
+              // 4. Live Customer Bookings Stream & Filter Header
               _buildBookingsStreamSection(context, profile, bookings),
             ],
           ),
@@ -965,75 +959,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- 4. ACTIVE SPORTS CATALOG BAR ---
-  Widget _buildActiveSportsBar(TurfProfileState profile) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Active Sports & Rates',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-                letterSpacing: -0.3,
-              ),
-            ),
-            TextButton(
-              onPressed: () => context.go('/admin/profile'),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text('Edit Rates ➔', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 38,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: profile.sports.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 8),
-            itemBuilder: (ctx, i) {
-              final s = profile.sports[i];
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFCBD5E1)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_getSportEmoji(s.name), style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      s.name,
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF1E293B)),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '• ₹${s.hourlyRate.toInt()}/hr',
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // --- 7. LIVE CUSTOMER BOOKINGS STREAM & FILTERS ---
+  // --- 4. LIVE CUSTOMER BOOKINGS STREAM & FILTERS ---
   Widget _buildBookingsStreamSection(
     BuildContext context,
     TurfProfileState profile,
