@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:games24_player_app/booking_screen.dart';
+import 'package:games24_player_app/location_manager.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -19,7 +20,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   void initState() {
     super.initState();
+    LocationManager().locationNotifier.addListener(_onLocationChanged);
     _fetchTurfs();
+  }
+
+  @override
+  void dispose() {
+    LocationManager().locationNotifier.removeListener(_onLocationChanged);
+    super.dispose();
+  }
+
+  void _onLocationChanged() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _fetchTurfs() async {
@@ -46,6 +58,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     final filteredTurfs = _allTurfs.where((turf) {
+      if (!LocationManager().matchesTurf(turf)) return false;
       if (_selectedSport == 'All Sports') return true;
       final sports = turf['sports'];
       if (sports is List) {
@@ -222,6 +235,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   return const Iterable<Map<String, dynamic>>.empty();
                 }
                 return _allTurfs.where((turf) {
+                  if (!LocationManager().matchesTurf(turf)) return false;
                   final name = (turf['venueName'] ?? turf['name'] ?? '')
                       .toString()
                       .toLowerCase();

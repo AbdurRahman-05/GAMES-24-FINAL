@@ -9,6 +9,7 @@ import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/booking_manager.dart';
 import 'package:games24_player_app/match_scorecard_screen.dart';
 import 'package:games24_player_app/match_schedule_screen.dart';
+import 'package:games24_player_app/location_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
@@ -37,20 +38,35 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    LocationManager().locationNotifier.addListener(_onLocationChanged);
     _fetchTurfs();
     BookingManager().fetchBookings();
     ChallengeManager().syncWithCurrentUser();
     ChallengeManager().cleanExpiredChallenges();
+    ChallengeManager().fetchChallenges(location: LocationManager().currentLocation);
   }
 
   @override
   void dispose() {
+    LocationManager().locationNotifier.removeListener(_onLocationChanged);
     _searchController.dispose();
     super.dispose();
   }
 
+  void _onLocationChanged() {
+    if (mounted) {
+      setState(() {});
+      ChallengeManager().fetchChallenges(location: LocationManager().currentLocation);
+    }
+  }
+
   List<Map<String, dynamic>> get _filteredTurfs {
     return _allTurfs.where((turf) {
+      // 0. Location Filter based on selected locality
+      if (!LocationManager().matchesTurf(turf)) {
+        return false;
+      }
+
       final name = (turf['venueName'] ?? turf['name'] ?? '').toString().toLowerCase();
       final location = (turf['location'] ?? '').toString().toLowerCase();
 
@@ -126,7 +142,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool get _hasActiveFilters {
-    return _filterSport != 'All' ||
+    final isLocFiltered = LocationManager().currentLocation != 'All Madurai' &&
+        LocationManager().currentLocation != 'All';
+    return isLocFiltered ||
+        _filterSport != 'All' ||
         _filterDistance != 'Any' ||
         _filterPrice != 'Any' ||
         _filterRating != 'Any' ||
@@ -135,6 +154,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   int get _activeFilterCount {
     int count = 0;
+    if (LocationManager().currentLocation != 'All Madurai' &&
+        LocationManager().currentLocation != 'All') {
+      count++;
+    }
     if (_filterSport != 'All') count++;
     if (_filterDistance != 'Any') count++;
     if (_filterPrice != 'Any') count++;
@@ -144,6 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _clearAllFilters() {
+    LocationManager().setLocation('All Madurai');
     setState(() {
       _filterSport = 'All';
       _filterDistance = 'Any';
@@ -193,6 +217,105 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
+  Widget _buildLocationBanner() {
+    return ValueListenableBuilder<String>(
+      valueListenable: LocationManager().locationNotifier,
+      builder: (context, loc, _) {
+        final isAll = loc == 'All Madurai' || loc == 'All';
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0FDF4),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFBBF7D0)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF166534).withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.location_on,
+                  color: Color(0xFF166534),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isAll ? 'Exploring All Madurai' : 'Locality: $loc',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF14532D),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isAll
+                          ? 'Showing turfs & matches across the city'
+                          : 'Filtered for turfs & open matches nearby',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF166534),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => LocationManager.showLocationPicker(context),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF166534),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'Change',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(Icons.keyboard_arrow_right, size: 14, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -200,7 +323,11 @@ class _HomeScreenState extends State<HomeScreen> {
       child: RefreshIndicator(
         color: const Color(0xFF166534),
         onRefresh: () async {
-          await Future.wait([_fetchTurfs(), BookingManager().fetchBookings()]);
+          await Future.wait([
+            _fetchTurfs(),
+            BookingManager().fetchBookings(),
+            ChallengeManager().fetchChallenges(location: LocationManager().currentLocation),
+          ]);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -212,7 +339,9 @@ class _HomeScreenState extends State<HomeScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  _buildLocationBanner(),
+                  const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: _buildSectionHeader('Categories', ''),
@@ -471,6 +600,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildActiveFilterChips() {
     final chips = <Widget>[];
+
+    if (LocationManager().currentLocation != 'All Madurai' &&
+        LocationManager().currentLocation != 'All') {
+      chips.add(_buildFilterPill('📍 ${LocationManager().currentLocation}', () {
+        LocationManager().setLocation('All Madurai');
+      }));
+    }
 
     if (_filterSport != 'All') {
       chips.add(_buildFilterPill(_filterSport, () {
@@ -1198,8 +1334,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return ValueListenableBuilder<List<Challenge>>(
       valueListenable: ChallengeManager().challengesNotifier,
       builder: (context, allChallenges, child) {
-        final challenges = allChallenges.where((c) => !c.isExpired).toList();
+        final challenges = allChallenges
+            .where((c) => !c.isExpired && LocationManager().isMatchingLocation(c.location))
+            .toList();
         if (challenges.isEmpty) {
+          final isFiltered = LocationManager().currentLocation != 'All Madurai' &&
+              LocationManager().currentLocation != 'All';
           return Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1232,23 +1372,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'No Open Challenges',
-                        style: TextStyle(
+                        isFiltered
+                            ? 'No Matches in ${LocationManager().currentLocation}'
+                            : 'No Open Challenges',
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1F2937),
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'Create a challenge after booking to invite opponents.',
-                        style: TextStyle(
+                        isFiltered
+                            ? 'Be the first to create an open match in this locality or switch area.'
+                            : 'Create an open challenge after booking to invite opponents.',
+                        style: const TextStyle(
                           fontSize: 13,
                           color: Color(0xFF6B7280),
                         ),
@@ -1261,7 +1405,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
         return SizedBox(
-          height: 160,
+          height: 168,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             scrollDirection: Axis.horizontal,
@@ -1384,13 +1528,42 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(
-                  challenge.turfName,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 12,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      challenge.turfName,
+                      style: const TextStyle(
+                        color: Color(0xFF1F2937),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (challenge.location.trim().isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            size: 11,
+                            color: Color(0xFF166534),
+                          ),
+                          const SizedBox(width: 2),
+                          Flexible(
+                            child: Text(
+                              challenge.location,
+                              style: const TextStyle(
+                                color: Color(0xFF6B7280),
+                                fontSize: 10,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
               ),
               if (challenge.isJoined)

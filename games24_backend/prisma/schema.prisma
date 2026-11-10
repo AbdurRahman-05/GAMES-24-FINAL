@@ -139,8 +139,38 @@ model TurfBooking {
   paymentMethod   String        @default("UPI")
   status          String        @default("Confirmed") // Confirmed, Cancelled, On Hold
   isHold          Boolean       @default(false)
+  isOpenMatch     Boolean       @default(false)
+  openMatchStatus String?       @default("WAITING_FOR_OPPONENT") // WAITING_FOR_OPPONENT, OPPONENT_JOINED, COMPLETED
+  teamName        String?
+  teamSize        String?       @default("7v7")
+  opponentName    String?
+  opponentPhone   String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
+}
+
+model OpenChallenge {
+  id                     String        @id // e.g. "ch_1700000000"
+  bookingId              Int?
+  turfId                 Int?
+  turfName               String
+  location               String?       @default("Madurai")
+  date                   String
+  time                   String
+  sport                  String        @default("Football")
+  challengerName         String
+  challengerTeamInitials String        @default("TC")
+  challengerColor        Int           @default(4280148788) // 0xFF166534
+  creatorPhone           String
+  teamSize               String        @default("7v7")
+  isJoined               Boolean       @default(false)
+  status                 String        @default("OPEN") // OPEN, ACCEPTED, COMPLETED, CANCELLED
+  opponentName           String?
+  opponentTeamSize       String?
+  opponentContact        String?
+  joinRequests           Json?         @default("[]")
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 }
 
 model BlockedSlot {

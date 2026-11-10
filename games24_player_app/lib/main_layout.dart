@@ -5,6 +5,7 @@ import 'create_tournament_dialog.dart';
 import 'explore_screen.dart';
 import 'profile_screen.dart';
 import 'notifications_screen.dart';
+import 'location_manager.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -60,18 +61,57 @@ class _MainLayoutState extends State<MainLayout> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      title: const Text(
-        'GAMES24',
-        style: TextStyle(
-          fontFamily: 'Delight',
-          color: Color(0xFF166534), // Dark Green
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.0,
-          shadows: [
-            Shadow(color: Colors.black12, offset: Offset(2, 2), blurRadius: 4),
-          ],
-        ),
+      title: ValueListenableBuilder<String>(
+        valueListenable: LocationManager().locationNotifier,
+        builder: (context, loc, _) {
+          return Row(
+            children: [
+              const Text(
+                'GAMES24',
+                style: TextStyle(
+                  fontFamily: 'Delight',
+                  color: Color(0xFF166534), // Dark Green
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => LocationManager.showLocationPicker(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.location_on, size: 13, color: Color(0xFF166534)),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            loc,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF166534),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFF166534)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
       actions: [
         IconButton(

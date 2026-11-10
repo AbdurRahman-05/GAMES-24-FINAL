@@ -592,7 +592,13 @@ export class SuperAdminService {
       where.verifiedAdminId = Number(query.turfId);
     }
     if (query.status && query.status.toUpperCase() !== 'ALL') {
-      where.status = query.status;
+      if (query.status.toUpperCase() === 'OPEN_MATCH') {
+        where.isOpenMatch = true;
+      } else if (query.status.toUpperCase() === 'REGULAR') {
+        where.isOpenMatch = false;
+      } else {
+        where.status = query.status;
+      }
     }
     if (query.date) {
       where.date = query.date;

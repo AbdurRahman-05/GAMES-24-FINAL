@@ -27,6 +27,35 @@ export class TurfController {
     return this.turfService.getUserBookings(phone, name);
   }
 
+  @Get('open-matches')
+  async getOpenMatches(
+    @Query('location') location?: string,
+    @Query('sport') sport?: string,
+  ) {
+    return this.turfService.getOpenMatches(location, sport);
+  }
+
+  @Post('open-matches')
+  async createOpenMatch(@Body() body: any) {
+    return this.turfService.createOpenMatch(body);
+  }
+
+  @Post('open-matches/:id/join')
+  async joinOpenMatch(
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    return this.turfService.joinOpenMatch(id, body);
+  }
+
+  @Post('open-matches/:id/accept')
+  async acceptOpenMatch(
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    return this.turfService.acceptOpenMatch(id, body);
+  }
+
   @Post('bookings/:bookingId/cancel')
   async cancelBooking(
     @Param('bookingId', ParseIntPipe) bookingId: number,

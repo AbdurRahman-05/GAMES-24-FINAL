@@ -699,7 +699,11 @@ export class TurfService {
           }
 
           // 2. Atomically create the booking (protected by unique index & serializable lock)
-          return await tx.turfBooking.create({
+          const isOpenMatch = body?.isOpenMatch === true;
+          const teamName = body?.teamName?.trim() || customerName?.trim() || 'My Team';
+          const teamSize = body?.teamSize?.trim() || '7v7';
+
+          const createdBooking = await tx.turfBooking.create({
             data: {
               verifiedAdminId,
               customerName: customerName?.trim() || 'Player Customer',
@@ -711,8 +715,38 @@ export class TurfService {
               amount: bookingAmount,
               paymentMethod: paymentMethod || 'UPI (GPay)',
               status: 'Confirmed',
+              isOpenMatch,
+              openMatchStatus: isOpenMatch ? 'WAITING_FOR_OPPONENT' : null,
+              teamName: isOpenMatch ? teamName : null,
+              teamSize: isOpenMatch ? teamSize : null,
             },
           });
+
+          if (isOpenMatch) {
+            const initials = teamName.length >= 2 ? teamName.substring(0, 2).toUpperCase() : 'TC';
+            await tx.openChallenge.create({
+              data: {
+                id: `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                bookingId: createdBooking.id,
+                turfId: verifiedAdminId,
+                turfName: turf.venueName,
+                location: turf.neighborhoodArea || 'Madurai',
+                date,
+                time: combinedTimeSlot,
+                sport: sport || 'Football',
+                challengerName: teamName,
+                challengerTeamInitials: initials,
+                challengerColor: 4280148788, // 0xFF166534
+                creatorPhone: customerPhone?.trim() || '9876543210',
+                teamSize,
+                isJoined: false,
+                status: 'OPEN',
+                joinRequests: [],
+              },
+            });
+          }
+
+          return createdBooking;
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -1460,6 +1494,152 @@ export class TurfService {
       isSubscriptionActive: isSubscribed,
       status: isSubscribed ? 'ACTIVE' : 'EXPIRED',
       isLiveOnPlayerApp: isSubscribed,
+    };
+  }
+
+  // =========================================================================
+  // REAL-TIME OPEN MATCHES / OPEN CHALLENGES (SHARED ACROSS ALL PLAYERS & SYNCED)
+  // =========================================================================
+  async getOpenMatches(location?: string, sport?: string) {
+    const where: any = {
+      status: { not: 'CANCELLED' },
+    };
+
+    if (sport && sport.toLowerCase() !== 'all') {
+      where.sport = { equals: sport, mode: 'insensitive' };
+    }
+
+    if (location && location.toLowerCase() !== 'all' && location.toLowerCase() !== 'all madurai') {
+      where.OR = [
+        { location: { contains: location, mode: 'insensitive' } },
+        { turfName: { contains: location, mode: 'insensitive' } },
+      ];
+    }
+
+    const matches = await this.prisma.openChallenge.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+
+    return {
+      success: true,
+      count: matches.length,
+      matches,
+    };
+  }
+
+  async createOpenMatch(body: any) {
+    const id = body.id || `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const challenge = await this.prisma.openChallenge.upsert({
+      where: { id },
+      create: {
+        id,
+        turfName: body.turfName || 'Turf Arena',
+        location: body.location || 'Madurai',
+        date: body.date || 'Today',
+        time: body.time || '06:00 PM - 07:00 PM',
+        sport: body.sport || 'Football',
+        challengerName: body.challengerName || 'Player Team',
+        challengerTeamInitials: body.challengerTeamInitials || 'TC',
+        challengerColor: typeof body.challengerColor === 'number' ? body.challengerColor : 4280148788,
+        creatorPhone: body.creatorPhone || '',
+        teamSize: body.teamSize || '7v7',
+        isJoined: false,
+        status: 'OPEN',
+        joinRequests: [],
+      },
+      update: {
+        turfName: body.turfName,
+        location: body.location,
+        date: body.date,
+        time: body.time,
+        sport: body.sport,
+        teamSize: body.teamSize,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Open match posted successfully and visible to all players!',
+      challenge,
+    };
+  }
+
+  async joinOpenMatch(challengeId: string, body: any) {
+    const challenge = await this.prisma.openChallenge.findUnique({
+      where: { id: challengeId },
+    });
+
+    if (!challenge) {
+      throw new NotFoundException(`Open match with ID ${challengeId} not found`);
+    }
+
+    const currentRequests: any[] = Array.isArray(challenge.joinRequests) ? (challenge.joinRequests as any[]) : [];
+    const newRequest = {
+      id: body.id || `req_${Date.now()}`,
+      teamName: body.teamName || 'Opponent Squad',
+      teamSize: body.teamSize || '7v7',
+      contactDetails: body.contactDetails || '',
+      requestedAt: 'Just now',
+    };
+
+    const updatedRequests = [...currentRequests, newRequest];
+
+    const updated = await this.prisma.openChallenge.update({
+      where: { id: challengeId },
+      data: {
+        joinRequests: updatedRequests,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Challenge request sent successfully to host!',
+      challenge: updated,
+    };
+  }
+
+  async acceptOpenMatch(challengeId: string, body: any) {
+    const challenge = await this.prisma.openChallenge.findUnique({
+      where: { id: challengeId },
+    });
+
+    if (!challenge) {
+      throw new NotFoundException(`Open match with ID ${challengeId} not found`);
+    }
+
+    const opponentName = body.opponentName || body.teamName || 'Opponent Team';
+    const opponentContact = body.opponentContact || body.contactDetails || '';
+    const opponentTeamSize = body.opponentTeamSize || body.teamSize || '7v7';
+
+    const updated = await this.prisma.openChallenge.update({
+      where: { id: challengeId },
+      data: {
+        isJoined: true,
+        status: 'ACCEPTED',
+        opponentName,
+        opponentContact,
+        opponentTeamSize,
+      },
+    });
+
+    // If there is an associated TurfBooking, update it too
+    if (challenge.bookingId) {
+      await this.prisma.turfBooking.update({
+        where: { id: challenge.bookingId },
+        data: {
+          openMatchStatus: 'OPPONENT_JOINED',
+          opponentName,
+          opponentPhone: opponentContact,
+        },
+      }).catch(() => null);
+    }
+
+    return {
+      success: true,
+      message: 'Opponent accepted! Match is now locked and confirmed.',
+      challenge: updated,
     };
   }
 }

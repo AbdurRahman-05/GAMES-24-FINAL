@@ -904,7 +904,9 @@ export default function SuperAdminDashboard() {
                   onChange={(e) => setBookingStatusFilter(e.target.value)}
                   className="px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-700 focus:outline-hidden"
                 >
-                  <option value="ALL">All Statuses</option>
+                  <option value="ALL">All Bookings</option>
+                  <option value="OPEN_MATCH">⚡ Open Matches Only</option>
+                  <option value="REGULAR">Regular Bookings Only</option>
                   <option value="Confirmed">Confirmed Only</option>
                   <option value="On Hold">On Hold Only</option>
                   <option value="Cancelled">Cancelled Only</option>
@@ -959,6 +961,22 @@ export default function SuperAdminDashboard() {
                         <td className="py-3 px-3">
                           <div className="font-bold text-slate-900">{b.customerName}</div>
                           <div className="text-[11px] text-slate-500 font-mono">{b.customerPhone}</div>
+                          {b.isOpenMatch ? (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                ⚡ Open Match ({b.teamSize || '7v7'})
+                              </span>
+                              <div className="text-[10px] text-slate-600 font-semibold mt-0.5">
+                                Team: {b.teamName || b.customerName}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="mt-1">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-slate-100 text-slate-600">
+                                Regular Booking
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="py-3 px-3">
                           <div className="font-semibold text-slate-800">{b.verifiedAdmin?.venueName || 'Venue'}</div>
@@ -987,6 +1005,20 @@ export default function SuperAdminDashboard() {
                             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
                               Confirmed
                             </span>
+                          )}
+
+                          {b.isOpenMatch && (
+                            <div className="mt-1">
+                              {b.openMatchStatus === 'OPPONENT_JOINED' ? (
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-200" title={`Opponent Contact: ${b.opponentPhone || 'N/A'}`}>
+                                  Opponent: {b.opponentName || 'Joined'}
+                                </span>
+                              ) : (
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                  Waiting Opponent
+                                </span>
+                              )}
+                            </div>
                           )}
                         </td>
                         <td className="py-3 px-3 text-center">

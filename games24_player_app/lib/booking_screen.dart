@@ -1577,6 +1577,13 @@ class _BookingScreenState extends State<BookingScreen> {
                           customerPhone = '+917010396731';
                         }
 
+                        final tName = _teamNameController.text.trim().isNotEmpty
+                            ? _teamNameController.text.trim()
+                            : customerName;
+                        final tSize = _teamSizeController.text.trim().isNotEmpty
+                            ? _teamSizeController.text.trim()
+                            : '7 Players (7v7)';
+
                         final res = await http.post(
                           Uri.parse(
                             '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/book',
@@ -1592,6 +1599,9 @@ class _BookingScreenState extends State<BookingScreen> {
                             'timeSlots': sortedSlots,
                             'amount': courtFee.toDouble(),
                             'paymentMethod': 'UPI (GPay)',
+                            'isOpenMatch': _isOpenForChallenge,
+                            'teamName': _isOpenForChallenge ? tName : null,
+                            'teamSize': _isOpenForChallenge ? tSize : null,
                           }),
                         );
 
@@ -1607,6 +1617,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             bookingObj['location'] = widget.location;
                             bookingObj['courtName'] = widget.turfName;
                             bookingObj['isActive'] = true;
+                            bookingObj['isOpenMatch'] = _isOpenForChallenge;
                             if (bookingObj['date'] == null) {
                               bookingObj['date'] = selectedDate;
                             }
@@ -1623,12 +1634,6 @@ class _BookingScreenState extends State<BookingScreen> {
                           BookingManager().fetchBookings();
 
                           if (_isOpenForChallenge) {
-                            final tName = _teamNameController.text.trim().isNotEmpty
-                                ? _teamNameController.text.trim()
-                                : customerName;
-                            final tSize = _teamSizeController.text.trim().isNotEmpty
-                                ? _teamSizeController.text.trim()
-                                : '7 Players (7v7)';
                             final initials = tName.length >= 2
                                 ? tName.substring(0, 2).toUpperCase()
                                 : 'TC';
@@ -1637,6 +1642,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               Challenge(
                                 id: 'ch_${DateTime.now().millisecondsSinceEpoch}',
                                 turfName: widget.turfName,
+                                location: widget.location,
                                 date: selectedDate,
                                 time: combinedSlot,
                                 sport: _selectedSport,

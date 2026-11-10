@@ -168,6 +168,12 @@ export interface BookingItem {
   paymentMethod: string;
   status: string;
   isHold: boolean;
+  isOpenMatch?: boolean;
+  openMatchStatus?: string | null;
+  teamName?: string | null;
+  teamSize?: string | null;
+  opponentName?: string | null;
+  opponentPhone?: string | null;
   createdAt: string;
   verifiedAdmin?: {
     id: number;
