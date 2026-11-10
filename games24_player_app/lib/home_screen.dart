@@ -1,6 +1,8 @@
 import 'api_config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:games24_player_app/booking_screen.dart';
 import 'package:games24_player_app/challenge_manager.dart';
@@ -1062,9 +1064,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          name,
-          style: const TextStyle(fontSize: 10, color: Color(0xFF111827)),
+        SizedBox(
+          width: 80,
+          child: Text(
+            name,
+            style: const TextStyle(fontSize: 10, color: Color(0xFF111827), fontWeight: FontWeight.w600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
         ),
       ],
     );
@@ -1421,9 +1429,30 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  String _formatChallengeDateTime(String dateStr, String timeSlot) {
+    String cleanDate = dateStr;
+    try {
+      final parts = dateStr.split('-');
+      if (parts.length == 3) {
+        final year = int.tryParse(parts[0]);
+        final month = int.tryParse(parts[1]);
+        final day = int.tryParse(parts[2]);
+        if (year != null && month != null && day != null) {
+          const months = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+          ];
+          cleanDate = '$day ${months[month - 1]}';
+        }
+      }
+    } catch (_) {}
+    if (timeSlot.trim().isEmpty) return cleanDate;
+    return '$cleanDate • $timeSlot';
+  }
+
   Widget _buildChallengeCard(Challenge challenge) {
     return Container(
-      width: 280,
+      width: 295,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1458,12 +1487,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              Text(
-                '${challenge.date}, ${challenge.time}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF4B5563),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _formatChallengeDateTime(challenge.date, challenge.time),
+                  textAlign: TextAlign.end,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4B5563),
+                  ),
                 ),
               ),
             ],
@@ -1698,140 +1733,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showJoinChallengeDialog(Challenge challenge) {
-    final teamNameCtrl = TextEditingController();
-    final teamSizeCtrl = TextEditingController(text: '7 Players (7v7)');
-    final contactCtrl = TextEditingController();
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Expanded(
-                child: Text(
-                  'Join Open Challenge',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.sports_soccer_rounded, size: 18, color: Color(0xFF166534)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Challenge ${challenge.challengerName} • ${challenge.turfName}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: teamNameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Team Name',
-                    hintText: 'e.g. Thunder FC',
-                    prefixIcon: Icon(Icons.shield_outlined, size: 18),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: teamSizeCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Team Size / Format',
-                    hintText: 'e.g. 7 Players (7v7)',
-                    prefixIcon: Icon(Icons.groups_outlined, size: 18),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: contactCtrl,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    labelText: 'Contact Number',
-                    hintText: 'e.g. +91 98765 43210',
-                    prefixIcon: Icon(Icons.phone_outlined, size: 18),
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onPressed: () {
-                final tName = teamNameCtrl.text.trim();
-                final tSize = teamSizeCtrl.text.trim();
-                final cNumber = contactCtrl.text.trim();
-
-                if (tName.isEmpty || tSize.isEmpty || cNumber.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter Team Name, Team Size, and Contact Number.'),
-                      backgroundColor: Color(0xFFDC2626),
-                    ),
-                  );
-                  return;
-                }
-
-                ChallengeManager().requestToJoin(
-                  challenge.id,
-                  tName,
-                  tSize,
-                  cNumber,
-                );
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Join request sent to ${challenge.challengerName}!'),
-                    backgroundColor: const Color(0xFF166534),
-                  ),
-                );
-              },
-              child: const Text('Send Join Request'),
-            ),
-          ],
-        );
-      },
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _JoinChallengeBottomSheet(challenge: challenge),
     );
   }
 
@@ -2726,6 +2632,711 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+class _JoinChallengeBottomSheet extends StatefulWidget {
+  final Challenge challenge;
+
+  const _JoinChallengeBottomSheet({required this.challenge});
+
+  @override
+  State<_JoinChallengeBottomSheet> createState() => _JoinChallengeBottomSheetState();
+}
+
+class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
+  late final TextEditingController _teamNameCtrl;
+  late final TextEditingController _teamSizeCtrl;
+  late final TextEditingController _contactCtrl;
+  String _selectedFormat = '7v7';
+  bool _isSubmitting = false;
+
+  final List<String> _formatOptions = ['5v5', '6v6', '7v7', '8v8', '11v11'];
+
+  @override
+  void initState() {
+    super.initState();
+    _teamNameCtrl = TextEditingController();
+
+    final cFormat = widget.challenge.teamSize.trim();
+    if (cFormat.contains('5')) {
+      _selectedFormat = '5v5';
+    } else if (cFormat.contains('6')) {
+      _selectedFormat = '6v6';
+    } else if (cFormat.contains('11')) {
+      _selectedFormat = '11v11';
+    } else if (cFormat.contains('8')) {
+      _selectedFormat = '8v8';
+    } else {
+      _selectedFormat = '7v7';
+    }
+
+    _teamSizeCtrl = TextEditingController(
+      text: widget.challenge.teamSize.isNotEmpty
+          ? widget.challenge.teamSize
+          : '7 Players (7v7)',
+    );
+    _contactCtrl = TextEditingController();
+    _loadUserPhone();
+  }
+
+  Future<void> _loadUserPhone() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
+      if (phone.isNotEmpty && mounted) {
+        setState(() {
+          _contactCtrl.text = phone;
+        });
+      }
+    } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _teamNameCtrl.dispose();
+    _teamSizeCtrl.dispose();
+    _contactCtrl.dispose();
+    super.dispose();
+  }
+
+  String _formatMatchDateTime(String dateStr, String timeSlot) {
+    String cleanDate = dateStr;
+    try {
+      final parts = dateStr.split('-');
+      if (parts.length == 3) {
+        final year = int.tryParse(parts[0]);
+        final month = int.tryParse(parts[1]);
+        final day = int.tryParse(parts[2]);
+        if (year != null && month != null && day != null) {
+          const months = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+          ];
+          cleanDate = '$day ${months[month - 1]}';
+        }
+      }
+    } catch (_) {}
+    if (timeSlot.trim().isEmpty) return cleanDate;
+    return '$cleanDate • $timeSlot';
+  }
+
+  void _onFormatSelected(String format) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _selectedFormat = format;
+      final num = RegExp(r'\d+').firstMatch(format)?.group(0) ?? '7';
+      _teamSizeCtrl.text = '$num Players ($format)';
+    });
+  }
+
+  void _handleSubmit() {
+    final tName = _teamNameCtrl.text.trim();
+    final tSize = _teamSizeCtrl.text.trim();
+    final cNumber = _contactCtrl.text.trim();
+
+    if (tName.isEmpty) {
+      _showError('Please enter your Squad / Team name.');
+      return;
+    }
+    if (tSize.isEmpty) {
+      _showError('Please specify match format or squad size.');
+      return;
+    }
+    if (cNumber.isEmpty || cNumber.length < 8) {
+      _showError('Please enter a valid captain contact phone number.');
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    ChallengeManager().requestToJoin(
+      widget.challenge.id,
+      tName,
+      tSize,
+      cNumber,
+    );
+
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF166534),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Challenge request sent to ${widget.challenge.challengerName}! ⚡',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showError(String msg) {
+    HapticFeedback.lightImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFFDC2626),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isCricket = widget.challenge.sport.toLowerCase().contains('cricket');
+    final sportEmoji = isCricket ? '🏏' : '⚽';
+    final sportIcon = isCricket ? Icons.sports_cricket_rounded : Icons.sports_soccer_rounded;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 14,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag Handle Bar
+            Center(
+              child: Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Top Header Bar
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFDCFCE7),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.bolt_rounded,
+                        color: Color(0xFF166534),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Join Open Challenge',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF0F172A),
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          'Send squad match challenge to host',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF1F5F9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF475569)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            // Hero Matchup Card
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFF0FDF4), Color(0xFFF7FEE7)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFF86EFAC), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF166534).withValues(alpha: 0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // Host Team
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: widget.challenge.challengerColor,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: widget.challenge.challengerColor.withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  widget.challenge.challengerTeamInitials,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              widget.challenge.challengerName,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Host Squad',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF166534),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // VS Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF166534),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF166534).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'VS',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+
+                      // Challenger (Your Team)
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFF166534),
+                                  width: 1.8,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.add_rounded,
+                                  color: Color(0xFF166534),
+                                  size: 22,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Your Squad',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Challenger',
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF92400E),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1, color: Color(0xFFBBF7D0)),
+                  const SizedBox(height: 10),
+
+                  // Detail Tags Row
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _buildMatchBadge(
+                        sportIcon,
+                        '${widget.challenge.sport} $sportEmoji',
+                        const Color(0xFFDCFCE7),
+                        const Color(0xFF166534),
+                      ),
+                      _buildMatchBadge(
+                        Icons.location_on_outlined,
+                        widget.challenge.turfName,
+                        const Color(0xFFF1F5F9),
+                        const Color(0xFF334155),
+                      ),
+                      _buildMatchBadge(
+                        Icons.access_time_rounded,
+                        _formatMatchDateTime(widget.challenge.date, widget.challenge.time),
+                        const Color(0xFFFEF3C7),
+                        const Color(0xFF92400E),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Section 1: Team Name
+            const Text(
+              'CHALLENGER SQUAD NAME *',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _teamNameCtrl,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                hintText: 'e.g. Thunder Smashers FC',
+                hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                prefixIcon: const Icon(Icons.shield_outlined, color: Color(0xFF166534), size: 19),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF166534), width: 1.5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Section 2: Format & Squad Size Selector
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'MATCH FORMAT & SIZE *',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF64748B),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  'Host: ${widget.challenge.teamSize}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF166534),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            // Quick Format Chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _formatOptions.map((fmt) {
+                  final isSelected = _selectedFormat == fmt;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: InkWell(
+                      onTap: () => _onFormatSelected(fmt),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF166534) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFF166534) : const Color(0xFFCBD5E1),
+                          ),
+                        ),
+                        child: Text(
+                          fmt,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _teamSizeCtrl,
+              decoration: InputDecoration(
+                hintText: 'e.g. 7 Players (7v7)',
+                hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                prefixIcon: const Icon(Icons.groups_outlined, color: Color(0xFF166534), size: 19),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF166534), width: 1.5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Section 3: Captain Contact Phone
+            const Text(
+              'CAPTAIN CONTACT PHONE *',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF64748B),
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _contactCtrl,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                hintText: '10-digit mobile number',
+                hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                prefixIcon: const Icon(Icons.phone_rounded, color: Color(0xFF166534), size: 19),
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF166534), width: 1.5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Info note
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, color: Color(0xFF166534), size: 16),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Host captain will be notified and can accept your squad to lock the match.',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF166534), fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Submit Button
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF166534),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  elevation: 0,
+                ),
+                onPressed: _isSubmitting ? null : _handleSubmit,
+                icon: const Icon(Icons.bolt_rounded, size: 20, color: Color(0xFF86EFAC)),
+                label: Text(
+                  _isSubmitting ? 'Sending Request...' : 'Send Join Request ⚡',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMatchBadge(IconData icon, String label, Color bg, Color text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: text),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: text),
+          ),
+        ],
+      ),
     );
   }
 }
