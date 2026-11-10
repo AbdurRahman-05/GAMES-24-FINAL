@@ -151,17 +151,6 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
       }
     }
 
-    // 3. Fallback demo contacts if running on desktop simulator or zero contacts
-    if (combined.isEmpty) {
-      for (final c in MatchScoreManager().getDeviceContacts()) {
-        final norm = c.phone.replaceAll(RegExp(r'[^0-9+]'), '');
-        if (!addedPhones.contains(norm)) {
-          addedPhones.add(norm);
-          combined.add(c);
-        }
-      }
-    }
-
     if (mounted) {
       setState(() {
         _contacts = combined;

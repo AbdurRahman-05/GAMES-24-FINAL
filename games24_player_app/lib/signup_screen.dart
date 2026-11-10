@@ -87,7 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
               _buildLabel('Full Name'),
               const SizedBox(height: 8),
               _buildTextField(
-                hintText: 'e.g. Alex Hunter',
+                hintText: 'e.g. Rahul Sharma',
                 prefixIcon: Icons.person_outline,
                 controller: _nameController,
               ),

@@ -349,13 +349,51 @@ class MatchScoreManager {
     return _matches.where((m) => m.bookingId == bookingId).toList();
   }
 
+  static bool isDemoPlayer(PlayerItem player) {
+    final lowerName = player.name.trim().toLowerCase();
+    const demoNames = {
+      'alex hunter',
+      'karthik raja',
+      'rohan sharma',
+      'vikas nair',
+      'suresh kumar',
+      'david miller',
+      'arjun patel',
+      'mohamed imran',
+      'pradeep chandran',
+      'dinesh balaji',
+    };
+    if (demoNames.contains(lowerName)) return true;
+    if (RegExp(r'^c\d+$').hasMatch(player.id)) return true;
+    return false;
+  }
+
   SavedSquadConfig? getBookingSquad(String bookingId) {
-    return _savedSquads[bookingId];
+    final s = _savedSquads[bookingId];
+    if (s == null) return null;
+    return SavedSquadConfig(
+      bookingId: s.bookingId,
+      teamAName: s.teamAName,
+      teamBName: s.teamBName,
+      teamAPlayers: s.teamAPlayers.where((p) => !isDemoPlayer(p)).toList(),
+      teamBPlayers: s.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
+      teamSize: s.teamSize,
+      overs: s.overs,
+    );
   }
 
   Future<SavedSquadConfig?> getOrLoadBookingSquad(String bookingId) async {
     if (_savedSquads.containsKey(bookingId)) {
-      return _savedSquads[bookingId];
+      final s = _savedSquads[bookingId]!;
+      return SavedSquadConfig(
+        bookingId: s.bookingId,
+        teamAName: s.teamAName,
+        teamBName: s.teamBName,
+        teamAPlayers: s.teamAPlayers.where((p) => !isDemoPlayer(p)).toList(),
+        teamBPlayers: s.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
+        teamSize: s.teamSize,
+        overs: s.overs,
+      );
     }
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -363,17 +401,45 @@ class MatchScoreManager {
       if (squadsJson != null && squadsJson.isNotEmpty) {
         final Map<String, dynamic> map = jsonDecode(squadsJson);
         map.forEach((k, v) {
-          _savedSquads[k] = SavedSquadConfig.fromJson(Map<String, dynamic>.from(v));
+          final loaded = SavedSquadConfig.fromJson(Map<String, dynamic>.from(v));
+          _savedSquads[k] = SavedSquadConfig(
+            bookingId: loaded.bookingId,
+            teamAName: loaded.teamAName,
+            teamBName: loaded.teamBName,
+            teamAPlayers: loaded.teamAPlayers.where((p) => !isDemoPlayer(p)).toList(),
+            teamBPlayers: loaded.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
+            teamSize: loaded.teamSize,
+            overs: loaded.overs,
+          );
         });
       }
     } catch (e) {
       debugPrint('Error reading saved squads: $e');
     }
-    return _savedSquads[bookingId];
+    final s = _savedSquads[bookingId];
+    if (s == null) return null;
+    return SavedSquadConfig(
+      bookingId: s.bookingId,
+      teamAName: s.teamAName,
+      teamBName: s.teamBName,
+      teamAPlayers: s.teamAPlayers.where((p) => !isDemoPlayer(p)).toList(),
+      teamBPlayers: s.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
+      teamSize: s.teamSize,
+      overs: s.overs,
+    );
   }
 
   Future<void> saveBookingSquad(SavedSquadConfig squad) async {
-    _savedSquads[squad.bookingId] = squad;
+    final cleanSquad = SavedSquadConfig(
+      bookingId: squad.bookingId,
+      teamAName: squad.teamAName,
+      teamBName: squad.teamBName,
+      teamAPlayers: squad.teamAPlayers.where((p) => !isDemoPlayer(p)).toList(),
+      teamBPlayers: squad.teamBPlayers.where((p) => !isDemoPlayer(p)).toList(),
+      teamSize: squad.teamSize,
+      overs: squad.overs,
+    );
+    _savedSquads[squad.bookingId] = cleanSquad;
     try {
       final prefs = await SharedPreferences.getInstance();
       final squadsMap = _savedSquads.map((k, v) => MapEntry(k, v.toJson()));
@@ -513,26 +579,15 @@ class MatchScoreManager {
     } catch (e) {
       debugPrint("Error fetching physical contacts: $e");
     }
-    return getDeviceContacts();
+    return _cachedRealContacts != null ? List<PlayerItem>.from(_cachedRealContacts!) : [];
   }
 
-  // Pre-configured address book contacts for realistic contact picker / simulator fallback
+  // Returns physical device contacts if cached, otherwise empty list (no fake demo contacts)
   List<PlayerItem> getDeviceContacts() {
     if (_cachedRealContacts != null && _cachedRealContacts!.isNotEmpty) {
       return List<PlayerItem>.from(_cachedRealContacts!);
     }
-    return [
-      PlayerItem(id: 'c1', name: 'Alex Hunter', phone: '+91 98765 43210', role: 'Captain / All-Rounder'),
-      PlayerItem(id: 'c2', name: 'Karthik Raja', phone: '+91 98412 34567', role: 'Striker / Batsman'),
-      PlayerItem(id: 'c3', name: 'Rohan Sharma', phone: '+91 97890 12345', role: 'Fast Bowler'),
-      PlayerItem(id: 'c4', name: 'Vikas Nair', phone: '+91 96543 21098', role: 'Goalkeeper / Wicket Keeper'),
-      PlayerItem(id: 'c5', name: 'Suresh Kumar', phone: '+91 95432 10987', role: 'Midfielder / Spinner'),
-      PlayerItem(id: 'c6', name: 'David Miller', phone: '+91 94321 09876', role: 'Power Hitter'),
-      PlayerItem(id: 'c7', name: 'Arjun Patel', phone: '+91 93210 98765', role: 'Defender / Opener'),
-      PlayerItem(id: 'c8', name: 'Mohamed Imran', phone: '+91 92109 87654', role: 'Pacer / Winger'),
-      PlayerItem(id: 'c9', name: 'Pradeep Chandran', phone: '+91 91098 76543', role: 'Vice Captain'),
-      PlayerItem(id: 'c10', name: 'Dinesh Balaji', phone: '+91 90987 65432', role: 'Finisher'),
-    ];
+    return [];
   }
 }
 

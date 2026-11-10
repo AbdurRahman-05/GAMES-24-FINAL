@@ -279,14 +279,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       setState(() {
         _teamAName = saved.teamAName;
         _teamAPlayers.clear();
-        _teamAPlayers.addAll(saved.teamAPlayers);
+        _teamAPlayers.addAll(
+          saved.teamAPlayers.where((p) => !MatchScoreManager.isDemoPlayer(p)),
+        );
         _selectedTeamSize = saved.teamSize;
         _selectedOvers = saved.overs;
 
         if (!_isOpenChallenge) {
           _teamBName = saved.teamBName;
           _teamBPlayers.clear();
-          _teamBPlayers.addAll(saved.teamBPlayers);
+          _teamBPlayers.addAll(
+            saved.teamBPlayers.where((p) => !MatchScoreManager.isDemoPlayer(p)),
+          );
         } else {
           // Open Match: Opponent team is never overwritten with user's custom saved squad
           if (_linkedChallenge?.opponentName != null &&
@@ -416,12 +420,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       _tossCaller = _teamAName;
     }
 
-    final contacts = MatchScoreManager().getDeviceContacts();
-    _teamAPlayers.addAll(contacts.take(3));
-    if (!_isOpenChallenge) {
-      _teamBPlayers.addAll(contacts.skip(3).take(3));
-    } else {
-      // In Open Match: Team B is NOT populated with the user's contacts!
+    _teamAPlayers.clear();
+    _teamBPlayers.clear();
+
+    if (_isOpenChallenge) {
+      // In Open Match: Team B is populated when an opponent squad joins!
       if (_linkedChallenge?.opponentName != null &&
           _linkedChallenge!.opponentName!.trim().isNotEmpty) {
         _teamBPlayers.add(
@@ -1591,13 +1594,24 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       return;
     }
 
-    final contacts = MatchScoreManager().getDeviceContacts();
-    final half = (contacts.length / 2).ceil();
+    final pool = [..._teamAPlayers, ..._teamBPlayers];
+    if (pool.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add players from your contacts first before auto-splitting squads!'),
+          backgroundColor: Color(0xFFD97706),
+        ),
+      );
+      _openContactsPicker(true);
+      return;
+    }
+
+    final half = (pool.length / 2).ceil();
     setState(() {
       _teamAPlayers.clear();
       _teamBPlayers.clear();
-      _teamAPlayers.addAll(contacts.take(half));
-      _teamBPlayers.addAll(contacts.skip(half));
+      _teamAPlayers.addAll(pool.take(half));
+      _teamBPlayers.addAll(pool.skip(half));
     });
     _saveSquad(showFeedback: false);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -2410,13 +2424,59 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             ],
           ),
           if (players.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Center(
-                child: Text(
-                  isLocked ? 'Opponent roster managed by joining player.' : 'No players added yet. Tap "+ Add Contacts".',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
-                ),
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isTeamA ? const Color(0xFFDCFCE7) : const Color(0xFFDBEAFE),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.person_add_alt_1_rounded,
+                      color: isTeamA ? const Color(0xFF166534) : const Color(0xFF1D4ED8),
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    isLocked ? 'Opponent Lineup Pending' : 'No Players Added Yet',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isLocked
+                        ? 'Opponent squad is managed by the challenging team captain.'
+                        : 'Import your teammates directly from your phone address book to build your squad.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                  ),
+                  if (!isLocked) ...[
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF166534),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                      onPressed: onAddPlayer,
+                      icon: const Icon(Icons.contacts_rounded, size: 16),
+                      label: const Text('Import From Contacts 📱', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ],
               ),
             )
           else

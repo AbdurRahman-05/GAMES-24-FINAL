@@ -17,11 +17,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
   @override
   void initState() {
     super.initState();
-    _members = List<PlayerItem>.from(widget.team?.members ?? []);
-    if (_members.isEmpty) {
-      final contacts = MatchScoreManager().getDeviceContacts();
-      _members.addAll(contacts.take(6));
-    }
+    _members = List<PlayerItem>.from(
+      (widget.team?.members ?? []).where((p) => !MatchScoreManager.isDemoPlayer(p)),
+    );
   }
 
   @override
