@@ -23,6 +23,8 @@ class Tournament {
   final String tournamentProgress;
   final List<Map<String, dynamic>>
   registeredUsers; // List of registered team data
+  final bool isPrivate;
+  final String? accessCode;
 
   Tournament({
     required this.id,
@@ -44,6 +46,8 @@ class Tournament {
     this.matchDay = 'Day 1',
     this.tournamentProgress = 'Started',
     this.registeredUsers = const [],
+    this.isPrivate = false,
+    this.accessCode,
   });
 
   Tournament copyWith({
@@ -66,6 +70,8 @@ class Tournament {
     String? matchDay,
     String? tournamentProgress,
     List<Map<String, dynamic>>? registeredUsers,
+    bool? isPrivate,
+    String? accessCode,
   }) {
     return Tournament(
       id: id ?? this.id,
@@ -87,6 +93,8 @@ class Tournament {
       matchDay: matchDay ?? this.matchDay,
       tournamentProgress: tournamentProgress ?? this.tournamentProgress,
       registeredUsers: registeredUsers ?? this.registeredUsers,
+      isPrivate: isPrivate ?? this.isPrivate,
+      accessCode: accessCode ?? this.accessCode,
     );
   }
 }

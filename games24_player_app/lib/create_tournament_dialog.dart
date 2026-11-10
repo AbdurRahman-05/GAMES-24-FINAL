@@ -8,44 +8,82 @@ class CreateTournamentDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      elevation: 12,
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header Row
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Select Tournament Type',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5F5EB),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.emoji_events_rounded,
+                    color: Color(0xFF166534),
+                    size: 24,
                   ),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Icon(Icons.close, color: Colors.black54),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Host a Tournament',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Choose visibility & registration type',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF64748B),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8), size: 22),
+                  onPressed: () => Navigator.pop(context),
+                  visualDensity: VisualDensity.compact,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            const Divider(color: Color(0xFFF3F4F6), height: 1),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
+            const Divider(color: Color(0xFFF1F5F9), height: 1),
+            const SizedBox(height: 18),
+
+            // Public Tournament Card
             _buildTypeCard(
               context,
-              title: 'Public Tournament',
+              title: 'Public Championship',
+              badgeText: 'Open to All 🌐',
+              badgeColor: const Color(0xFFDCFCE7),
+              badgeTextColor: const Color(0xFF15803D),
               description:
-                  'Open to all teams, visible on leaderboard & discovery',
-              icon: Icons.public,
-              iconBgColor: const Color(0xFFBBE5CA),
-              iconColor: const Color(0xFF0F6D38),
-              borderColor: const Color(0xFFBBE5CA),
+                  'Listed on public discovery feed and search. Any team can join and compete for the prize pool.',
+              icon: Icons.public_rounded,
+              iconBgColor: const Color(0xFFE5F5EB),
+              iconColor: const Color(0xFF166534),
+              borderColor: const Color(0xFF86EFAC),
+              gradientColors: [const Color(0xFFF0FDF4), Colors.white],
+              tags: ['🏆 City Leaderboard', '⚡ Live Bracket', '🚀 High Visibility'],
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -56,15 +94,23 @@ class CreateTournamentDialog extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+
+            // Private Tournament Card
             _buildTypeCard(
               context,
-              title: 'Private Tournament',
-              description: 'Invite-only with a secure access code',
-              icon: Icons.lock_outline,
-              iconBgColor: const Color(0xFFE5F5EB),
-              iconColor: const Color(0xFF0F6D38),
-              borderColor: const Color(0xFFF3F4F6),
+              title: 'Private Invite-Only Cup',
+              badgeText: 'Secure PIN 🔒',
+              badgeColor: const Color(0xFFFEF3C7),
+              badgeTextColor: const Color(0xFFB45309),
+              description:
+                  'Exclusive tournament protected with a 6-digit access PIN. Ideal for corporate leagues, college cups, and friends.',
+              icon: Icons.lock_outline_rounded,
+              iconBgColor: const Color(0xFFFEF3C7),
+              iconColor: const Color(0xFFD97706),
+              borderColor: const Color(0xFFFDE68A),
+              gradientColors: [const Color(0xFFFFFDF5), Colors.white],
+              tags: ['🔑 Secret PIN', '🛡️ Closed Entry', '✉️ Direct Invite'],
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -75,6 +121,7 @@ class CreateTournamentDialog extends StatelessWidget {
                 );
               },
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -84,57 +131,118 @@ class CreateTournamentDialog extends StatelessWidget {
   Widget _buildTypeCard(
     BuildContext context, {
     required String title,
+    required String badgeText,
+    required Color badgeColor,
+    required Color badgeTextColor,
     required String description,
     required IconData icon,
     required Color iconBgColor,
     required Color iconColor,
     required Color borderColor,
+    required List<Color> gradientColors,
+    required List<String> tags,
     VoidCallback? onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap ?? () => Navigator.pop(context),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            colors: gradientColors,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: iconColor, size: 24),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: iconBgColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: iconColor, size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: badgeColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: badgeTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF94A3B8)),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                      height: 1.4,
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 10),
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF64748B),
+                height: 1.35,
               ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: tags.map((t) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Text(
+                    t,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ],
         ),
