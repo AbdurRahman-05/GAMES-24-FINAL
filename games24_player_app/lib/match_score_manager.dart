@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerItem {
@@ -8,6 +10,7 @@ class PlayerItem {
   final String phone;
   final String role;
   final String avatarInitials;
+  final bool isPhysicalContact;
 
   PlayerItem({
     required this.id,
@@ -15,6 +18,7 @@ class PlayerItem {
     required this.phone,
     this.role = 'Player',
     String? avatarInitials,
+    this.isPhysicalContact = false,
   }) : avatarInitials = avatarInitials ?? _getInitials(name);
 
   static String _getInitials(String name) {
@@ -33,6 +37,7 @@ class PlayerItem {
         'phone': phone,
         'role': role,
         'avatarInitials': avatarInitials,
+        'isPhysicalContact': isPhysicalContact,
       };
 
   factory PlayerItem.fromJson(Map<String, dynamic> json) => PlayerItem(
@@ -41,6 +46,7 @@ class PlayerItem {
         phone: json['phone']?.toString() ?? '',
         role: json['role']?.toString() ?? 'Player',
         avatarInitials: json['avatarInitials']?.toString(),
+        isPhysicalContact: json['isPhysicalContact'] == true,
       );
 }
 
@@ -357,8 +363,70 @@ class MatchScoreManager {
     await _persistToStorage();
   }
 
-  // Pre-configured address book contacts for realistic contact picker
+  List<PlayerItem>? _cachedRealContacts;
+
+  /// Fetches real physical contacts from the device using flutter_contacts & permissions
+  Future<List<PlayerItem>> fetchPhysicalContacts() async {
+    if (_cachedRealContacts != null && _cachedRealContacts!.isNotEmpty) {
+      return List<PlayerItem>.from(_cachedRealContacts!);
+    }
+    try {
+      bool permission = false;
+      try {
+        final status = await FlutterContacts.permissions.request(PermissionType.read);
+        permission = (status == PermissionStatus.granted || status == PermissionStatus.limited);
+      } catch (_) {
+        try {
+          final phStatus = await Permission.contacts.request();
+          permission = phStatus.isGranted || phStatus.isLimited;
+        } catch (_) {}
+      }
+
+      if (permission) {
+        final deviceContacts = await FlutterContacts.getAll(
+          properties: {ContactProperty.name, ContactProperty.phone},
+        );
+        final List<PlayerItem> items = [];
+        final Set<String> seenNumbers = {};
+
+        for (final c in deviceContacts) {
+          final name = (c.displayName != null && c.displayName!.trim().isNotEmpty)
+              ? c.displayName!.trim()
+              : ('${c.name?.first ?? ''} ${c.name?.last ?? ''}').trim();
+          if (name.isEmpty) continue;
+
+          for (final ph in c.phones) {
+            final rawNumber = ph.number.trim();
+            final normalized = rawNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+            if (normalized.length >= 7 && !seenNumbers.contains(normalized)) {
+              seenNumbers.add(normalized);
+              items.add(PlayerItem(
+                id: 'ph_${c.id ?? items.length}',
+                name: name,
+                phone: rawNumber,
+                role: 'Player',
+                isPhysicalContact: true,
+              ));
+              break;
+            }
+          }
+        }
+        if (items.isNotEmpty) {
+          _cachedRealContacts = items;
+          return List<PlayerItem>.from(items);
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching physical contacts: $e");
+    }
+    return getDeviceContacts();
+  }
+
+  // Pre-configured address book contacts for realistic contact picker / simulator fallback
   List<PlayerItem> getDeviceContacts() {
+    if (_cachedRealContacts != null && _cachedRealContacts!.isNotEmpty) {
+      return List<PlayerItem>.from(_cachedRealContacts!);
+    }
     return [
       PlayerItem(id: 'c1', name: 'Alex Hunter', phone: '+91 98765 43210', role: 'Captain / All-Rounder'),
       PlayerItem(id: 'c2', name: 'Karthik Raja', phone: '+91 98412 34567', role: 'Striker / Batsman'),

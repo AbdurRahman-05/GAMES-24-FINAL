@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'match_score_manager.dart';
 
@@ -42,12 +44,17 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
   final Set<String> _selectedIds = {};
   final Map<String, String> _customRoles = {};
   List<PlayerItem> _contacts = [];
-  String _filter = 'All';
+  String _filter = 'All'; // 'All', 'Physical', 'Selected'
+
+  bool _isLoading = true;
+  bool _permissionDenied = false;
+  bool _isPermanentlyDenied = false;
+  int _physicalCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadContacts();
+    _loadContacts(requestPermission: true);
   }
 
   @override
@@ -56,38 +63,187 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
     super.dispose();
   }
 
-  Future<void> _loadContacts() async {
-    final base = MatchScoreManager().getDeviceContacts();
+  Future<void> _loadContacts({bool requestPermission = true}) async {
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
+
+    List<PlayerItem> physicalList = [];
+    bool hasPermission = false;
+
+    try {
+      if (requestPermission) {
+        final status = await FlutterContacts.permissions.request(PermissionType.read);
+        hasPermission = (status == PermissionStatus.granted || status == PermissionStatus.limited);
+        if (!hasPermission) {
+          final phStatus = await Permission.contacts.request();
+          hasPermission = phStatus.isGranted || phStatus.isLimited;
+          if (phStatus.isPermanentlyDenied) {
+            _isPermanentlyDenied = true;
+          }
+        }
+      } else {
+        hasPermission = await FlutterContacts.permissions.has(PermissionType.read);
+      }
+
+      if (hasPermission) {
+        final deviceContacts = await FlutterContacts.getAll(
+          properties: {ContactProperty.name, ContactProperty.phone},
+        );
+
+        final Set<String> seen = {};
+        for (final c in deviceContacts) {
+          final name = (c.displayName != null && c.displayName!.trim().isNotEmpty)
+              ? c.displayName!.trim()
+              : ('${c.name?.first ?? ''} ${c.name?.last ?? ''}').trim();
+          if (name.isEmpty) continue;
+
+          for (final ph in c.phones) {
+            final raw = ph.number.trim();
+            final norm = raw.replaceAll(RegExp(r'[^0-9+]'), '');
+            if (norm.length >= 7 && !seen.contains(norm)) {
+              seen.add(norm);
+              physicalList.add(PlayerItem(
+                id: 'contact_ph_${c.id ?? physicalList.length}',
+                name: name,
+                phone: raw,
+                role: _getDefaultRoleForSport(widget.sport),
+                isPhysicalContact: true,
+              ));
+              break;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching physical contacts: $e");
+    }
+
+    _permissionDenied = !hasPermission;
+    _physicalCount = physicalList.length;
+
+    // Load any custom contacts saved locally
+    List<PlayerItem> customList = [];
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedStr = prefs.getString('custom_mobile_contacts');
       if (savedStr != null && savedStr.isNotEmpty) {
         final List list = jsonDecode(savedStr);
-        final custom = list
+        customList = list
             .map((e) => PlayerItem.fromJson(Map<String, dynamic>.from(e)))
             .toList();
-        for (final c in custom) {
-          if (!base.any((b) => b.phone == c.phone)) {
-            base.add(c);
-          }
-        }
       }
     } catch (e) {
       debugPrint("Error loading custom contacts: $e");
     }
 
+    final combined = <PlayerItem>[];
+    final Set<String> addedPhones = {};
+
+    // 1. Add physical device contacts first
+    for (final c in physicalList) {
+      final norm = c.phone.replaceAll(RegExp(r'[^0-9+]'), '');
+      if (!addedPhones.contains(norm)) {
+        addedPhones.add(norm);
+        combined.add(c);
+      }
+    }
+
+    // 2. Add saved custom contacts
+    for (final c in customList) {
+      final norm = c.phone.replaceAll(RegExp(r'[^0-9+]'), '');
+      if (!addedPhones.contains(norm)) {
+        addedPhones.add(norm);
+        combined.add(c);
+      }
+    }
+
+    // 3. Fallback demo contacts if running on desktop simulator or zero contacts
+    if (combined.isEmpty) {
+      for (final c in MatchScoreManager().getDeviceContacts()) {
+        final norm = c.phone.replaceAll(RegExp(r'[^0-9+]'), '');
+        if (!addedPhones.contains(norm)) {
+          addedPhones.add(norm);
+          combined.add(c);
+        }
+      }
+    }
+
     if (mounted) {
       setState(() {
-        _contacts = base;
+        _contacts = combined;
+        _isLoading = false;
         for (final p in widget.alreadySelected) {
           final found = _contacts.firstWhere(
-            (c) => c.phone == p.phone || c.name == p.name,
+            (c) =>
+                c.phone.replaceAll(RegExp(r'[^0-9+]'), '') ==
+                    p.phone.replaceAll(RegExp(r'[^0-9+]'), '') ||
+                c.name.toLowerCase() == p.name.toLowerCase(),
             orElse: () => p,
           );
           _selectedIds.add(found.id);
           _customRoles[found.id] = p.role;
         }
       });
+    }
+  }
+
+  /// Opens the native physical phone contact picker UI
+  Future<void> _pickNativeContact() async {
+    try {
+      final c = await FlutterContacts.native.showPicker(
+        properties: {ContactProperty.name, ContactProperty.phone},
+      );
+      if (c != null) {
+        final name = (c.displayName != null && c.displayName!.trim().isNotEmpty)
+            ? c.displayName!.trim()
+            : ('${c.name?.first ?? ''} ${c.name?.last ?? ''}').trim();
+        final phone = c.phones.isNotEmpty ? c.phones.first.number.trim() : '';
+
+        if (name.isNotEmpty && phone.isNotEmpty) {
+          final newItem = PlayerItem(
+            id: 'native_${c.id ?? DateTime.now().millisecondsSinceEpoch}',
+            name: name,
+            phone: phone,
+            role: _getDefaultRoleForSport(widget.sport),
+            isPhysicalContact: true,
+          );
+
+          await _saveCustomContact(newItem);
+
+          if (!mounted) return;
+          setState(() {
+            _contacts.removeWhere((item) =>
+                item.phone.replaceAll(RegExp(r'[^0-9+]'), '') ==
+                phone.replaceAll(RegExp(r'[^0-9+]'), ''));
+            _contacts.insert(0, newItem);
+            _selectedIds.add(newItem.id);
+            _customRoles[newItem.id] = newItem.role;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Imported "$name" ($phone) from phone!'),
+                backgroundColor: const Color(0xFF166534),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Selected contact does not have a valid phone number.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error opening native contact picker: $e");
+      _showAddManualContactDialog();
     }
   }
 
@@ -102,7 +258,10 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
             .map((e) => PlayerItem.fromJson(Map<String, dynamic>.from(e)))
             .toList();
       }
-      custom.add(item);
+      custom.removeWhere((c) =>
+          c.phone.replaceAll(RegExp(r'[^0-9+]'), '') ==
+          item.phone.replaceAll(RegExp(r'[^0-9+]'), ''));
+      custom.insert(0, item);
       await prefs.setString(
         'custom_mobile_contacts',
         jsonEncode(custom.map((c) => c.toJson()).toList()),
@@ -126,7 +285,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
             children: [
               Icon(Icons.person_add_alt_1, color: Color(0xFF166534)),
               SizedBox(width: 8),
-              Text('Add New Contact', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('Add New Teammate', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
@@ -160,7 +319,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text('Player Role', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              const Text('Squad Role', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
                 initialValue: role,
@@ -199,6 +358,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                   name: name,
                   phone: phone,
                   role: role,
+                  isPhysicalContact: false,
                 );
 
                 await _saveCustomContact(newContact);
@@ -284,13 +444,17 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
       if (_filter == 'Selected') {
         return _selectedIds.contains(c.id);
       }
+      if (_filter == 'Physical') {
+        return c.isPhysicalContact;
+      }
       return true;
     }).toList();
 
     final selectedCount = _selectedIds.length;
+    final physicalCount = _contacts.where((c) => c.isPhysicalContact).length;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.88,
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -307,9 +471,10 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+
           // Top title bar
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(20, 12, 16, 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -321,18 +486,20 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                         color: const Color(0xFFE5F5EB),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.contacts_rounded, color: Color(0xFF166534), size: 20),
+                      child: const Icon(Icons.phone_android_rounded, color: Color(0xFF166534), size: 20),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Mobile Phone Contacts',
+                          'Import Phone Contacts',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                         ),
                         Text(
-                          '${_contacts.length} contacts accessible from device',
+                          _isLoading
+                              ? 'Connecting to phone contacts...'
+                              : '$physicalCount physical device contact${physicalCount == 1 ? '' : 's'} available',
                           style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
@@ -348,23 +515,131 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
           ),
           const Divider(height: 1),
 
-          // Permission banner
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF7FDF9),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE5F5EB)),
+          // Permission banner / Status indicator
+          if (_permissionDenied)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFECACA)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Contacts Permission Needed',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF991B1B)),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _isPermanentlyDenied
+                              ? 'Permission denied. Open App Settings to enable contact reading.'
+                              : 'Grant access to view and import your real phone contacts.',
+                          style: const TextStyle(fontSize: 11, color: Color(0xFFB91C1C)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDC2626),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      visualDensity: VisualDensity.compact,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    onPressed: () async {
+                      if (_isPermanentlyDenied) {
+                        await openAppSettings();
+                      } else {
+                        await _loadContacts(requestPermission: true);
+                      }
+                    },
+                    child: Text(
+                      _isPermanentlyDenied ? 'Settings' : 'Grant',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Color(0xFF166534), size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _physicalCount > 0
+                          ? 'Physical device contacts synced ($_physicalCount contacts ready)'
+                          : 'Contacts access granted. You can also pick directly from your phone.',
+                      style: const TextStyle(fontSize: 11, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: const Row(
+
+          // Two Primary Action Buttons: Native System Contact Picker & Add Custom
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Row(
               children: [
-                Icon(Icons.check_circle, color: Color(0xFF166534), size: 16),
-                SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    'Contacts access granted. Select contacts to add as squad members.',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                  flex: 3,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF166534),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: _pickNativeContact,
+                    icon: const Icon(Icons.contacts_rounded, size: 16),
+                    label: const Text(
+                      'Open Phone Book',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  flex: 2,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF166534),
+                      side: const BorderSide(color: Color(0xFF166534)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: _showAddManualContactDialog,
+                    icon: const Icon(Icons.person_add_alt, size: 16),
+                    label: const Text(
+                      '+ Add New',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],
@@ -373,7 +648,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
 
           // Search bar
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             child: TextField(
               controller: _searchController,
               onChanged: (_) => setState(() {}),
@@ -400,46 +675,45 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
             ),
           ),
 
-          // Quick action row
+          // Quick filter pills
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    FilterChip(
-                      label: Text('All (${_contacts.length})'),
-                      selected: _filter == 'All',
-                      selectedColor: const Color(0xFFE5F5EB),
-                      labelStyle: TextStyle(
-                        fontSize: 11,
-                        color: _filter == 'All' ? const Color(0xFF166534) : Colors.black87,
-                        fontWeight: _filter == 'All' ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      onSelected: (_) => setState(() => _filter = 'All'),
-                    ),
-                    const SizedBox(width: 8),
-                    FilterChip(
-                      label: Text('Selected ($selectedCount)'),
-                      selected: _filter == 'Selected',
-                      selectedColor: const Color(0xFFE5F5EB),
-                      labelStyle: TextStyle(
-                        fontSize: 11,
-                        color: _filter == 'Selected' ? const Color(0xFF166534) : Colors.black87,
-                        fontWeight: _filter == 'Selected' ? FontWeight.bold : FontWeight.normal,
-                      ),
-                      onSelected: (_) => setState(() => _filter = 'Selected'),
-                    ),
-                  ],
-                ),
-                TextButton.icon(
-                  onPressed: _showAddManualContactDialog,
-                  icon: const Icon(Icons.add, size: 16, color: Color(0xFF166534)),
-                  label: const Text(
-                    'Add Contact',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                FilterChip(
+                  label: Text('All (${_contacts.length})'),
+                  selected: _filter == 'All',
+                  selectedColor: const Color(0xFFE5F5EB),
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    color: _filter == 'All' ? const Color(0xFF166534) : Colors.black87,
+                    fontWeight: _filter == 'All' ? FontWeight.bold : FontWeight.normal,
                   ),
+                  onSelected: (_) => setState(() => _filter = 'All'),
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: Text('📱 Device ($physicalCount)'),
+                  selected: _filter == 'Physical',
+                  selectedColor: const Color(0xFFE5F5EB),
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    color: _filter == 'Physical' ? const Color(0xFF166534) : Colors.black87,
+                    fontWeight: _filter == 'Physical' ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  onSelected: (_) => setState(() => _filter = 'Physical'),
+                ),
+                const SizedBox(width: 8),
+                FilterChip(
+                  label: Text('Selected ($selectedCount)'),
+                  selected: _filter == 'Selected',
+                  selectedColor: const Color(0xFFE5F5EB),
+                  labelStyle: TextStyle(
+                    fontSize: 11,
+                    color: _filter == 'Selected' ? const Color(0xFF166534) : Colors.black87,
+                    fontWeight: _filter == 'Selected' ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  onSelected: (_) => setState(() => _filter = 'Selected'),
                 ),
               ],
             ),
@@ -447,129 +721,186 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
 
           // Contacts List
           Expanded(
-            child: filtered.isEmpty
+            child: _isLoading
                 ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search_off, size: 40, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text('No contacts found matching your search.', style: TextStyle(color: Colors.grey)),
-                        ],
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(color: Color(0xFF166534)),
+                        SizedBox(height: 12),
+                        Text(
+                          'Reading phone contacts...',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ],
                     ),
                   )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    itemCount: filtered.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
-                    itemBuilder: (context, index) {
-                      final contact = filtered[index];
-                      final isSelected = _selectedIds.contains(contact.id);
-                      final assignedRole = _customRoles[contact.id] ?? contact.role;
-
-                      return InkWell(
-                        onTap: () {
-                          setState(() {
-                            if (isSelected) {
-                              _selectedIds.remove(contact.id);
-                            } else {
-                              _selectedIds.add(contact.id);
-                            }
-                          });
-                        },
+                : filtered.isEmpty
+                    ? Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Avatar initials
-                              CircleAvatar(
-                                radius: 20,
-                                backgroundColor: isSelected ? const Color(0xFF166534) : const Color(0xFFE5E7EB),
-                                child: Text(
-                                  contact.avatarInitials,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : Colors.black87,
-                                  ),
+                              const Icon(Icons.search_off, size: 40, color: Colors.grey),
+                              const SizedBox(height: 8),
+                              const Text('No contacts found.', style: TextStyle(color: Colors.grey)),
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF166534),
+                                  foregroundColor: Colors.white,
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              // Name & phone
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      contact.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      contact.phone,
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Role badge
-                              GestureDetector(
-                                onTap: () => _showRolePickerForContact(contact),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFFE5F5EB) : const Color(0xFFF3F4F6),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: isSelected ? const Color(0xFFBBE5CA) : const Color(0xFFE5E7EB),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        assignedRole,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: isSelected ? const Color(0xFF166534) : Colors.black54,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Icon(
-                                        Icons.arrow_drop_down,
-                                        size: 14,
-                                        color: isSelected ? const Color(0xFF166534) : Colors.black54,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // Checkbox
-                              Checkbox(
-                                value: isSelected,
-                                activeColor: const Color(0xFF166534),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                onChanged: (val) {
-                                  setState(() {
-                                    if (val == true) {
-                                      _selectedIds.add(contact.id);
-                                    } else {
-                                      _selectedIds.remove(contact.id);
-                                    }
-                                  });
-                                },
+                                onPressed: _pickNativeContact,
+                                icon: const Icon(Icons.contacts, size: 16),
+                                label: const Text('Pick from System Contacts'),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        itemCount: filtered.length,
+                        separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                        itemBuilder: (context, index) {
+                          final contact = filtered[index];
+                          final isSelected = _selectedIds.contains(contact.id);
+                          final assignedRole = _customRoles[contact.id] ?? contact.role;
+
+                          return InkWell(
+                            onTap: () {
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedIds.remove(contact.id);
+                                } else {
+                                  _selectedIds.add(contact.id);
+                                }
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                children: [
+                                  // Avatar initials
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: isSelected ? const Color(0xFF166534) : const Color(0xFFE5E7EB),
+                                    child: Text(
+                                      contact.avatarInitials,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: isSelected ? Colors.white : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+
+                                  // Name & phone
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          contact.name,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              contact.phone,
+                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                            ),
+                                            if (contact.isPhysicalContact) ...[
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF0FDF4),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.phone_iphone, size: 9, color: Color(0xFF166534)),
+                                                    SizedBox(width: 2),
+                                                    Text(
+                                                      'Device',
+                                                      style: TextStyle(
+                                                        fontSize: 9,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Color(0xFF166534),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Role badge
+                                  GestureDetector(
+                                    onTap: () => _showRolePickerForContact(contact),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? const Color(0xFFE5F5EB) : const Color(0xFFF3F4F6),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: isSelected ? const Color(0xFFBBE5CA) : const Color(0xFFE5E7EB),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            assignedRole,
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isSelected ? const Color(0xFF166534) : Colors.black54,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.arrow_drop_down,
+                                            size: 14,
+                                            color: isSelected ? const Color(0xFF166534) : Colors.black54,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+
+                                  // Checkbox
+                                  Checkbox(
+                                    value: isSelected,
+                                    activeColor: const Color(0xFF166534),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        if (val == true) {
+                                          _selectedIds.add(contact.id);
+                                        } else {
+                                          _selectedIds.remove(contact.id);
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
           ),
 
           // Bottom confirmation bar
@@ -632,6 +963,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                                   phone: c.phone,
                                   role: role,
                                   avatarInitials: c.avatarInitials,
+                                  isPhysicalContact: c.isPhysicalContact,
                                 );
                               }).toList();
 
