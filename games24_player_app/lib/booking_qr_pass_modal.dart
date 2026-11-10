@@ -77,34 +77,101 @@ class BookingQrPassModal extends StatelessWidget {
       if (dateStr.trim().isEmpty || timeSlot.trim().isEmpty) return null;
       final dateParts = dateStr.trim().split(RegExp(r'[-/]'));
       if (dateParts.length < 3) return null;
-      final y = int.tryParse(dateParts[0]);
-      final m = int.tryParse(dateParts[1]);
-      final d = int.tryParse(dateParts[2]);
-      if (y == null || m == null || d == null) return null;
+      int? y, m, d;
+      final p0 = int.tryParse(dateParts[0]);
+      final p1 = int.tryParse(dateParts[1]);
+      final p2 = int.tryParse(dateParts[2]);
+      if (p0 == null || p1 == null || p2 == null) return null;
+      if (p0 > 1000) {
+        y = p0;
+        m = p1;
+        d = p2;
+      } else if (p2 > 1000) {
+        d = p0;
+        m = p1;
+        y = p2;
+      } else {
+        y = p0;
+        m = p1;
+        d = p2;
+      }
 
-      final slotParts = timeSlot.split('-');
-      final startStr = slotParts[0].trim();
-      final endStr = slotParts.length > 1 ? slotParts[1].trim() : null;
+      final subSlots = timeSlot
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+      final firstSlot = subSlots.isNotEmpty ? subSlots.first : timeSlot;
+      final lastSlot = subSlots.isNotEmpty ? subSlots.last : timeSlot;
 
-      TimeOfDay? parseTod(String str) {
-        final isPm = str.toLowerCase().contains('pm');
-        final isAm = str.toLowerCase().contains('am');
+      List<String> splitSlotRange(String s) {
+        return s
+            .split(RegExp(r'\s*[-–]\s*|\s+to\s+', caseSensitive: false))
+            .map((p) => p.trim())
+            .where((p) => p.isNotEmpty)
+            .toList();
+      }
+
+      final startParts = splitSlotRange(firstSlot);
+      final endParts = splitSlotRange(lastSlot);
+
+      final startStr = startParts.isNotEmpty ? startParts.first : firstSlot;
+      final endStr = endParts.length > 1
+          ? endParts.last
+          : (startParts.length > 1 ? startParts.last : null);
+
+      bool hasPm(String s) => s.toLowerCase().contains('pm');
+      bool hasAm(String s) => s.toLowerCase().contains('am');
+
+      final endHasPm = endStr != null && hasPm(endStr);
+      final startHasExplicitAmPm = hasPm(startStr) || hasAm(startStr);
+
+      bool inheritPmForStart = false;
+      if (endHasPm && !startHasExplicitAmPm) {
+        final startDigit = int.tryParse(
+            startStr.replaceAll(RegExp(r'[^\d:]'), '').split(':').first);
+        final endDigit = int.tryParse(endStr
+            .replaceAll(RegExp(r'[^\d:]'), '')
+            .split(':')
+            .first);
+        if (startDigit != null && endDigit != null) {
+          if (startDigit <= endDigit || endDigit == 12) {
+            inheritPmForStart = true;
+          }
+        }
+      }
+
+      TimeOfDay? parseTod(String str, bool inheritPm) {
+        bool isPm = hasPm(str);
+        bool isAm = hasAm(str);
+        if (!isPm && !isAm && inheritPm) {
+          isPm = true;
+        }
+
         final digits = str.replaceAll(RegExp(r'[^\d:]'), '');
         final parts = digits.split(':');
         if (parts.isEmpty) return null;
         var h = int.tryParse(parts[0]);
         final min = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
         if (h == null) return null;
-        if (isPm && h < 12) h += 12;
-        if (isAm && h == 12) h = 0;
+
+        if (!isPm && !isAm) {
+          if (h >= 1 && h <= 7) {
+            h += 12;
+          }
+        } else {
+          if (isPm && h < 12) h += 12;
+          if (isAm && h == 12) h = 0;
+        }
+
         return TimeOfDay(hour: h, minute: min);
       }
 
-      final startTod = parseTod(startStr);
+      final startTod = parseTod(startStr, inheritPmForStart);
       if (startTod == null) return null;
       final startDt = DateTime(y, m, d, startTod.hour, startTod.minute);
       DateTime endDt;
-      final endTod = endStr != null ? parseTod(endStr) : null;
+      final endTod = endStr != null ? parseTod(endStr, false) : null;
       if (endTod != null) {
         endDt = DateTime(y, m, d, endTod.hour, endTod.minute);
         if (endDt.isBefore(startDt) || endDt.isAtSameMomentAs(startDt)) {

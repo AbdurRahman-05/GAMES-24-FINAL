@@ -18,65 +18,74 @@ class AdminMainLayout extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.cardDark : Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildNavItem(
-                    index: 0,
-                    icon: Icons.dashboard_rounded,
-                    label: 'Dashboard',
-                    isSelected: currentIndex == 0,
+    return PopScope(
+      canPop: currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (currentIndex != 0) {
+          onTabSelected(0);
+        }
+      },
+      child: Scaffold(
+        body: child,
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildNavItem(
+                      index: 0,
+                      icon: Icons.dashboard_rounded,
+                      label: 'Dashboard',
+                      isSelected: currentIndex == 0,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _buildNavItem(
-                    index: 1,
-                    icon: Icons.edit_calendar_rounded,
-                    label: 'Slots',
-                    isSelected: currentIndex == 1,
+                  Expanded(
+                    child: _buildNavItem(
+                      index: 1,
+                      icon: Icons.edit_calendar_rounded,
+                      label: 'Slots',
+                      isSelected: currentIndex == 1,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _buildNavItem(
-                    index: 2,
-                    icon: Icons.emoji_events_rounded,
-                    label: 'Tournaments',
-                    isSelected: currentIndex == 2,
+                  Expanded(
+                    child: _buildNavItem(
+                      index: 2,
+                      icon: Icons.emoji_events_rounded,
+                      label: 'Tournaments',
+                      isSelected: currentIndex == 2,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _buildNavItem(
-                    index: 3,
-                    icon: Icons.qr_code_scanner_rounded,
-                    label: 'Gate QR',
-                    isSelected: currentIndex == 3,
+                  Expanded(
+                    child: _buildNavItem(
+                      index: 3,
+                      icon: Icons.qr_code_scanner_rounded,
+                      label: 'Gate QR',
+                      isSelected: currentIndex == 3,
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: _buildNavItem(
-                    index: 4,
-                    icon: Icons.person_rounded,
-                    label: 'Profile',
-                    isSelected: currentIndex == 4,
+                  Expanded(
+                    child: _buildNavItem(
+                      index: 4,
+                      icon: Icons.person_rounded,
+                      label: 'Profile',
+                      isSelected: currentIndex == 4,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

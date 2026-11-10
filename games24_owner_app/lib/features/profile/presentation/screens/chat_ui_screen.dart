@@ -51,7 +51,13 @@ class _ChatUiScreenState extends State<ChatUiScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin/dashboard');
+            }
+          },
         ),
       ),
       body: Column(

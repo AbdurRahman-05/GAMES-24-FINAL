@@ -1,3 +1,4 @@
+import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:games24_player_app/team_roster_screen.dart';
 import 'package:games24_player_app/team_manager.dart';
@@ -460,7 +461,15 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
           Row(
             children: [
               GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const MainLayout()),
+                  );
+                }
+              },
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(

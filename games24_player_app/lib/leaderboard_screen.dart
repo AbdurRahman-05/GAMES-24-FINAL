@@ -1,3 +1,4 @@
+import 'main_layout.dart';
 import 'package:flutter/material.dart';
 
 class LeaderboardScreen extends StatefulWidget {
@@ -20,7 +21,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const MainLayout()),
+              );
+            }
+          },
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

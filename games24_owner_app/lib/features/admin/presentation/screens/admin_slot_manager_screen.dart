@@ -354,7 +354,13 @@ class _AdminSlotManagerScreenState
             color: Color(0xFF1E293B),
           ),
         ),
-        onPressed: () => context.pop(),
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/admin/dashboard');
+          }
+        },
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

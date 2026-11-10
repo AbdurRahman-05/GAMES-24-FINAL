@@ -1,3 +1,4 @@
+import 'main_layout.dart';
 import 'api_config.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -246,7 +247,15 @@ class _BookingScreenState extends State<BookingScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const MainLayout()),
+              );
+            }
+          },
         ),
         title: Text(
           widget.turfName,

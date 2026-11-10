@@ -18,7 +18,13 @@ class CelebrationBookingScreen extends StatelessWidget {
         title: const Text('Celebration & Events'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin/dashboard');
+            }
+          },
         ),
       ),
       body: ListView.builder(

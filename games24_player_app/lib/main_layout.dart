@@ -32,7 +32,17 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: _currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+        }
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(),
       body: IndexedStack(index: _currentIndex, children: _pages),
@@ -54,7 +64,7 @@ class _MainLayoutState extends State<MainLayout> {
               ),
             )
           : null,
-    );
+    ));
   }
 
   AppBar _buildAppBar() {

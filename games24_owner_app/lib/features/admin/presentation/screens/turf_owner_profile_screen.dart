@@ -1525,6 +1525,17 @@ class _TurfOwnerProfileScreenState
     return AppBar(
       backgroundColor: const Color(0xFF0C2B1E),
       elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+        tooltip: 'Back to Dashboard',
+        onPressed: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/admin/dashboard');
+          }
+        },
+      ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

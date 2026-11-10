@@ -1,3 +1,4 @@
+import 'login_screen.dart';
 import 'api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -146,7 +147,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (!mounted) return;
-        Navigator.pop(context);
+        if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          } else {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            );
+                          }
         ToastUtils.showSuccess(context, "Password updated successfully!");
       } else {
         final body = jsonDecode(response.body);
@@ -354,7 +361,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 // Back to Login
                 GestureDetector(
                   onTap: () {
-                    Navigator.pop(context);
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    } else {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    }
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

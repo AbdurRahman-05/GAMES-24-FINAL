@@ -1292,60 +1292,151 @@ export class TurfService {
     try {
       if (!dateStr || !timeSlot) return null;
 
-      // Extract Year, Month, Day (e.g. "2026-11-20")
-      const dateParts = dateStr.trim().split(/[-/]/).map((p) => parseInt(p, 10));
-      if (dateParts.length < 3) return null;
-      const [year, month, day] = dateParts;
+      // Extract Year, Month, Day (handles "2026-11-20", "2026/11/20", "10-11-2026", or standard dates)
+      let year = 0;
+      let month = 0;
+      let day = 0;
 
-      // Slot times (e.g. "07:00 AM - 08:00 AM" or "06:00 PM")
-      const slotParts = timeSlot.split('-').map((s) => s.trim());
-      const startStr = slotParts[0];
-      const endStr = slotParts.length > 1 ? slotParts[1] : null;
+      const trimmedDate = dateStr.trim();
+      const isoParts = trimmedDate.split(/[-/]/).map((p) => parseInt(p, 10));
+      if (isoParts.length >= 3) {
+        if (isoParts[0] > 1000) {
+          // YYYY-MM-DD
+          year = isoParts[0];
+          month = isoParts[1];
+          day = isoParts[2];
+        } else if (isoParts[2] > 1000) {
+          // DD-MM-YYYY
+          day = isoParts[0];
+          month = isoParts[1];
+          year = isoParts[2];
+        }
+      }
 
-      const parseTime = (tStr: string) => {
+      if (!year || !month || !day) {
+        const parsed = new Date(trimmedDate);
+        if (!isNaN(parsed.getTime())) {
+          year = parsed.getFullYear();
+          month = parsed.getMonth() + 1;
+          day = parsed.getDate();
+        }
+      }
+
+      if (!year || !month || !day) return null;
+
+      // Support multiple comma-separated slots e.g. "05:00 PM - 06:00 PM, 06:00 PM - 07:00 PM"
+      const subSlots = timeSlot.split(',').map((s) => s.trim()).filter(Boolean);
+      const firstSlot = subSlots[0] || timeSlot;
+      const lastSlot = subSlots[subSlots.length - 1] || timeSlot;
+
+      // Split slot range by '-' or '–' or 'to'
+      const splitSlotRange = (s: string) => {
+        return s.split(/\s*[-–]\s*|\s+to\s+/i).map((p) => p.trim()).filter(Boolean);
+      };
+
+      const startParts = splitSlotRange(firstSlot);
+      const endParts = splitSlotRange(lastSlot);
+
+      const rawStartStr = startParts[0] || firstSlot;
+      const rawEndStr =
+        endParts.length > 1
+          ? endParts[endParts.length - 1]
+          : startParts.length > 1
+          ? startParts[startParts.length - 1]
+          : null;
+
+      const hasPm = (s: string) => /pm/i.test(s);
+      const hasAm = (s: string) => /am/i.test(s);
+
+      const endHasPm = rawEndStr ? hasPm(rawEndStr) : false;
+      const startHasExplicitAmPm = hasPm(rawStartStr) || hasAm(rawStartStr);
+
+      // If end time is PM and start time did not specify AM/PM, inherit PM when start <= end
+      let inheritPmForStart = false;
+      if (endHasPm && !startHasExplicitAmPm) {
+        const startRawDigit = parseInt(rawStartStr.replace(/[^\d:]/g, '').split(':')[0], 10);
+        const endRawDigit = parseInt((rawEndStr || '').replace(/[^\d:]/g, '').split(':')[0], 10);
+        if (!isNaN(startRawDigit) && !isNaN(endRawDigit)) {
+          if (startRawDigit <= endRawDigit || endRawDigit === 12) {
+            inheritPmForStart = true;
+          }
+        }
+      }
+
+      const parseTime = (tStr: string, inheritPm: boolean = false) => {
         if (!tStr) return null;
-        const isPM = /pm/i.test(tStr);
-        const isAM = /am/i.test(tStr);
+        let isPM = hasPm(tStr);
+        let isAM = hasAm(tStr);
+        if (!isPM && !isAM && inheritPm) {
+          isPM = true;
+        }
+
         const digitsOnly = tStr.replace(/[^\d:]/g, '');
-        const [hRaw, mRaw] = digitsOnly.split(':').map((p) => parseInt(p, 10));
+        const parts = digitsOnly.split(':');
+        const hRaw = parseInt(parts[0], 10);
         if (isNaN(hRaw)) return null;
+        const mRaw = parts.length > 1 ? parseInt(parts[1], 10) : 0;
         let hours = hRaw;
         const minutes = !isNaN(mRaw) ? mRaw : 0;
-        if (isPM && hours < 12) hours += 12;
-        if (isAM && hours === 12) hours = 0;
+
+        // In turf operations context, unspecified hour between 1 and 7 is PM (afternoon/evening)
+        if (!isPM && !isAM) {
+          if (hours >= 1 && hours <= 7) {
+            hours += 12;
+          }
+        } else {
+          if (isPM && hours < 12) hours += 12;
+          if (isAM && hours === 12) hours = 0;
+        }
+
         return { hours, minutes };
       };
 
-      const start = parseTime(startStr);
+      const start = parseTime(rawStartStr, inheritPmForStart);
       if (!start) return null;
 
-      const startDateTime = new Date(year, month - 1, day, start.hours, start.minutes, 0, 0);
-      let endDateTime: Date;
+      const end = rawEndStr ? parseTime(rawEndStr, false) : null;
+      const endHours = end ? end.hours : (start.hours + 1) % 24;
+      const endMinutes = end ? end.minutes : start.minutes;
 
-      const end = endStr ? parseTime(endStr) : null;
-      if (end) {
-        endDateTime = new Date(year, month - 1, day, end.hours, end.minutes, 0, 0);
-        if (endDateTime <= startDateTime) {
-          endDateTime = new Date(endDateTime.getTime() + 24 * 60 * 60 * 1000);
-        }
-      } else {
-        endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000);
+      // Construct accurate UTC timestamps based on Indian Standard Time (IST, UTC+05:30)
+      // This prevents server UTC timezone offset mismatches (which previously caused "you have more time" error)
+      const istOffsetMs = (5 * 60 + 30) * 60 * 1000;
+
+      const startUtcMs = Date.UTC(year, month - 1, day, start.hours, start.minutes, 0, 0) - istOffsetMs;
+      const startDateTime = new Date(startUtcMs);
+
+      let endUtcMs = Date.UTC(year, month - 1, day, endHours, endMinutes, 0, 0) - istOffsetMs;
+      if (endUtcMs <= startUtcMs) {
+        // Crosses midnight or wrapped around
+        endUtcMs += 24 * 60 * 60 * 1000;
       }
+      const endDateTime = new Date(endUtcMs);
 
       // Check-in opens 20 minutes before slot start
       const checkInOpensAt = new Date(startDateTime.getTime() - 20 * 60 * 1000);
-      // Check-in closes 30 minutes after slot end (allows check-in for ongoing match)
+      // Check-in closes 30 minutes after slot end (allows check-in for ongoing match up to 30 mins after end)
       const checkInClosesAt = new Date(endDateTime.getTime() + 30 * 60 * 1000);
 
-      const formatTimeStr = (d: Date) => {
-        let h = d.getHours();
-        const m = d.getMinutes();
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12;
-        if (h === 0) h = 12;
-        const mm = m.toString().padStart(2, '0');
-        const hh = h.toString().padStart(2, '0');
-        return `${hh}:${mm} ${ampm}`;
+      const formatTimeIST = (d: Date) => {
+        try {
+          return new Intl.DateTimeFormat('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }).format(d);
+        } catch {
+          const ist = new Date(d.getTime() + (5 * 60 + 30) * 60 * 1000);
+          let h = ist.getUTCHours();
+          const m = ist.getUTCMinutes();
+          const ampm = h >= 12 ? 'PM' : 'AM';
+          h = h % 12;
+          if (h === 0) h = 12;
+          const hh = h.toString().padStart(2, '0');
+          const mm = m.toString().padStart(2, '0');
+          return `${hh}:${mm} ${ampm}`;
+        }
       };
 
       return {
@@ -1353,9 +1444,9 @@ export class TurfService {
         endDateTime,
         checkInOpensAt,
         checkInClosesAt,
-        opensAtStr: formatTimeStr(checkInOpensAt),
-        startStr: formatTimeStr(startDateTime),
-        endStr: formatTimeStr(endDateTime),
+        opensAtStr: formatTimeIST(checkInOpensAt),
+        startStr: formatTimeIST(startDateTime),
+        endStr: formatTimeIST(endDateTime),
       };
     } catch {
       return null;
@@ -1499,15 +1590,27 @@ export class TurfService {
     }
 
     const formatTimestamp = (d: Date) => {
-      let h = d.getHours();
-      const m = d.getMinutes();
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12;
-      if (h === 0) h = 12;
-      const mm = m.toString().padStart(2, '0');
-      const hh = h.toString().padStart(2, '0');
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${d.getDate()} ${months[d.getMonth()]}, ${hh}:${mm} ${ampm}`;
+      try {
+        return new Intl.DateTimeFormat('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }).format(d);
+      } catch {
+        const ist = new Date(d.getTime() + (5 * 60 + 30) * 60 * 1000);
+        let h = ist.getUTCHours();
+        const m = ist.getUTCMinutes();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        if (h === 0) h = 12;
+        const mm = m.toString().padStart(2, '0');
+        const hh = h.toString().padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${ist.getUTCDate()} ${months[ist.getUTCMonth()]}, ${hh}:${mm} ${ampm}`;
+      }
     };
 
     // 1. Single-Use Verification Check: Pass can only be verified ONCE!

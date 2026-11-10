@@ -1,3 +1,4 @@
+import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'booking_manager.dart';
 import 'match_scorecard_screen.dart';
@@ -118,7 +119,15 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           Row(
             children: [
               GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (_) => const MainLayout()),
+                  );
+                }
+              },
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(

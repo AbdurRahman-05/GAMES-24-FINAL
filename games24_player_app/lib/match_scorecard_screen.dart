@@ -1,3 +1,4 @@
+import 'main_layout.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -1334,7 +1335,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const MainLayout()),
+              );
+            }
+          },
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1374,7 +1383,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const MainLayout()),
+              );
+            }
+          },
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -3916,7 +3933,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     ),
                     icon: const Icon(Icons.arrow_back_rounded, size: 18),
                     label: const Text('My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const MainLayout()),
+              );
+            }
+          },
                   ),
                 ),
               ),
