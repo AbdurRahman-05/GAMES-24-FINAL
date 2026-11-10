@@ -208,8 +208,8 @@ class BookingManager {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final phone = (prefs.getString('mobileNumber') ?? '+917010396731').trim();
-      final name = (prefs.getString('fullName') ?? 'Vignesh').trim();
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
+      final name = (prefs.getString('fullName') ?? '').trim();
 
       final uri = Uri.parse(
           '${ApiConfig.baseUrl}/turfs/user-bookings?phone=${Uri.encodeComponent(phone)}&name=${Uri.encodeComponent(name)}');

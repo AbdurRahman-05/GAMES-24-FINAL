@@ -16,9 +16,9 @@ class _CreatePublicTournamentScreenState
   final _formKey = GlobalKey<FormState>();
 
   // Text Controllers
-  final _nameController = TextEditingController(text: 'Weekend Turf Clash Season 4');
-  final _prizeController = TextEditingController(text: '₹10,000 + Trophy');
-  final _entryFeeController = TextEditingController(text: '₹500 / team');
+  final _nameController = TextEditingController();
+  final _prizeController = TextEditingController();
+  final _entryFeeController = TextEditingController();
   final _customRulesController = TextEditingController();
 
   // Sports & Format
@@ -313,6 +313,7 @@ class _CreatePublicTournamentScreenState
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             decoration: InputDecoration(
                               labelText: 'Prize Pool',
+                              hintText: 'e.g. ₹10,000 + Trophy',
                               prefixIcon: const Icon(Icons.card_giftcard_rounded, color: Color(0xFF166534), size: 18),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -326,6 +327,7 @@ class _CreatePublicTournamentScreenState
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             decoration: InputDecoration(
                               labelText: 'Entry Fee / Team',
+                              hintText: 'e.g. ₹500 / team',
                               prefixIcon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF166534), size: 18),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),

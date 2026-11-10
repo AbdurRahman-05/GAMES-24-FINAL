@@ -47,7 +47,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final Set<String> _selectedTimeSlots = {};
   bool _isOpenForChallenge = false;
   final TextEditingController _teamNameController = TextEditingController();
-  final TextEditingController _teamSizeController = TextEditingController(text: '7 Players (7v7)');
+  final TextEditingController _teamSizeController = TextEditingController();
   int _currentImageIndex = 0;
   bool _isLoadingSlots = false;
   bool _isBookingInProgress = false;
@@ -1288,7 +1288,7 @@ class _BookingScreenState extends State<BookingScreen> {
               TextField(
                 controller: _teamNameController,
                 decoration: InputDecoration(
-                  hintText: 'Enter your Team Name (e.g. Eagles FC)',
+                  hintText: 'Enter Team Name (e.g. Eagles FC)',
                   prefixIcon: const Icon(Icons.shield_outlined, size: 18),
                   hintStyle: const TextStyle(
                     fontSize: 13,
@@ -1310,7 +1310,7 @@ class _BookingScreenState extends State<BookingScreen> {
               TextField(
                 controller: _teamSizeController,
                 decoration: InputDecoration(
-                  hintText: 'Team Size (e.g. 7 Players, 5v5)',
+                  hintText: 'Enter Team Size / Format (e.g. 7v7, 5v5)',
                   prefixIcon: const Icon(Icons.groups_outlined, size: 18),
                   hintStyle: const TextStyle(
                     fontSize: 13,
@@ -1541,16 +1541,27 @@ class _BookingScreenState extends State<BookingScreen> {
                       return;
                     }
 
-                    if (_isOpenForChallenge &&
-                        _teamNameController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Please enter your team name for open challenge.',
+                    if (_isOpenForChallenge) {
+                      if (_teamNameController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please enter your team name for open challenge.',
+                            ),
                           ),
-                        ),
-                      );
-                      return;
+                        );
+                        return;
+                      }
+                      if (_teamSizeController.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please enter team size (e.g. 7v7, 5v5) for open challenge.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
                     }
 
                     final sortedSlots = _selectedTimeSlots.toList()
@@ -1571,10 +1582,10 @@ class _BookingScreenState extends State<BookingScreen> {
                             (prefs.getString('mobileNumber') ?? '').trim();
 
                         if (customerName.isEmpty) {
-                          customerName = 'Vignesh';
+                          customerName = 'Guest Player';
                         }
                         if (customerPhone.isEmpty) {
-                          customerPhone = '+917010396731';
+                          customerPhone = '';
                         }
 
                         final tName = _teamNameController.text.trim().isNotEmpty
@@ -1582,7 +1593,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             : customerName;
                         final tSize = _teamSizeController.text.trim().isNotEmpty
                             ? _teamSizeController.text.trim()
-                            : '7 Players (7v7)';
+                            : 'Open Squad';
 
                         final res = await http.post(
                           Uri.parse(

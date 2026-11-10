@@ -16,10 +16,8 @@ class AdminLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
-  final TextEditingController _phoneController =
-      TextEditingController(text: '7010396732');
-  final TextEditingController _otpController =
-      TextEditingController(text: '1234');
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -373,7 +371,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                               ),
                             ),
                           ),
-                          hintText: '1234',
+                          hintText: 'Enter 4-digit OTP',
                           hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13.5, letterSpacing: 0),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),

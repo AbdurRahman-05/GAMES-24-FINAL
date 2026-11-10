@@ -17,9 +17,9 @@ class CreateTeamScreen extends ConsumerStatefulWidget {
 
 class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _captainController = TextEditingController(text: 'You (Captain)');
+  final TextEditingController _captainController = TextEditingController();
   String _selectedSport = 'Football';
-  String _homeTurf = 'Madurai Turf Arena (KK Nagar)';
+  String _homeTurf = '';
 
   @override
   void dispose() {
@@ -31,6 +31,10 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
   void _onCreateTeam() {
     if (_nameController.text.trim().isEmpty) {
       ToastUtils.showError(context, "Please enter your team name.");
+      return;
+    }
+    if (_captainController.text.trim().isEmpty) {
+      ToastUtils.showError(context, "Please enter captain name.");
       return;
     }
 
@@ -81,7 +85,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
             const SizedBox(height: 20),
             AppTextField(
               label: 'Captain Name',
-              hint: 'Captain Name',
+              hint: 'Enter Captain Name',
               controller: _captainController,
             ),
             const SizedBox(height: 20),
@@ -109,7 +113,7 @@ class _CreateTeamScreenState extends ConsumerState<CreateTeamScreen> {
             const SizedBox(height: 10),
             AppTextField(
               label: 'Home Turf',
-              hint: 'Madurai Turf Arena (KK Nagar)',
+              hint: 'e.g. Madurai Turf Arena (KK Nagar)',
               onChanged: (val) => _homeTurf = val,
             ),
             const SizedBox(height: 32),

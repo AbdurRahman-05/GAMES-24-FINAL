@@ -17,12 +17,20 @@ class SuperAdminLoginScreen extends ConsumerStatefulWidget {
 
 class _SuperAdminLoginScreenState
     extends ConsumerState<SuperAdminLoginScreen> {
-  final TextEditingController _emailController =
-      TextEditingController(text: 'owner@Games24.in');
-  final TextEditingController _pinController =
-      TextEditingController(text: '9999');
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _pinController = TextEditingController();
 
   void _onSuperAdminLogin() {
+    final email = _emailController.text.trim();
+    final pin = _pinController.text.trim();
+    if (email.isEmpty) {
+      ToastUtils.showError(context, "Please enter Super Admin email.");
+      return;
+    }
+    if (pin.isEmpty) {
+      ToastUtils.showError(context, "Please enter Master PIN.");
+      return;
+    }
     ToastUtils.showSuccess(context, "Super Admin Master Login Granted! Welcome App Owner.");
     context.go('/super-admin/dashboard');
   }
@@ -81,7 +89,7 @@ class _SuperAdminLoginScreenState
 
                   AppTextField(
                     label: 'Super Admin Master Email',
-                    hint: 'owner@Games24.in',
+                    hint: 'e.g. owner@games24.in',
                     controller: _emailController,
                     prefixIcon: Icons.email_rounded,
                   ),
@@ -89,7 +97,7 @@ class _SuperAdminLoginScreenState
 
                   AppTextField(
                     label: 'Master Security PIN',
-                    hint: '9999',
+                    hint: 'Enter PIN',
                     controller: _pinController,
                     keyboardType: TextInputType.number,
                     obscureText: true,

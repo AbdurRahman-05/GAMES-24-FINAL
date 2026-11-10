@@ -16,12 +16,20 @@ class AdminLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
-  final TextEditingController _phoneController =
-      TextEditingController(text: '9876543210');
-  final TextEditingController _pinController =
-      TextEditingController(text: '1234');
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _pinController = TextEditingController();
 
   void _onAdminLogin() {
+    final phone = _phoneController.text.trim();
+    final pin = _pinController.text.trim();
+    if (phone.isEmpty) {
+      ToastUtils.showError(context, "Please enter partner registered phone.");
+      return;
+    }
+    if (pin.isEmpty) {
+      ToastUtils.showError(context, "Please enter security PIN.");
+      return;
+    }
     ref.read(isAdminModeProvider.notifier).setMode(true);
     ToastUtils.showSuccess(context, "Venue Partner Login Successful! Welcome Madurai Turf Arena.");
     context.go('/admin/dashboard');
@@ -115,7 +123,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
               AppTextField(
                 label: 'Partner Registered Phone',
-                hint: '98765 43210',
+                hint: 'Enter 10-digit mobile number',
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 prefixIcon: Icons.phone_rounded,
@@ -124,7 +132,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
               AppTextField(
                 label: 'Admin Security PIN',
-                hint: '1234',
+                hint: 'Enter PIN',
                 controller: _pinController,
                 keyboardType: TextInputType.number,
                 obscureText: true,

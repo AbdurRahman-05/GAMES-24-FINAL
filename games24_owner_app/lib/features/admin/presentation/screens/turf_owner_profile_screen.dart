@@ -399,11 +399,11 @@ class _TurfOwnerProfileScreenState
 
   void _showAddSportDialog() {
     final nameCtrl = TextEditingController();
-    final rateCtrl = TextEditingController(text: '1200');
-    final weekdayRateCtrl = TextEditingController(text: '1200');
-    final weekendRateCtrl = TextEditingController(text: '1600');
-    final nightRateCtrl = TextEditingController(text: '1400');
-    final courtsCtrl = TextEditingController(text: '1');
+    final rateCtrl = TextEditingController();
+    final weekdayRateCtrl = TextEditingController();
+    final weekendRateCtrl = TextEditingController();
+    final nightRateCtrl = TextEditingController();
+    final courtsCtrl = TextEditingController();
 
     final popularSports = ['Cricket', 'Football', 'Pickleball', 'Badminton', 'Others'];
     String selectedSportName = popularSports.first;
@@ -465,6 +465,7 @@ class _TurfOwnerProfileScreenState
                   const SizedBox(height: 12),
                   AppTextField(
                     label: 'Base Standard Hourly Rate (₹)',
+                    hint: 'e.g. 1200',
                     controller: rateCtrl,
                     keyboardType: TextInputType.number,
                   ),
@@ -474,6 +475,7 @@ class _TurfOwnerProfileScreenState
                       Expanded(
                         child: AppTextField(
                           label: 'Weekday Rate (₹)',
+                          hint: 'e.g. 1200',
                           controller: weekdayRateCtrl,
                           keyboardType: TextInputType.number,
                         ),
@@ -482,6 +484,7 @@ class _TurfOwnerProfileScreenState
                       Expanded(
                         child: AppTextField(
                           label: 'Weekend Rate (₹)',
+                          hint: 'e.g. 1600',
                           controller: weekendRateCtrl,
                           keyboardType: TextInputType.number,
                         ),
@@ -491,12 +494,14 @@ class _TurfOwnerProfileScreenState
                   const SizedBox(height: 10),
                   AppTextField(
                     label: 'Night Floodlight Rate (₹)',
+                    hint: 'e.g. 1400',
                     controller: nightRateCtrl,
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 12),
                   AppTextField(
                     label: 'Number of Courts/Pitches',
+                    hint: 'e.g. 1',
                     controller: courtsCtrl,
                     keyboardType: TextInputType.number,
                   ),
@@ -647,8 +652,8 @@ class _TurfOwnerProfileScreenState
 
   void _showAddVenueCourtDialog(TurfProfileState profile) {
     final courtNameCtrl = TextEditingController();
-    final surfaceCtrl = TextEditingController(text: 'FIFA Quality Synthetic Turf');
-    final rateCtrl = TextEditingController(text: profile.dayRate.toStringAsFixed(0));
+    final surfaceCtrl = TextEditingController();
+    final rateCtrl = TextEditingController();
     String selectedSport = profile.sports.isNotEmpty ? profile.sports.first.name : 'Football';
     String dropdownValue = selectedSport;
     String customSportValue = '';
@@ -723,6 +728,7 @@ class _TurfOwnerProfileScreenState
                 const SizedBox(height: 12),
                 AppTextField(
                   label: 'Standard Hourly Rate (₹)',
+                  hint: 'e.g. 1000',
                   controller: rateCtrl,
                   keyboardType: TextInputType.number,
                 ),
@@ -1133,18 +1139,14 @@ class _TurfOwnerProfileScreenState
   }
 
   void _showEditTurfDialog() {
-    final descCtrl = TextEditingController(
-        text: 'Premium FIFA-quality synthetic turf with floodlights for night play. Ideal for 5v5, 7v7 football and box cricket matches. Clean facilities, ample parking, and refreshment lounge available.');
-    final img1Ctrl = TextEditingController(
-        text: 'https://images.unsplash.com/photo-1518605368461-1e1e38ce8ba9?auto=format&fit=crop&w=800&q=80');
-    final img2Ctrl = TextEditingController(
-        text: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=800&q=80');
-    final img3Ctrl = TextEditingController(
-        text: 'https://images.unsplash.com/photo-1551280388-1c4b787595b9?auto=format&fit=crop&w=800&q=80');
-    final img4Ctrl = TextEditingController(text: '');
-    final img5Ctrl = TextEditingController(text: '');
-    final surfaceCtrl = TextEditingController(text: 'FIFA 2-Star Synthetic Grass (50mm)');
-    final dimensionCtrl = TextEditingController(text: '120 x 80 Feet');
+    final descCtrl = TextEditingController();
+    final img1Ctrl = TextEditingController();
+    final img2Ctrl = TextEditingController();
+    final img3Ctrl = TextEditingController();
+    final img4Ctrl = TextEditingController();
+    final img5Ctrl = TextEditingController();
+    final surfaceCtrl = TextEditingController();
+    final dimensionCtrl = TextEditingController();
     Map<String, bool> amenities = {
       'Floodlights (1200 Lux)': true,
       'Changing Rooms and Showers': true,

@@ -20,23 +20,16 @@ class _TurfOwnerRegistrationScreenState
   int _currentStep = 0;
 
   // Step 1 Controllers
-  final TextEditingController _venueNameController =
-      TextEditingController(text: 'Madurai Champions Turf');
-  final TextEditingController _ownerNameController =
-      TextEditingController(text: 'Karthikeyan M');
-  final TextEditingController _phoneController =
-      TextEditingController(text: '9876543210');
-  final TextEditingController _emailController =
-      TextEditingController(text: 'karthik@championsarena.in');
-  final TextEditingController _addressController =
-      TextEditingController(text: 'No. 42, 80 Feet Road, KK Nagar');
+  final TextEditingController _venueNameController = TextEditingController();
+  final TextEditingController _ownerNameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   String _selectedArea = 'KK Nagar';
 
   // Step 2 OTP State
-  final TextEditingController _mobileOtpController =
-      TextEditingController(text: '1234');
-  final TextEditingController _emailOtpController =
-      TextEditingController(text: '5678');
+  final TextEditingController _mobileOtpController = TextEditingController();
+  final TextEditingController _emailOtpController = TextEditingController();
   bool _isMobileVerified = false;
   bool _isEmailVerified = false;
 
@@ -48,25 +41,19 @@ class _TurfOwnerRegistrationScreenState
   bool _hasFloodlights = true;
   bool _hasChangingRoom = true;
   bool _hasFirstAid = true;
-  int _photosUploadedCount = 3;
+  int _photosUploadedCount = 0;
 
   // Step 4 KYC & Bank Controllers
-  final TextEditingController _gstinController =
-      TextEditingController(text: '33AAACM1234F1Z8');
-  final TextEditingController _panController =
-      TextEditingController(text: 'ABCDE1234F');
-  final TextEditingController _aadhaarController =
-      TextEditingController(text: '1234 5678 9012');
-  final TextEditingController _bankAccountController =
-      TextEditingController(text: '91802003881234');
-  final TextEditingController _ifscController =
-      TextEditingController(text: 'HDFC0001234');
-  final TextEditingController _upiIdController =
-      TextEditingController(text: 'karthik@okaxis');
+  final TextEditingController _gstinController = TextEditingController();
+  final TextEditingController _panController = TextEditingController();
+  final TextEditingController _aadhaarController = TextEditingController();
+  final TextEditingController _bankAccountController = TextEditingController();
+  final TextEditingController _ifscController = TextEditingController();
+  final TextEditingController _upiIdController = TextEditingController();
 
-  bool _isAadhaarUploaded = true;
-  bool _isPanUploaded = true;
-  bool _isGstUploaded = true;
+  bool _isAadhaarUploaded = false;
+  bool _isPanUploaded = false;
+  bool _isGstUploaded = false;
 
   void _toggleAadhaarUpload() => setState(() => _isAadhaarUploaded = !_isAadhaarUploaded);
   void _togglePanUpload() => setState(() => _isPanUploaded = !_isPanUploaded);
@@ -268,7 +255,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Owner Phone Number',
-          hint: '98765 43210',
+          hint: 'Enter 10-digit mobile number',
           controller: _phoneController,
           keyboardType: TextInputType.phone,
           prefixIcon: Icons.phone_rounded,
@@ -277,7 +264,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Owner Email Address',
-          hint: 'karthik@championsarena.in',
+          hint: 'e.g. contact@yourturf.in',
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
           prefixIcon: Icons.email_rounded,
@@ -286,7 +273,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Full Street Address',
-          hint: 'No. 42, 80 Feet Road...',
+          hint: 'Enter complete street address',
           controller: _addressController,
           prefixIcon: Icons.place_rounded,
         ),
@@ -370,7 +357,7 @@ class _TurfOwnerRegistrationScreenState
                     Expanded(
                       child: AppTextField(
                         label: 'Mobile OTP Code',
-                        hint: '1234',
+                        hint: 'Enter 4-digit OTP',
                         controller: _mobileOtpController,
                         keyboardType: TextInputType.number,
                       ),
@@ -441,7 +428,7 @@ class _TurfOwnerRegistrationScreenState
                     Expanded(
                       child: AppTextField(
                         label: 'Email OTP Code',
-                        hint: '5678',
+                        hint: 'Enter 4-digit OTP',
                         controller: _emailOtpController,
                         keyboardType: TextInputType.number,
                       ),
@@ -606,7 +593,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'GSTIN Business Number',
-          hint: '33AAACM1234F1Z8',
+          hint: 'Enter 15-digit GSTIN (optional)',
           controller: _gstinController,
           prefixIcon: Icons.receipt_long_rounded,
         ),
@@ -614,7 +601,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Owner PAN Card Number',
-          hint: 'ABCDE1234F',
+          hint: 'Enter 10-digit PAN',
           controller: _panController,
           prefixIcon: Icons.badge_rounded,
         ),
@@ -622,7 +609,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Owner Aadhaar Card Number',
-          hint: '1234 5678 9012',
+          hint: 'Enter 12-digit Aadhaar Number',
           controller: _aadhaarController,
           keyboardType: TextInputType.number,
           prefixIcon: Icons.credit_card_rounded,
@@ -690,7 +677,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Bank Account Number',
-          hint: '91802003881234',
+          hint: 'Enter Bank Account Number',
           controller: _bankAccountController,
           keyboardType: TextInputType.number,
           prefixIcon: Icons.account_balance_rounded,
@@ -699,7 +686,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Bank IFSC Code',
-          hint: 'HDFC0001234',
+          hint: 'Enter Bank IFSC Code (e.g. HDFC0001234)',
           controller: _ifscController,
           prefixIcon: Icons.code_rounded,
         ),
@@ -707,7 +694,7 @@ class _TurfOwnerRegistrationScreenState
 
         AppTextField(
           label: 'Partner UPI ID',
-          hint: 'karthik@okaxis',
+          hint: 'e.g. username@upi',
           controller: _upiIdController,
           prefixIcon: Icons.payment_rounded,
         ),

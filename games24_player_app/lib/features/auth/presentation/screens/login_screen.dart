@@ -12,10 +12,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _phoneController = TextEditingController(text: '9876543210');
+  final TextEditingController _phoneController = TextEditingController();
 
   void _onSendOtp() {
-    context.go('/otp', extra: _phoneController.text);
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your mobile number')),
+      );
+      return;
+    }
+    context.go('/otp', extra: phone);
   }
 
   @override

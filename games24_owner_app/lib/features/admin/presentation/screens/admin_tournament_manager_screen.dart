@@ -28,14 +28,14 @@ class _AdminTournamentManagerScreenState
   final _subtitleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _rulesCtrl = TextEditingController();
-  final _organizerCtrl = TextEditingController(text: 'Games24 Venue Admin');
-  final _phoneCtrl = TextEditingController(text: '+91 98765 43210');
-  final _emailCtrl = TextEditingController(text: 'admin@games24.com');
-  final _entryFeeCtrl = TextEditingController(text: '1500');
-  final _maxTeamsCtrl = TextEditingController(text: '12');
-  final _playersPerTeamCtrl = TextEditingController(text: '8');
-  final _championPrizeCtrl = TextEditingController(text: '₹15,000 Cash + Trophy 🏆');
-  final _runnerUpPrizeCtrl = TextEditingController(text: '₹7,000 Cash 🥈');
+  final _organizerCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _entryFeeCtrl = TextEditingController();
+  final _maxTeamsCtrl = TextEditingController();
+  final _playersPerTeamCtrl = TextEditingController();
+  final _championPrizeCtrl = TextEditingController();
+  final _runnerUpPrizeCtrl = TextEditingController();
 
   String _selectedSport = 'Cricket';
   String _selectedType = 'Knockout';

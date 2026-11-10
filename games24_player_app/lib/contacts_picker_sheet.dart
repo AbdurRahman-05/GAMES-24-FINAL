@@ -255,7 +255,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
 
   void _showAddManualContactDialog() {
     final nameCtrl = TextEditingController();
-    final phoneCtrl = TextEditingController(text: '+91 ');
+    final phoneCtrl = TextEditingController();
     String role = _getDefaultRoleForSport(widget.sport);
 
     showDialog(

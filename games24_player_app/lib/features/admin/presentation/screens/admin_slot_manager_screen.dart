@@ -29,10 +29,10 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
   @override
   void initState() {
     super.initState();
-    _discountPercentController = TextEditingController(text: '20');
-    _offerLabelController = TextEditingController(text: 'Happy Hour');
-    _originalPriceController = TextEditingController(text: '1000');
-    _discountedPriceController = TextEditingController(text: '800');
+    _discountPercentController = TextEditingController();
+    _offerLabelController = TextEditingController();
+    _originalPriceController = TextEditingController();
+    _discountedPriceController = TextEditingController();
   }
 
   @override
@@ -265,6 +265,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Discount %',
+                              hintText: 'e.g. 20',
                               prefixIcon: Icon(Icons.percent_rounded, size: 18),
                               border: OutlineInputBorder(),
                               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -279,6 +280,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             controller: sheetLabelController,
                             decoration: const InputDecoration(
                               labelText: 'Tag Label',
+                              hintText: 'e.g. Happy Hour',
                               prefixIcon: Icon(Icons.label_outline_rounded, size: 18),
                               border: OutlineInputBorder(),
                               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -297,6 +299,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Original Price (₹)',
+                              hintText: 'e.g. 1000',
                               prefixIcon: Icon(Icons.money_off_rounded, size: 18),
                               border: OutlineInputBorder(),
                               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -311,6 +314,7 @@ class _AdminSlotManagerScreenState extends ConsumerState<AdminSlotManagerScreen>
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Offer Price (₹)',
+                              hintText: 'e.g. 800',
                               prefixIcon: Icon(Icons.currency_rupee_rounded, size: 18),
                               border: OutlineInputBorder(),
                               contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),

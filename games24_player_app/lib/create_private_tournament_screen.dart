@@ -17,10 +17,10 @@ class _CreatePrivateTournamentScreenState
   final _formKey = GlobalKey<FormState>();
 
   // Text Controllers
-  final _nameController = TextEditingController(text: 'Corporate Invitational Cup');
+  final _nameController = TextEditingController();
   final _pinController = TextEditingController();
-  final _prizeController = TextEditingController(text: '₹15,000 + Trophy');
-  final _entryFeeController = TextEditingController(text: '₹1,000 / team');
+  final _prizeController = TextEditingController();
+  final _entryFeeController = TextEditingController();
   final _customRulesController = TextEditingController();
 
   // Sports & Format
@@ -330,6 +330,7 @@ class _CreatePrivateTournamentScreenState
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             decoration: InputDecoration(
                               labelText: 'Prize Pool',
+                              hintText: 'e.g. ₹15,000 + Trophy',
                               prefixIcon: const Icon(Icons.card_giftcard_rounded, color: Color(0xFFD97706), size: 18),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -343,6 +344,7 @@ class _CreatePrivateTournamentScreenState
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                             decoration: InputDecoration(
                               labelText: 'Entry Fee / Team',
+                              hintText: 'e.g. ₹1,000 / team',
                               prefixIcon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFFD97706), size: 18),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),

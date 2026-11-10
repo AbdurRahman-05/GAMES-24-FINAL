@@ -17,9 +17,16 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController(text: '8'));
+      List.generate(4, (_) => TextEditingController());
 
   void _verifyOtp() {
+    final otp = _controllers.map((c) => c.text.trim()).join();
+    if (otp.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter all 4 digits of the OTP')),
+      );
+      return;
+    }
     context.go('/main');
   }
 

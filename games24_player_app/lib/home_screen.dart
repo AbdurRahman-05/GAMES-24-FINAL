@@ -2676,11 +2676,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
       _selectedFormat = '7v7';
     }
 
-    _teamSizeCtrl = TextEditingController(
-      text: widget.challenge.teamSize.isNotEmpty
-          ? widget.challenge.teamSize
-          : '7 Players (7v7)',
-    );
+    _teamSizeCtrl = TextEditingController();
     _contactCtrl = TextEditingController();
     _loadUserPhone();
   }

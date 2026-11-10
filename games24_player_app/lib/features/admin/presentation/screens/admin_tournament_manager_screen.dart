@@ -29,14 +29,14 @@ class _AdminTournamentManagerScreenState
   final _subtitleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _rulesCtrl = TextEditingController();
-  final _organizerCtrl = TextEditingController(text: 'PlayHub Venue Admin');
-  final _phoneCtrl = TextEditingController(text: '+91 98765 43210');
-  final _emailCtrl = TextEditingController(text: 'admin@playhubmadurai.com');
-  final _entryFeeCtrl = TextEditingController(text: '1500');
-  final _maxTeamsCtrl = TextEditingController(text: '12');
-  final _playersPerTeamCtrl = TextEditingController(text: '8');
-  final _championPrizeCtrl = TextEditingController(text: '₹15,000 Cash + Trophy 🏆');
-  final _runnerUpPrizeCtrl = TextEditingController(text: '₹7,000 Cash 🥈');
+  final _organizerCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _entryFeeCtrl = TextEditingController();
+  final _maxTeamsCtrl = TextEditingController();
+  final _playersPerTeamCtrl = TextEditingController();
+  final _championPrizeCtrl = TextEditingController();
+  final _runnerUpPrizeCtrl = TextEditingController();
 
   String _selectedSport = 'Cricket';
   String _selectedType = 'Knockout';
@@ -1001,11 +1001,11 @@ class _AdminTournamentManagerScreenState
             const SizedBox(height: 8),
             Row(
               children: [
-                Expanded(child: TextFormField(controller: _entryFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Fee (₹)', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
+                Expanded(child: TextFormField(controller: _entryFeeCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Fee (₹)', hintText: '1500', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
                 const SizedBox(width: 6),
-                Expanded(child: TextFormField(controller: _maxTeamsCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Teams', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
+                Expanded(child: TextFormField(controller: _maxTeamsCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Max Teams', hintText: '12', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
                 const SizedBox(width: 6),
-                Expanded(child: TextFormField(controller: _playersPerTeamCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Players', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
+                Expanded(child: TextFormField(controller: _playersPerTeamCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Players', hintText: '8', border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8)))),
               ],
             ),
             const SizedBox(height: 16),
@@ -1013,9 +1013,9 @@ class _AdminTournamentManagerScreenState
             // Section 5: Prizes
             _buildFormSectionHeader('5. Prize Pool & Awards', Icons.workspace_premium_outlined),
             const SizedBox(height: 8),
-            TextFormField(controller: _championPrizeCtrl, decoration: const InputDecoration(labelText: 'Champion Prize 🏆', border: OutlineInputBorder())),
+            TextFormField(controller: _championPrizeCtrl, decoration: const InputDecoration(labelText: 'Champion Prize 🏆', hintText: 'e.g. ₹15,000 Cash + Trophy', border: OutlineInputBorder())),
             const SizedBox(height: 10),
-            TextFormField(controller: _runnerUpPrizeCtrl, decoration: const InputDecoration(labelText: 'Runner-up Prize 🥈', border: OutlineInputBorder())),
+            TextFormField(controller: _runnerUpPrizeCtrl, decoration: const InputDecoration(labelText: 'Runner-up Prize 🥈', hintText: 'e.g. ₹7,000 Cash', border: OutlineInputBorder())),
             const SizedBox(height: 20),
 
             SizedBox(
