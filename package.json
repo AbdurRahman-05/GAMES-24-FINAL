@@ -8,6 +8,10 @@
   "scripts": {
     "build": "cd games24_backend && npm install --include=dev && npm run build",
     "start": "cd games24_backend && npm run start:prod",
-    "start:prod": "cd games24_backend && npm run start:prod"
+    "start:prod": "cd games24_backend && npm run start:prod",
+    "backend:dev": "cd games24_backend && npm run start:dev",
+    "superadmin:dev": "cd games24_superadmin && npm run dev",
+    "owner:chrome": "cd games24_owner_app && flutter run -d chrome",
+    "player:chrome": "cd games24_player_app && flutter run -d chrome"
   }
 }

@@ -4,10 +4,36 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
+  private keepAliveTimer: NodeJS.Timeout | null = null;
 
   constructor() {
     super({
-      log: ['error', 'warn'],
+      log: [
+        { emit: 'event', level: 'error' },
+        { emit: 'event', level: 'warn' },
+      ],
+    });
+
+    // Intercept Prisma engine logs and filter out harmless idle socket closures from Neon/PgBouncer
+    (this as any).$on('error', (e: any) => {
+      const msg = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
+      if (
+        msg.includes('kind: Closed') ||
+        msg.includes('Closed, cause: None') ||
+        msg.includes('Socket closed')
+      ) {
+        // Idle connection drop from serverless pooler - automatically re-established on next query
+        return;
+      }
+      this.logger.error(`Prisma error: ${msg}`);
+    });
+
+    (this as any).$on('warn', (e: any) => {
+      const msg = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
+      if (msg.includes('kind: Closed') || msg.includes('Closed, cause: None')) {
+        return;
+      }
+      this.logger.warn(`Prisma warn: ${msg}`);
     });
 
     this.$use(async (params, next) => {
@@ -31,6 +57,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             errorMessage.includes('closed unexpectedly') ||
             errorMessage.includes('Connection pool timeout') ||
             errorMessage.includes('connection refused') ||
+            errorMessage.includes('kind: Closed') ||
+            errorMessage.includes('Closed') ||
             errorMessage.includes('timeout');
 
           if (isConnectionError && attempts < maxAttempts) {
@@ -61,12 +89,27 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         ON "TurfBooking" ("verifiedAdminId", "date", "timeSlot") 
         WHERE "status" != 'Cancelled';
       `).catch((e) => this.logger.warn(`Could not verify unique booking index: ${e?.message || e}`));
+
+      // Start keep-alive ping every 2 minutes to keep Neon compute active & avoid socket timeouts
+      this.keepAliveTimer = setInterval(async () => {
+        try {
+          await this.$queryRawUnsafe('SELECT 1');
+        } catch (_) {
+          try {
+            await this.$connect();
+          } catch (_) {}
+        }
+      }, 120000);
     } catch (error: any) {
       this.logger.warn(`Initial database connection delayed: ${error?.message || error}. Will retry on queries.`);
     }
   }
 
   async onModuleDestroy() {
+    if (this.keepAliveTimer) {
+      clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
     await this.$disconnect();
   }
 }

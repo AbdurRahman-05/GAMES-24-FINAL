@@ -356,7 +356,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: _buildSectionHeader(
                       'Upcoming Matches',
                       'View Schedule',
-                      hasLiveBadge: true,
+                      hasLiveBadge: activeBookings.any((b) => BookingManager.isMatchStarted(
+                        dateStr: (b['date'] ?? '').toString(),
+                        timeSlot: (b['timeSlot'] ?? '').toString(),
+                      )),
                       onActionTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -366,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildUpcomingMatches(),
+                  _buildUpcomingMatches(activeBookings),
 
                   // Red circled section: Only shown if the user has an active booking. If no active bookings, completely removed with no extra blank space.
                   if (activeBookings.isNotEmpty) ...[
@@ -847,26 +850,153 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildUpcomingMatches() {
-    final matches = <Map<String, dynamic>>[];
+  IconData _getSportIconData(String sport) {
+    final s = sport.trim().toLowerCase();
+    if (s.contains('cricket')) return Icons.sports_cricket_rounded;
+    if (s.contains('tennis')) return Icons.sports_tennis_rounded;
+    if (s.contains('badminton')) return Icons.sports_tennis_rounded;
+    if (s.contains('basket')) return Icons.sports_basketball_rounded;
+    if (s.contains('volley')) return Icons.sports_volleyball_rounded;
+    return Icons.sports_soccer_rounded;
+  }
 
-    if (matches.isEmpty) {
-      return GestureDetector(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const MatchScheduleScreen()),
+  Widget _buildUpcomingMatches(List<Map<String, dynamic>> activeBookings) {
+    if (activeBookings.isEmpty) {
+      return Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFE5E7EB)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.sports_soccer_outlined,
+                color: Color(0xFF166534),
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'No Upcoming Matches',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Book a turf slot or join an open game to play!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (activeBookings.length == 1) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: _buildMinimalUpcomingMatchCard(activeBookings.first),
+      );
+    }
+
+    return SizedBox(
+      height: 98,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        scrollDirection: Axis.horizontal,
+        clipBehavior: Clip.none,
+        itemCount: activeBookings.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          return SizedBox(
+            width: 320,
+            child: _buildMinimalUpcomingMatchCard(activeBookings[index]),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMinimalUpcomingMatchCard(Map<String, dynamic> booking) {
+    final turfName =
+        (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
+    final sport = (booking['sport'] ?? 'Football').toString();
+    final dateStr = (booking['date'] ?? '').toString();
+    final timeSlot = (booking['timeSlot'] ?? '').toString();
+    final formattedDateTime = _formatBookingDate(dateStr, timeSlot);
+    final isStarted = BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot);
+    final bookingCode = (booking['bookingCode'] ?? '').toString();
+    final courtName =
+        (booking['courtName'] ?? booking['location'] ?? '').toString();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MatchScorecardScreen(
+                bookingId: (booking['id'] ?? 'BK-1').toString(),
+                turfName: turfName,
+                sport: sport,
+                date: dateStr,
+                timeSlot: timeSlot,
+                initialTab: isStarted ? 1 : 0,
+                isOpenMatch: booking['isOpenMatch'] == true ||
+                    booking['is_open_match'] == true ||
+                    (booking['openMatchStatus'] != null &&
+                        booking['openMatchStatus'].toString().isNotEmpty),
+              ),
+            ),
+          ).then((_) => BookingManager().fetchBookings());
+        },
         child: Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 16.0),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(
+              color: isStarted ? const Color(0xFF86EFAC) : const Color(0xFFE5E7EB),
+              width: isStarted ? 1.5 : 1,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: isStarted
+                    ? const Color(0xFF166534).withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -878,170 +1008,129 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
-                  borderRadius: BorderRadius.circular(12),
+                  color: isStarted ? const Color(0xFFDCFCE7) : const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
-                  Icons.sports_soccer_outlined,
-                  color: Color(0xFF166534),
+                child: Icon(
+                  _getSportIconData(sport),
+                  color: const Color(0xFF166534),
                   size: 26,
                 ),
               ),
-              const SizedBox(width: 16),
-              const Expanded(
+              const SizedBox(width: 14),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'No Upcoming Matches',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            turfName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: isStarted ? const Color(0xFFDCFCE7) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isStarted ? const Color(0xFFBBF7D0) : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isStarted) ...[
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF16A34A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Text(
+                                  'LIVE',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF15803D),
+                                  ),
+                                ),
+                              ] else ...[
+                                Text(
+                                  sport,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF475569),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Book a turf slot or join an open game to play!',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF6B7280),
-                      ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.schedule_rounded,
+                          size: 13,
+                          color: Color(0xFF6B7280),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            formattedDateTime,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF4B5563),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
+                    if (bookingCode.isNotEmpty || (courtName.isNotEmpty && courtName != turfName)) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        bookingCode.isNotEmpty ? bookingCode : courtName,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: Color(0xFF9CA3AF),
+                size: 20,
               ),
             ],
           ),
         ),
-      );
-    }
-
-    return SizedBox(
-      height: 160,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        scrollDirection: Axis.horizontal,
-        clipBehavior: Clip.none,
-        itemCount: matches.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final match = matches[index];
-          return Container(
-            width: 280,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-              border: Border.all(color: const Color(0xFFF3F4F6)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        match['time'] as String,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF4B5563),
-                        ),
-                      ),
-                    ),
-                    Text(
-                      match['slots'] as String,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF166534),
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildTeamAvatar(
-                      match['t1Initials'] as String,
-                      match['t1Name'] as String,
-                      match['t1Color'] as Color,
-                    ),
-                    const SizedBox(width: 16),
-                    const Text(
-                      'VS',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    _buildTeamAvatar(
-                      match['t2Initials'] as String,
-                      match['t2Name'] as String,
-                      match['t2Color'] as Color,
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      match['location'] as String,
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
-                        fontSize: 12,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        _showJoinMatchDialog(context, match);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF166534),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Join',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
@@ -2593,47 +2682,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           },
-        );
-      },
-    );
-  }
-
-  void _showJoinMatchDialog(BuildContext context, Map<String, dynamic> match) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text(
-            'Join Match?',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'Do you want to join the match between ${match['t1Name']} and ${match['t2Name']}?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Successfully Joined Match!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-              ),
-              child: const Text(
-                'Confirm',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
         );
       },
     );

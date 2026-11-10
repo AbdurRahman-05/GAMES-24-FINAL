@@ -1609,15 +1609,33 @@ class _BookingScreenState extends State<BookingScreen> {
                           Map<String, dynamic> bookingObj = {};
                           try {
                             final resData = jsonDecode(res.body);
-                            bookingObj = resData['booking'] is Map
-                                ? Map<String, dynamic>.from(resData['booking'])
-                                : <String, dynamic>{};
+                            final Map<String, dynamic> rawMap = resData is Map<String, dynamic>
+                                ? resData
+                                : (resData is Map ? Map<String, dynamic>.from(resData) : {});
+                            bookingObj = (rawMap['booking'] is Map)
+                                ? Map<String, dynamic>.from(rawMap['booking'])
+                                : Map<String, dynamic>.from(rawMap);
+
+                            final targetTurfId = bookingObj['turfId'] ??
+                                bookingObj['verifiedAdminId'] ??
+                                _resolvedTurfId ??
+                                widget.turfId ??
+                                1;
+
+                            bookingObj['turfId'] = targetTurfId;
+                            bookingObj['verifiedAdminId'] = targetTurfId;
                             bookingObj['turfName'] = widget.turfName;
                             bookingObj['imageUrl'] = widget.imageUrl;
                             bookingObj['location'] = widget.location;
                             bookingObj['courtName'] = widget.turfName;
                             bookingObj['isActive'] = true;
                             bookingObj['isOpenMatch'] = _isOpenForChallenge;
+                            bookingObj['customerName'] = customerName;
+                            bookingObj['customerPhone'] = customerPhone;
+                            bookingObj['sport'] = _selectedSport;
+                            bookingObj['amount'] = courtFee.toDouble();
+                            bookingObj['paymentMethod'] = 'UPI (GPay)';
+
                             if (bookingObj['date'] == null) {
                               bookingObj['date'] = selectedDate;
                             }
@@ -1627,6 +1645,15 @@ class _BookingScreenState extends State<BookingScreen> {
                             if (bookingObj['status'] == null) {
                               bookingObj['status'] = 'Confirmed';
                             }
+                            if (bookingObj['bookingCode'] == null && bookingObj['id'] != null) {
+                              bookingObj['bookingCode'] =
+                                  'G24-BK-${bookingObj['id'].toString().padLeft(4, '0')}';
+                            }
+                            if (bookingObj['bookingId'] == null) {
+                              bookingObj['bookingId'] =
+                                  bookingObj['bookingCode'] ?? 'G24-BK-0001';
+                            }
+
                             BookingManager().addBooking(bookingObj);
                           } catch (e) {
                             debugPrint('Error caching booking locally: $e');
