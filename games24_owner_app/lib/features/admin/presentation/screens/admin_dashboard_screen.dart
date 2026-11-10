@@ -2045,7 +2045,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text('Monthly Listing Fee', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+                      Expanded(
+                        child: Text(
+                          'Monthly Listing Fee',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+                        ),
+                      ),
                       Text('₹1,000.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -2053,7 +2058,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text('GST (18% Applicable)', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+                      Expanded(
+                        child: Text(
+                          'GST (18% Applicable)',
+                          style: TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+                        ),
+                      ),
                       Text('₹180.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -2061,8 +2071,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text('Total Subscription Due', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
-                      Text('₹1,180 / month', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF154D36))),
+                      Expanded(
+                        child: Text(
+                          'Total Subscription Due',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        '₹1,180 / month',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                      ),
                     ],
                   ),
                 ],

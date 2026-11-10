@@ -1779,27 +1779,27 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          isOpponentJoined ? '⚔️ Open Challenge: Opponent Joined!' : '⚔️ Open Challenge Match',
+                          isOpponentJoined ? '⚔️ Opponent Joined!' : '⚔️ Open Challenge',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 13.5,
+                            fontSize: 12.5,
                             color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF1E40AF),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                         decoration: BoxDecoration(
                           color: isOpponentJoined ? const Color(0xFFDCFCE7) : const Color(0xFFDBEAFE),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          isOpponentJoined ? 'Opponent Ready' : '⏳ Waiting for Team',
+                          isOpponentJoined ? 'Opponent Ready' : '⏳ Waiting',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.bold,
                             color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF1E40AF),
                           ),

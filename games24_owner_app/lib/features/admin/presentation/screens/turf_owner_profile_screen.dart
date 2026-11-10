@@ -1867,6 +1867,7 @@ class _TurfOwnerProfileScreenState
       ),
       child: TabBar(
         controller: _tabController,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
         indicator: BoxDecoration(
           color: const Color(0xFF154D36),
           borderRadius: BorderRadius.circular(10),
@@ -1881,37 +1882,58 @@ class _TurfOwnerProfileScreenState
         indicatorSize: TabBarIndicatorSize.tab,
         labelColor: Colors.white,
         unselectedLabelColor: const Color(0xFF475569),
-        labelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800),
-        unselectedLabelStyle: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+        unselectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
         dividerColor: Colors.transparent,
         tabs: [
           const Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.storefront_rounded, size: 14),
-                SizedBox(width: 5),
-                Text('Venue Hub'),
+                Icon(Icons.storefront_rounded, size: 13),
+                SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'Venue Hub',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
               ],
             ),
           ),
           Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.receipt_long_rounded, size: 14),
-                const SizedBox(width: 5),
-                Text('Bookings (${profile.bookingHistory.length})'),
+                const Icon(Icons.receipt_long_rounded, size: 13),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'Bookings (${profile.bookingHistory.length})',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
               ],
             ),
           ),
           const Tab(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.security_rounded, size: 14),
-                SizedBox(width: 5),
-                Text('KYC Details'),
+                Icon(Icons.security_rounded, size: 13),
+                SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'KYC Details',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1995,14 +2017,18 @@ class _TurfOwnerProfileScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Renews: ${profile.subscriptionRenewDate}',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                      color: isActive ? const Color(0xFF374151) : const Color(0xFFDC2626),
+                  Expanded(
+                    child: Text(
+                      'Renews: ${profile.subscriptionRenewDate}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isActive ? const Color(0xFF374151) : const Color(0xFFDC2626),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isActive ? const Color(0xFF166534) : const Color(0xFFDC2626),
@@ -2239,7 +2265,7 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Text('Platform Subscription Fee', style: TextStyle(fontSize: 12)),
+                Expanded(child: Text('Platform Subscription Fee', style: TextStyle(fontSize: 12))),
                 Text('₹1,000.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
               ],
             ),
@@ -2247,7 +2273,7 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Text('CGST (9%)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Expanded(child: Text('CGST (9%)', style: TextStyle(fontSize: 12, color: Colors.grey))),
                 Text('₹90.00', style: TextStyle(fontSize: 12)),
               ],
             ),
@@ -2255,7 +2281,7 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Text('SGST (9%)', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                Expanded(child: Text('SGST (9%)', style: TextStyle(fontSize: 12, color: Colors.grey))),
                 Text('₹90.00', style: TextStyle(fontSize: 12)),
               ],
             ),
@@ -2263,7 +2289,7 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total Paid', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                const Expanded(child: Text('Total Paid', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
                 Text('₹${item.totalAmount.toInt()}.00', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF166534))),
               ],
             ),
