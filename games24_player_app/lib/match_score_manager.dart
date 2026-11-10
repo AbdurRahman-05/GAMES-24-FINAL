@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayerItem {
@@ -375,12 +374,7 @@ class MatchScoreManager {
       try {
         final status = await FlutterContacts.permissions.request(PermissionType.read);
         permission = (status == PermissionStatus.granted || status == PermissionStatus.limited);
-      } catch (_) {
-        try {
-          final phStatus = await Permission.contacts.request();
-          permission = phStatus.isGranted || phStatus.isLimited;
-        } catch (_) {}
-      }
+      } catch (_) {}
 
       if (permission) {
         final deviceContacts = await FlutterContacts.getAll(

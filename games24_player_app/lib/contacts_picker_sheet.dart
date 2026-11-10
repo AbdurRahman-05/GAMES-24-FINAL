@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:permission_handler/permission_handler.dart' hide PermissionStatus;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'match_score_manager.dart';
 
@@ -75,13 +74,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
       if (requestPermission) {
         final status = await FlutterContacts.permissions.request(PermissionType.read);
         hasPermission = (status == PermissionStatus.granted || status == PermissionStatus.limited);
-        if (!hasPermission) {
-          final phStatus = await Permission.contacts.request();
-          hasPermission = phStatus.isGranted || phStatus.isLimited;
-          if (phStatus.isPermanentlyDenied) {
-            _isPermanentlyDenied = true;
-          }
-        }
+        _isPermanentlyDenied = (status == PermissionStatus.permanentlyDenied);
       } else {
         hasPermission = await FlutterContacts.permissions.has(PermissionType.read);
       }
@@ -559,7 +552,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                     ),
                     onPressed: () async {
                       if (_isPermanentlyDenied) {
-                        await openAppSettings();
+                        await FlutterContacts.permissions.openSettings();
                       } else {
                         await _loadContacts(requestPermission: true);
                       }
