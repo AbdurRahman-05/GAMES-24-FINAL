@@ -63,12 +63,22 @@ export class TurfController {
     return this.turfService.cancelBooking(bookingId);
   }
 
+  @Post('check-in')
+  async checkInGlobal(
+    @Body() body: any,
+    @Query('adminId') adminIdQuery?: string,
+  ) {
+    const adminId = adminIdQuery ? parseInt(adminIdQuery, 10) : undefined;
+    return this.turfService.checkInBooking(isNaN(adminId as any) ? undefined : adminId, body);
+  }
+
   @Post(':id/check-in')
   async checkInBooking(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() body: any,
   ) {
-    return this.turfService.checkInBooking(id, body);
+    const adminId = parseInt(id, 10);
+    return this.turfService.checkInBooking(isNaN(adminId) ? undefined : adminId, body);
   }
 
   @Get(':id')

@@ -757,6 +757,10 @@ export class TurfService {
             ...updatedWithCode,
             bookingId: formalBookingCode,
             bookingCode: formalBookingCode,
+            turfId: verifiedAdminId,
+            turfName: turf.venueName,
+            courtName: courtName || `${turf.venueName} Main Arena`,
+            location: turf.neighborhoodArea || 'Madurai',
           };
         },
         {
@@ -830,6 +834,7 @@ export class TurfService {
     return {
       success: true,
       message: 'Booking confirmed successfully in realtime!',
+      ...booking,
       booking,
     };
   }
@@ -1357,34 +1362,73 @@ export class TurfService {
     }
   }
 
-  async checkInBooking(verifiedAdminId: number, body: any) {
-    const { bookingId, rawCode, ticketToken, id, code, payload } = body || {};
-    let searchId = bookingId || ticketToken || rawCode || id || code || payload;
-
-    if (!searchId && rawCode) {
-      searchId = rawCode;
+  async checkInBooking(verifiedAdminId?: number, body?: any) {
+    // 1. Robust body parsing (handles string, JSON, or pre-parsed object)
+    let parsedBody: any = body;
+    if (typeof body === 'string') {
+      try {
+        parsedBody = JSON.parse(body);
+      } catch {
+        parsedBody = { searchId: body.trim() };
+      }
+    } else if (body && typeof body === 'object' && typeof body.body === 'string') {
+      try {
+        parsedBody = { ...body, ...JSON.parse(body.body) };
+      } catch {}
     }
 
-    // If searchId is a JSON payload from the QR code, parse it!
-    if (typeof searchId === 'string' && searchId.trim().startsWith('{')) {
+    const b = parsedBody || {};
+
+    // 2. Extract potential identifiers from any key
+    let candidate =
+      b.bookingId ||
+      b.bookingCode ||
+      b.ticketToken ||
+      b.rawCode ||
+      b.qrPayload ||
+      b.qrData ||
+      b.code ||
+      b.id ||
+      b.numericId ||
+      b.payload ||
+      b.searchId ||
+      b.data ||
+      b.text ||
+      b.token;
+
+    // If candidate itself is a JSON string from QR code pass:
+    if (typeof candidate === 'string' && candidate.trim().startsWith('{')) {
       try {
-        const parsed = JSON.parse(searchId);
-        if (parsed && typeof parsed === 'object') {
-          searchId = parsed.bookingId || parsed.bookingCode || parsed.id || parsed.numericId || searchId;
+        const innerJson = JSON.parse(candidate.trim());
+        if (innerJson && typeof innerJson === 'object') {
+          candidate =
+            innerJson.bookingCode ||
+            innerJson.bookingId ||
+            innerJson.numericId ||
+            innerJson.id ||
+            candidate;
+
+          if (!verifiedAdminId && (innerJson.turfId || innerJson.verifiedAdminId)) {
+            verifiedAdminId = Number(innerJson.turfId || innerJson.verifiedAdminId);
+          }
         }
       } catch {}
     }
 
-    if (!searchId) {
+    if (!verifiedAdminId && (b.turfId || b.verifiedAdminId)) {
+      verifiedAdminId = Number(b.turfId || b.verifiedAdminId);
+    }
+
+    if (!candidate || String(candidate).trim().length === 0) {
       throw new BadRequestException('Booking ID or QR payload is required for check-in');
     }
 
-    const cleanSearchId = String(searchId).trim();
+    const cleanSearchId = String(candidate).trim();
 
-    // Extract numeric ID from the LAST group of digits (e.g. G24-BK-0013 -> 13)
+    // 3. Extract numeric ID from the LAST group of digits (e.g. G24-BK-0013 -> 13)
     let numericId: number | undefined;
-    if (typeof searchId === 'number') {
-      numericId = searchId;
+    if (typeof candidate === 'number' && Number.isInteger(candidate)) {
+      numericId = candidate;
     } else {
       const lastDigitsMatch = cleanSearchId.match(/(\d+)(?!.*\d)/);
       if (lastDigitsMatch) {
@@ -1392,19 +1436,24 @@ export class TurfService {
       }
     }
 
-    // 1. Search for booking belonging to this verifiedAdminId
-    let booking = await this.prisma.turfBooking.findFirst({
-      where: {
-        verifiedAdminId,
-        OR: [
-          ...(numericId ? [{ id: numericId }] : []),
-          { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
-        ],
-      },
-    });
+    // 4. Find booking in database
+    let booking: any = null;
 
+    if (verifiedAdminId && !isNaN(verifiedAdminId)) {
+      booking = await this.prisma.turfBooking.findFirst({
+        where: {
+          verifiedAdminId,
+          OR: [
+            ...(numericId ? [{ id: numericId }] : []),
+            { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
+          ],
+        },
+        include: { verifiedAdmin: true },
+      });
+    }
+
+    // Global lookup if not found under specific verifiedAdminId
     if (!booking) {
-      // Check if ticket belongs to another venue to provide clear error
       const globalBooking = await this.prisma.turfBooking.findFirst({
         where: {
           OR: [
@@ -1415,26 +1464,21 @@ export class TurfService {
         include: { verifiedAdmin: true },
       });
 
-      if (globalBooking && globalBooking.verifiedAdminId !== verifiedAdminId) {
+      if (!globalBooking) {
         return {
           success: false,
           valid: false,
-          message: `Invalid Venue! Ticket is for "${globalBooking.verifiedAdmin?.venueName || 'another turf'}", not this court.`,
+          message: `Booking ticket "${cleanSearchId}" not found in database!`,
         };
       }
 
-      if (globalBooking) {
-        booking = globalBooking;
-      } else {
-        return {
-          success: false,
-          valid: false,
-          message: `Booking ticket "${cleanSearchId}" not found for this venue!`,
-        };
-      }
+      booking = globalBooking;
+      verifiedAdminId = globalBooking.verifiedAdminId;
     }
 
     const formalCode = booking.bookingCode || `G24-BK-${booking.id.toString().padStart(4, '0')}`;
+    const venueName = booking.verifiedAdmin?.venueName || booking.courtName || 'Turf Arena';
+    const window = this.parseBookingWindow(booking.date, booking.timeSlot);
 
     if (booking.status?.toLowerCase() === 'cancelled') {
       return {
@@ -1444,6 +1488,11 @@ export class TurfService {
           ...booking,
           bookingCode: formalCode,
           bookingId: formalCode,
+          turfName: venueName,
+          courtName: venueName,
+          startTime: window?.startStr || '',
+          endTime: window?.endStr || '',
+          slotTime: booking.timeSlot,
         },
         message: `Entry Denied! Booking ${formalCode} (${booking.customerName}) was cancelled.`,
       };
@@ -1462,7 +1511,6 @@ export class TurfService {
     };
 
     // 1. Single-Use Verification Check: Pass can only be verified ONCE!
-    // If scanned a second time (or subsequent time), show already verified warning with time details
     const alreadyChecked = booking.status?.toLowerCase() === 'checked in';
     if (alreadyChecked) {
       const checkedInTimeStr = booking.updatedAt
@@ -1475,18 +1523,27 @@ export class TurfService {
         alreadyCheckedIn: true,
         notYetOpen: false,
         checkedInAt: checkedInTimeStr,
+        startTime: window?.startStr || '',
+        endTime: window?.endStr || '',
+        slotTime: booking.timeSlot,
+        date: booking.date,
         booking: {
           ...booking,
           bookingCode: formalCode,
           bookingId: formalCode,
+          turfName: venueName,
+          courtName: venueName,
           checkedInAt: checkedInTimeStr,
+          startTime: window?.startStr || '',
+          endTime: window?.endStr || '',
+          slotTime: booking.timeSlot,
+          date: booking.date,
         },
         message: `Pass Already Verified ⚠️! Gate check-in was previously recorded at ${checkedInTimeStr}. Single-use entry pass.`,
       };
     }
 
     // 2. Timing Window Check: QR scan ONLY verifies 10-20 minutes before slot start
-    const window = this.parseBookingWindow(booking.date, booking.timeSlot);
     const now = new Date();
 
     if (window) {
@@ -1504,6 +1561,8 @@ export class TurfService {
           notYetOpen: true,
           alreadyCheckedIn: false,
           opensAt: window.opensAtStr,
+          startTime: window.startStr,
+          endTime: window.endStr,
           slotTime: booking.timeSlot,
           bookingDate: booking.date,
           minsUntilOpen: minsLeft,
@@ -1512,7 +1571,11 @@ export class TurfService {
             ...booking,
             bookingCode: formalCode,
             bookingId: formalCode,
+            turfName: venueName,
+            courtName: venueName,
             opensAt: window.opensAtStr,
+            startTime: window.startStr,
+            endTime: window.endStr,
             slotTime: booking.timeSlot,
             date: booking.date,
           },
@@ -1528,10 +1591,18 @@ export class TurfService {
           expired: true,
           alreadyCheckedIn: false,
           notYetOpen: false,
+          startTime: window.startStr,
+          endTime: window.endStr,
           booking: {
             ...booking,
             bookingCode: formalCode,
             bookingId: formalCode,
+            turfName: venueName,
+            courtName: venueName,
+            startTime: window.startStr,
+            endTime: window.endStr,
+            slotTime: booking.timeSlot,
+            date: booking.date,
           },
           message: `Booking Pass Expired ❌! Slot (${booking.timeSlot} on ${booking.date}) has already ended.`,
         };
@@ -1547,7 +1618,9 @@ export class TurfService {
       },
     });
 
-    await this.recalculateDashboardMetrics(verifiedAdminId);
+    if (verifiedAdminId) {
+      await this.recalculateDashboardMetrics(verifiedAdminId);
+    }
 
     const verifiedAtStr = formatTimestamp(new Date());
 
@@ -1557,11 +1630,21 @@ export class TurfService {
       alreadyCheckedIn: false,
       notYetOpen: false,
       checkedInAt: verifiedAtStr,
+      startTime: window?.startStr || '',
+      endTime: window?.endStr || '',
+      slotTime: booking.timeSlot,
+      date: booking.date,
       booking: {
         ...updated,
         bookingCode: formalCode,
         bookingId: formalCode,
+        turfName: venueName,
+        courtName: venueName,
         checkedInAt: verifiedAtStr,
+        startTime: window?.startStr || '',
+        endTime: window?.endStr || '',
+        slotTime: booking.timeSlot,
+        date: booking.date,
       },
       message: `Gate check-in confirmed for ${booking.customerName}! (${formalCode}) 🎉`,
     };
