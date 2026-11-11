@@ -14,15 +14,29 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       ],
     });
 
-    // Intercept Prisma engine logs and filter out harmless idle socket closures from Neon/PgBouncer
-    (this as any).$on('error', (e: any) => {
-      const msg = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
-      if (
+    const isHarmlessIdleReset = (msg: string): boolean => {
+      return (
         msg.includes('kind: Closed') ||
         msg.includes('Closed, cause: None') ||
-        msg.includes('Socket closed')
-      ) {
-        // Idle connection drop from serverless pooler - automatically re-established on next query
+        msg.includes('Socket closed') ||
+        msg.includes('10054') ||
+        msg.includes('ConnectionReset') ||
+        msg.includes('forcibly closed') ||
+        msg.includes('kind: Io') ||
+        msg.includes('ECONNRESET') ||
+        msg.includes('Broken pipe')
+      );
+    };
+
+    // Intercept Prisma engine logs and filter out harmless idle socket closures from Neon/PgBouncer
+    (this as any).$on('error', async (e: any) => {
+      const msg = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
+      if (isHarmlessIdleReset(msg)) {
+        // Idle connection drop from serverless pooler - cleanly re-establish pool in background
+        try {
+          await this.$disconnect().catch(() => {});
+          await this.$connect().catch(() => {});
+        } catch (_) {}
         return;
       }
       this.logger.error(`Prisma error: ${msg}`);
@@ -30,7 +44,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     (this as any).$on('warn', (e: any) => {
       const msg = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
-      if (msg.includes('kind: Closed') || msg.includes('Closed, cause: None')) {
+      if (isHarmlessIdleReset(msg)) {
         return;
       }
       this.logger.warn(`Prisma warn: ${msg}`);
@@ -59,16 +73,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             errorMessage.includes('connection refused') ||
             errorMessage.includes('kind: Closed') ||
             errorMessage.includes('Closed') ||
-            errorMessage.includes('timeout');
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('10054') ||
+            errorMessage.includes('ConnectionReset') ||
+            errorMessage.includes('forcibly closed') ||
+            errorMessage.includes('kind: Io') ||
+            errorMessage.includes('Broken pipe') ||
+            errorMessage.includes('ECONNRESET');
 
           if (isConnectionError && attempts < maxAttempts) {
-            const delay = attempts * 1000;
+            const delay = attempts * 500;
             this.logger.warn(
-              `Database connection drop or waking up (${errorCode || 'P1001'}). Retrying in ${delay}ms (attempt ${attempts}/${maxAttempts})...`,
+              `Database connection drop or waking up (${errorCode || 'ConnectionReset'}). Retrying in ${delay}ms (attempt ${attempts}/${maxAttempts})...`,
             );
             await new Promise((res) => setTimeout(res, delay));
             try {
-              await this.$connect();
+              await this.$disconnect().catch(() => {});
+              await this.$connect().catch(() => {});
             } catch (_) {}
             continue;
           }
@@ -90,16 +111,17 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         WHERE "status" != 'Cancelled';
       `).catch((e) => this.logger.warn(`Could not verify unique booking index: ${e?.message || e}`));
 
-      // Start keep-alive ping every 2 minutes to keep Neon compute active & avoid socket timeouts
+      // Start keep-alive ping every 25 seconds to keep Neon compute & socket active
       this.keepAliveTimer = setInterval(async () => {
         try {
           await this.$queryRawUnsafe('SELECT 1');
         } catch (_) {
           try {
-            await this.$connect();
+            await this.$disconnect().catch(() => {});
+            await this.$connect().catch(() => {});
           } catch (_) {}
         }
-      }, 120000);
+      }, 25000);
     } catch (error: any) {
       this.logger.warn(`Initial database connection delayed: ${error?.message || error}. Will retry on queries.`);
     }
