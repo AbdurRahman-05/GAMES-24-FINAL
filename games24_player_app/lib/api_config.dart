@@ -1,21 +1,10 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 class ApiConfig {
   /// Base URL of the backend API.
-  /// Priority:
-  /// 1. .env file: API_URL=http://localhost:3000
-  /// 2. CLI flag: --dart-define=API_URL=...
-  /// 3. Default: http://localhost:3000
-  static String get baseUrl {
-    final envUrl = dotenv.env['API_URL'];
-    if (envUrl != null && envUrl.trim().isNotEmpty) {
-      return envUrl.trim();
-    }
-    return const String.fromEnvironment(
-      'API_URL',
-      defaultValue: 'http://localhost:3000',
-    );
-  }
+  /// Hardcoded to live Render deployment, with optional build-time override via --dart-define=API_URL=...
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://games-24-final.onrender.com',
+  );
 
   /// Resolves any relative or localhost URL into the active backend URL
   static String resolveUrl(String? url) {

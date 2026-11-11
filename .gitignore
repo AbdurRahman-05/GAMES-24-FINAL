@@ -8,8 +8,6 @@
 **/.env
 **/.env.local
 **/.env.*.local
-!games24_player_app/.env
-!games24_owner_app/.env
 
 # Flutter & Dart
 **/.dart_tool/

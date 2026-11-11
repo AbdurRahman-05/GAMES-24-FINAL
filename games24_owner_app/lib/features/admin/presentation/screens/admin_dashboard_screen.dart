@@ -420,7 +420,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           onPressed: () async {
                             Navigator.pop(ctx);
                             await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
-                            if (mounted) {
+                            if (mounted && context.mounted) {
                               ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
                             }
                           },

@@ -21,6 +21,7 @@ class BookingScreen extends StatefulWidget {
   final String? openingTime;
   final String? closingTime;
   final List<dynamic>? sportsList;
+  final Map<String, dynamic>? turf;
 
   const BookingScreen({
     super.key,
@@ -35,6 +36,7 @@ class BookingScreen extends StatefulWidget {
     this.amenities,
     this.openingTime,
     this.closingTime,
+    this.turf,
   });
 
   @override
@@ -85,8 +87,8 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   List<String> _getAvailableCourtsForSport(String sport) {
-    if (widget.turf['courts'] is List && (widget.turf['courts'] as List).isNotEmpty) {
-      final courts = (widget.turf['courts'] as List)
+    if (widget.turf != null && widget.turf!['courts'] is List && (widget.turf!['courts'] as List).isNotEmpty) {
+      final courts = (widget.turf!['courts'] as List)
           .where((c) => c is Map && (c['sport']?.toString().toLowerCase() == sport.toLowerCase()))
           .map((c) => c['name']?.toString() ?? '')
           .where((name) => name.isNotEmpty)
