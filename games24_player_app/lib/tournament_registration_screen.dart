@@ -33,9 +33,12 @@ class _TournamentRegistrationScreenState
 
   void _submitRegistration() {
     if (_formKey.currentState!.validate()) {
+      final messenger = ScaffoldMessenger.of(context);
+      final nav = Navigator.of(context);
+
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogCtx) => AlertDialog(
           title: const Text('Confirm Registration'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -50,20 +53,14 @@ class _TournamentRegistrationScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const MainLayout()),
-              );
-            }
-          },
+              onPressed: () => Navigator.of(dialogCtx).pop(),
               child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              onPressed: () {
-                final success = TournamentManager()
+              onPressed: () async {
+                Navigator.of(dialogCtx).pop(); // close dialog
+
+                final success = await TournamentManager()
                     .registerTeam(widget.tournament.id, {
                       'teamName': _teamNameCtrl.text.trim(),
                       'captainName': _captainNameCtrl.text.trim(),
@@ -72,18 +69,16 @@ class _TournamentRegistrationScreenState
                       'playersCount': _playersCountCtrl.text.trim(),
                     });
 
-                Navigator.pop(context); // close dialog
-
                 if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text('Registration Successful!'),
                       backgroundColor: Colors.green,
                     ),
                   );
-                  Navigator.pop(context); // close registration screen
+                  nav.pop(); // close registration screen
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text(
                         'Registration Failed. Tournament might be full or team name exists.',

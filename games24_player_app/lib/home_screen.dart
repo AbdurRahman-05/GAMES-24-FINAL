@@ -997,12 +997,12 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => MatchScorecardScreen(
-                  matchId: (match['id'] ?? 0).toString(),
-                  team1Name: (match['teamName'] ?? match['customerName'] ?? 'Team A').toString(),
-                  team2Name: (match['opponentName'] ?? 'Opponent').toString(),
-                  sport: sport,
+                  bookingId: (match['id'] ?? match['bookingId'] ?? '').toString(),
                   turfName: turfName,
-                  matchTime: timeSlot,
+                  sport: sport,
+                  date: (match['date'] ?? '').toString(),
+                  timeSlot: timeSlot,
+                  isOpenMatch: match['isOpenMatch'] == true,
                 ),
               ),
             );
@@ -1140,7 +1140,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
   }
 
   Widget _buildTeamAvatar(String initials, String name, Color color) {
@@ -2690,47 +2689,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           },
-        );
-      },
-    );
-  }
-
-  void _showJoinMatchDialog(BuildContext context, Map<String, dynamic> match) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text(
-            'Join Match?',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: Text(
-            'Do you want to join the match between ${match['t1Name']} and ${match['t2Name']}?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Successfully Joined Match!')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF166534),
-              ),
-              child: const Text(
-                'Confirm',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
         );
       },
     );
