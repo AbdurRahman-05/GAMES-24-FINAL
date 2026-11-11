@@ -35,7 +35,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     try {
       final profile = ref.read(turfProfileProvider);
       if (profile.ownerPhone.isNotEmpty) {
-        await ref.read(turfProfileProvider.notifier).fetchVerifiedAdminByPhone(profile.ownerPhone);
+        await ref.read(turfProfileProvider.notifier).fetchVerifiedAdminByPhone(
+          profile.ownerPhone,
+          turfId: profile.turfId > 0 ? profile.turfId : null,
+        );
       }
     } catch (e) {
       debugPrint("Error refreshing realtime dashboard data: $e");
@@ -193,46 +196,61 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  profile.venueName.isNotEmpty ? profile.venueName : 'Turf Partner Hub',
-                  style: const TextStyle(
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF0F172A),
-                    letterSpacing: -0.3,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Row(
+            child: InkWell(
+              onTap: () => _showBranchSwitcherBottomSheet(context, profile),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 6.5,
-                      height: 6.5,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF16A34A),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        profile.area.isNotEmpty ? '${profile.area} • Partner Dashboard' : 'Live Partner Dashboard',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF16A34A),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            profile.venueName.isNotEmpty ? profile.venueName : 'Turf Partner Hub',
+                            style: const TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0F172A),
+                              letterSpacing: -0.3,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_drop_down_circle_outlined, size: 16, color: Color(0xFF154D36)),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Container(
+                          width: 6.5,
+                          height: 6.5,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF16A34A),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            profile.area.isNotEmpty ? '${profile.area} • Tap to Switch Branch' : 'Tap to Switch Branch',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF16A34A),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -288,6 +306,232 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
         const SizedBox(width: 4),
       ],
+    );
+  }
+
+  void _showBranchSwitcherBottomSheet(BuildContext context, TurfProfileState profile) {
+    final branches = profile.branches.isNotEmpty
+        ? profile.branches
+        : [
+            OwnerTurfBranchItem(
+              id: profile.verifiedAdminId ?? 1,
+              venueName: profile.venueName,
+              neighborhoodArea: profile.area,
+              streetAddress: profile.address,
+              ownerPhone: profile.ownerPhone,
+              status: 'VERIFIED',
+              todayBookingsCount: profile.todayBookingsCount,
+              todayRevenue: profile.todayRevenue,
+              monthRevenue: profile.monthRevenue,
+              monthTotalBookings: profile.monthTotalBookings,
+              isActive: true,
+            ),
+          ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Your Turf Branches',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Select a location or register another branch',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    ),
+                  ],
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...branches.map((b) {
+              final isCurrent = b.id == profile.verifiedAdminId;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: isCurrent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
+                    width: isCurrent ? 1.5 : 1.0,
+                  ),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isCurrent ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.stadium_rounded,
+                      color: isCurrent ? Colors.white : const Color(0xFF475569),
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    b.venueName,
+                    style: TextStyle(
+                      fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
+                      color: const Color(0xFF0F172A),
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
+                    style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                  ),
+                  trailing: isCurrent
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF16A34A),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'Active',
+                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      : TextButton(
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
+                            if (mounted) {
+                              ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
+                            }
+                          },
+                          child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                ),
+              );
+            }),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _showAddBranchDialog(context);
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.add_location_alt_rounded, color: Color(0xFF154D36), size: 18),
+                label: const Text(
+                  '+ Register New Branch Location',
+                  style: TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.w700),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddBranchDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final areaCtrl = TextEditingController();
+    final addressCtrl = TextEditingController();
+    final rateCtrl = TextEditingController(text: '1200');
+
+    showDialog(
+      context: context,
+      builder: (dlgCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Add New Turf Branch', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'Branch Venue Name *', hintText: 'e.g. Champions Turf - Anna Nagar'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: areaCtrl,
+                decoration: const InputDecoration(labelText: 'Neighborhood / Area *', hintText: 'e.g. Anna Nagar'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: addressCtrl,
+                decoration: const InputDecoration(labelText: 'Street Address', hintText: 'e.g. 12, Main Road'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: rateCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Hourly Rate (₹)', hintText: '1200'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dlgCtx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF154D36),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final vName = nameCtrl.text.trim();
+              final vArea = areaCtrl.text.trim();
+              if (vName.isEmpty || vArea.isEmpty) {
+                ToastUtils.showError(context, 'Please enter branch name and area');
+                return;
+              }
+              Navigator.pop(dlgCtx);
+              final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
+              final ok = await ref.read(turfProfileProvider.notifier).addNewBranch(
+                venueName: vName,
+                neighborhoodArea: vArea,
+                streetAddress: addressCtrl.text.trim().isNotEmpty ? addressCtrl.text.trim() : vArea,
+                dayRate: rate,
+                nightRate: rate + 200,
+              );
+              if (context.mounted) {
+                if (ok) {
+                  ToastUtils.showSuccess(context, 'New branch "$vName" added and verified! 🎉');
+                } else {
+                  ToastUtils.showError(context, 'Failed to add branch. Please try again.');
+                }
+              }
+            },
+            child: const Text('Create Branch'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -600,6 +844,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         : 0;
 
     final activeMonthList = allList.where((b) => !b.isCancelled).toList();
+    final dynamicTodayRev = profile.todayRevenue > 0
+        ? profile.todayRevenue
+        : activeTodayList.fold<double>(0.0, (sum, b) => sum + b.amount);
     final dynamicMonthRev = profile.monthRevenue > 0
         ? profile.monthRevenue
         : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
@@ -785,14 +1032,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
         const SizedBox(height: 10),
 
-        // 3-Metric Secondary Bento Row
+        // 4-Metric Grid: Today's Revenue, Today's Bookings, Month Bookings, Court Occupancy
         Row(
           children: [
-            // 1. Today's Bookings
+            // 1. Today's Revenue (Earnings)
             Expanded(
               child: _buildBentoMiniCard(
-                title: "Today's Bookings",
-                value: '$dynamicTodayCount',
+                title: "Today's Revenue",
+                value: '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
+                subtitle: 'From $dynamicTodayCount bookings today',
+                badgeText: 'Today',
+                badgeColor: const Color(0xFF16A34A),
+                icon: Icons.currency_rupee_rounded,
+                iconColor: const Color(0xFF154D36),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // 2. Today's Booked Slots
+            Expanded(
+              child: _buildBentoMiniCard(
+                title: "Today's Slots",
+                value: '$dynamicTodayCount Booked',
                 subtitle: '$dynamicTodayPaid Paid • $dynamicTodayCash Cash',
                 badgeText: '+$dynamicTodayCount Today',
                 badgeColor: const Color(0xFF16A34A),
@@ -800,12 +1060,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 iconColor: const Color(0xFF154D36),
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            // 3. Month Total Bookings
+            Expanded(
+              child: _buildBentoMiniCard(
+                title: "Month Bookings",
+                value: '${activeMonthList.length} Total',
+                subtitle: '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())} GMV',
+                badgeText: '${activeMonthList.length} Active',
+                badgeColor: const Color(0xFF0F6D38),
+                icon: Icons.calendar_month_rounded,
+                iconColor: const Color(0xFF0F6D38),
+              ),
+            ),
             const SizedBox(width: 10),
-            // 2. Slot Utilization & Time-Aware Remaining
+            // 4. Court Occupancy & Remaining
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Court Occupancy",
-                value: '$dynamicRemainingSlots Remaining',
+                value: '$dynamicRemainingSlots Free',
                 subtitle: '$passedSlotsCount Passed • $dynamicBookedSlotsCount Booked',
                 badgeText: dynamicSlotsBadge,
                 badgeColor: const Color(0xFF0284C7),
@@ -1569,24 +1846,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   List<TurfBookingHistoryItem> _getAllBookingsSource(TurfProfileState profile) {
-    if (profile.bookingHistory.isNotEmpty) {
-      return profile.bookingHistory;
-    }
-    return const [
-      TurfBookingHistoryItem(
-        id: 'BK-98421',
-        customerName: 'Karthik Raja',
-        customerPhone: '9840123456',
-        sport: 'Cricket',
-        courtName: 'Box Cricket Arena',
-        date: 'Today',
-        timeSlot: '07:00 PM - 08:00 PM',
-        dateTimeSlot: 'Today, 07:00 PM - 08:00 PM',
-        amount: 1000.0,
-        paymentMethod: 'UPI (GPay)',
-        status: 'Confirmed',
-      ),
-    ];
+    return profile.bookingHistory;
   }
 
   List<TurfBookingHistoryItem> _getFilteredBookings(TurfProfileState profile) {

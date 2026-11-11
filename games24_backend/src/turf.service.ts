@@ -30,6 +30,38 @@ function normalizePhotoList(urls: any): string[] {
     return String(u);
   });
 }
+
+export function getCourtsForTurf(turfId: number, venueName: string, sports: TurfSportConfig[], courtsJson?: any) {
+  if (Array.isArray(courtsJson) && courtsJson.length > 0) {
+    return courtsJson;
+  }
+  const courts: any[] = [];
+  let courtIndex = 1;
+  const sportsList = (sports && sports.length > 0) ? sports : DEFAULT_TURF_SPORTS;
+  for (const s of sportsList) {
+    const numCourts = s.courtsAvailable || 2;
+    for (let i = 1; i <= numCourts; i++) {
+      let surface = 'Artificial Turf';
+      if (s.name.toLowerCase().includes('cricket')) surface = 'Astro Turf';
+      else if (s.name.toLowerCase().includes('football')) surface = 'FIFA Certified Grass';
+      else if (s.name.toLowerCase().includes('badminton')) surface = 'Synthetic Mat';
+      else if (s.name.toLowerCase().includes('pickle')) surface = 'Hard Court';
+
+      courts.push({
+        id: `CRT-${turfId}-${courtIndex++}`,
+        name: `${s.name} Court ${i}`,
+        sport: s.name,
+        surface,
+        hourlyRate: s.hourlyRate || 1000.0,
+        timings: '06:00 AM - 11:00 PM',
+        description: `Premium ${s.name} court at ${venueName}. Equipped with floodlights and spectators gallery.`,
+        amenities: ['Floodlights', 'Changing Room', 'Locker', 'First Aid'],
+        imageUrls: [],
+      });
+    }
+  }
+  return courts;
+}
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from './prisma.service.js';
@@ -315,6 +347,7 @@ export class TurfService {
         reviews: '128',
         sports: this.getSportsForTurf(t.id).map(s => s.name),
         sportsList: this.getSportsForTurf(t.id),
+        courts: getCourtsForTurf(t.id, t.venueName, this.getSportsForTurf(t.id), t.courts),
       };
     });
   }
@@ -333,6 +366,7 @@ export class TurfService {
       : ['Drinking Water', 'Parking', 'Floodlights', 'Restroom'];
 
     const sportsItems = this.getSportsForTurf(turf.id);
+    const courtsList = getCourtsForTurf(turf.id, turf.venueName, sportsItems, turf.courts);
 
     return {
       id: turf.id,
@@ -359,6 +393,7 @@ export class TurfService {
       reviews: '128',
       sports: sportsItems.map(s => s.name),
       sportsList: sportsItems,
+      courts: courtsList,
       dashboard: turf.dashboard,
       bookings: turf.bookings,
       blockedSlots: turf.blockedSlots,
@@ -787,6 +822,7 @@ export class TurfService {
     const todayCount = todayBookings.length;
     const todayPaid = todayBookings.filter((b) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
     const todayCash = todayBookings.filter((b) => b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const todayRev = todayBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
     const monthTotal = monthBookings.length;
     const monthRev = monthBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
 
@@ -807,6 +843,7 @@ export class TurfService {
         todayBookingsCount: todayCount,
         todayPaidBookings: todayPaid,
         todayCashBookings: todayCash,
+        todayRevenue: todayRev,
         todayBookingsGrowth: todayCount > 0 ? `+${todayCount} Today` : '0% Today',
         monthRevenue: monthRev,
         monthTotalBookings: monthTotal,
@@ -820,6 +857,7 @@ export class TurfService {
         todayBookingsCount: todayCount,
         todayPaidBookings: todayPaid,
         todayCashBookings: todayCash,
+        todayRevenue: todayRev,
         todayBookingsGrowth: todayCount > 0 ? `+${todayCount} Today` : '0% Today',
         monthRevenue: monthRev,
         monthTotalBookings: monthTotal,
@@ -2189,6 +2227,158 @@ export class TurfService {
       success: true,
       message: 'Booking completed successfully',
       booking: updated,
+    };
+  }
+
+  async getAllTournaments(sport?: string) {
+    const where: any = {
+      status: { not: 'CANCELLED' },
+      isHold: false,
+    };
+    if (sport && sport !== 'All Sports') {
+      where.sport = { contains: sport, mode: 'insensitive' };
+    }
+    const tournaments = await this.prisma.tournament.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: { verifiedAdmin: true },
+    });
+    return tournaments.map((t) => ({
+      id: t.id.toString(),
+      title: t.title,
+      sport: t.sport,
+      format: t.format,
+      status: t.status.toLowerCase(),
+      date: t.date,
+      time: t.time || '09:00 AM',
+      venue: t.venueName,
+      location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
+      entryFee: `₹${t.entryFee.toFixed(0)}`,
+      prizePool: t.prizePool || '₹15,000',
+      grandPrize: t.prizePool || '₹15,000',
+      maxTeams: t.maxTeams,
+      registeredTeams: t.registeredTeams,
+      imageUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
+      reportingTime: '30 mins before match',
+      matchDay: 'Day 1',
+      tournamentProgress: t.status === 'LIVE' ? 'Ongoing' : 'Upcoming',
+      registeredUsers: Array.isArray(t.registeredUsers) ? t.registeredUsers : [],
+      organizerName: t.organizerName,
+      organizerPhone: t.organizerPhone,
+    }));
+  }
+
+  async createTournament(body: any) {
+    const {
+      title,
+      sport,
+      format,
+      date,
+      time,
+      venueName,
+      location,
+      entryFee,
+      prizePool,
+      maxTeams,
+      organizerName,
+      organizerPhone,
+      verifiedAdminId,
+    } = body || {};
+
+    if (!title || !date || !venueName) {
+      throw new BadRequestException('Title, date, and venue name are required for creating a tournament');
+    }
+
+    const created = await this.prisma.tournament.create({
+      data: {
+        title,
+        sport: sport || 'Football',
+        format: format || 'Knockout',
+        date,
+        time: time || '09:00 AM',
+        venueName,
+        location: location || 'Madurai',
+        entryFee: Number(entryFee) || 1500.0,
+        prizePool: prizePool || '₹15,000',
+        maxTeams: Number(maxTeams) || 12,
+        registeredTeams: 0,
+        registeredUsers: [],
+        organizerName: organizerName || 'Games24 Community',
+        organizerPhone: organizerPhone || '9876543210',
+        status: 'UPCOMING',
+        verifiedAdminId: verifiedAdminId ? Number(verifiedAdminId) : null,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Tournament created successfully!',
+      tournament: created,
+    };
+  }
+
+  async registerTournament(id: number, body: any) {
+    const tournament = await this.prisma.tournament.findUnique({
+      where: { id },
+    });
+    if (!tournament) {
+      throw new NotFoundException('Tournament not found');
+    }
+    if (tournament.registeredTeams >= tournament.maxTeams) {
+      throw new BadRequestException('Tournament registration is full!');
+    }
+
+    const currentUsers = Array.isArray(tournament.registeredUsers)
+      ? (tournament.registeredUsers as any[])
+      : [];
+
+    const teamName = body?.teamName || 'New Team';
+    const alreadyRegistered = currentUsers.some(
+      (u) => (u.teamName || '').toLowerCase() === teamName.toLowerCase(),
+    );
+    if (alreadyRegistered) {
+      throw new BadRequestException(`Team "${teamName}" is already registered for this tournament!`);
+    }
+
+    const updatedUsers = [...currentUsers, { ...body, registeredAt: new Date().toISOString() }];
+
+    const updated = await this.prisma.tournament.update({
+      where: { id },
+      data: {
+        registeredTeams: { increment: 1 },
+        registeredUsers: updatedUsers,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Team "${teamName}" registered successfully for "${tournament.title}"!`,
+      tournament: updated,
+    };
+  }
+
+  async getTurfCourts(id: number) {
+    const turf = await this.findVerifiedAdmin(id, false, false);
+    if (!turf) {
+      throw new NotFoundException(`Turf #${id} not found`);
+    }
+    const sports = this.getSportsForTurf(id);
+    return getCourtsForTurf(id, turf.venueName, sports, turf.courts);
+  }
+
+  async saveTurfCourts(id: number, courts: any[]) {
+    const turf = await this.findVerifiedAdmin(id, false, false);
+    if (!turf) {
+      throw new NotFoundException(`Turf #${id} not found`);
+    }
+    const updated = await this.prisma.verifiedAdmin.update({
+      where: { id: turf.id },
+      data: { courts: Array.isArray(courts) ? courts : [] },
+    });
+    return {
+      success: true,
+      message: 'Turf courts saved successfully in database',
+      courts: updated.courts,
     };
   }
 }

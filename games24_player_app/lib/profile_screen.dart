@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:games24_player_app/api_config.dart';
 import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/leaderboard_screen.dart';
@@ -35,10 +38,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _fullName = prefs.getString('fullName') ?? 'Unknown User';
+      _fullName = prefs.getString('fullName') ?? 'Active Player';
       _mobileNumber = prefs.getString('mobileNumber') ?? '';
       _preferredSport = prefs.getString('preferredSport') ?? 'Football';
     });
+
+    if (_mobileNumber.isNotEmpty) {
+      try {
+        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=$_mobileNumber')).timeout(const Duration(seconds: 4));
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          if (data['fullName'] != null && data['fullName'].toString().isNotEmpty) {
+            if (mounted) {
+              setState(() {
+                _fullName = data['fullName'].toString();
+                if (data['preferredSport'] != null) {
+                  _preferredSport = data['preferredSport'].toString();
+                }
+              });
+            }
+            prefs.setString('fullName', _fullName);
+            prefs.setString('preferredSport', _preferredSport);
+          }
+        }
+      } catch (e) {
+        debugPrint("Error refreshing player profile from backend: $e");
+      }
+    }
   }
 
   IconData _getSportIcon(String sport) {

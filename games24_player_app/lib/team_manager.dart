@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_config.dart';
 import 'match_score_manager.dart';
 
 class PlayerTeam {
@@ -98,6 +100,24 @@ class TeamManager {
             .toList();
         teamsNotifier.value = loaded;
       }
+
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
+      if (phone.isNotEmpty) {
+        final res = await http
+            .get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(phone)}'))
+            .timeout(const Duration(seconds: 4));
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          if (data['teams'] is List && (data['teams'] as List).isNotEmpty) {
+            final remoteTeams = (data['teams'] as List)
+                .map((item) => PlayerTeam.fromJson(Map<String, dynamic>.from(item)))
+                .where((t) => t.name != 'Blazing Strikers FC' && t.name != 'Thunder Smashers')
+                .toList();
+            teamsNotifier.value = remoteTeams;
+            await prefs.setString(_storageKey, jsonEncode(remoteTeams.map((t) => t.toJson()).toList()));
+          }
+        }
+      }
     } catch (e) {
       debugPrint("Error loading teams: $e");
     }
@@ -106,8 +126,19 @@ class TeamManager {
   Future<void> _saveToStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final str = jsonEncode(teamsNotifier.value.map((t) => t.toJson()).toList());
+      final teamList = teamsNotifier.value.map((t) => t.toJson()).toList();
+      final str = jsonEncode(teamList);
       await prefs.setString(_storageKey, str);
+
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
+      if (phone.isNotEmpty) {
+        final uri = Uri.parse('${ApiConfig.baseUrl}/auth/user/teams');
+        await http.post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'phone': phone, 'teams': teamList}),
+        ).timeout(const Duration(seconds: 4));
+      }
     } catch (e) {
       debugPrint("Error saving teams: $e");
     }

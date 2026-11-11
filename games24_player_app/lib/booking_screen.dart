@@ -45,6 +45,7 @@ class _BookingScreenState extends State<BookingScreen> {
   int? _resolvedTurfId;
   int _selectedDateIndex = 0;
   String _selectedSport = 'Football';
+  String? _selectedCourt;
   final Set<String> _selectedTimeSlots = {};
   bool _isOpenForChallenge = false;
   final TextEditingController _teamNameController = TextEditingController();
@@ -75,8 +76,44 @@ class _BookingScreenState extends State<BookingScreen> {
     if (widget.sports.isNotEmpty) {
       _selectedSport = widget.sports.first;
     }
+    final initialCourts = _getAvailableCourtsForSport(_selectedSport);
+    if (initialCourts.isNotEmpty) {
+      _selectedCourt = initialCourts.first;
+    }
 
     _loadSlots();
+  }
+
+  List<String> _getAvailableCourtsForSport(String sport) {
+    if (widget.turf['courts'] is List && (widget.turf['courts'] as List).isNotEmpty) {
+      final courts = (widget.turf['courts'] as List)
+          .where((c) => c is Map && (c['sport']?.toString().toLowerCase() == sport.toLowerCase()))
+          .map((c) => c['name']?.toString() ?? '')
+          .where((name) => name.isNotEmpty)
+          .toList();
+      if (courts.isNotEmpty) return courts;
+    }
+    final sLower = sport.toLowerCase();
+    if (sLower.contains('cricket')) {
+      return [
+        '${widget.turfName} - Pitch 1 (Box Arena)',
+        '${widget.turfName} - Pitch 2 (Astro Pitch)',
+      ];
+    } else if (sLower.contains('football')) {
+      return [
+        '${widget.turfName} - Court 1 (Main 7v7 Arena)',
+        '${widget.turfName} - Court 2 (Fast 5v5 Turf)',
+      ];
+    } else if (sLower.contains('badminton')) {
+      return [
+        '${widget.turfName} - Court 1 (Synthetic Mat)',
+        '${widget.turfName} - Court 2 (Wooden Floor)',
+      ];
+    }
+    return [
+      '${widget.turfName} - Main Court 1',
+      '${widget.turfName} - Arena Court 2',
+    ];
   }
 
   Future<int?> _getEffectiveTurfId() async {
@@ -288,6 +325,8 @@ class _BookingScreenState extends State<BookingScreen> {
             _buildDateSelector(),
             const SizedBox(height: 20),
             _buildSportSelector(),
+            const SizedBox(height: 16),
+            _buildCourtSelector(),
             const SizedBox(height: 20),
             _buildTimeSlots(),
             const SizedBox(height: 20),
@@ -671,6 +710,8 @@ class _BookingScreenState extends State<BookingScreen> {
                   if (_selectedSport != sport) {
                     setState(() {
                       _selectedSport = sport;
+                      final courts = _getAvailableCourtsForSport(sport);
+                      _selectedCourt = courts.isNotEmpty ? courts.first : null;
                       _selectedTimeSlots.clear();
                     });
                     _loadSlots();
@@ -706,6 +747,92 @@ class _BookingScreenState extends State<BookingScreen> {
                           color: isSelected
                               ? Colors.white
                               : const Color(0xFF4B5563),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCourtSelector() {
+    final courts = _getAvailableCourtsForSport(_selectedSport);
+    if (courts.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Select Court / Arena',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
+                ),
+              ),
+              Text(
+                '${courts.length} Available',
+                style: const TextStyle(fontSize: 11, color: Color(0xFF166534), fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 38,
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            itemCount: courts.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final court = courts[index];
+              final isSelected = _selectedCourt == court || (_selectedCourt == null && index == 0);
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedCourt = court;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF166534)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFF166534) : const Color(0xFFE5E7EB),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.stadium_outlined,
+                        size: 15,
+                        color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        court,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected ? Colors.white : const Color(0xFF1F2937),
                         ),
                       ),
                     ],
@@ -1397,6 +1524,8 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(height: 8),
             _buildSummaryRow('Selected Sport', _selectedSport),
             const SizedBox(height: 8),
+            _buildSummaryRow('Playing Court', _selectedCourt ?? '${widget.turfName} Main Arena'),
+            const SizedBox(height: 8),
             _buildSummaryRow('Slots Count', '$slotCount slot(s) • $slotCount hr(s)'),
             if (_selectedTimeSlots.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -1613,7 +1742,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             'customerName': customerName,
                             'customerPhone': customerPhone,
                             'sport': _selectedSport,
-                            'courtName': widget.turfName,
+                            'courtName': _selectedCourt ?? '${widget.turfName} Main Arena',
                             'date': selectedDate,
                             'timeSlot': combinedSlot,
                             'timeSlots': sortedSlots,
@@ -1647,7 +1776,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             bookingObj['turfName'] = widget.turfName;
                             bookingObj['imageUrl'] = widget.imageUrl;
                             bookingObj['location'] = widget.location;
-                            bookingObj['courtName'] = widget.turfName;
+                            bookingObj['courtName'] = _selectedCourt ?? '${widget.turfName} Main Arena';
                             bookingObj['isActive'] = true;
                             bookingObj['isOpenMatch'] = _isOpenForChallenge;
                             bookingObj['customerName'] = customerName;

@@ -17,6 +17,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
   void initState() {
     super.initState();
     TournamentManager().addListener(_onTournamentUpdate);
+    TournamentManager().fetchTournaments();
   }
 
   @override

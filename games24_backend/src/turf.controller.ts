@@ -19,6 +19,24 @@ export class TurfController {
     return this.turfService.getAllTurfs();
   }
 
+  @Get('tournaments')
+  async getAllTournaments(@Query('sport') sport?: string) {
+    return this.turfService.getAllTournaments(sport);
+  }
+
+  @Post('tournaments')
+  async createTournament(@Body() body: any) {
+    return this.turfService.createTournament(body);
+  }
+
+  @Post('tournaments/:id/register')
+  async registerTournament(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.registerTournament(id, body);
+  }
+
   @Get('user-bookings')
   async getUserBookings(
     @Query('phone') phone?: string,
@@ -146,6 +164,19 @@ export class TurfController {
     @Body() body: any,
   ) {
     return this.turfService.setSlotOffer(id, body);
+  }
+
+  @Get(':id/courts')
+  async getTurfCourts(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.getTurfCourts(id);
+  }
+
+  @Post(':id/courts')
+  async saveTurfCourts(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.saveTurfCourts(id, body?.courts || body);
   }
 
   @Get(':id/subscription')

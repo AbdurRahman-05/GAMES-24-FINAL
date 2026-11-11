@@ -686,13 +686,13 @@ class MatchScoreManager {
 
   int getTotalMatches(int baseBookingsCount) {
     final count = baseBookingsCount + _extraMatches;
-    return count > 0 ? count : (_extraMatches > 0 ? _extraMatches : 1);
+    return count;
   }
 
   int getTotalWins(int baseBookingsCount) {
     final base = (baseBookingsCount > 0 ? (baseBookingsCount * 0.6).round() : 0);
     final total = base + _extraWins;
-    return total > 0 ? total : (_extraWins > 0 ? _extraWins : 1);
+    return total;
   }
 
   String getFormIndex(int baseBookingsCount) {

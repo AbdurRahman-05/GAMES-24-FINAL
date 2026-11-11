@@ -5,6 +5,38 @@ import fs from 'fs';
 import path from 'path';
 import { DEFAULT_TURF_SPORTS, generateTimeSlots, getISTDateAndMinutes, parseSlotStartMinutes } from './turf.service.js';
 
+function getAdminCourts(adminId: number, venueName: string, sportsList: any[], courtsJson?: any) {
+  if (Array.isArray(courtsJson) && courtsJson.length > 0) {
+    return courtsJson;
+  }
+  const courts: any[] = [];
+  let courtIndex = 1;
+  const sports = (sportsList && sportsList.length > 0) ? sportsList : DEFAULT_TURF_SPORTS;
+  for (const s of sports) {
+    const numCourts = s.courtsAvailable || 2;
+    for (let i = 1; i <= numCourts; i++) {
+      let surface = 'Artificial Grass';
+      if (s.name.toLowerCase().includes('cricket')) surface = 'Astro Turf';
+      else if (s.name.toLowerCase().includes('football')) surface = 'FIFA Pro Turf';
+      else if (s.name.toLowerCase().includes('badminton')) surface = 'Synthetic Mat';
+      else if (s.name.toLowerCase().includes('pickle')) surface = 'Hard Court';
+
+      courts.push({
+        id: `CRT-${adminId}-${courtIndex++}`,
+        name: `${s.name} Court ${i}`,
+        sport: s.name,
+        surface,
+        hourlyRate: s.hourlyRate || 1000.0,
+        timings: '06:00 AM - 11:00 PM',
+        description: `Premium ${s.name} playing court at ${venueName}. Equipped with floodlights and spectator seating.`,
+        amenities: ['Floodlights', 'Changing Room', 'Locker', 'First Aid'],
+        imageUrls: [],
+      });
+    }
+  }
+  return courts;
+}
+
 function getAdminSports(adminId: number) {
   try {
     const filePath = path.resolve(process.cwd(), 'turf_sports_data.json');
@@ -526,8 +558,8 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP entered. Please use mock OTP: 1234.');
     }
 
-    // Check ONLY the VerifiedAdmin table!
-    const verifiedAdmin = await this.prisma.verifiedAdmin.findFirst({
+    // Fetch ALL verified turfs/branches owned by this mobile number!
+    const allAdmins = await this.prisma.verifiedAdmin.findMany({
       where: {
         OR: [
           { ownerPhone: cleanPhone },
@@ -540,9 +572,10 @@ export class AuthService {
           orderBy: { createdAt: 'desc' },
         },
       },
+      orderBy: { id: 'asc' },
     });
 
-    if (!verifiedAdmin) {
+    if (!allAdmins || allAdmins.length === 0) {
       // Check if it exists in AdminUser to provide helpful context/warning
       const pendingAdmin = await this.prisma.adminUser.findFirst({
         where: {
@@ -571,6 +604,10 @@ export class AuthService {
       );
     }
 
+    // Active turf defaults to requested turfId or the first registered branch
+    const requestedTurfId = body?.turfId ? Number(body.turfId) : undefined;
+    const verifiedAdmin = (requestedTurfId ? allAdmins.find((a: any) => a.id === requestedTurfId) : null) || allAdmins[0];
+
     let dashboard = verifiedAdmin.dashboard;
     if (!dashboard) {
       dashboard = await this.prisma.adminDashboard.create({
@@ -596,6 +633,7 @@ export class AuthService {
     const todayBookingsCount = todayBookings.length;
     const todayPaidBookings = todayBookings.filter((b: any) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
     const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const todayRevenue = todayBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
     const { currentMinutes } = getISTDateAndMinutes();
@@ -637,6 +675,7 @@ export class AuthService {
       todayBookingsCount,
       todayPaidBookings,
       todayCashBookings,
+      todayRevenue,
       monthTotalBookings,
       monthRevenue,
       bookedSlotsCount,
@@ -655,6 +694,7 @@ export class AuthService {
         todayBookingsCount,
         todayPaidBookings,
         todayCashBookings,
+        todayRevenue,
         monthTotalBookings,
         monthRevenue,
         bookedSlotsCount,
@@ -669,6 +709,31 @@ export class AuthService {
       },
     }).catch(() => {});
 
+    // Compute all branches summary for multi-branch switching
+    const branches = allAdmins.map((va: any) => {
+      const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+      const tdBks = bks.filter((b: any) => b.date === todayStr);
+      const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
+      const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+      const mRev = mBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+      return {
+        id: va.id,
+        venueName: va.venueName,
+        neighborhoodArea: va.neighborhoodArea || 'Main Branch',
+        streetAddress: va.streetAddress,
+        ownerPhone: va.ownerPhone,
+        status: va.status,
+        todayBookingsCount: tdBks.length,
+        todayRevenue: tdRev,
+        monthRevenue: mRev,
+        monthTotalBookings: mBks.length,
+        isActive: va.id === verifiedAdmin.id,
+      };
+    });
+
+    const sportsList = getAdminSports(verifiedAdmin.id);
+    const courtsList = getAdminCourts(verifiedAdmin.id, verifiedAdmin.venueName, sportsList, verifiedAdmin.courts);
+
     return {
       success: true,
       message: `Login successful! Welcome back, ${verifiedAdmin.venueName}.`,
@@ -681,6 +746,7 @@ export class AuthService {
         todayBookingsCount,
         todayPaidBookings,
         todayCashBookings,
+        todayRevenue,
         todayBookingsGrowth: growthBadge,
         monthRevenue,
         monthTotalBookings,
@@ -693,15 +759,17 @@ export class AuthService {
         cancelledCount: realCancelledCount,
         shiftedCount,
         cancelledBadge,
-        sports: getAdminSports(verifiedAdmin.id).map((s: any) => s.name),
-        sportsList: getAdminSports(verifiedAdmin.id),
+        sports: sportsList.map((s: any) => s.name),
+        sportsList,
+        courts: courtsList,
       },
+      branches,
     };
   }
 
-  async getVerifiedAdminByPhone(phone: string) {
+  async getVerifiedAdminByPhone(phone: string, queryTurfId?: number) {
     const clean = phone.trim().replace(/[^0-9]/g, '');
-    const admin = await this.prisma.verifiedAdmin.findFirst({
+    const allAdmins = await this.prisma.verifiedAdmin.findMany({
       where: {
         OR: [
           { ownerPhone: clean },
@@ -714,11 +782,14 @@ export class AuthService {
           orderBy: { createdAt: 'desc' },
         },
       },
+      orderBy: { id: 'asc' },
     });
 
-    if (!admin) {
+    if (!allAdmins || allAdmins.length === 0) {
       throw new BadRequestException('No verified admin found for this mobile number');
     }
+
+    const admin = (queryTurfId ? allAdmins.find((a: any) => a.id === queryTurfId) : null) || allAdmins[0];
 
     let dashboard = admin.dashboard;
     if (!dashboard) {
@@ -745,6 +816,7 @@ export class AuthService {
     const todayBookingsCount = todayBookings.length;
     const todayPaidBookings = todayBookings.filter((b: any) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
     const todayCashBookings = todayBookings.filter((b: any) => b.paymentMethod?.toLowerCase().includes('cash')).length;
+    const todayRevenue = todayBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
     const monthTotalBookings = monthBookings.length;
     const monthRevenue = monthBookings.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
     const { currentMinutes } = getISTDateAndMinutes();
@@ -786,6 +858,7 @@ export class AuthService {
       todayBookingsCount,
       todayPaidBookings,
       todayCashBookings,
+      todayRevenue,
       monthTotalBookings,
       monthRevenue,
       bookedSlotsCount,
@@ -804,6 +877,7 @@ export class AuthService {
         todayBookingsCount,
         todayPaidBookings,
         todayCashBookings,
+        todayRevenue,
         monthTotalBookings,
         monthRevenue,
         bookedSlotsCount,
@@ -818,6 +892,31 @@ export class AuthService {
       },
     }).catch(() => {});
 
+    // Compute all branches summary for multi-branch switching
+    const branches = allAdmins.map((va: any) => {
+      const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+      const tdBks = bks.filter((b: any) => b.date === todayStr);
+      const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
+      const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+      const mRev = mBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+      return {
+        id: va.id,
+        venueName: va.venueName,
+        neighborhoodArea: va.neighborhoodArea || 'Main Branch',
+        streetAddress: va.streetAddress,
+        ownerPhone: va.ownerPhone,
+        status: va.status,
+        todayBookingsCount: tdBks.length,
+        todayRevenue: tdRev,
+        monthRevenue: mRev,
+        monthTotalBookings: mBks.length,
+        isActive: va.id === admin.id,
+      };
+    });
+
+    const sportsList = getAdminSports(admin.id);
+    const courtsList = getAdminCourts(admin.id, admin.venueName, sportsList, admin.courts);
+
     return {
       success: true,
       admin: {
@@ -829,6 +928,7 @@ export class AuthService {
         todayBookingsCount,
         todayPaidBookings,
         todayCashBookings,
+        todayRevenue,
         todayBookingsGrowth: growthBadge,
         monthRevenue,
         monthTotalBookings,
@@ -841,10 +941,145 @@ export class AuthService {
         cancelledCount: realCancelledCount,
         shiftedCount,
         cancelledBadge,
-        sports: getAdminSports(admin.id).map((s: any) => s.name),
-        sportsList: getAdminSports(admin.id),
+        sports: sportsList.map((s: any) => s.name),
+        sportsList,
+        courts: courtsList,
       },
+      branches,
     };
+  }
+
+  async addOwnerBranch(body: any) {
+    const {
+      ownerPhone,
+      venueName,
+      neighborhoodArea,
+      streetAddress,
+      dayRate,
+      nightRate,
+      weekdayRate,
+      weekendRate,
+    } = body;
+
+    if (!ownerPhone || !venueName) {
+      throw new BadRequestException('Owner phone and venue name are required');
+    }
+
+    const cleanPhone = String(ownerPhone).trim().replace(/\D/g, '');
+    const existingAdmin = await this.prisma.verifiedAdmin.findFirst({
+      where: {
+        OR: [{ ownerPhone: cleanPhone }, { ownerPhone: { contains: cleanPhone } }],
+      },
+    });
+
+    if (!existingAdmin) {
+      throw new BadRequestException('Primary owner profile not found. Please register first.');
+    }
+
+    const trackingCode = `TRK-BR-${Date.now().toString().slice(-6)}`;
+    const newAdminUser = await this.prisma.adminUser.create({
+      data: {
+        trackingCode,
+        venueName,
+        ownerName: existingAdmin.ownerName,
+        ownerPhone: cleanPhone,
+        ownerEmail: existingAdmin.ownerEmail,
+        streetAddress: streetAddress || existingAdmin.streetAddress,
+        neighborhoodArea: neighborhoodArea || existingAdmin.neighborhoodArea,
+        isMobileVerified: true,
+        isEmailVerified: true,
+        status: 'APPROVED',
+      },
+    });
+
+    const newBranch = await this.prisma.verifiedAdmin.create({
+      data: {
+        adminUserId: newAdminUser.id,
+        trackingCode,
+        venueName,
+        ownerName: existingAdmin.ownerName,
+        ownerPhone: cleanPhone,
+        ownerEmail: existingAdmin.ownerEmail,
+        streetAddress: streetAddress || existingAdmin.streetAddress,
+        neighborhoodArea: neighborhoodArea || existingAdmin.neighborhoodArea,
+        dayRate: Number(dayRate) || existingAdmin.dayRate || 1000.0,
+        nightRate: Number(nightRate) || existingAdmin.nightRate || 1400.0,
+        weekdayRate: Number(weekdayRate) || existingAdmin.weekdayRate || 1200.0,
+        weekendRate: Number(weekendRate) || existingAdmin.weekendRate || 1600.0,
+        status: 'VERIFIED',
+      },
+    });
+
+    await this.prisma.adminDashboard.create({
+      data: { verifiedAdminId: newBranch.id },
+    });
+
+    return {
+      success: true,
+      message: `New branch "${venueName}" created successfully!`,
+      branch: newBranch,
+    };
+  }
+
+  async getUserProfile(phone: string) {
+    const clean = phone.trim().replace(/\D/g, '');
+    const last10 = clean.length >= 10 ? clean.slice(-10) : clean;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { mobileNumber: clean },
+          { mobileNumber: { contains: last10 } },
+        ],
+      },
+    });
+
+    const bookings = await this.prisma.turfBooking.findMany({
+      where: {
+        OR: [
+          { customerPhone: { contains: last10 } },
+          { opponentPhone: { contains: last10 } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const completedCount = bookings.filter((b) => b.status === 'Completed' || (b.date < new Date().toISOString().slice(0, 10) && b.status !== 'Cancelled')).length;
+    const activeCount = bookings.filter((b) => b.status === 'Confirmed').length;
+
+    return {
+      id: user?.id || 0,
+      fullName: user?.fullName || 'Active Player',
+      mobileNumber: user?.mobileNumber || phone,
+      preferredSport: user?.preferredSport || 'Football',
+      totalBookings: bookings.length,
+      completedMatches: completedCount,
+      activeBookings: activeCount,
+      teams: Array.isArray(user?.teamsJson) ? user?.teamsJson : [],
+    };
+  }
+
+  async saveUserTeams(phone: string, teams: any) {
+    const clean = phone.trim().replace(/\D/g, '');
+    const last10 = clean.length >= 10 ? clean.slice(-10) : clean;
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { mobileNumber: clean },
+          { mobileNumber: { contains: last10 } },
+        ],
+      },
+    });
+
+    if (user) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { teamsJson: Array.isArray(teams) ? teams : [] },
+      });
+    }
+
+    return { success: true, message: 'Teams synced to database successfully' };
   }
 
   async updateVerifiedAdminMetrics(id: number, metrics: any) {

@@ -1,9 +1,19 @@
-import { Controller, Post, Get, Patch, Body, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, Param, Query, ParseIntPipe } from '@nestjs/common';
 import { AuthService } from './auth.service.js';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get('user-profile')
+  async getUserProfile(@Query('phone') phone: string) {
+    return this.authService.getUserProfile(phone || '');
+  }
+
+  @Post('user/teams')
+  async saveUserTeams(@Body() body: any) {
+    return this.authService.saveUserTeams(body?.phone || '', body?.teams || []);
+  }
 
   @Get('admin-status/:identifier')
   async getAdminStatus(@Param('identifier') identifier: string) {
@@ -76,8 +86,17 @@ export class AuthController {
   }
 
   @Get('verified-admin/:phone')
-  async getVerifiedAdmin(@Param('phone') phone: string) {
-    return this.authService.getVerifiedAdminByPhone(phone);
+  async getVerifiedAdmin(
+    @Param('phone') phone: string,
+    @Query('turfId') turfId?: string,
+  ) {
+    const numId = turfId ? parseInt(turfId, 10) : undefined;
+    return this.authService.getVerifiedAdminByPhone(phone, isNaN(numId as any) ? undefined : numId);
+  }
+
+  @Post('verified-admin/add-branch')
+  async addOwnerBranch(@Body() body: any) {
+    return this.authService.addOwnerBranch(body);
   }
 
   @Patch('verified-admin/:id/metrics')

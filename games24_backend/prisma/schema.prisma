@@ -13,6 +13,7 @@ model User {
   mobileNumber   String   @unique
   password       String
   preferredSport String
+  teamsJson      Json?    @default("[]")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -84,6 +85,7 @@ model VerifiedAdmin {
   nightRate          Float           @default(1400.0)
   weekdayRate        Float           @default(1200.0)
   weekendRate        Float           @default(1600.0)
+  courts             Json?           @default("[]")
   dashboard          AdminDashboard?
   bookings           TurfBooking[]
   blockedSlots       BlockedSlot[]
@@ -108,6 +110,7 @@ model AdminDashboard {
   todayBookingsCount  Int           @default(0)
   todayPaidBookings   Int           @default(0)
   todayCashBookings   Int           @default(0)
+  todayRevenue        Float         @default(0.0)
   todayBookingsGrowth String        @default("0% Today")
   monthRevenue        Float         @default(0.0)
   monthTotalBookings  Int           @default(0)
@@ -221,6 +224,7 @@ model Tournament {
   prizePool       String?        @default("₹15,000")
   maxTeams        Int            @default(12)
   registeredTeams Int            @default(0)
+  registeredUsers Json?          @default("[]")
   bannerUrl       String?
   organizerName   String?
   organizerPhone  String?
