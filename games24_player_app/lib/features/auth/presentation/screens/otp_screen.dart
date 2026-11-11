@@ -6,18 +6,17 @@ import '../../../../core/widgets/app_button.dart';
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
 
-  const OtpScreen({
-    super.key,
-    required this.phoneNumber,
-  });
+  const OtpScreen({super.key, required this.phoneNumber});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
 
   void _verifyOtp() {
     final otp = _controllers.map((c) => c.text.trim()).join();
@@ -48,10 +47,7 @@ class _OtpScreenState extends State<OtpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Verify Phone Number',
-                style: theme.textTheme.displayMedium,
-              ),
+              Text('Verify Phone Number', style: theme.textTheme.displayMedium),
               const SizedBox(height: 8),
               Text(
                 'Enter the 4-digit code sent to +91 ${widget.phoneNumber}',
@@ -80,7 +76,9 @@ class _OtpScreenState extends State<OtpScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(
-                            color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.borderLight,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
@@ -100,19 +98,22 @@ class _OtpScreenState extends State<OtpScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Didn't receive code? ", style: theme.textTheme.bodyMedium),
+                    Text(
+                      "Didn't receive code? ",
+                      style: theme.textTheme.bodyMedium,
+                    ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('Resend OTP', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Resend OTP',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
               ),
               const Spacer(),
-              AppButton(
-                text: 'Verify & Continue',
-                onPressed: _verifyOtp,
-              ),
+              AppButton(text: 'Verify & Continue', onPressed: _verifyOtp),
               const SizedBox(height: 16),
             ],
           ),

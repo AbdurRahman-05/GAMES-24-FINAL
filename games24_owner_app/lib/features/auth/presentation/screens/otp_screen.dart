@@ -39,13 +39,7 @@ class _OtpScreenState extends State<OtpScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/admin/dashboard');
-            }
-          },
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(

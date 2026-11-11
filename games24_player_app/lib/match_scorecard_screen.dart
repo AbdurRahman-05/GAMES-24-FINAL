@@ -246,7 +246,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             Expanded(
               child: Text(
                 'Starting Match #$_matchIndex in this slot! Flip coin to begin 🪙',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -276,7 +279,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   Future<void> _loadSavedSquad() async {
-    final saved = await MatchScoreManager().getOrLoadBookingSquad(widget.bookingId);
+    final saved = await MatchScoreManager().getOrLoadBookingSquad(
+      widget.bookingId,
+    );
     if (saved != null && mounted) {
       setState(() {
         _teamAName = saved.teamAName;
@@ -287,7 +292,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         _selectedTeamSize = saved.teamSize;
         _selectedOvers = saved.overs;
 
-        if (saved.teamBName.isNotEmpty && saved.teamBName != 'Opponent Team (Waiting)') {
+        if (saved.teamBName.isNotEmpty &&
+            saved.teamBName != 'Opponent Team (Waiting)') {
           _teamBName = saved.teamBName;
         } else if (_linkedChallenge?.opponentName != null &&
             _linkedChallenge!.opponentName!.trim().isNotEmpty) {
@@ -338,7 +344,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   Future<void> _loadLiveState() async {
-    final state = await MatchScoreManager().getOrLoadMatchLiveState(widget.bookingId);
+    final state = await MatchScoreManager().getOrLoadMatchLiveState(
+      widget.bookingId,
+    );
     if (state != null && mounted) {
       setState(() {
         if (state.tossCompleted) {
@@ -374,7 +382,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         // Restore player stats
         state.playerStatsMap.forEach((key, val) {
           if (val is Map) {
-            _playerStats[key] = PlayerMatchStat.fromJson(Map<String, dynamic>.from(val));
+            _playerStats[key] = PlayerMatchStat.fromJson(
+              Map<String, dynamic>.from(val),
+            );
           }
         });
 
@@ -384,17 +394,23 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
         if (state.strikerName != null) {
           try {
-            _striker = battingSquad.firstWhere((p) => p.name == state.strikerName);
+            _striker = battingSquad.firstWhere(
+              (p) => p.name == state.strikerName,
+            );
           } catch (_) {}
         }
         if (state.nonStrikerName != null) {
           try {
-            _nonStriker = battingSquad.firstWhere((p) => p.name == state.nonStrikerName);
+            _nonStriker = battingSquad.firstWhere(
+              (p) => p.name == state.nonStrikerName,
+            );
           } catch (_) {}
         }
         if (state.bowlerName != null) {
           try {
-            _currentBowler = bowlingSquad.firstWhere((p) => p.name == state.bowlerName);
+            _currentBowler = bowlingSquad.firstWhere(
+              (p) => p.name == state.bowlerName,
+            );
           } catch (_) {}
         }
       });
@@ -459,17 +475,26 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         SnackBar(
           behavior: SnackBarBehavior.floating,
           backgroundColor: const Color(0xFF166534),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           content: Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   _isOpenChallenge
                       ? 'Squad lineups saved successfully! 💾'
                       : 'Squad lineup saved successfully! 💾',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
@@ -481,7 +506,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   void _loadHistoricalMatches() {
-    _slotMatches = MatchScoreManager().getAllResultsForBooking(widget.bookingId);
+    _slotMatches = MatchScoreManager().getAllResultsForBooking(
+      widget.bookingId,
+    );
     if (_slotMatches.isNotEmpty) {
       _selectedMatchHistoryIndex = _slotMatches.length - 1;
       final latest = _slotMatches.last;
@@ -509,12 +536,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       if (bId == widget.bookingId) {
         if (b['isOpenMatch'] == true ||
             b['is_open_match'] == true ||
-            (b['openMatchStatus'] != null && b['openMatchStatus'].toString().isNotEmpty)) {
+            (b['openMatchStatus'] != null &&
+                b['openMatchStatus'].toString().isNotEmpty)) {
           isOpen = true;
           if (b['teamName'] != null && b['teamName'].toString().isNotEmpty) {
             _teamAName = b['teamName'].toString();
           }
-          if (b['opponentName'] != null && b['opponentName'].toString().isNotEmpty) {
+          if (b['opponentName'] != null &&
+              b['opponentName'].toString().isNotEmpty) {
             _teamBName = b['opponentName'].toString();
           }
           if (b['teamSize'] != null && b['teamSize'].toString().isNotEmpty) {
@@ -529,7 +558,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     for (final c in challenges) {
       final idMatch = c.id == widget.bookingId;
       final turfMatch =
-          c.turfName.trim().toLowerCase() == widget.turfName.trim().toLowerCase();
+          c.turfName.trim().toLowerCase() ==
+          widget.turfName.trim().toLowerCase();
       final timeMatch =
           c.time.contains(widget.timeSlot) || widget.timeSlot.contains(c.time);
       if (idMatch || (turfMatch && (timeMatch || c.date == widget.date))) {
@@ -580,7 +610,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
   PlayerItem? get _teamACaptain {
     try {
-      return _teamAPlayers.firstWhere((p) => p.role.toLowerCase().contains('captain'));
+      return _teamAPlayers.firstWhere(
+        (p) => p.role.toLowerCase().contains('captain'),
+      );
     } catch (_) {
       return _teamAPlayers.isNotEmpty ? _teamAPlayers.first : null;
     }
@@ -588,7 +620,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
   PlayerItem? get _teamBCaptain {
     try {
-      return _teamBPlayers.firstWhere((p) => p.role.toLowerCase().contains('captain'));
+      return _teamBPlayers.firstWhere(
+        (p) => p.role.toLowerCase().contains('captain'),
+      );
     } catch (_) {
       return _teamBPlayers.isNotEmpty ? _teamBPlayers.first : null;
     }
@@ -599,7 +633,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       final list = forTeamA ? _teamAPlayers : _teamBPlayers;
       for (int i = 0; i < list.length; i++) {
         final p = list[i];
-        if (p.name == player.name && (p.phone == player.phone || p.id == player.id)) {
+        if (p.name == player.name &&
+            (p.phone == player.phone || p.id == player.id)) {
           list[i] = PlayerItem(
             id: p.id,
             name: p.name,
@@ -623,7 +658,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     _saveSquad(showFeedback: false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('👑 ${player.name} is now Captain of ${forTeamA ? _teamAName : _teamBName}!'),
+        content: Text(
+          '👑 ${player.name} is now Captain of ${forTeamA ? _teamAName : _teamBName}!',
+        ),
         backgroundColor: const Color(0xFF166534),
       ),
     );
@@ -655,7 +692,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             Expanded(
               child: Text(
                 'Select Captain for $teamName',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -670,18 +710,27 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               separatorBuilder: (_, index) => const Divider(height: 1),
               itemBuilder: (context, idx) {
                 final p = players[idx];
-                final isCurrent = p == currentCaptain || p.role.toLowerCase().contains('captain');
+                final isCurrent =
+                    p == currentCaptain ||
+                    p.role.toLowerCase().contains('captain');
                 return ListTile(
                   dense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   leading: CircleAvatar(
-                    backgroundColor: isCurrent ? const Color(0xFFFEF3C7) : const Color(0xFFF1F5F9),
+                    backgroundColor: isCurrent
+                        ? const Color(0xFFFEF3C7)
+                        : const Color(0xFFF1F5F9),
                     child: Text(
                       isCurrent ? '👑' : p.avatarInitials,
                       style: TextStyle(
                         fontSize: isCurrent ? 14 : 11,
                         fontWeight: FontWeight.bold,
-                        color: isCurrent ? const Color(0xFFB45309) : const Color(0xFF1E293B),
+                        color: isCurrent
+                            ? const Color(0xFFB45309)
+                            : const Color(0xFF1E293B),
                       ),
                     ),
                   ),
@@ -692,9 +741,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       fontSize: 13,
                     ),
                   ),
-                  subtitle: Text(p.role, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                  subtitle: Text(
+                    p.role,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
                   trailing: isCurrent
-                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFF166534), size: 20)
+                      ? const Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(0xFF166534),
+                          size: 20,
+                        )
                       : null,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -706,7 +762,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
         ],
       ),
     );
@@ -717,7 +776,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     if (squad.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No players in $_currentBattingTeam squad. Add players in Teams tab.'),
+          content: Text(
+            'No players in $_currentBattingTeam squad. Add players in Teams tab.',
+          ),
           backgroundColor: const Color(0xFFDC2626),
         ),
       );
@@ -730,14 +791,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.sports_cricket, color: Color(0xFF166534), size: 22),
+            const Icon(
+              Icons.sports_cricket,
+              color: Color(0xFF166534),
+              size: 22,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 isStriker
                     ? 'Select Striker * (Inning $_currentCricketInning)'
                     : 'Select Non-Striker (Inning $_currentCricketInning)',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -750,7 +818,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             children: [
               Text(
                 'Batting Team: $_currentBattingTeam',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF166534),
+                ),
               ),
               const SizedBox(height: 8),
               ConstrainedBox(
@@ -762,17 +834,26 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   itemBuilder: (context, idx) {
                     final p = squad[idx];
                     final st = _getStat(p);
-                    final isThis = isStriker ? (p == _striker) : (p == _nonStriker);
-                    final isOther = isStriker ? (p == _nonStriker) : (p == _striker);
+                    final isThis = isStriker
+                        ? (p == _striker)
+                        : (p == _nonStriker);
+                    final isOther = isStriker
+                        ? (p == _nonStriker)
+                        : (p == _striker);
 
                     return ListTile(
                       dense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       leading: CircleAvatar(
                         radius: 16,
                         backgroundColor: isThis
                             ? const Color(0xFF166534)
-                            : (isOther ? const Color(0xFFFEF3C7) : const Color(0xFFE5F5EB)),
+                            : (isOther
+                                  ? const Color(0xFFFEF3C7)
+                                  : const Color(0xFFE5F5EB)),
                         child: Text(
                           p.avatarInitials,
                           style: TextStyle(
@@ -780,7 +861,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             fontWeight: FontWeight.bold,
                             color: isThis
                                 ? Colors.white
-                                : (isOther ? const Color(0xFFB45309) : const Color(0xFF166534)),
+                                : (isOther
+                                      ? const Color(0xFFB45309)
+                                      : const Color(0xFF166534)),
                           ),
                         ),
                       ),
@@ -790,7 +873,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             child: Text(
                               p.name,
                               style: TextStyle(
-                                fontWeight: isThis ? FontWeight.bold : FontWeight.w600,
+                                fontWeight: isThis
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
                                 fontSize: 13,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -798,42 +883,69 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           ),
                           if (st.isOut)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFEE2E2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text('OUT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFDC2626))),
+                              child: const Text(
+                                'OUT',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
                             )
                           else if (isThis)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE5F5EB),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 isStriker ? 'Striker *' : 'Non-Striker',
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF166534),
+                                ),
                               ),
                             )
                           else if (isOther)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFEF3C7),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 isStriker ? 'Non-Striker' : 'Striker *',
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFB45309)),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFB45309),
+                                ),
                               ),
                             ),
                         ],
                       ),
                       subtitle: Text(
                         '${st.runs} runs (${st.balls}b, ${st.fours}x4, ${st.sixes}x6)',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                       onTap: () {
                         Navigator.pop(ctx);
@@ -863,10 +975,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
   }
 
-  bool get _isMatchStarted =>
-      BookingManager.isMatchStarted(dateStr: widget.date, timeSlot: widget.timeSlot);
+  bool get _isMatchStarted => BookingManager.isMatchStarted(
+    dateStr: widget.date,
+    timeSlot: widget.timeSlot,
+  );
 
-  bool get _canPlayMatch => _isMatchStarted || _forceEarlyStart || _isMatchCompleted;
+  bool get _canPlayMatch =>
+      _isMatchStarted || _forceEarlyStart || _isMatchCompleted;
 
   int get _playersPerSide {
     final reg = RegExp(r'(\d+)');
@@ -925,8 +1040,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     if (battingSquad.isNotEmpty) {
       if (_striker == null || !battingSquad.contains(_striker)) {
-        final available =
-            battingSquad.where((p) => !_getStat(p).isOut).toList();
+        final available = battingSquad
+            .where((p) => !_getStat(p).isOut)
+            .toList();
         _striker = available.isNotEmpty ? available.first : battingSquad.first;
       }
       if (_nonStriker == null ||
@@ -1003,7 +1119,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // ---------------------------------------------------------------------------
   // CRICKET ACTIONS & INNINGS TRANSITIONS
   // ---------------------------------------------------------------------------
-  void _addCricketRuns(int runs, {bool isBoundary = false, bool isSix = false}) {
+  void _addCricketRuns(
+    int runs, {
+    bool isBoundary = false,
+    bool isSix = false,
+  }) {
     if (_isMatchCompleted) return;
     _ensureActivePlayers();
 
@@ -1036,8 +1156,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         _swapStrike();
       }
 
-      final activeBalls =
-          _currentCricketInning == 1 ? _cricketBallsA : _cricketBallsB;
+      final activeBalls = _currentCricketInning == 1
+          ? _cricketBallsA
+          : _cricketBallsB;
       if (activeBalls % 6 == 0) {
         _swapStrike();
         _promptNewBowler();
@@ -1078,8 +1199,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         bw.wickets += 1;
       }
 
-      final activeBalls =
-          _currentCricketInning == 1 ? _cricketBallsA : _cricketBallsB;
+      final activeBalls = _currentCricketInning == 1
+          ? _cricketBallsA
+          : _cricketBallsB;
       if (activeBalls % 6 == 0) {
         _swapStrike();
         _promptNewBowler();
@@ -1118,7 +1240,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Over completed! Next bowler: ${candidates.first.name} ($_currentBowlingTeam)'),
+        content: Text(
+          'Over completed! Next bowler: ${candidates.first.name} ($_currentBowlingTeam)',
+        ),
         backgroundColor: const Color(0xFF166534),
         duration: const Duration(seconds: 3),
         action: SnackBarAction(
@@ -1135,11 +1259,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     });
   }
 
-  void _showSelectBowlerDialog(List<PlayerItem> squad, {bool isOpeningBowler = false}) {
+  void _showSelectBowlerDialog(
+    List<PlayerItem> squad, {
+    bool isOpeningBowler = false,
+  }) {
     if (squad.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No players in $_currentBowlingTeam squad. Add players in Teams tab.'),
+          content: Text(
+            'No players in $_currentBowlingTeam squad. Add players in Teams tab.',
+          ),
           backgroundColor: const Color(0xFFDC2626),
         ),
       );
@@ -1152,14 +1281,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Icons.sports_cricket, color: Color(0xFF166534), size: 22),
+            const Icon(
+              Icons.sports_cricket,
+              color: Color(0xFF166534),
+              size: 22,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 isOpeningBowler
                     ? 'Select Opening Bowler (Inning $_currentCricketInning)'
                     : 'Select Bowler (Inning $_currentCricketInning)',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -1172,7 +1308,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             children: [
               Text(
                 'Bowling Team: $_currentBowlingTeam',
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF166534),
+                ),
               ),
               const SizedBox(height: 8),
               ConstrainedBox(
@@ -1188,16 +1328,23 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
                     return ListTile(
                       dense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       leading: CircleAvatar(
                         radius: 16,
-                        backgroundColor: isCurrent ? const Color(0xFF166534) : const Color(0xFFEFF6FF),
+                        backgroundColor: isCurrent
+                            ? const Color(0xFF166534)
+                            : const Color(0xFFEFF6FF),
                         child: Text(
                           p.avatarInitials,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: isCurrent ? Colors.white : const Color(0xFF1D4ED8),
+                            color: isCurrent
+                                ? Colors.white
+                                : const Color(0xFF1D4ED8),
                           ),
                         ),
                       ),
@@ -1207,7 +1354,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             child: Text(
                               p.name,
                               style: TextStyle(
-                                fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
+                                fontWeight: isCurrent
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
                                 fontSize: 13,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -1215,7 +1364,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           ),
                           if (isCurrent)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE5F5EB),
                                 borderRadius: BorderRadius.circular(6),
@@ -1235,7 +1387,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         st.ballsBowled > 0
                             ? '${st.wickets}/${st.runsConceded} (${st.oversBowled} ov) • Econ: ${st.economy}'
                             : '${p.role} • Yet to bowl',
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
+                        ),
                       ),
                       onTap: () {
                         setState(() => _currentBowler = p);
@@ -1243,7 +1398,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Now Bowling: ${p.name} for $_currentBowlingTeam (Inning $_currentCricketInning)! 🎯'),
+                            content: Text(
+                              'Now Bowling: ${p.name} for $_currentBowlingTeam (Inning $_currentCricketInning)! 🎯',
+                            ),
                             backgroundColor: const Color(0xFF166534),
                             duration: const Duration(seconds: 2),
                           ),
@@ -1268,8 +1425,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
   void _promptFielderAndNextBatter(PlayerItem? dismissed) {
     final fielders = _currentBowlingSquad;
-    final remainingBatters =
-        _currentBattingSquad.where((p) => p != dismissed && !_getStat(p).isOut).toList();
+    final remainingBatters = _currentBattingSquad
+        .where((p) => p != dismissed && !_getStat(p).isOut)
+        .toList();
 
     showModalBottomSheet(
       context: context,
@@ -1288,13 +1446,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 const SizedBox(width: 8),
                 Text(
                   '🔴 Wicket! ${dismissed?.name ?? "Batter"} is Out',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             if (fielders.isNotEmpty) ...[
-              const Text('Fielding credit (Catch / Run-Out):', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              const Text(
+                'Fielding credit (Catch / Run-Out):',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
               const SizedBox(height: 6),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -1309,7 +1473,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           _getStat(f).catches += 1;
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Catch / fielding credited to ${f.name} (+10 pts)!'),
+                              content: Text(
+                                'Catch / fielding credited to ${f.name} (+10 pts)!',
+                              ),
                               duration: const Duration(seconds: 1),
                             ),
                           );
@@ -1321,7 +1487,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
               const SizedBox(height: 12),
             ],
-            const Text('Next Batter to Crease:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            const Text(
+              'Next Batter to Crease:',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 6),
             if (remainingBatters.isNotEmpty)
               Wrap(
@@ -1331,7 +1500,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     label: Text(b.name),
                     selected: _striker == b,
                     selectedColor: const Color(0xFF166534),
-                    labelStyle: TextStyle(color: _striker == b ? Colors.white : Colors.black87),
+                    labelStyle: TextStyle(
+                      color: _striker == b ? Colors.white : Colors.black87,
+                    ),
                     onSelected: (_) {
                       setState(() => _striker = b);
                       Navigator.pop(ctx);
@@ -1342,7 +1513,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             else
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('All available batters have batted.', style: TextStyle(color: Colors.grey)),
+                child: Text(
+                  'All available batters have batted.',
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
             const SizedBox(height: 10),
             Align(
@@ -1436,7 +1610,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF166534),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -1447,7 +1623,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               _saveCurrentLiveState();
               Future.delayed(const Duration(milliseconds: 300), () {
                 if (mounted) {
-                  _showSelectBowlerDialog(_currentBowlingSquad, isOpeningBowler: true);
+                  _showSelectBowlerDialog(
+                    _currentBowlingSquad,
+                    isOpeningBowler: true,
+                  );
                 }
               });
             },
@@ -1472,10 +1651,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     setState(() {
       if (teamA) {
         _footballGoalsA += 1;
-        _footballEvents.add('⚽ Goal for $_teamAName! ($_footballGoalsA-$_footballGoalsB)');
+        _footballEvents.add(
+          '⚽ Goal for $_teamAName! ($_footballGoalsA-$_footballGoalsB)',
+        );
       } else {
         _footballGoalsB += 1;
-        _footballEvents.add('⚽ Goal for $_teamBName! ($_footballGoalsA-$_footballGoalsB)');
+        _footballEvents.add(
+          '⚽ Goal for $_teamBName! ($_footballGoalsA-$_footballGoalsB)',
+        );
       }
     });
   }
@@ -1495,13 +1678,17 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       final target = _currentSport.toLowerCase().contains('pickle') ? 11 : 21;
       if (_pointsA >= target && (_pointsA - _pointsB) >= 2) {
         _setsWonA += 1;
-        _setHistory.add('Set $_currentSet: $_teamAName ($_pointsA - $_pointsB)');
+        _setHistory.add(
+          'Set $_currentSet: $_teamAName ($_pointsA - $_pointsB)',
+        );
         _currentSet += 1;
         _pointsA = 0;
         _pointsB = 0;
       } else if (_pointsB >= target && (_pointsB - _pointsA) >= 2) {
         _setsWonB += 1;
-        _setHistory.add('Set $_currentSet: $_teamBName ($_pointsB - $_pointsA)');
+        _setHistory.add(
+          'Set $_currentSet: $_teamBName ($_pointsB - $_pointsA)',
+        );
         _currentSet += 1;
         _pointsA = 0;
         _pointsB = 0;
@@ -1519,8 +1706,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     String scoreB;
 
     if (_isCricket) {
-      scoreA = '$_cricketRunsA/$_cricketWicketsA (${_formatOvers(_cricketBallsA)} ov)';
-      scoreB = '$_cricketRunsB/$_cricketWicketsB (${_formatOvers(_cricketBallsB)} ov)';
+      scoreA =
+          '$_cricketRunsA/$_cricketWicketsA (${_formatOvers(_cricketBallsA)} ov)';
+      scoreB =
+          '$_cricketRunsB/$_cricketWicketsB (${_formatOvers(_cricketBallsB)} ov)';
 
       final maxWickets = _playersPerSide > 1 ? _playersPerSide - 1 : 10;
       final target = _cricketTarget ?? (_cricketRunsA + 1);
@@ -1589,7 +1778,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       if (s.wickets > maxWickets && s.wickets > 0) {
         maxWickets = s.wickets;
         bestBowler = s;
-      } else if (s.wickets == maxWickets && s.wickets > 0 && bestBowler != null) {
+      } else if (s.wickets == maxWickets &&
+          s.wickets > 0 &&
+          bestBowler != null) {
         if (s.runsConceded < bestBowler.runsConceded) {
           bestBowler = s;
         }
@@ -1600,15 +1791,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       }
     }
 
-    final motmStr = motm != null ? '${motm.name} (${motm.fantasyPoints} pts)' : null;
+    final motmStr = motm != null
+        ? '${motm.name} (${motm.fantasyPoints} pts)'
+        : null;
     final topScorerStr = topScorer != null
         ? '${topScorer.name} (${topScorer.runs} runs off ${topScorer.balls}b)'
         : null;
     final bestBowlerStr = bestBowler != null
         ? '${bestBowler.name} (${bestBowler.wickets}/${bestBowler.runsConceded} in ${bestBowler.oversBowled} ov)'
         : null;
-    final bestFielderStr =
-        bestFielder != null ? '${bestFielder.name} (${bestFielder.catches} catches)' : null;
+    final bestFielderStr = bestFielder != null
+        ? '${bestFielder.name} (${bestFielder.catches} catches)'
+        : null;
 
     final statsA = _teamAPlayers.map((p) => _getStat(p)).toList();
     final statsB = _teamBPlayers.map((p) => _getStat(p)).toList();
@@ -1652,7 +1846,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       _finalWinner = winner;
       _finalMargin = margin;
       _loadedResult = matchResult;
-      _slotMatches = MatchScoreManager().getAllResultsForBooking(widget.bookingId);
+      _slotMatches = MatchScoreManager().getAllResultsForBooking(
+        widget.bookingId,
+      );
       _selectedMatchHistoryIndex = _slotMatches.length - 1;
     });
 
@@ -1724,7 +1920,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         '+1 Win Added! 🏆',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: userWon ? const Color(0xFF166534) : Colors.black87,
+                          color: userWon
+                              ? const Color(0xFF166534)
+                              : Colors.black87,
                         ),
                       ),
                     ],
@@ -1739,7 +1937,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF166534),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx),
             child: const Text('View Match Details & Result 📋'),
@@ -1766,23 +1966,31 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.black87,
+              size: 20,
+            ),
             onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const MainLayout()),
-              );
-            }
-          },
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const MainLayout()),
+                );
+              }
+            },
           ),
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
                 'Match Details & Results 📋',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               Text(
                 '${widget.turfName} • ${widget.timeSlot}',
@@ -1795,10 +2003,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton.icon(
                 onPressed: _startNewMatch,
-                icon: const Icon(Icons.bolt_rounded, color: Color(0xFF166534), size: 18),
+                icon: const Icon(
+                  Icons.bolt_rounded,
+                  color: Color(0xFF166534),
+                  size: 18,
+                ),
                 label: Text(
                   'Match #${_slotMatches.length + 1} ⚡',
-                  style: const TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
+                  style: const TextStyle(
+                    color: Color(0xFF166534),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
@@ -1814,7 +2030,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.black87,
+            size: 20,
+          ),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -1830,7 +2050,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           children: [
             Text(
               '$_currentSport Match Center',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             Text(
               '${widget.turfName} • ${widget.timeSlot}',
@@ -1855,8 +2079,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           tabs: const [
             Tab(icon: Icon(Icons.group_rounded, size: 18), text: '1. Teams'),
             Tab(icon: Icon(Icons.toll_rounded, size: 18), text: '2. Coin Toss'),
-            Tab(icon: Icon(Icons.scoreboard_rounded, size: 18), text: '3. Scorecard'),
-            Tab(icon: Icon(Icons.emoji_events_rounded, size: 18), text: '4. Result & Awards'),
+            Tab(
+              icon: Icon(Icons.scoreboard_rounded, size: 18),
+              text: '3. Scorecard',
+            ),
+            Tab(
+              icon: Icon(Icons.emoji_events_rounded, size: 18),
+              text: '4. Result & Awards',
+            ),
           ],
         ),
       ),
@@ -1879,8 +2109,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     required String featureName,
     required IconData featureIcon,
   }) {
-    final startSlot =
-        BookingManager.getFormattedSlotStart(timeSlot: widget.timeSlot);
+    final startSlot = BookingManager.getFormattedSlotStart(
+      timeSlot: widget.timeSlot,
+    );
     final minsUntil = BookingManager.getMinutesUntilMatchStart(
       dateStr: widget.date,
       timeSlot: widget.timeSlot,
@@ -1921,11 +2152,17 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               const SizedBox(height: 16),
               Text(
                 '$featureName Locked',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFBEB),
                   borderRadius: BorderRadius.circular(16),
@@ -1944,7 +2181,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               Text(
                 'Matches start in time only at $startSlot. Before the match begins, assemble squads, pick team size & overs, and add players from contacts. The coin toss and scoring unlock once match time arrives.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.4),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B7280),
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -1953,11 +2194,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF166534),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   icon: const Icon(Icons.group_rounded, size: 18),
-                  label: const Text('Go to Squad Setup', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text(
+                    'Go to Squad Setup',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () => _tabController.animateTo(0),
                 ),
               ),
@@ -1968,16 +2214,23 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFD97706),
                     side: const BorderSide(color: Color(0xFFD97706)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 18),
-                  label: const Text('Start Match Early (Both Teams Ready)', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text(
+                    'Start Match Early (Both Teams Ready)',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () {
                     setState(() => _forceEarlyStart = true);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Match unlocked! Coin toss and live scoring active.'),
+                        content: Text(
+                          'Match unlocked! Coin toss and live scoring active.',
+                        ),
                         backgroundColor: Color(0xFF166534),
                       ),
                     );
@@ -2005,8 +2258,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       onImport: (selected) {
         setState(() {
           for (final p in selected) {
-            if (!currentList.any((item) => item.name == p.name && item.phone == p.phone)) {
-              otherList.removeWhere((item) => item.name == p.name && item.phone == p.phone);
+            if (!currentList.any(
+              (item) => item.name == p.name && item.phone == p.phone,
+            )) {
+              otherList.removeWhere(
+                (item) => item.name == p.name && item.phone == p.phone,
+              );
               currentList.add(p);
             }
           }
@@ -2014,7 +2271,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         _saveSquad(showFeedback: false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added ${selected.length} player(s) to ${forTeamA ? _teamAName : _teamBName}!'),
+            content: Text(
+              'Added ${selected.length} player(s) to ${forTeamA ? _teamAName : _teamBName}!',
+            ),
             backgroundColor: const Color(0xFF166534),
           ),
         );
@@ -2026,7 +2285,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     if (_isOpenChallenge) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Auto Split is not available for Open Matches. Opponents join via Open Challenges!'),
+          content: Text(
+            'Auto Split is not available for Open Matches. Opponents join via Open Challenges!',
+          ),
           backgroundColor: Color(0xFFD97706),
         ),
       );
@@ -2037,7 +2298,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     if (pool.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please add players from your contacts first before auto-splitting squads!'),
+          content: Text(
+            'Please add players from your contacts first before auto-splitting squads!',
+          ),
           backgroundColor: Color(0xFFD97706),
         ),
       );
@@ -2055,7 +2318,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     _saveSquad(showFeedback: false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Auto-balanced squads: ${_teamAPlayers.length} in $_teamAName, ${_teamBPlayers.length} in $_teamBName!'),
+        content: Text(
+          'Auto-balanced squads: ${_teamAPlayers.length} in $_teamAName, ${_teamBPlayers.length} in $_teamBName!',
+        ),
         backgroundColor: const Color(0xFF166534),
       ),
     );
@@ -2078,9 +2343,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF166534),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
               final val = int.tryParse(ctrl.text.trim());
               if (val != null && val >= 1 && val <= 25) {
@@ -2113,9 +2384,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF166534),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
               final val = int.tryParse(ctrl.text.trim());
               if (val != null && val >= 1 && val <= 100) {
@@ -2135,12 +2412,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // TAB 1: TEAMS & CONTACTS ROSTER
   // ===========================================================================
   Widget _buildTeamsTab() {
-    final startSlot = BookingManager.getFormattedSlotStart(timeSlot: widget.timeSlot);
-    final minsUntil = BookingManager.getMinutesUntilMatchStart(dateStr: widget.date, timeSlot: widget.timeSlot);
-    final isOpponentJoined = _linkedChallenge?.isJoined == true ||
-        (_linkedChallenge?.opponentName != null && _linkedChallenge!.opponentName!.isNotEmpty);
-    final hasOpponent = isOpponentJoined ||
-        (_linkedChallenge?.opponentName != null && _linkedChallenge!.opponentName!.trim().isNotEmpty) ||
+    final startSlot = BookingManager.getFormattedSlotStart(
+      timeSlot: widget.timeSlot,
+    );
+    final minsUntil = BookingManager.getMinutesUntilMatchStart(
+      dateStr: widget.date,
+      timeSlot: widget.timeSlot,
+    );
+    final isOpponentJoined =
+        _linkedChallenge?.isJoined == true ||
+        (_linkedChallenge?.opponentName != null &&
+            _linkedChallenge!.opponentName!.isNotEmpty);
+    final hasOpponent =
+        isOpponentJoined ||
+        (_linkedChallenge?.opponentName != null &&
+            _linkedChallenge!.opponentName!.trim().isNotEmpty) ||
         _teamBPlayers.isNotEmpty;
 
     return SingleChildScrollView(
@@ -2165,7 +2451,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       color: Color(0xFFFEF3C7),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.timer_outlined, color: Color(0xFFD97706), size: 20),
+                    child: const Icon(
+                      Icons.timer_outlined,
+                      color: Color(0xFFD97706),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -2174,14 +2464,22 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       children: [
                         Text(
                           'Pre-Match Phase: Starts at $startSlot ${minsUntil > 0 ? "(in $minsUntil mins)" : ""}',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF92400E),
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         const Text(
                           'Prepare your squads, overs & format below. Coin Toss and Live Scorecard will unlock when match starts!',
-                          style: TextStyle(fontSize: 11, color: Color(0xFFB45309), height: 1.3),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFB45309),
+                            height: 1.3,
+                          ),
                         ),
                       ],
                     ),
@@ -2197,9 +2495,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isOpponentJoined ? const Color(0xFFE5F5EB) : const Color(0xFFEFF6FF),
+                color: isOpponentJoined
+                    ? const Color(0xFFE5F5EB)
+                    : const Color(0xFFEFF6FF),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isOpponentJoined ? const Color(0xFF86EFAC) : const Color(0xFFBFDBFE)),
+                border: Border.all(
+                  color: isOpponentJoined
+                      ? const Color(0xFF86EFAC)
+                      : const Color(0xFFBFDBFE),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2209,11 +2513,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF2563EB),
+                          color: isOpponentJoined
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF2563EB),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          isOpponentJoined ? Icons.handshake_rounded : Icons.public,
+                          isOpponentJoined
+                              ? Icons.handshake_rounded
+                              : Icons.public,
                           color: Colors.white,
                           size: 16,
                         ),
@@ -2221,11 +2529,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          isOpponentJoined ? '⚔️ Opponent Joined!' : '⚔️ Open Challenge',
+                          isOpponentJoined
+                              ? '⚔️ Opponent Joined!'
+                              : '⚔️ Open Challenge',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12.5,
-                            color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF1E40AF),
+                            color: isOpponentJoined
+                                ? const Color(0xFF166534)
+                                : const Color(0xFF1E40AF),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -2233,9 +2545,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: isOpponentJoined ? const Color(0xFFDCFCE7) : const Color(0xFFDBEAFE),
+                          color: isOpponentJoined
+                              ? const Color(0xFFDCFCE7)
+                              : const Color(0xFFDBEAFE),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -2243,7 +2560,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
-                            color: isOpponentJoined ? const Color(0xFF166534) : const Color(0xFF1E40AF),
+                            color: isOpponentJoined
+                                ? const Color(0xFF166534)
+                                : const Color(0xFF1E40AF),
                           ),
                         ),
                       ),
@@ -2256,7 +2575,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         : 'This game is posted as an Open Challenge ($_selectedTeamSize). Waiting for another squad to accept.',
                     style: TextStyle(
                       fontSize: 12,
-                      color: isOpponentJoined ? const Color(0xFF14532D) : const Color(0xFF1E3A8A),
+                      color: isOpponentJoined
+                          ? const Color(0xFF14532D)
+                          : const Color(0xFF1E3A8A),
                     ),
                   ),
                 ],
@@ -2285,23 +2606,41 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Match Format & Rules', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    const Text(
+                      'Match Format & Rules',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
                     Text(
                       '$_playersPerSide players / side',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF166534),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
 
                 // Venue Supported Sports Switcher
-                const Text('Select Sport (Venue Supported):', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+                const Text(
+                  'Select Sport (Venue Supported):',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: _venueSports.map((sp) {
-                      final isSel = _currentSport.toLowerCase() == sp.toLowerCase();
+                      final isSel =
+                          _currentSport.toLowerCase() == sp.toLowerCase();
                       return Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: ChoiceChip(
@@ -2309,10 +2648,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             sp == 'Cricket'
                                 ? Icons.sports_cricket
                                 : (sp == 'Football'
-                                    ? Icons.sports_soccer
-                                    : Icons.sports_tennis),
+                                      ? Icons.sports_soccer
+                                      : Icons.sports_tennis),
                             size: 16,
-                            color: isSel ? Colors.white : const Color(0xFF166534),
+                            color: isSel
+                                ? Colors.white
+                                : const Color(0xFF166534),
                           ),
                           label: Text(sp),
                           selected: isSel,
@@ -2333,7 +2674,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 const SizedBox(height: 14),
 
                 // Team Size Selector
-                const Text('Squad Size:', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+                const Text(
+                  'Squad Size:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 8,
@@ -2356,12 +2704,25 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       );
                     }),
                     ActionChip(
-                      avatar: const Icon(Icons.add_circle_outline, size: 16, color: Color(0xFF166534)),
+                      avatar: const Icon(
+                        Icons.add_circle_outline,
+                        size: 16,
+                        color: Color(0xFF166534),
+                      ),
                       label: Text(
-                        !['5v5', '6v6', '7v7', '8v8', '11v11'].contains(_selectedTeamSize)
+                        ![
+                              '5v5',
+                              '6v6',
+                              '7v7',
+                              '8v8',
+                              '11v11',
+                            ].contains(_selectedTeamSize)
                             ? '$_selectedTeamSize (Custom)'
                             : '+ Custom',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF166534),
+                        ),
                       ),
                       onPressed: _showCustomSquadSizeDialog,
                     ),
@@ -2371,7 +2732,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
                 // Overs or Duration Selector
                 if (_isCricket) ...[
-                  const Text('Match Overs:', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+                  const Text(
+                    'Match Overs:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
@@ -2394,19 +2762,33 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         );
                       }),
                       ActionChip(
-                        avatar: const Icon(Icons.add_circle_outline, size: 16, color: Color(0xFF166534)),
+                        avatar: const Icon(
+                          Icons.add_circle_outline,
+                          size: 16,
+                          color: Color(0xFF166534),
+                        ),
                         label: Text(
                           ![4, 6, 8, 10, 12, 15, 20].contains(_selectedOvers)
                               ? '$_selectedOvers Overs (Custom)'
                               : '+ Custom',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF166534),
+                          ),
                         ),
                         onPressed: _showCustomOversDialog,
                       ),
                     ],
                   ),
                 ] else if (_isFootball) ...[
-                  const Text('Match Duration:', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+                  const Text(
+                    'Match Duration:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
@@ -2428,26 +2810,38 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     }).toList(),
                   ),
                 ] else ...[
-                  const Text('Match Format:', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600)),
+                  const Text(
+                    'Match Format:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Wrap(
                     spacing: 8,
-                    children: ['Best of 3 Sets', '1 Set (21 Pts)', '11 Pts Rapid'].map((fmt) {
-                      final isSel = _racketFormat == fmt;
-                      return ChoiceChip(
-                        label: Text(fmt),
-                        selected: isSel,
-                        selectedColor: const Color(0xFF166534),
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isSel ? Colors.white : Colors.black87,
-                        ),
-                        onSelected: (_) {
-                          setState(() => _racketFormat = fmt);
-                        },
-                      );
-                    }).toList(),
+                    children:
+                        [
+                          'Best of 3 Sets',
+                          '1 Set (21 Pts)',
+                          '11 Pts Rapid',
+                        ].map((fmt) {
+                          final isSel = _racketFormat == fmt;
+                          return ChoiceChip(
+                            label: Text(fmt),
+                            selected: isSel,
+                            selectedColor: const Color(0xFF166534),
+                            labelStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: isSel ? Colors.white : Colors.black87,
+                            ),
+                            onSelected: (_) {
+                              setState(() => _racketFormat = fmt);
+                            },
+                          );
+                        }).toList(),
                   ),
                 ],
               ],
@@ -2460,8 +2854,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             children: [
               Expanded(
                 child: Text(
-                  _isOpenChallenge ? 'My Team Squad & Contacts' : 'Team Squads & Contacts',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  _isOpenChallenge
+                      ? 'My Team Squad & Contacts'
+                      : 'Team Squads & Contacts',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -2469,19 +2868,33 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               if (!_isOpenChallenge)
                 TextButton.icon(
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
-                  icon: const Icon(Icons.shuffle, size: 14, color: Color(0xFF166534)),
+                  icon: const Icon(
+                    Icons.shuffle,
+                    size: 14,
+                    color: Color(0xFF166534),
+                  ),
                   label: const Text(
                     'Auto Split',
-                    style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 12),
+                    style: TextStyle(
+                      color: Color(0xFF166534),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                   onPressed: _autoSplitContacts,
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEFF6FF),
                     borderRadius: BorderRadius.circular(8),
@@ -2489,7 +2902,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   ),
                   child: const Text(
                     '⚔️ Open Match',
-                    style: TextStyle(color: Color(0xFF1D4ED8), fontWeight: FontWeight.bold, fontSize: 11),
+                    style: TextStyle(
+                      color: Color(0xFF1D4ED8),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
             ],
@@ -2533,7 +2950,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF166534),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 0,
               ),
               icon: const Icon(Icons.save_rounded, size: 20),
@@ -2555,18 +2974,25 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F6D38),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 icon: const Icon(Icons.timer_outlined),
                 label: Text(
                   'Squad Ready • Match Starts at $startSlot',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
                 onPressed: () {
                   _saveSquad(showFeedback: true);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Lineup is set! Coin toss and live scoring will unlock at $startSlot.'),
+                      content: Text(
+                        'Lineup is set! Coin toss and live scoring will unlock at $startSlot.',
+                      ),
                       backgroundColor: const Color(0xFF166534),
                     ),
                   );
@@ -2576,10 +3002,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             const SizedBox(height: 8),
             Center(
               child: TextButton.icon(
-                icon: const Icon(Icons.bolt_rounded, size: 16, color: Color(0xFFD97706)),
+                icon: const Icon(
+                  Icons.bolt_rounded,
+                  size: 16,
+                  color: Color(0xFFD97706),
+                ),
                 label: const Text(
                   'Both Teams at Turf? Start Toss Early',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFFD97706)),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD97706),
+                  ),
                 ),
                 onPressed: () {
                   setState(() => _forceEarlyStart = true);
@@ -2595,10 +3029,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF166534),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 icon: const Icon(Icons.toll_rounded),
-                label: const Text('Proceed to Coin Toss 🪙', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                label: const Text(
+                  'Proceed to Coin Toss 🪙',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
                 onPressed: () {
                   _saveSquad(showFeedback: false);
                   _tabController.animateTo(1);
@@ -2612,7 +3051,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   Widget _buildOpenMatchOpponentCard() {
-    final hasOpponent = _linkedChallenge?.isJoined == true ||
+    final hasOpponent =
+        _linkedChallenge?.isJoined == true ||
         (_linkedChallenge?.opponentName != null &&
             _linkedChallenge!.opponentName!.trim().isNotEmpty);
 
@@ -2621,7 +3061,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: hasOpponent ? const Color(0xFFBBF7D0) : const Color(0xFFE2E8F0),
+          color: hasOpponent
+              ? const Color(0xFFBBF7D0)
+              : const Color(0xFFE2E8F0),
           width: 1.5,
         ),
         boxShadow: [
@@ -2644,7 +3086,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 height: 12,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: hasOpponent ? const Color(0xFF166534) : const Color(0xFF94A3B8),
+                  color: hasOpponent
+                      ? const Color(0xFF166534)
+                      : const Color(0xFF94A3B8),
                 ),
               ),
               const SizedBox(width: 8),
@@ -2654,7 +3098,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: hasOpponent ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                    color: hasOpponent
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFF64748B),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -2662,10 +3108,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: hasOpponent ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                  color: hasOpponent
+                      ? const Color(0xFFDCFCE7)
+                      : const Color(0xFFFEF3C7),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: hasOpponent ? const Color(0xFF86EFAC) : const Color(0xFFFDE68A),
+                    color: hasOpponent
+                        ? const Color(0xFF86EFAC)
+                        : const Color(0xFFFDE68A),
                   ),
                 ),
                 child: Text(
@@ -2673,7 +3123,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.bold,
-                    color: hasOpponent ? const Color(0xFF15803D) : const Color(0xFFB45309),
+                    color: hasOpponent
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFFB45309),
                   ),
                 ),
               ),
@@ -2685,19 +3137,27 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: hasOpponent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+              color: hasOpponent
+                  ? const Color(0xFFF0FDF4)
+                  : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: hasOpponent ? const Color(0xFFDCFCE7) : const Color(0xFFE2E8F0),
+                color: hasOpponent
+                    ? const Color(0xFFDCFCE7)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  hasOpponent ? Icons.verified_user_rounded : Icons.info_outline_rounded,
+                  hasOpponent
+                      ? Icons.verified_user_rounded
+                      : Icons.info_outline_rounded,
                   size: 18,
-                  color: hasOpponent ? const Color(0xFF166534) : const Color(0xFF64748B),
+                  color: hasOpponent
+                      ? const Color(0xFF166534)
+                      : const Color(0xFF64748B),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -2711,7 +3171,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.bold,
-                          color: hasOpponent ? const Color(0xFF166534) : const Color(0xFF334155),
+                          color: hasOpponent
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF334155),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -2721,7 +3183,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             : 'This court booking is an Open Match. You only manage your own squad (Team A). Opponents cannot be manually set or edited.',
                         style: TextStyle(
                           fontSize: 11,
-                          color: hasOpponent ? const Color(0xFF15803D) : const Color(0xFF64748B),
+                          color: hasOpponent
+                              ? const Color(0xFF15803D)
+                              : const Color(0xFF64748B),
                           height: 1.3,
                         ),
                       ),
@@ -2736,7 +3200,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             const SizedBox(height: 12),
             Text(
               '${_teamBPlayers.length}/$_playersPerSide Players Registered',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF166534),
+              ),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -2748,10 +3216,17 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     backgroundColor: const Color(0xFFDBEAFE),
                     child: Text(
                       p.avatarInitials,
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2563EB),
+                      ),
                     ),
                   ),
-                  label: Text('${p.name} (${p.role.split(' ').first})', style: const TextStyle(fontSize: 12)),
+                  label: Text(
+                    '${p.name} (${p.role.split(' ').first})',
+                    style: const TextStyle(fontSize: 12),
+                  ),
                 );
               }).toList(),
             ),
@@ -2760,7 +3235,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             Center(
               child: Text(
                 'Waiting for an opponent squad to accept and join your open challenge...',
-                style: TextStyle(fontSize: 11.5, fontStyle: FontStyle.italic, color: Colors.grey.shade500),
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade500,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -2803,25 +3282,35 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 height: 12,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isTeamA ? const Color(0xFF166534) : const Color(0xFF2563EB),
+                  color: isTeamA
+                      ? const Color(0xFF166534)
+                      : const Color(0xFF2563EB),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   teamName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               if (!isLocked)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  onPressed: () => _showEditTeamNameDialog(teamName, onNameChange),
+                  onPressed: () =>
+                      _showEditTeamNameDialog(teamName, onNameChange),
                 )
               else
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Icon(Icons.lock_outline_rounded, size: 16, color: Colors.grey),
+                  child: Icon(
+                    Icons.lock_outline_rounded,
+                    size: 16,
+                    color: Colors.grey,
+                  ),
                 ),
             ],
           ),
@@ -2830,10 +3319,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             margin: const EdgeInsets.only(bottom: 8),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: isTeamA ? const Color(0xFFE5F5EB) : const Color(0xFFEFF6FF),
+              color: isTeamA
+                  ? const Color(0xFFE5F5EB)
+                  : const Color(0xFFEFF6FF),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isTeamA ? const Color(0xFF86EFAC) : const Color(0xFFBFDBFE),
+                color: isTeamA
+                    ? const Color(0xFF86EFAC)
+                    : const Color(0xFFBFDBFE),
               ),
             ),
             child: Row(
@@ -2848,7 +3341,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isTeamA ? const Color(0xFF166534) : const Color(0xFF1D4ED8),
+                      color: isTeamA
+                          ? const Color(0xFF166534)
+                          : const Color(0xFF1D4ED8),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -2857,14 +3352,23 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   InkWell(
                     onTap: () => _showSelectCaptainDialog(isTeamA),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
-                        color: isTeamA ? const Color(0xFF166534) : const Color(0xFF1D4ED8),
+                        color: isTeamA
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF1D4ED8),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         captain != null ? 'Change 👑' : 'Pick Captain 👑',
-                        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -2879,7 +3383,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: players.length >= _playersPerSide ? const Color(0xFF166534) : Colors.grey,
+                    color: players.length >= _playersPerSide
+                        ? const Color(0xFF166534)
+                        : Colors.grey,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -2888,26 +3394,44 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               if (!isLocked)
                 TextButton.icon(
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
-                  icon: const Icon(Icons.contacts, size: 14, color: Color(0xFF166534)),
+                  icon: const Icon(
+                    Icons.contacts,
+                    size: 14,
+                    color: Color(0xFF166534),
+                  ),
                   label: const Text(
                     '+ Add Contacts',
-                    style: TextStyle(color: Color(0xFF166534), fontWeight: FontWeight.bold, fontSize: 11.5),
+                    style: TextStyle(
+                      color: Color(0xFF166534),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                    ),
                   ),
                   onPressed: onAddPlayer,
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     '🔒 Locked',
-                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF64748B)),
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF64748B),
+                    ),
                   ),
                 ),
             ],
@@ -2928,19 +3452,29 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: isTeamA ? const Color(0xFFDCFCE7) : const Color(0xFFDBEAFE),
+                      color: isTeamA
+                          ? const Color(0xFFDCFCE7)
+                          : const Color(0xFFDBEAFE),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.person_add_alt_1_rounded,
-                      color: isTeamA ? const Color(0xFF166534) : const Color(0xFF1D4ED8),
+                      color: isTeamA
+                          ? const Color(0xFF166534)
+                          : const Color(0xFF1D4ED8),
                       size: 22,
                     ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    isLocked ? 'Opponent Lineup Pending' : 'No Players Added Yet',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                    isLocked
+                        ? 'Opponent Lineup Pending'
+                        : 'No Players Added Yet',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1E293B),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -2948,7 +3482,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         ? 'Opponent squad is managed by the challenging team captain.'
                         : 'Import your teammates directly from your phone address book to build your squad.',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                    ),
                   ),
                   if (!isLocked) ...[
                     const SizedBox(height: 12),
@@ -2956,13 +3493,24 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF166534),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         elevation: 0,
                       ),
                       onPressed: onAddPlayer,
                       icon: const Icon(Icons.contacts_rounded, size: 16),
-                      label: const Text('Import From Contacts 📱', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        'Import From Contacts 📱',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ],
@@ -2973,12 +3521,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               spacing: 8,
               runSpacing: 8,
               children: players.map((p) {
-                final isCapt = p.role.toLowerCase().contains('captain') || (isTeamA ? _teamACaptain == p : _teamBCaptain == p);
+                final isCapt =
+                    p.role.toLowerCase().contains('captain') ||
+                    (isTeamA ? _teamACaptain == p : _teamBCaptain == p);
                 return Chip(
                   avatar: CircleAvatar(
                     backgroundColor: isCapt
                         ? const Color(0xFFFEF3C7)
-                        : (isTeamA ? const Color(0xFFE5F5EB) : const Color(0xFFDBEAFE)),
+                        : (isTeamA
+                              ? const Color(0xFFE5F5EB)
+                              : const Color(0xFFDBEAFE)),
                     child: Text(
                       isCapt ? '👑' : p.avatarInitials,
                       style: TextStyle(
@@ -2986,18 +3538,24 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         fontWeight: FontWeight.bold,
                         color: isCapt
                             ? const Color(0xFFB45309)
-                            : (isTeamA ? const Color(0xFF166534) : const Color(0xFF2563EB)),
+                            : (isTeamA
+                                  ? const Color(0xFF166534)
+                                  : const Color(0xFF2563EB)),
                       ),
                     ),
                   ),
                   label: Text(
-                    isCapt ? '${p.name} (👑 Captain)' : '${p.name} (${p.role.split(' ').first})',
+                    isCapt
+                        ? '${p.name} (👑 Captain)'
+                        : '${p.name} (${p.role.split(' ').first})',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isCapt ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
-                  deleteIcon: isLocked ? null : const Icon(Icons.close, size: 14),
+                  deleteIcon: isLocked
+                      ? null
+                      : const Icon(Icons.close, size: 14),
                   onDeleted: isLocked
                       ? null
                       : () {
@@ -3021,12 +3579,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         title: const Text('Rename Team'),
         content: TextField(
           controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Team Name', border: OutlineInputBorder()),
+          decoration: const InputDecoration(
+            labelText: 'Team Name',
+            border: OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF166534),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
               if (ctrl.text.trim().isNotEmpty) {
                 onSave(ctrl.text.trim());
@@ -3058,13 +3625,20 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       children: [
         Row(
           children: [
-            const Text('Calling Team: ', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            const Text(
+              'Calling Team: ',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
             Expanded(
               child: Text(
                 activeCapt != null && activeCapt.isNotEmpty
                     ? '${_tossCaller ?? _teamAName} (👑 $activeCapt)'
                     : (_tossCaller ?? _teamAName),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF166534), fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF166534),
+                  fontSize: 13,
+                ),
                 textAlign: TextAlign.end,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -3084,7 +3658,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   avatar: Icon(
                     isA ? Icons.shield : Icons.shield_outlined,
                     size: 16,
-                    color: isSel ? (isA ? const Color(0xFF166534) : const Color(0xFF2563EB)) : Colors.grey,
+                    color: isSel
+                        ? (isA
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF2563EB))
+                        : Colors.grey,
                   ),
                   label: Text(
                     capt != null ? '$team (👑 $capt)' : team,
@@ -3092,13 +3670,23 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                      color: isSel ? (isA ? const Color(0xFF166534) : const Color(0xFF2563EB)) : Colors.black87,
+                      color: isSel
+                          ? (isA
+                                ? const Color(0xFF166534)
+                                : const Color(0xFF2563EB))
+                          : Colors.black87,
                     ),
                   ),
                   selected: isSel,
-                  selectedColor: isA ? const Color(0xFFE5F5EB) : const Color(0xFFDBEAFE),
+                  selectedColor: isA
+                      ? const Color(0xFFE5F5EB)
+                      : const Color(0xFFDBEAFE),
                   side: BorderSide(
-                    color: isSel ? (isA ? const Color(0xFF166534) : const Color(0xFF2563EB)) : const Color(0xFFE5E7EB),
+                    color: isSel
+                        ? (isA
+                              ? const Color(0xFF166534)
+                              : const Color(0xFF2563EB))
+                        : const Color(0xFFE5E7EB),
                   ),
                   onSelected: (selected) {
                     if (selected) {
@@ -3116,18 +3704,29 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
   Widget _buildCoinTossTab() {
     if (!_canPlayMatch) {
-      return _buildPreMatchLockedCard(featureName: 'Coin Toss', featureIcon: Icons.toll_rounded);
+      return _buildPreMatchLockedCard(
+        featureName: 'Coin Toss',
+        featureIcon: Icons.toll_rounded,
+      );
     }
-    final winnerCapt = (_tossWinner == _teamAName ? _teamACaptain?.name : _teamBCaptain?.name);
+    final winnerCapt = (_tossWinner == _teamAName
+        ? _teamACaptain?.name
+        : _teamBCaptain?.name);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text('Official Match Toss', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Official Match Toss',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 6),
-          Text('$_currentSport • Flip the coin to decide who plays first', style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          Text(
+            '$_currentSport • Flip the coin to decide who plays first',
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
+          ),
           const SizedBox(height: 20),
 
           if (_isOpenChallenge &&
@@ -3143,12 +3742,20 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
               child: Row(
                 children: const [
-                  Icon(Icons.hourglass_top_rounded, color: Color(0xFF1D4ED8), size: 18),
+                  Icon(
+                    Icons.hourglass_top_rounded,
+                    color: Color(0xFF1D4ED8),
+                    size: 18,
+                  ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Open Match: Waiting for Opponent Team to join. Official toss will be active once accepted.',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF1E40AF), fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF1E40AF),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -3167,7 +3774,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const RadialGradient(
-                  colors: [Color(0xFFFDE68A), Color(0xFFD97706), Color(0xFF92400E)],
+                  colors: [
+                    Color(0xFFFDE68A),
+                    Color(0xFFD97706),
+                    Color(0xFF92400E),
+                  ],
                   center: Alignment(-0.2, -0.2),
                 ),
                 boxShadow: [
@@ -3183,7 +3794,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 child: Text(
                   _isTossing ? 'FLIPPING...' : (_tossResult ?? 'FLIP\nCOIN'),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ),
@@ -3206,7 +3822,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Call:', style: TextStyle(fontWeight: FontWeight.w600)),
+                      const Text(
+                        'Call:',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       Row(
                         children: ['Heads', 'Tails'].map((call) {
                           final isSel = _tossCall == call;
@@ -3216,8 +3835,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                               label: Text(call),
                               selected: isSel,
                               selectedColor: const Color(0xFF166534),
-                              labelStyle: TextStyle(color: isSel ? Colors.white : Colors.black87),
-                              onSelected: (_) => setState(() => _tossCall = call),
+                              labelStyle: TextStyle(
+                                color: isSel ? Colors.white : Colors.black87,
+                              ),
+                              onSelected: (_) =>
+                                  setState(() => _tossCall = call),
                             ),
                           );
                         }).toList(),
@@ -3235,10 +3857,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD97706),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 icon: const Icon(Icons.touch_app),
-                label: const Text('Flip Coin Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                label: const Text(
+                  'Flip Coin Now',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
                 onPressed: _executeCoinToss,
               ),
             ),
@@ -3253,20 +3880,31 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.emoji_events_rounded, color: Color(0xFF166534), size: 36),
+                  const Icon(
+                    Icons.emoji_events_rounded,
+                    color: Color(0xFF166534),
+                    size: 36,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     winnerCapt != null && winnerCapt.isNotEmpty
                         ? '🎉 Toss Winner: $_tossWinner (👑 $winnerCapt)!'
                         : '🎉 Toss Winner: $_tossWinner!',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF166534),
+                    ),
                   ),
                   Text(
                     'Coin landed on $_tossResult (Called $_tossCall by $_tossCaller)',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Select Decision:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Select Decision:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 10,
@@ -3308,7 +3946,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       backgroundColor: const Color(0xFF166534),
                       foregroundColor: Colors.white,
                     ),
-                    onPressed: _tossDecision == null ? null : () => _tabController.animateTo(2),
+                    onPressed: _tossDecision == null
+                        ? null
+                        : () => _tabController.animateTo(2),
                     child: const Text('Start Scoring'),
                   ),
                 ),
@@ -3335,7 +3975,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // ===========================================================================
   Widget _buildScorecardTab() {
     if (!_canPlayMatch) {
-      return _buildPreMatchLockedCard(featureName: 'Live Scorecard', featureIcon: Icons.scoreboard_rounded);
+      return _buildPreMatchLockedCard(
+        featureName: 'Live Scorecard',
+        featureIcon: Icons.scoreboard_rounded,
+      );
     }
 
     if (_isCricket) {
@@ -3350,10 +3993,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   Widget _buildCricketScorecard() {
     _ensureActivePlayers();
 
-    final activeRuns = _currentCricketInning == 1 ? _cricketRunsA : _cricketRunsB;
-    final activeWickets = _currentCricketInning == 1 ? _cricketWicketsA : _cricketWicketsB;
-    final activeBalls = _currentCricketInning == 1 ? _cricketBallsA : _cricketBallsB;
-    final activeTimeline = _currentCricketInning == 1 ? _cricketTimelineA : _cricketTimelineB;
+    final activeRuns = _currentCricketInning == 1
+        ? _cricketRunsA
+        : _cricketRunsB;
+    final activeWickets = _currentCricketInning == 1
+        ? _cricketWicketsA
+        : _cricketWicketsB;
+    final activeBalls = _currentCricketInning == 1
+        ? _cricketBallsA
+        : _cricketBallsB;
+    final activeTimeline = _currentCricketInning == 1
+        ? _cricketTimelineA
+        : _cricketTimelineB;
     final battingTeam = _currentBattingTeam;
     final bowlingTeam = _currentBowlingTeam;
 
@@ -3373,7 +4024,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   label: Text('Inning 1: $_firstBattingTeam'),
                   selected: _currentCricketInning == 1,
                   selectedColor: const Color(0xFF166534),
-                  labelStyle: TextStyle(color: _currentCricketInning == 1 ? Colors.white : Colors.black87),
+                  labelStyle: TextStyle(
+                    color: _currentCricketInning == 1
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
                   onSelected: (_) {
                     setState(() {
                       _currentCricketInning = 1;
@@ -3388,7 +4043,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   label: Text('Inning 2: $_secondBattingTeam'),
                   selected: _currentCricketInning == 2,
                   selectedColor: const Color(0xFF166534),
-                  labelStyle: TextStyle(color: _currentCricketInning == 2 ? Colors.white : Colors.black87),
+                  labelStyle: TextStyle(
+                    color: _currentCricketInning == 2
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
                   onSelected: (_) {
                     setState(() {
                       _currentCricketInning = 2;
@@ -3416,11 +4075,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.track_changes, color: Color(0xFFB45309), size: 20),
+                      const Icon(
+                        Icons.track_changes,
+                        color: Color(0xFFB45309),
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'TARGET: $target',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF92400E)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Color(0xFF92400E),
+                        ),
                       ),
                     ],
                   ),
@@ -3431,7 +4098,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 13,
-                      color: runsNeeded > 0 ? const Color(0xFFB45309) : const Color(0xFF166534),
+                      color: runsNeeded > 0
+                          ? const Color(0xFFB45309)
+                          : const Color(0xFF166534),
                     ),
                   ),
                 ],
@@ -3460,7 +4129,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               children: [
                 Text(
                   'BATTING: $battingTeam',
-                  style: const TextStyle(color: Color(0xFF86EFAC), fontSize: 13, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Color(0xFF86EFAC),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -3470,11 +4143,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   children: [
                     Text(
                       '$activeRuns',
-                      style: const TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white),
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
                     ),
                     Text(
                       ' / $activeWickets',
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white70),
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white70,
+                      ),
                     ),
                   ],
                 ),
@@ -3486,7 +4167,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                   const SizedBox(height: 6),
                   Text(
                     'Toss: $_tossWinner elected to $_tossDecision',
-                    style: const TextStyle(color: Color(0xFFFEF3C7), fontSize: 11),
+                    style: const TextStyle(
+                      color: Color(0xFFFEF3C7),
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ],
@@ -3510,14 +4194,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     const Expanded(
                       child: Text(
                         'On Crease & Bowling',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 4),
                     TextButton(
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         minimumSize: const Size(36, 24),
                         visualDensity: VisualDensity.compact,
                       ),
@@ -3525,7 +4216,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         setState(() => _swapStrike());
                         _saveCurrentLiveState();
                       },
-                      child: const Text('🔄 Swap', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                      child: const Text(
+                        '🔄 Swap',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF166534),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 4),
                     ElevatedButton.icon(
@@ -3533,7 +4231,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         backgroundColor: const Color(0xFFE5F5EB),
                         foregroundColor: const Color(0xFF166534),
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         minimumSize: const Size(36, 24),
                         visualDensity: VisualDensity.compact,
                         shape: RoundedRectangleBorder(
@@ -3541,8 +4242,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           side: const BorderSide(color: Color(0xFF86EFAC)),
                         ),
                       ),
-                      icon: const Icon(Icons.sports_cricket, size: 12, color: Color(0xFF166534)),
-                      label: const Text('Batters 🏏', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                      icon: const Icon(
+                        Icons.sports_cricket,
+                        size: 12,
+                        color: Color(0xFF166534),
+                      ),
+                      label: const Text(
+                        'Batters 🏏',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       onPressed: () => _showSelectBatterDialog(isStriker: true),
                     ),
                     const SizedBox(width: 4),
@@ -3551,7 +4262,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         backgroundColor: const Color(0xFFEFF6FF),
                         foregroundColor: const Color(0xFF1D4ED8),
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         minimumSize: const Size(36, 24),
                         visualDensity: VisualDensity.compact,
                         shape: RoundedRectangleBorder(
@@ -3559,9 +4273,20 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           side: const BorderSide(color: Color(0xFFBFDBFE)),
                         ),
                       ),
-                      icon: const Icon(Icons.sports_cricket, size: 12, color: Color(0xFF1D4ED8)),
-                      label: const Text('Bowler 🔄', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
-                      onPressed: () => _showSelectBowlerDialog(_currentBowlingSquad),
+                      icon: const Icon(
+                        Icons.sports_cricket,
+                        size: 12,
+                        color: Color(0xFF1D4ED8),
+                      ),
+                      label: const Text(
+                        'Bowler 🔄',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onPressed: () =>
+                          _showSelectBowlerDialog(_currentBowlingSquad),
                     ),
                   ],
                 ),
@@ -3574,7 +4299,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         borderRadius: BorderRadius.circular(10),
                         onTap: () => _showSelectBatterDialog(isStriker: true),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE5F5EB),
                             borderRadius: BorderRadius.circular(10),
@@ -3585,27 +4313,47 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             children: [
                               Row(
                                 children: const [
-                                  Icon(Icons.star, size: 11, color: Color(0xFF166534)),
+                                  Icon(
+                                    Icons.star,
+                                    size: 11,
+                                    color: Color(0xFF166534),
+                                  ),
                                   SizedBox(width: 3),
                                   Expanded(
                                     child: Text(
                                       'Striker *',
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF166534)),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF166534),
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  Icon(Icons.swap_horiz_rounded, size: 13, color: Color(0xFF166534)),
+                                  Icon(
+                                    Icons.swap_horiz_rounded,
+                                    size: 13,
+                                    color: Color(0xFF166534),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 _striker?.name ?? 'Select Striker',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                _striker != null ? '${_getStat(_striker!).runs} (${_getStat(_striker!).balls}b)' : 'Tap to pick 🎯',
-                                style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                                _striker != null
+                                    ? '${_getStat(_striker!).runs} (${_getStat(_striker!).balls}b)'
+                                    : 'Tap to pick 🎯',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  color: Colors.black87,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -3620,7 +4368,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         borderRadius: BorderRadius.circular(10),
                         onTap: () => _showSelectBatterDialog(isStriker: false),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF3F4F6),
                             borderRadius: BorderRadius.circular(10),
@@ -3634,22 +4385,38 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                                   Expanded(
                                     child: Text(
                                       'Non-Striker',
-                                      style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  Icon(Icons.swap_horiz_rounded, size: 13, color: Colors.grey),
+                                  Icon(
+                                    Icons.swap_horiz_rounded,
+                                    size: 13,
+                                    color: Colors.grey,
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 _nonStriker?.name ?? 'Select Non-Striker',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                _nonStriker != null ? '${_getStat(_nonStriker!).runs} (${_getStat(_nonStriker!).balls}b)' : 'Tap to pick 🎯',
-                                style: const TextStyle(fontSize: 10.5, color: Colors.black87),
+                                _nonStriker != null
+                                    ? '${_getStat(_nonStriker!).runs} (${_getStat(_nonStriker!).balls}b)'
+                                    : 'Tap to pick 🎯',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  color: Colors.black87,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -3662,9 +4429,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     Expanded(
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
-                        onTap: () => _showSelectBowlerDialog(_currentBowlingSquad),
+                        onTap: () =>
+                            _showSelectBowlerDialog(_currentBowlingSquad),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFEFF6FF),
                             borderRadius: BorderRadius.circular(10),
@@ -3675,29 +4446,47 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             children: [
                               Row(
                                 children: const [
-                                  Icon(Icons.sports_cricket, size: 11, color: Color(0xFF1D4ED8)),
+                                  Icon(
+                                    Icons.sports_cricket,
+                                    size: 11,
+                                    color: Color(0xFF1D4ED8),
+                                  ),
                                   SizedBox(width: 3),
                                   Expanded(
                                     child: Text(
                                       'Bowler',
-                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8)),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1D4ED8),
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  Icon(Icons.swap_horiz_rounded, size: 13, color: Color(0xFF1D4ED8)),
+                                  Icon(
+                                    Icons.swap_horiz_rounded,
+                                    size: 13,
+                                    color: Color(0xFF1D4ED8),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 _currentBowler?.name ?? 'Select Bowler',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11.5,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
                                 _currentBowler != null
                                     ? '${_getStat(_currentBowler!).wickets}/${_getStat(_currentBowler!).runsConceded} (${_getStat(_currentBowler!).oversBowled} ov)'
                                     : 'Tap to pick 🎯',
-                                style: const TextStyle(fontSize: 10, color: Colors.black87),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black87,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -3721,35 +4510,53 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             ),
             child: Row(
               children: [
-                const Text('Recent Balls:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const Text(
+                  'Recent Balls:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: activeTimeline.reversed.take(12).toList().reversed.map((b) {
-                        Color col = const Color(0xFFF3F5F1);
-                        Color textCol = Colors.black87;
-                        if (b == '4') {
-                          col = const Color(0xFFDBEAFE);
-                          textCol = const Color(0xFF1E40AF);
-                        } else if (b == '6') {
-                          col = const Color(0xFFFEE2E2);
-                          textCol = const Color(0xFF991B1B);
-                        } else if (b == 'W') {
-                          col = Colors.red;
-                          textCol = Colors.white;
-                        }
-                        return Container(
-                          margin: const EdgeInsets.only(right: 6),
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(color: col, shape: BoxShape.circle),
-                          child: Center(
-                            child: Text(b, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textCol)),
-                          ),
-                        );
-                      }).toList(),
+                      children: activeTimeline.reversed
+                          .take(12)
+                          .toList()
+                          .reversed
+                          .map((b) {
+                            Color col = const Color(0xFFF3F5F1);
+                            Color textCol = Colors.black87;
+                            if (b == '4') {
+                              col = const Color(0xFFDBEAFE);
+                              textCol = const Color(0xFF1E40AF);
+                            } else if (b == '6') {
+                              col = const Color(0xFFFEE2E2);
+                              textCol = const Color(0xFF991B1B);
+                            } else if (b == 'W') {
+                              col = Colors.red;
+                              textCol = Colors.white;
+                            }
+                            return Container(
+                              margin: const EdgeInsets.only(right: 6),
+                              width: 28,
+                              height: 28,
+                              decoration: BoxDecoration(
+                                color: col,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  b,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: textCol,
+                                  ),
+                                ),
+                              ),
+                            );
+                          })
+                          .toList(),
                     ),
                   ),
                 ),
@@ -3761,7 +4568,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           // Quick Scoring Keypad
           const Align(
             alignment: Alignment.centerLeft,
-            child: Text('Tap to Add Runs / Events:', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Tap to Add Runs / Events:',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -3778,11 +4588,23 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildCricketKey('FOUR 💥', () => _addCricketRuns(4, isBoundary: true), color: const Color(0xFF2563EB)),
+              _buildCricketKey(
+                'FOUR 💥',
+                () => _addCricketRuns(4, isBoundary: true),
+                color: const Color(0xFF2563EB),
+              ),
               const SizedBox(width: 8),
-              _buildCricketKey('SIX 🚀', () => _addCricketRuns(6, isSix: true), color: const Color(0xFFDC2626)),
+              _buildCricketKey(
+                'SIX 🚀',
+                () => _addCricketRuns(6, isSix: true),
+                color: const Color(0xFFDC2626),
+              ),
               const SizedBox(width: 8),
-              _buildCricketKey('OUT 🔴', _addCricketWicket, color: Colors.black87),
+              _buildCricketKey(
+                'OUT 🔴',
+                _addCricketWicket,
+                color: Colors.black87,
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -3804,10 +4626,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0F6D38),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 icon: const Icon(Icons.arrow_forward_rounded),
-                label: const Text('Declare / Switch to 2nd Innings', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'Declare / Switch to 2nd Innings',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 onPressed: () {
                   _cricketTarget = _cricketRunsA + 1;
                   _showInningsBreakDialog();
@@ -3822,10 +4649,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF166534),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 icon: const Icon(Icons.check_circle_rounded),
-                label: const Text('Complete Match & Save Result', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                label: const Text(
+                  'Complete Match & Save Result',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
                 onPressed: _finalizeMatch,
               ),
             ),
@@ -3845,7 +4677,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             foregroundColor: color != null ? Colors.white : Colors.black87,
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 2),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
           onPressed: onTap,
           child: Text(
@@ -3878,19 +4712,54 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 Expanded(
                   child: Column(
                     children: [
-                      Text(_teamAName, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(
+                        _teamAName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text('$_footballGoalsA', style: const TextStyle(fontSize: 54, fontWeight: FontWeight.w900, color: Colors.white)),
+                      Text(
+                        '$_footballGoalsA',
+                        style: const TextStyle(
+                          fontSize: 54,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const Text('VS', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white70)),
+                const Text(
+                  'VS',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white70,
+                  ),
+                ),
                 Expanded(
                   child: Column(
                     children: [
-                      Text(_teamBName, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(
+                        _teamBName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text('$_footballGoalsB', style: const TextStyle(fontSize: 54, fontWeight: FontWeight.w900, color: Colors.white)),
+                      Text(
+                        '$_footballGoalsB',
+                        style: const TextStyle(
+                          fontSize: 54,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -3902,7 +4771,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534), foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF166534),
+                    foregroundColor: Colors.white,
+                  ),
                   icon: const Icon(Icons.sports_soccer),
                   label: const Text('Goal Team A (+1)'),
                   onPressed: () => _addFootballGoal(true),
@@ -3911,7 +4783,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                  ),
                   icon: const Icon(Icons.sports_soccer),
                   label: const Text('Goal Team B (+1)'),
                   onPressed: () => _addFootballGoal(false),
@@ -3922,16 +4797,30 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Match Events Log:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  'Match Events Log:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 if (_footballEvents.isEmpty)
-                  const Text('No goals scored yet.', style: TextStyle(color: Colors.grey, fontSize: 13))
+                  const Text(
+                    'No goals scored yet.',
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  )
                 else
-                  ..._footballEvents.map((e) => Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text(e))),
+                  ..._footballEvents.map(
+                    (e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Text(e),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -3943,10 +4832,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF166534),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               icon: const Icon(Icons.check_circle_rounded),
-              label: const Text('Complete Football Match', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              label: const Text(
+                'Complete Football Match',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
               onPressed: _finalizeMatch,
             ),
           ),
@@ -3970,7 +4864,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             ),
             child: Column(
               children: [
-                Text('SET $_currentSet IN PROGRESS', style: const TextStyle(color: Color(0xFF86EFAC), fontWeight: FontWeight.bold)),
+                Text(
+                  'SET $_currentSet IN PROGRESS',
+                  style: const TextStyle(
+                    color: Color(0xFF86EFAC),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -3979,30 +4879,69 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         children: [
                           Text(
                             _teamAName,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
-                          Text('$_pointsA', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w900, color: Colors.white)),
-                          Text('Sets Won: $_setsWonA', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text(
+                            '$_pointsA',
+                            style: const TextStyle(
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'Sets Won: $_setsWonA',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     const Padding(
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text('VS', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white70)),
+                      child: Text(
+                        'VS',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white70,
+                        ),
+                      ),
                     ),
                     Expanded(
                       child: Column(
                         children: [
                           Text(
                             _teamBName,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.center,
                           ),
-                          Text('$_pointsB', style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w900, color: Colors.white)),
-                          Text('Sets Won: $_setsWonB', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text(
+                            '$_pointsB',
+                            style: const TextStyle(
+                              fontSize: 44,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'Sets Won: $_setsWonB',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -4016,7 +4955,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534), foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF166534),
+                    foregroundColor: Colors.white,
+                  ),
                   icon: const Icon(Icons.add),
                   label: const Text('Point Team A (+1)'),
                   onPressed: () => _addPoint(true),
@@ -4025,7 +4967,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB), foregroundColor: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                  ),
                   icon: const Icon(Icons.add),
                   label: const Text('Point Team B (+1)'),
                   onPressed: () => _addPoint(false),
@@ -4037,13 +4982,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           if (_setHistory.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Set History:', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Set History:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
-                  ..._setHistory.map((s) => Text(s, style: const TextStyle(fontSize: 13))),
+                  ..._setHistory.map(
+                    (s) => Text(s, style: const TextStyle(fontSize: 13)),
+                  ),
                 ],
               ),
             ),
@@ -4055,10 +5008,15 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF166534),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               icon: const Icon(Icons.check_circle_rounded),
-              label: const Text('End Match & Record Win', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              label: const Text(
+                'End Match & Record Win',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
               onPressed: _finalizeMatch,
             ),
           ),
@@ -4072,7 +5030,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // ===========================================================================
   Widget _buildResultTab() {
     // If we have saved matches in this booking slot, pick the selected one
-    final activeResult = _slotMatches.isNotEmpty && _selectedMatchHistoryIndex < _slotMatches.length
+    final activeResult =
+        _slotMatches.isNotEmpty &&
+            _selectedMatchHistoryIndex < _slotMatches.length
         ? _slotMatches[_selectedMatchHistoryIndex]
         : _loadedResult;
 
@@ -4083,9 +5043,16 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.scoreboard_outlined, size: 64, color: Colors.grey),
+              const Icon(
+                Icons.scoreboard_outlined,
+                size: 64,
+                color: Colors.grey,
+              ),
               const SizedBox(height: 12),
-              const Text('Match in Progress', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                'Match in Progress',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 6),
               const Text(
                 'Go to Tab 3 (Scorecard) to record runs/goals and complete the match.',
@@ -4119,7 +5086,14 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         children: [
           // Slot Matches Switcher (if multiple matches played in this booked slot)
           if (_slotMatches.length > 1) ...[
-            const Text('Matches in this Booked Slot:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+            const Text(
+              'Matches in this Booked Slot:',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
             const SizedBox(height: 6),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -4164,22 +5138,36 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
             ),
             child: Column(
               children: [
-                const Icon(Icons.emoji_events, size: 64, color: Color(0xFFD97706)),
+                const Icon(
+                  Icons.emoji_events,
+                  size: 64,
+                  color: Color(0xFFD97706),
+                ),
                 const SizedBox(height: 10),
                 Text(
                   winnerName,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Won $marginText',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF166534),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 // Match Timing Bar inside Winner Card
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(12),
@@ -4191,35 +5179,69 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.calendar_today_rounded, size: 12, color: Color(0xFF166534)),
+                          const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 12,
+                            color: Color(0xFF166534),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             widget.date,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF334155),
+                            ),
                           ),
                         ],
                       ),
-                      Container(width: 1, height: 14, color: const Color(0xFFCBD5E1)),
+                      Container(
+                        width: 1,
+                        height: 14,
+                        color: const Color(0xFFCBD5E1),
+                      ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.access_time_rounded, size: 12, color: Color(0xFF166534)),
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 12,
+                            color: Color(0xFF166534),
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             widget.timeSlot,
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF334155),
+                            ),
                           ),
                         ],
                       ),
-                      Container(width: 1, height: 14, color: const Color(0xFFCBD5E1)),
+                      Container(
+                        width: 1,
+                        height: 14,
+                        color: const Color(0xFFCBD5E1),
+                      ),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.check_circle_outline_rounded, size: 12, color: Color(0xFF166534)),
+                          const Icon(
+                            Icons.check_circle_outline_rounded,
+                            size: 12,
+                            color: Color(0xFF166534),
+                          ),
                           const SizedBox(width: 4),
                           Text(
-                            _formatCompletedTime(result?.completedAt ?? DateTime.now()),
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFF166534)),
+                            _formatCompletedTime(
+                              result?.completedAt ?? DateTime.now(),
+                            ),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF166534),
+                            ),
                           ),
                         ],
                       ),
@@ -4233,24 +5255,56 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     Expanded(
                       child: Column(
                         children: [
-                          Text(result?.teamAName ?? _teamAName, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text(
+                            result?.teamAName ?? _teamAName,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
-                            result?.teamAScore ?? (_isCricket ? '$_cricketRunsA/$_cricketWicketsA' : '$_footballGoalsA'),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            result?.teamAScore ??
+                                (_isCricket
+                                    ? '$_cricketRunsA/$_cricketWicketsA'
+                                    : '$_footballGoalsA'),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const Text('VS', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'VS',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Expanded(
                       child: Column(
                         children: [
-                          Text(result?.teamBName ?? _teamBName, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text(
+                            result?.teamBName ?? _teamBName,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
-                            result?.teamBScore ?? (_isCricket ? '$_cricketRunsB/$_cricketWicketsB' : '$_footballGoalsB'),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            result?.teamBScore ??
+                                (_isCricket
+                                    ? '$_cricketRunsB/$_cricketWicketsB'
+                                    : '$_footballGoalsB'),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -4273,7 +5327,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           userWon
                               ? '🏆 Win recorded! +1 Win and Form Index updated on Player Profile.'
                               : 'Match recorded to player match history.',
-                          style: const TextStyle(fontSize: 12.5, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF166534),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
@@ -4297,7 +5355,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               ),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _remainingSlotMinutes > 0 ? const Color(0xFF86EFAC) : const Color(0xFFCBD5E1),
+                color: _remainingSlotMinutes > 0
+                    ? const Color(0xFF86EFAC)
+                    : const Color(0xFFCBD5E1),
                 width: 1.2,
               ),
               boxShadow: [
@@ -4316,12 +5376,18 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _remainingSlotMinutes > 0 ? const Color(0xFFDCFCE7) : const Color(0xFFE2E8F0),
+                        color: _remainingSlotMinutes > 0
+                            ? const Color(0xFFDCFCE7)
+                            : const Color(0xFFE2E8F0),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        _remainingSlotMinutes > 0 ? Icons.timer_outlined : Icons.replay_circle_filled_rounded,
-                        color: _remainingSlotMinutes > 0 ? const Color(0xFF166534) : const Color(0xFF475569),
+                        _remainingSlotMinutes > 0
+                            ? Icons.timer_outlined
+                            : Icons.replay_circle_filled_rounded,
+                        color: _remainingSlotMinutes > 0
+                            ? const Color(0xFF166534)
+                            : const Color(0xFF475569),
                         size: 20,
                       ),
                     ),
@@ -4337,7 +5403,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w900,
-                              color: _remainingSlotMinutes > 0 ? const Color(0xFF166534) : const Color(0xFF1E293B),
+                              color: _remainingSlotMinutes > 0
+                                  ? const Color(0xFF166534)
+                                  : const Color(0xFF1E293B),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -4347,7 +5415,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                                 : 'Slot has ended. You can start a friendly rematch or record another game.',
                             style: TextStyle(
                               fontSize: 11,
-                              color: _remainingSlotMinutes > 0 ? const Color(0xFF15803D) : const Color(0xFF64748B),
+                              color: _remainingSlotMinutes > 0
+                                  ? const Color(0xFF15803D)
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -4363,16 +5433,25 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF166534),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                     onPressed: _startNewMatch,
-                    icon: const Icon(Icons.bolt_rounded, size: 20, color: Color(0xFF86EFAC)),
+                    icon: const Icon(
+                      Icons.bolt_rounded,
+                      size: 20,
+                      color: Color(0xFF86EFAC),
+                    ),
                     label: Text(
                       _remainingSlotMinutes > 0
                           ? 'Start Match #${_slotMatches.length + 1} in this Slot ⚡'
                           : 'Start Rematch / New Game 🔄',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                      ),
                     ),
                   ),
                 ),
@@ -4382,7 +5461,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           const SizedBox(height: 16),
 
           // Match Awards Grid (Player of Match, Top Scorer, Best Bowler, Best Fielder)
-          const Text('Match Awards & Top Performers 🌟', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          const Text(
+            'Match Awards & Top Performers 🌟',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -4439,12 +5521,17 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF166534),
                       side: const BorderSide(color: Color(0xFF166534)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     icon: const Icon(Icons.bolt_rounded, size: 18),
                     label: Text(
                       'Match #${_slotMatches.length + 1} ⚡',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     onPressed: _startNewMatch,
                   ),
@@ -4458,20 +5545,28 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF166534),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       elevation: 0,
                     ),
                     icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                    label: const Text('My Bookings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    label: const Text(
+                      'My Bookings',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                     onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const MainLayout()),
-              );
-            }
-          },
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      } else {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (_) => const MainLayout()),
+                        );
+                      }
+                    },
                   ),
                 ),
               ),
@@ -4506,7 +5601,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -4515,7 +5614,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

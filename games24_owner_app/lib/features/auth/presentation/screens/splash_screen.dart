@@ -45,12 +45,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.25), end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
-      ),
-    );
-
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _controller.forward();
     _checkInitialRoute();
@@ -138,7 +137,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 16,
+                        ),
                         child: Image.asset(
                           'assets/images/logo.png',
                           height: 140,
@@ -172,7 +174,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.verified_rounded, size: 14, color: Color(0xFF10B981)),
+                                Icon(
+                                  Icons.verified_rounded,
+                                  size: 14,
+                                  color: Color(0xFF10B981),
+                                ),
                                 SizedBox(width: 6),
                                 Text(
                                   'TURF OWNER & PARTNER HUB',
