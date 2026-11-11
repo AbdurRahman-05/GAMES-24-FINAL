@@ -639,6 +639,8 @@ class TurfProfileState {
   final int subscriptionDaysRemaining;
   final List<SubscriptionPaymentItem> subscriptionHistory;
 
+  int get turfId => verifiedAdminId ?? adminUserId ?? 1;
+
   bool get isSubscriptionEndingSoon =>
       isSubscriptionActive && !isBookingHold && subscriptionDaysRemaining <= 3 && subscriptionDaysRemaining > 0;
 
@@ -1277,7 +1279,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       todayPaidBookings: todayPaidBookings,
       todayCashBookings: todayCashBookings,
       todayRevenue: double.tryParse((dash['todayRevenue'] ?? data['todayRevenue'])?.toString() ?? '') ??
-          activeTodayBookings.fold(0.0, (sum, b) => sum + b.amount),
+          activeTodayBookings.fold<double>(0.0, (double sum, b) => sum + b.amount),
       branches: branches.isNotEmpty ? branches : state.branches,
       todayBookingsGrowth: (dash['todayBookingsGrowth'] ?? data['todayBookingsGrowth'])?.toString() ?? '0% Today',
       monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
@@ -1450,9 +1452,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   }
 
   Future<void> _syncCourtsToBackend(List<TurfCourtVenueItem> courts) async {
-    if (state.turfId <= 0) return;
+    final tId = state.turfId;
+    if (tId <= 0) return;
     try {
-      final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/${state.turfId}/courts');
+      final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/$tId/courts');
       final payload = jsonEncode({
         'courts': courts.map((c) => {
           'id': c.id,
@@ -1461,8 +1464,8 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           'surface': c.surface,
           'hourlyRate': c.hourlyRate,
           'timings': c.timings,
-          'status': c.status,
-          'lights': c.lights,
+          'description': c.description,
+          'amenities': c.amenities,
         }).toList(),
       });
       await http.post(
