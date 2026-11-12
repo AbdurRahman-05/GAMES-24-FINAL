@@ -1544,11 +1544,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row: Sport Tag, Booking ID & Status Pill
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // Header Row: Sport Tag, Booking ID & Status Pill (Responsive Wrap to prevent overflow)
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -1583,10 +1587,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                   ],
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    if (booking.isOpenMatch) ...[
+                    if (booking.isOpenMatch)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
@@ -1599,21 +1605,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           children: [
                             const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFBE123C)),
                             const SizedBox(width: 3),
-                            Text(
-                              booking.teamName != null && booking.teamName!.isNotEmpty
-                                  ? '⚔️ ${booking.teamName}'
-                                  : '⚔️ Open Challenge',
-                              style: const TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFFBE123C),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 120),
+                              child: Text(
+                                booking.teamName != null && booking.teamName!.isNotEmpty
+                                    ? '⚔️ ${booking.teamName}'
+                                    : '⚔️ Open Challenge',
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFBE123C),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 6),
-                    ],
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                       decoration: BoxDecoration(
@@ -1791,16 +1800,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF154D36),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
                         elevation: 0,
                       ),
                       icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
-                      label: const Text(
-                        'Gate Check-in',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Gate Check-in',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                        ),
                       ),
                       onPressed: () => _performQuickGateCheckIn(booking.customerName),
                     ),
@@ -1811,16 +1824,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF334155),
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         side: const BorderSide(color: Color(0xFFCBD5E1)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
                       ),
                       icon: const Icon(Icons.published_with_changes_rounded, size: 14),
-                      label: const Text(
-                        'Alter / Shift Slot',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Alter / Shift Slot',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                        ),
                       ),
                       onPressed: () => _openAlterModal(
                         context,
