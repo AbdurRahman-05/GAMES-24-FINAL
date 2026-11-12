@@ -299,125 +299,145 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (ctx) => SafeArea(
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text(
-                      'Your Turf Branches',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your Turf Branches',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Select a location or register another branch',
+                            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Select a location or register another branch',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                const SizedBox(height: 16),
+                ...branches.map((b) {
+                  final isCurrent = b.id == profile.verifiedAdminId;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: isCurrent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
+                        width: isCurrent ? 1.5 : 1.0,
+                      ),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isCurrent ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.stadium_rounded,
+                          color: isCurrent ? Colors.white : const Color(0xFF475569),
+                          size: 20,
+                        ),
+                      ),
+                      title: Text(
+                        b.venueName,
+                        style: TextStyle(
+                          fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
+                        style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: isCurrent
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF16A34A),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Active',
+                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            )
+                          : TextButton(
+                              onPressed: () async {
+                                Navigator.pop(ctx);
+                                await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
+                                if (mounted && context.mounted) {
+                                  ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
+                                }
+                              },
+                              child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _showAddBranchDialog(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.add_location_alt_rounded, color: Color(0xFF154D36), size: 18),
+                    label: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '+ Register New Branch Location',
+                        style: TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
-            const SizedBox(height: 16),
-            ...branches.map((b) {
-              final isCurrent = b.id == profile.verifiedAdminId;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  color: isCurrent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
-                    width: isCurrent ? 1.5 : 1.0,
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                  leading: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isCurrent ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      Icons.stadium_rounded,
-                      color: isCurrent ? Colors.white : const Color(0xFF475569),
-                      size: 20,
-                    ),
-                  ),
-                  title: Text(
-                    b.venueName,
-                    style: TextStyle(
-                      fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
-                      color: const Color(0xFF0F172A),
-                      fontSize: 14,
-                    ),
-                  ),
-                  subtitle: Text(
-                    '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
-                    style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-                  ),
-                  trailing: isCurrent
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF16A34A),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text(
-                            'Active',
-                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                        )
-                      : TextButton(
-                          onPressed: () async {
-                            Navigator.pop(ctx);
-                            await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
-                            if (mounted && context.mounted) {
-                              ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
-                            }
-                          },
-                          child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                ),
-              );
-            }),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _showAddBranchDialog(context);
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF154D36), width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                icon: const Icon(Icons.add_location_alt_rounded, color: Color(0xFF154D36), size: 18),
-                label: const Text(
-                  '+ Register New Branch Location',
-                  style: TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
     );
