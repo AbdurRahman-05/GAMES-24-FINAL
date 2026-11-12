@@ -27,65 +27,82 @@ class AdminMainLayout extends StatelessWidget {
         }
       },
       child: Scaffold(
+        extendBody: true,
         body: child,
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, -4),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.cardDark : Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                width: 1.2,
               ),
-            ],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildNavItem(
-                      index: 0,
-                      icon: Icons.dashboard_rounded,
-                      label: 'Dashboard',
-                      isSelected: currentIndex == 0,
-                    ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 18,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF154D36).withValues(alpha: 0.06),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: currentIndex == 0 ? 12 : 10,
+                  child: _buildNavItem(
+                    index: 0,
+                    icon: Icons.dashboard_rounded,
+                    label: 'Dashboard',
+                    isSelected: currentIndex == 0,
                   ),
-                  Expanded(
-                    child: _buildNavItem(
-                      index: 1,
-                      icon: Icons.edit_calendar_rounded,
-                      label: 'Slots',
-                      isSelected: currentIndex == 1,
-                    ),
+                ),
+                Expanded(
+                  flex: currentIndex == 1 ? 12 : 10,
+                  child: _buildNavItem(
+                    index: 1,
+                    icon: Icons.edit_calendar_rounded,
+                    label: 'Slots',
+                    isSelected: currentIndex == 1,
                   ),
-                  Expanded(
-                    child: _buildNavItem(
-                      index: 2,
-                      icon: Icons.emoji_events_rounded,
-                      label: 'Tournaments',
-                      isSelected: currentIndex == 2,
-                    ),
+                ),
+                Expanded(
+                  flex: currentIndex == 2 ? 12 : 10,
+                  child: _buildNavItem(
+                    index: 2,
+                    icon: Icons.emoji_events_rounded,
+                    label: 'Tournaments',
+                    isSelected: currentIndex == 2,
                   ),
-                  Expanded(
-                    child: _buildNavItem(
-                      index: 3,
-                      icon: Icons.qr_code_scanner_rounded,
-                      label: 'Gate QR',
-                      isSelected: currentIndex == 3,
-                    ),
+                ),
+                Expanded(
+                  flex: currentIndex == 3 ? 12 : 10,
+                  child: _buildNavItem(
+                    index: 3,
+                    icon: Icons.qr_code_scanner_rounded,
+                    label: 'Gate QR',
+                    isSelected: currentIndex == 3,
                   ),
-                  Expanded(
-                    child: _buildNavItem(
-                      index: 4,
-                      icon: Icons.person_rounded,
-                      label: 'Profile',
-                      isSelected: currentIndex == 4,
-                    ),
+                ),
+                Expanded(
+                  flex: currentIndex == 4 ? 12 : 10,
+                  child: _buildNavItem(
+                    index: 4,
+                    icon: Icons.person_rounded,
+                    label: 'Profile',
+                    isSelected: currentIndex == 4,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -101,14 +118,33 @@ class AdminMainLayout extends StatelessWidget {
   }) {
     return InkWell(
       onTap: () => onTabSelected(index),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+      borderRadius: BorderRadius.circular(18),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          vertical: isSelected ? 7 : 5,
+          horizontal: 2,
+        ),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.12)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF0F3825), Color(0xFF154D36)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF154D36).withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -116,20 +152,24 @@ class AdminMainLayout extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 20,
-              color: isSelected ? AppColors.primary : Colors.grey[500],
+              size: isSelected ? 22 : 19,
+              color: isSelected ? Colors.white : const Color(0xFF64748B),
             ),
             const SizedBox(height: 2),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? AppColors.primary : Colors.grey[600],
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 10,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF475569),
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                    fontSize: isSelected ? 10.5 : 9.5,
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 1,
                 ),
-                maxLines: 1,
               ),
             ),
           ],
