@@ -761,57 +761,114 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     valueListenable: MatchScoreManager().liveStateNotifier,
                     builder: (context, _, child) {
                       final liveState = MatchScoreManager().getLiveStateSync(bookingId.toString());
-                      if (liveState == null || !liveState.isLive) return const SizedBox.shrink();
+                      final results = MatchScoreManager().getAllResultsForBooking(bookingId.toString());
+                      final isLive = liveState != null && liveState.isLive;
+                      final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                        dateStr: dateStr,
+                        timeSlot: timeSlot,
+                      );
+                      final isSlotActive = remainingSlotMins > 0;
 
-                      return Container(
-                        margin: const EdgeInsets.only(top: 12),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFECACA)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFDC2626),
-                                shape: BoxShape.circle,
+                      if (isLive) {
+                        return Container(
+                          margin: const EdgeInsets.only(top: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFFECACA)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFDC2626),
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'LIVE MATCH IN PROGRESS',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFDC2626),
-                                letterSpacing: 0.5,
+                              const SizedBox(width: 8),
+                              const Text(
+                                'LIVE MATCH IN PROGRESS',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFDC2626),
+                                  letterSpacing: 0.5,
+                                ),
                               ),
-                            ),
-                            if (liveState.liveScoreSummary.isNotEmpty) ...[
+                              if (liveState.liveScoreSummary.isNotEmpty) ...[
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFDC2626),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    liveState.liveScoreSummary,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      } else if (isSlotActive && results.isNotEmpty) {
+                        return Container(
+                          margin: const EdgeInsets.only(top: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFBBF7D0)),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF16A34A),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'SLOT ACTIVE • ~$remainingSlotMins MINS LEFT',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF15803D),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
                               const Spacer(),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFDC2626),
+                                  color: const Color(0xFF166534),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  liveState.liveScoreSummary,
+                                  'Match #${results.length} Done',
                                   style: const TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 10.5,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
                               ),
                             ],
-                          ],
-                        ),
-                      );
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
                     },
                   ),
                   const SizedBox(height: 14),
@@ -827,12 +884,90 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         valueListenable: MatchScoreManager().liveStateNotifier,
                         builder: (context, _, child) {
                           final liveState = MatchScoreManager().getLiveStateSync(bookingId.toString());
+                          final results = MatchScoreManager().getAllResultsForBooking(bookingId.toString());
                           final isLive = liveState != null && liveState.isLive;
-                          final isMatchFinished = isPast ||
-                              (booking['status'] ?? '').toString().toLowerCase() == 'completed' ||
-                              (liveState != null && liveState.isMatchCompleted);
+                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                            dateStr: dateStr,
+                            timeSlot: timeSlot,
+                          );
+                          final isSlotActive = remainingSlotMins > 0;
+                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                          final isSlotFinished = isPast ||
+                              (!isSlotActive && results.isNotEmpty) ||
+                              (!isSlotActive && (booking['status'] ?? '').toString().toLowerCase() == 'completed');
                           final isStarted = BookingManager.isMatchStarted(
                               dateStr: dateStr, timeSlot: timeSlot);
+
+                          if (canPlayNext) {
+                            return Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFDC2626),
+                                    foregroundColor: Colors.white,
+                                    elevation: 2,
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MatchScorecardScreen(
+                                          bookingId: bookingId.toString(),
+                                          turfName: turfName,
+                                          sport: booking['sport']?.toString() ?? 'Cricket',
+                                          date: dateStr,
+                                          timeSlot: timeSlot,
+                                          startNewMatchImmediately: true,
+                                          initialTab: 1,
+                                          isOpenMatch: booking['isOpenMatch'] == true ||
+                                              booking['is_open_match'] == true,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.flash_on_rounded, size: 16),
+                                  label: Text(
+                                    'Play Match #${results.length + 1} ⚡ (~${remainingSlotMins}m left)',
+                                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF0F6D38),
+                                    side: const BorderSide(color: Color(0xFF0F6D38)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MatchScorecardScreen(
+                                          bookingId: bookingId.toString(),
+                                          turfName: turfName,
+                                          sport: booking['sport']?.toString() ?? 'Cricket',
+                                          date: dateStr,
+                                          timeSlot: timeSlot,
+                                          initialTab: 3,
+                                          isOpenMatch: booking['isOpenMatch'] == true ||
+                                              booking['is_open_match'] == true,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.emoji_events_outlined, size: 15),
+                                  label: Text(
+                                    'View Match #${results.length} 🏆',
+                                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
 
                           Color btnColor;
                           IconData btnIcon;
@@ -844,10 +979,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             btnIcon = Icons.play_circle_fill_rounded;
                             btnText = 'Continue Live Match 🔴 (${liveState.liveScoreSummary})';
                             targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
-                          } else if (isMatchFinished) {
+                          } else if (isSlotFinished) {
                             btnColor = const Color(0xFF0F6D38);
                             btnIcon = Icons.emoji_events_rounded;
-                            btnText = 'View Scorecard 🏆';
+                            btnText = results.length > 1
+                                ? 'View Match Summaries (${results.length}) 🏆'
+                                : 'View Scorecard 🏆';
                             targetTab = 3;
                           } else {
                             btnColor = const Color(0xFF166534);

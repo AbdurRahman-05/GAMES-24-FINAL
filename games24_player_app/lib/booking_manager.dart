@@ -78,9 +78,30 @@ class BookingManager {
     return hour * 60 + min;
   }
 
+  static int getRemainingSlotMinutes({String? dateStr, required String timeSlot}) {
+    final now = DateTime.now();
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final date = (dateStr ?? '').trim();
+
+    if (date.isNotEmpty && date.compareTo(todayStr) < 0) {
+      return 0; // In the past
+    }
+    if (date.isNotEmpty && date.compareTo(todayStr) > 0) {
+      return 60; // Future date, slot is not over
+    }
+
+    final endMin = parseSlotEndMinutes(timeSlot);
+    if (endMin == -1) return 0;
+
+    final currentMin = now.hour * 60 + now.minute;
+    final diff = endMin - currentMin;
+    return diff > 0 ? diff : 0;
+  }
+
   static bool isBookingActive(Map<String, dynamic> b) {
     final status = (b['status'] ?? '').toString().toLowerCase();
-    if (status == 'cancelled' || status == 'completed') return false;
+    if (status == 'cancelled') return false;
 
     final now = DateTime.now();
     final todayStr =
@@ -102,10 +123,11 @@ class BookingManager {
       if (b.containsKey('isActive') && b['isActive'] is bool) {
         return b['isActive'] == true;
       }
-      return true;
+      return status != 'completed';
     }
 
     final currentMin = now.hour * 60 + now.minute;
+    // As long as current time is before the end of the booked slot, the court is still active!
     return currentMin < endMin;
   }
 
@@ -250,7 +272,7 @@ class BookingManager {
     return false;
   }
 
-  Future<void> markBookingCompleted(dynamic bookingId) async {
+  Future<void> markBookingCompleted(dynamic bookingId, {bool force = false}) async {
     final strId = bookingId?.toString() ?? '';
     if (strId.isEmpty) return;
 
@@ -261,12 +283,22 @@ class BookingManager {
       final bId = (b['id'] ?? b['bookingId'] ?? b['booking_code'])?.toString();
       final bCode = b['bookingCode']?.toString();
       if (bId == strId || bCode == strId) {
-        b['status'] = 'Completed';
-        b['isActive'] = false;
-        if (b['isOpenMatch'] == true) {
-          b['openMatchStatus'] = 'COMPLETED';
+        final date = (b['date'] ?? '').toString();
+        final timeSlot = (b['timeSlot'] ?? '').toString();
+        final remainingMins = getRemainingSlotMinutes(dateStr: date, timeSlot: timeSlot);
+
+        if (force || remainingMins <= 0) {
+          b['status'] = 'Completed';
+          b['isActive'] = false;
+          if (b['isOpenMatch'] == true) {
+            b['openMatchStatus'] = 'COMPLETED';
+          } else {
+            b['openMatchStatus'] = null;
+          }
         } else {
-          b['openMatchStatus'] = null;
+          // Time slot is still ongoing! Court remains active so players can continue / play Match #2
+          b['lastMatchCompleted'] = true;
+          b['isActive'] = true;
         }
         current[i] = b;
         found = true;

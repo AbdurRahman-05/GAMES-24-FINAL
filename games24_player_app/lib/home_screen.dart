@@ -996,9 +996,19 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () {
             final bId = (match['id'] ?? match['bookingId'] ?? '').toString();
             final live = MatchScoreManager().getLiveStateSync(bId);
-            final targetTab = live != null && live.isLive
+            final results = MatchScoreManager().getAllResultsForBooking(bId);
+            final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+              dateStr: (match['date'] ?? '').toString(),
+              timeSlot: timeSlot,
+            );
+            final isSlotActive = remainingSlotMins > 0;
+            final isLiveMatch = live != null && live.isLive;
+            final canPlayNext = !isLiveMatch && isSlotActive && results.isNotEmpty;
+
+            final targetTab = isLiveMatch
                 ? 2
-                : (live != null && live.isMatchCompleted ? 3 : 0);
+                : (canPlayNext ? 1 : (results.isNotEmpty && !isSlotActive ? 3 : 0));
+
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -1009,6 +1019,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   date: (match['date'] ?? '').toString(),
                   timeSlot: timeSlot,
                   initialTab: targetTab,
+                  startNewMatchImmediately: canPlayNext,
                   isOpenMatch: match['isOpenMatch'] == true,
                 ),
               ),
@@ -1447,23 +1458,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (context, _, child) {
                           final bId = (booking['id'] ?? 'BK-1').toString();
                           final liveState = MatchScoreManager().getLiveStateSync(bId);
+                          final results = MatchScoreManager().getAllResultsForBooking(bId);
                           final isLive = liveState != null && liveState.isLive;
-                          final isMatchFinished = isCompleted || (liveState != null && liveState.isMatchCompleted);
+                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                            dateStr: dateStr,
+                            timeSlot: timeSlot,
+                          );
+                          final isSlotActive = remainingSlotMins > 0;
+                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                          final isSlotFinished = isCompleted || (!isSlotActive && results.isNotEmpty);
 
                           Color btnColor;
                           IconData btnIcon;
                           String btnText;
                           int targetTab;
+                          bool startNew = false;
 
                           if (isLive) {
                             btnColor = const Color(0xFFDC2626);
                             btnIcon = Icons.play_circle_fill_rounded;
                             btnText = 'Continue Live Match 🔴 (${liveState.liveScoreSummary})';
                             targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
-                          } else if (isMatchFinished) {
+                          } else if (canPlayNext) {
+                            btnColor = const Color(0xFFDC2626);
+                            btnIcon = Icons.flash_on_rounded;
+                            btnText = 'Play Match #${results.length + 1} ⚡ (~${remainingSlotMins}m left)';
+                            targetTab = 1;
+                            startNew = true;
+                          } else if (isSlotFinished) {
                             btnColor = const Color(0xFF0F6D38);
                             btnIcon = Icons.emoji_events_rounded;
-                            btnText = 'View Scorecard 🏆';
+                            btnText = results.length > 1
+                                ? 'View Match Summaries (${results.length}) 🏆'
+                                : 'View Scorecard 🏆';
                             targetTab = 3;
                           } else {
                             btnColor = const Color(0xFF166534);
@@ -1486,6 +1513,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     date: dateStr,
                                     timeSlot: timeSlot,
                                     initialTab: targetTab,
+                                    startNewMatchImmediately: startNew,
                                     isOpenMatch: booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),
@@ -1502,7 +1530,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              elevation: isLive ? 2 : 0,
+                              elevation: (isLive || canPlayNext) ? 2 : 0,
                             ),
                           );
                         },

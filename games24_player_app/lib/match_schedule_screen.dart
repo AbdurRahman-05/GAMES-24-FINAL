@@ -538,21 +538,35 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                         valueListenable: MatchScoreManager().liveStateNotifier,
                         builder: (context, _, child) {
                           final live = MatchScoreManager().getLiveStateSync(bookingId);
+                          final results = MatchScoreManager().getAllResultsForBooking(bookingId);
+                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                            dateStr: date,
+                            timeSlot: timeSlot,
+                          );
+                          final isSlotActive = remainingSlotMins > 0;
                           final isLive = live != null && live.isLive;
-                          final isDone = live != null && live.isMatchCompleted;
+                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                          final isDone = !isSlotActive && results.isNotEmpty;
+
+                          final btnText = isLive
+                              ? 'Continue 🔴'
+                              : (canPlayNext ? 'Match #${results.length + 1} ⚡' : (isDone ? 'Scorecard 🏆' : 'Scorecard'));
+                          final btnColor = (isLive || canPlayNext)
+                              ? const Color(0xFFDC2626)
+                              : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534));
+                          final targetTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
+
                           return ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isLive
-                                  ? const Color(0xFFDC2626)
-                                  : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534)),
+                              backgroundColor: btnColor,
                               foregroundColor: Colors.white,
-                              elevation: isLive ? 2 : 0,
+                              elevation: (isLive || canPlayNext) ? 2 : 0,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            icon: Icon(isLive ? Icons.play_circle_fill_rounded : Icons.scoreboard_outlined, size: 16),
+                            icon: Icon(isLive ? Icons.play_circle_fill_rounded : (canPlayNext ? Icons.flash_on_rounded : Icons.scoreboard_outlined), size: 16),
                             label: Text(
-                              isLive ? 'Continue 🔴' : (isDone ? 'Scorecard 🏆' : 'Scorecard'),
+                              btnText,
                               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             onPressed: () {
@@ -565,7 +579,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                     sport: sport,
                                     date: date,
                                     timeSlot: timeSlot,
-                                    initialTab: isLive ? 2 : (isDone ? 3 : 0),
+                                    initialTab: targetTab,
+                                    startNewMatchImmediately: canPlayNext,
                                     isOpenMatch: booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),
@@ -704,21 +719,35 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     valueListenable: MatchScoreManager().liveStateNotifier,
                     builder: (context, _, child) {
                       final live = MatchScoreManager().getLiveStateSync(challenge.id);
+                      final results = MatchScoreManager().getAllResultsForBooking(challenge.id);
+                      final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                        dateStr: challenge.date,
+                        timeSlot: challenge.time,
+                      );
+                      final isSlotActive = remainingSlotMins > 0;
                       final isLive = live != null && live.isLive;
-                      final isDone = live != null && live.isMatchCompleted;
+                      final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                      final isDone = !isSlotActive && results.isNotEmpty;
+
+                      final btnText = isLive
+                          ? 'Continue Match 🔴 (${live.liveScoreSummary})'
+                          : (canPlayNext ? 'Play Match #${results.length + 1} ⚡ (~${remainingSlotMins}m left)' : (isDone ? 'View Scorecard 🏆' : 'Open Scorecard'));
+                      final btnColor = (isLive || canPlayNext)
+                          ? const Color(0xFFDC2626)
+                          : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534));
+                      final targetTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
+
                       return ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isLive
-                              ? const Color(0xFFDC2626)
-                              : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534)),
+                          backgroundColor: btnColor,
                           foregroundColor: Colors.white,
-                          elevation: isLive ? 2 : 0,
+                          elevation: (isLive || canPlayNext) ? 2 : 0,
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        icon: Icon(isLive ? Icons.play_circle_fill_rounded : Icons.scoreboard_outlined, size: 16),
+                        icon: Icon(isLive ? Icons.play_circle_fill_rounded : (canPlayNext ? Icons.flash_on_rounded : Icons.scoreboard_outlined), size: 16),
                         label: Text(
-                          isLive ? 'Continue Match 🔴 (${live.liveScoreSummary})' : (isDone ? 'View Scorecard 🏆' : 'Open Scorecard'),
+                          btnText,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                         onPressed: () {
@@ -731,7 +760,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                 sport: challenge.sport,
                                 date: challenge.date,
                                 timeSlot: challenge.time,
-                                initialTab: isLive ? 2 : (isDone ? 3 : 0),
+                                initialTab: targetTab,
+                                startNewMatchImmediately: canPlayNext,
                                 isOpenMatch: true,
                               ),
                             ),
@@ -865,23 +895,31 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                       child: Builder(
                         builder: (context) {
                           final liveState = MatchScoreManager().getLiveStateSync(bookingId);
+                          final results = MatchScoreManager().getAllResultsForBooking(bookingId);
+                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                            dateStr: date,
+                            timeSlot: timeSlot,
+                          );
+                          final isSlotActive = remainingSlotMins > 0;
                           final isLive = liveState != null && liveState.isLive;
-                          final isCompleted = MatchScoreManager().isMatchCompleted(bookingId);
-                          final btnLabel = isCompleted
-                              ? 'View Scorecard 🏆'
-                              : (isLive ? 'Continue 🔴' : 'Live Scorecard');
-                          final btnColor = isLive ? const Color(0xFFDC2626) : const Color(0xFF166534);
-                          final initialTab = isCompleted ? 3 : (isLive ? 2 : 0);
+                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                          final isDone = !isSlotActive && results.isNotEmpty;
+
+                          final btnLabel = isLive
+                              ? 'Continue 🔴'
+                              : (canPlayNext ? 'Match #${results.length + 1} ⚡' : (isDone ? 'Scorecard 🏆' : 'Live Scorecard'));
+                          final btnColor = (isLive || canPlayNext) ? const Color(0xFFDC2626) : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534));
+                          final initialTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                           return ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: btnColor,
                               foregroundColor: Colors.white,
-                              elevation: 0,
+                              elevation: (isLive || canPlayNext) ? 2 : 0,
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
-                            icon: Icon(isLive ? Icons.play_circle_fill : Icons.sports_cricket, size: 16),
+                            icon: Icon(isLive ? Icons.play_circle_fill : (canPlayNext ? Icons.flash_on_rounded : Icons.sports_cricket), size: 16),
                             label: Text(btnLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                             onPressed: () {
                               Navigator.push(
@@ -894,6 +932,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                     date: date,
                                     timeSlot: timeSlot,
                                     initialTab: initialTab,
+                                    startNewMatchImmediately: canPlayNext,
                                     isOpenMatch: booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),

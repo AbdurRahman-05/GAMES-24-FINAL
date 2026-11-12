@@ -15,6 +15,7 @@ class MatchScorecardScreen extends StatefulWidget {
   final String timeSlot;
   final int initialTab;
   final bool? isOpenMatch;
+  final bool startNewMatchImmediately;
 
   const MatchScorecardScreen({
     super.key,
@@ -25,6 +26,7 @@ class MatchScorecardScreen extends StatefulWidget {
     required this.timeSlot,
     this.initialTab = 0,
     this.isOpenMatch,
+    this.startNewMatchImmediately = false,
   });
 
   @override
@@ -290,6 +292,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     _initializeDefaultTeams();
     _loadHistoricalMatches();
     _loadSavedSquad();
+    if (widget.startNewMatchImmediately) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _startNewMatch();
+        }
+      });
+    }
   }
 
   @override
