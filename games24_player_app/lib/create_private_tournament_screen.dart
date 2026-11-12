@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:convert';
 import 'main_layout.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_config.dart';
 import 'tournament_form_data.dart';
 import 'create_private_tournament_step2_screen.dart';
 
@@ -71,18 +74,84 @@ class _CreatePrivateTournamentScreenState
     'Group Stage + Knockout',
   ];
 
-  // Live Turfs with Court Count & Cities
-  final List<Map<String, dynamic>> _allTurfVenues = [
-    {'venue': 'Grand Arena Turf', 'loc': 'Downtown Sports Complex, Madurai', 'city': 'Madurai', 'courts': 3, 'sports': 'Football • Cricket'},
-    {'venue': 'Madurai Turf City', 'loc': 'Villapuram Main Road, Madurai', 'city': 'Madurai', 'courts': 2, 'sports': 'Football'},
-    {'venue': 'Legends Box Cricket & Turf', 'loc': 'KK Nagar, Madurai', 'city': 'Madurai', 'courts': 3, 'sports': 'Cricket'},
-    {'venue': 'Ace Badminton & Turf Club', 'loc': 'Bypass Road, Madurai', 'city': 'Madurai', 'courts': 4, 'sports': 'Badminton • Pickleball'},
-    {'venue': 'Inno Sports Arena (KK Nagar)', 'loc': 'KK Nagar, Chennai', 'city': 'Chennai', 'courts': 4, 'sports': 'Cricket • Football'},
-    {'venue': 'Champions Box Cricket & Turf', 'loc': 'T. Nagar, Chennai', 'city': 'Chennai', 'courts': 3, 'sports': 'Cricket'},
-    {'venue': 'Downtown Sports Complex', 'loc': 'Anna Nagar, Chennai', 'city': 'Chennai', 'courts': 5, 'sports': 'Football • Cricket • Badminton'},
-    {'venue': 'Coimbatore Turf Club', 'loc': 'Avinashi Road, Coimbatore', 'city': 'Coimbatore', 'courts': 4, 'sports': 'Football • Cricket'},
-    {'venue': 'Bangalore Sports Hub', 'loc': 'Koramangala, Bangalore', 'city': 'Bangalore', 'courts': 5, 'sports': 'Football • Badminton'},
-  ];
+  // Live Turfs Present in App
+  List<Map<String, dynamic>> _liveTurfs = [];
+  bool _isLoadingVenues = true;
+
+  Future<void> _fetchLiveTurfs() async {
+    setState(() => _isLoadingVenues = true);
+    try {
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs')).timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200) {
+        final List list = jsonDecode(res.body);
+        if (mounted && list.isNotEmpty) {
+          setState(() {
+            _liveTurfs = list.map((t) {
+              final courts = t['courts'] as List? ?? [];
+              final sportsList = t['sports'] as List? ?? [];
+              final neighborhood = (t['neighborhoodArea'] ?? '').toString();
+              final street = (t['streetAddress'] ?? '').toString();
+              final venueName = (t['venueName'] ?? t['name'] ?? 'Turf Arena').toString();
+              final loc = t['location']?.toString() ?? (neighborhood.isNotEmpty ? '$neighborhood • $street' : street);
+
+              return {
+                'id': t['id'],
+                'venue': venueName,
+                'loc': loc,
+                'city': street.isNotEmpty ? street : 'Madurai',
+                'courts': courts.isNotEmpty ? courts.length : 2,
+                'sports': sportsList.isNotEmpty ? sportsList.join(' • ') : 'Cricket • Football',
+                'imageUrl': (t['imageUrl'] ?? (t['photoUrls'] is List && (t['photoUrls'] as List).isNotEmpty ? t['photoUrls'][0] : '')).toString(),
+              };
+            }).toList();
+            _isLoadingVenues = false;
+
+            if (_selectedVenue.isEmpty && _liveTurfs.isNotEmpty && !_isVenueTBA) {
+              _selectedVenue = _liveTurfs.first['venue'] as String;
+              _selectedLocation = _liveTurfs.first['loc'] as String;
+              _selectedVenueCourts = _liveTurfs.first['courts'] as int;
+            }
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching live turfs for private tournament: $e");
+    }
+
+    if (mounted) {
+      setState(() {
+        if (_liveTurfs.isEmpty) {
+          _liveTurfs = [
+            {
+              'id': 1,
+              'venue': 'test turf',
+              'loc': 'villapuram • madurai',
+              'city': 'Madurai',
+              'courts': 2,
+              'sports': 'Cricket • Football',
+              'imageUrl': '',
+            },
+            {
+              'id': 2,
+              'venue': 'Inno Sports Arena (KK Nagar)',
+              'loc': 'KK Nagar, Madurai • KK Nagar 80 Feet Road',
+              'city': 'Madurai',
+              'courts': 4,
+              'sports': 'Cricket • Football • Badminton',
+              'imageUrl': '',
+            },
+          ];
+          if (_selectedVenue.isEmpty && !_isVenueTBA) {
+            _selectedVenue = _liveTurfs.first['venue'] as String;
+            _selectedLocation = _liveTurfs.first['loc'] as String;
+            _selectedVenueCourts = _liveTurfs.first['courts'] as int;
+          }
+        }
+        _isLoadingVenues = false;
+      });
+    }
+  }
 
   // Preset Poster Styles for Private Tournaments
   final List<Map<String, String>> _presetPosters = [
@@ -118,6 +187,7 @@ class _CreatePrivateTournamentScreenState
     super.initState();
     _generateRandomPin();
     _loadUserCity();
+    _fetchLiveTurfs();
   }
 
   Future<void> _loadUserCity() async {
@@ -635,25 +705,30 @@ class _CreatePrivateTournamentScreenState
                         return Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                            child: ChoiceChip(
-                              showCheckmark: true,
-                              checkmarkColor: Colors.white,
-                              label: Text(
-                                '$count',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: isSel ? Colors.white : const Color(0xFF0F172A),
+                            child: InkWell(
+                              onTap: () => setState(() => _maxTeams = count),
+                              borderRadius: BorderRadius.circular(10),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                height: 38,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSel ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isSel ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                                    width: isSel ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSel ? Colors.white : const Color(0xFF1E293B),
+                                  ),
                                 ),
                               ),
-                              selected: isSel,
-                              selectedColor: const Color(0xFF0F172A),
-                              backgroundColor: const Color(0xFFF1F5F9),
-                              labelStyle: TextStyle(
-                                color: isSel ? Colors.white : const Color(0xFF0F172A),
-                                fontWeight: FontWeight.bold,
-                              ),
-                              onSelected: (_) => setState(() => _maxTeams = count),
                             ),
                           ),
                         );
@@ -1304,10 +1379,7 @@ class _CreatePrivateTournamentScreenState
   }
 
   void _showVenuePicker() {
-    final cityFilteredVenues = _allTurfVenues
-        .where((v) => (v['city'] as String).toLowerCase() == _selectedCity.toLowerCase())
-        .toList();
-    final venuesToShow = cityFilteredVenues.isNotEmpty ? cityFilteredVenues : _allTurfVenues;
+    final venuesToShow = _liveTurfs;
 
     showModalBottomSheet(
       context: context,
@@ -1332,21 +1404,26 @@ class _CreatePrivateTournamentScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Select Host Turf Venue 🏟️', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
-                TextButton.icon(
-                  icon: const Icon(Icons.location_city_rounded, size: 16, color: Color(0xFFD97706)),
-                  label: Text(_selectedCity, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _showLocationPickerModal();
-                  },
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(8)),
+                  child: const Text('Live App Turfs', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF92400E))),
                 ),
               ],
             ),
             const SizedBox(height: 4),
-            Text('Showing verified turf arenas in $_selectedCity with live court counts', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            const Text('Showing verified turfs present in the app with active court counts', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
             const SizedBox(height: 16),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.5),
+            if (_isLoadingVenues)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: CircularProgressIndicator(color: Color(0xFFD97706)),
+                ),
+              )
+            else
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.5),
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: venuesToShow.length,
@@ -1403,43 +1480,6 @@ class _CreatePrivateTournamentScreenState
                 },
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showLocationPickerModal() {
-    final cities = ['Madurai', 'Chennai', 'Coimbatore', 'Bangalore', 'Trichy', 'Salem'];
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Change Tournament City 📍', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 12),
-            ...cities.map((city) => ListTile(
-                  title: Text(city, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: _selectedCity.toLowerCase() == city.toLowerCase() ? const Icon(Icons.check, color: Color(0xFFD97706)) : null,
-                  onTap: () async {
-                    setState(() {
-                      _selectedCity = city;
-                      _selectedVenue = '';
-                      _selectedLocation = '';
-                    });
-                    final nav = Navigator.of(ctx);
-                    final prefs = await SharedPreferences.getInstance();
-                    await prefs.setString('userCity', city);
-                    if (nav.mounted) {
-                      nav.pop();
-                      _showVenuePicker();
-                    }
-                  },
-                )),
           ],
         ),
       ),

@@ -432,12 +432,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         const Icon(Icons.emoji_events_rounded, color: Colors.amberAccent, size: 14),
                         const SizedBox(width: 5),
-                        Text(
-                          '$_rank in $_city • $_points PTS',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Text(
+                            '$_rank in $_city • $_points PTS',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 2),

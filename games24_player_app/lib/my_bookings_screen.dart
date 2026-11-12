@@ -115,56 +115,60 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                } else {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (_) => const MainLayout()),
-                  );
-                }
-              },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    size: 20,
+          GestureDetector(
+            onTap: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const MainLayout()),
+                );
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: const Icon(
+                Icons.arrow_back,
+                size: 20,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'My Bookings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'My Bookings',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Keep track of your game slots',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                  ),
-                ],
-              ),
-            ],
+                SizedBox(height: 2),
+                Text(
+                  'Keep track of your game slots',
+                  style: TextStyle(fontSize: 11.5, color: Color(0xFF6B7280)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
@@ -1036,29 +1040,30 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           );
                         },
                       ),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F172A),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                      if (!isPast && !isCancelled)
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F172A),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          onPressed: () => BookingQrPassModal.show(context, booking),
+                          icon: const Icon(Icons.qr_code_2_rounded, size: 16, color: Color(0xFF4ADE80)),
+                          label: const Text(
+                            'Entry Pass 🎟️',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        onPressed: () => BookingQrPassModal.show(context, booking),
-                        icon: const Icon(Icons.qr_code_2_rounded, size: 16, color: Color(0xFF4ADE80)),
-                        label: const Text(
-                          'Entry Pass 🎟️',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
                       if (!isPast && BookingManager.canCancelBooking(booking))
                         TextButton.icon(
                           style: TextButton.styleFrom(
@@ -1941,14 +1946,18 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         ),
                         Row(
                           children: [
-                            const Text(
-                              'Cricket Box Turf • 2 Hours Match',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF6B7280),
+                            const Expanded(
+                              child: Text(
+                                'Cricket Box Turf • 2 Hours Match',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFF6B7280),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const Spacer(),
+                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -1992,9 +2001,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       color: Color(0xFF166534),
                     ),
                     SizedBox(width: 8),
-                    Text(
-                      'Played Sun, Oct 6 • 08:00 AM - 10:00 AM',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                    Expanded(
+                      child: Text(
+                        'Played Sun, Oct 6 • 08:00 AM - 10:00 AM',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
