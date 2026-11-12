@@ -128,96 +128,34 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildProAppBar(context, profile),
-      body: Stack(
-        children: [
-          // Ambient Background Glow Elements
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 250,
-              height: 250,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF154D36).withValues(alpha: 0.09),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
+      body: RefreshIndicator(
+        onRefresh: _refreshRealtimeData,
+        color: AppColors.primary,
+        backgroundColor: Colors.white,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Live Operating Status & Quick Date Bar
+              _buildVenueHeaderPulseBar(profile, nowFormatted),
+              const SizedBox(height: 14),
+
+              if (profile.isSubscriptionEndingSoon) ...[
+                _buildSubscriptionCard(context, profile),
+                const SizedBox(height: 14),
+              ],
+
+              // 2. Financial & Operational Overview
+              _buildPerformanceBentoSection(profile),
+              const SizedBox(height: 20),
+
+              // 3. Customer Bookings Stream & Filter Header
+              _buildBookingsStreamSection(context, profile, bookings),
+            ],
           ),
-          Positioned(
-            top: 260,
-            left: -60,
-            child: Container(
-              width: 230,
-              height: 230,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFF0284C7).withValues(alpha: 0.06),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 80,
-            right: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFEAB308).withValues(alpha: 0.05),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Main Scrollable Content
-          RefreshIndicator(
-            onRefresh: _refreshRealtimeData,
-            color: AppColors.primary,
-            backgroundColor: Colors.white,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-              padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. Live Operating Status & Quick Date Bar
-                  _buildVenueHeaderPulseBar(profile, nowFormatted),
-                  const SizedBox(height: 14),
-
-                  if (profile.isSubscriptionEndingSoon) ...[
-                    _buildSubscriptionCard(context, profile),
-                    const SizedBox(height: 14),
-                  ],
-
-                  // 2. Financial & Operational Bento Grid
-                  _buildPerformanceBentoSection(profile),
-                  const SizedBox(height: 14),
-
-                  // 3. Quick Operations Dock
-                  _buildQuickActionDock(context),
-                  const SizedBox(height: 20),
-
-                  // 4. Live Customer Bookings Stream & Filter Header
-                  _buildBookingsStreamSection(context, profile, bookings),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -586,7 +524,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- 2. OPERATING STATUS & DATE PULSE BAR ---
+  // --- 2. OPERATING STATUS & DATE BAR ---
   Widget _buildVenueHeaderPulseBar(TurfProfileState profile, String formattedDate) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -596,9 +534,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -607,10 +545,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(7.5),
             decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
+              color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF15803D)),
+            child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF475569)),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -628,7 +566,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  'Operating Hours: ${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
+                  'Operating: ${profile.weekdayOpeningTime} – ${profile.weekdayClosingTime}',
                   style: const TextStyle(
                     fontSize: 10.5,
                     color: Color(0xFF64748B),
@@ -639,23 +577,23 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
             decoration: BoxDecoration(
-              color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF16A34A).withValues(alpha: 0.2)),
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFBBF7D0)),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF16A34A), size: 9),
+                Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF16A34A), size: 8),
                 SizedBox(width: 4),
                 Text(
-                  'Live',
+                  'Open Today',
                   style: TextStyle(
                     fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF16A34A),
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF15803D),
                   ),
                 ),
               ],
@@ -864,7 +802,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- 4. FINANCIAL & OPERATIONAL BENTO SECTION ---
+  // --- 4. FINANCIAL & OPERATIONAL OVERVIEW ---
   Widget _buildPerformanceBentoSection(TurfProfileState profile) {
     final now = DateTime.now();
     final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -954,45 +892,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Business Performance',
-              style: TextStyle(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-                letterSpacing: -0.3,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF16A34A).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.sync_rounded, color: Color(0xFF16A34A), size: 12),
-                  SizedBox(width: 4),
-                  Text(
-                    'Live Synced',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF16A34A),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+        // Section Header (clean, no duplicate "Live Synced" pill)
+        const Text(
+          'Business Overview',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+            letterSpacing: -0.3,
+          ),
         ),
         const SizedBox(height: 10),
 
-        // Hero Metric Card: Monthly Revenue GMV with Deep Obsidian Emerald & Watermark
+        // Hero Metric Card: Monthly Revenue GMV (Deep Forest Emerald, NO overflow on any screen)
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -1001,196 +913,250 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: const Color(0xFF34D399).withValues(alpha: 0.25),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF154D36).withValues(alpha: 0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
-          child: Stack(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Pitch Watermark in top right corner
-              Positioned(
-                right: -25,
-                top: -25,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      width: 16,
-                    ),
-                  ),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 16),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Total Monthly Revenue (GMV)',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFFE2E8F0),
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF16A34A).withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF4ADE80).withValues(alpha: 0.4)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.trending_up_rounded, color: Color(0xFF4ADE80), size: 11),
-                            SizedBox(width: 3),
-                            Text(
-                              'Pacing',
-                              style: TextStyle(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF4ADE80),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 15),
                   ),
-                  const SizedBox(height: 12),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
+                  const SizedBox(width: 8),
+                  const Expanded(
                     child: Text(
-                      dynamicMonthRev > 0
-                          ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
-                          : '₹0',
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -0.8,
+                      'Monthly Revenue (GMV)',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE2E8F0),
+                        letterSpacing: -0.2,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${activeMonthList.length} active bookings this month (${cancelledList.length} cancelled)',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white.withValues(alpha: 0.75),
-                      fontWeight: FontWeight.w500,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(5),
-                    child: LinearProgressIndicator(
-                      value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
-                      minHeight: 5.5,
-                      backgroundColor: Colors.white.withValues(alpha: 0.15),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                    child: Text(
+                      DateFormat('MMM yyyy').format(now),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFCBD5E1),
+                      ),
                     ),
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  dynamicMonthRev > 0
+                      ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
+                      : '₹0',
+                  style: const TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.8,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${activeMonthList.length} total bookings this month (${cancelledList.length} cancelled)',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withValues(alpha: 0.75),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: LinearProgressIndicator(
+                  value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
+                  minHeight: 5,
+                  backgroundColor: Colors.white.withValues(alpha: 0.15),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                ),
+              ),
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
 
-        // 4 Distinct Bento Mini Cards
+        // 2 High-Utility Human-Designed Operational Cards (Clean, high contrast, zero repetitive content)
         Row(
           children: [
-            // 1. Today's Revenue (Emerald Glow)
+            // 1. Today's Revenue & Collections
             Expanded(
-              child: _buildBentoMiniCard(
-                title: "Today's Revenue",
-                value: '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
-                subtitle: 'From $dynamicTodayCount bookings today',
-                badgeText: '',
-                badgeColor: const Color(0xFF16A34A),
-                icon: Icons.currency_rupee_rounded,
-                iconColor: const Color(0xFF15803D),
-                gradientColors: const [Color(0xFFF0FDF4), Color(0xFFE8F9EE)],
-                borderColor: const Color(0xFF86EFAC),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.025),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFDCFCE7),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF15803D), size: 15),
+                        ),
+                        const SizedBox(width: 7),
+                        const Expanded(
+                          child: Text(
+                            "Today's Revenue",
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$dynamicTodayPaid Online • $dynamicTodayCash Cash',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF15803D),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(width: 10),
-            // 2. Today's Booked Slots (Indigo Sport)
+            const SizedBox(width: 12),
+            // 2. Court Availability & Occupancy
             Expanded(
-              child: _buildBentoMiniCard(
-                title: "Today's Slots",
-                value: '$dynamicTodayCount Booked',
-                subtitle: '$dynamicTodayPaid Paid • $dynamicTodayCash Cash',
-                badgeText: '',
-                badgeColor: const Color(0xFF16A34A),
-                icon: Icons.confirmation_number_rounded,
-                iconColor: const Color(0xFF4338CA),
-                gradientColors: const [Color(0xFFEEF2FF), Color(0xFFE5EAFF)],
-                borderColor: const Color(0xFFA5B4FC),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            // 3. Month Total Bookings (Amber Champions)
-            Expanded(
-              child: _buildBentoMiniCard(
-                title: "Month Bookings",
-                value: '${activeMonthList.length} Total',
-                subtitle: '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())} GMV',
-                badgeText: '',
-                badgeColor: const Color(0xFF0F6D38),
-                icon: Icons.calendar_month_rounded,
-                iconColor: const Color(0xFFB45309),
-                gradientColors: const [Color(0xFFFFFBEB), Color(0xFFFEF5D4)],
-                borderColor: const Color(0xFFFCD34D),
-              ),
-            ),
-            const SizedBox(width: 10),
-            // 4. Court Occupancy (Sky Radar)
-            Expanded(
-              child: _buildBentoMiniCard(
-                title: "Court Occupancy",
-                value: '$dynamicRemainingSlots Free',
-                subtitle: '$passedSlotsCount Passed • $dynamicBookedSlotsCount Booked',
-                badgeText: '',
-                badgeColor: const Color(0xFF0284C7),
-                icon: Icons.pie_chart_rounded,
-                iconColor: const Color(0xFF0284C7),
-                gradientColors: const [Color(0xFFF0F9FF), Color(0xFFE2F3FF)],
-                borderColor: const Color(0xFF7DD3FC),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.025),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE0F2FE),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.stadium_rounded, color: Color(0xFF0284C7), size: 15),
+                        ),
+                        const SizedBox(width: 7),
+                        const Expanded(
+                          child: Text(
+                            "Court Slots",
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF64748B),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '$dynamicRemainingSlots Free',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF0F172A),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$dynamicBookedSlotsCount Booked • $totalDailySlots Total',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0369A1),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -1198,253 +1164,55 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         const SizedBox(height: 10),
 
         // Operational Shifts & Cancellations Banner
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF7ED),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.published_with_changes_rounded, color: Color(0xFFEA580C), size: 16),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Cancellations & Shifts Tracked',
-                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
-                    ),
-                    Text(
-                      '$dynamicCancelledCount Cancelled • $dynamicShiftedCount Shifted Slot(s)',
-                      style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '$dynamicCancelledTotal Total',
-                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBentoMiniCard({
-    required String title,
-    required String value,
-    required String subtitle,
-    required String badgeText,
-    required Color badgeColor,
-    required IconData icon,
-    required Color iconColor,
-    required List<Color> gradientColors,
-    required Color borderColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(13),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: gradientColors.last.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6.5),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.85),
-                  borderRadius: BorderRadius.circular(9),
-                  boxShadow: [
-                    BoxShadow(
-                      color: iconColor.withValues(alpha: 0.12),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Icon(icon, color: iconColor, size: 16),
-              ),
-              if (badgeText.isNotEmpty)
+        if (dynamicCancelledTotal > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: badgeColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.published_with_changes_rounded, color: Color(0xFFEA580C), size: 15),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Cancellations & Slot Reschedules',
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                      ),
+                      Text(
+                        '$dynamicCancelledCount cancelled • $dynamicShiftedCount rescheduled',
+                        style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    badgeText,
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      color: badgeColor,
-                    ),
+                    '$dynamicCancelledTotal Total',
+                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF0F172A),
-                letterSpacing: -0.3,
-              ),
+              ],
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11.5,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF334155),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Color(0xFF64748B),
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- QUICK OPERATIONS DOCK ---
-  Widget _buildQuickActionDock(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildQuickActionItem(
-            icon: Icons.add_circle_outline_rounded,
-            label: 'Walk-in',
-            color: const Color(0xFF154D36),
-            bgColor: const Color(0xFFDCFCE7),
-            onTap: () => context.push('/admin/slots'),
-          ),
-          _buildQuickActionItem(
-            icon: Icons.qr_code_scanner_rounded,
-            label: 'Gate Pass',
-            color: const Color(0xFF0369A1),
-            bgColor: const Color(0xFFE0F2FE),
-            onTap: () => context.push('/admin/qr-scanner'),
-          ),
-          _buildQuickActionItem(
-            icon: Icons.calendar_month_rounded,
-            label: 'Slot Grid',
-            color: const Color(0xFF4338CA),
-            bgColor: const Color(0xFFEEF2FF),
-            onTap: () => context.push('/admin/slots'),
-          ),
-          _buildQuickActionItem(
-            icon: Icons.emoji_events_rounded,
-            label: 'Tourneys',
-            color: const Color(0xFFB45309),
-            bgColor: const Color(0xFFFEF3C7),
-            onTap: () => context.push('/admin/tournaments'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActionItem({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required Color bgColor,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 19),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
