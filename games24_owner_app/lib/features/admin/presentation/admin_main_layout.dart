@@ -88,18 +88,9 @@ class AdminMainLayout extends StatelessWidget {
                   flex: currentIndex == 3 ? 12 : 10,
                   child: _buildNavItem(
                     index: 3,
-                    icon: Icons.qr_code_scanner_rounded,
-                    label: 'Gate QR',
-                    isSelected: currentIndex == 3,
-                  ),
-                ),
-                Expanded(
-                  flex: currentIndex == 4 ? 12 : 10,
-                  child: _buildNavItem(
-                    index: 4,
                     icon: Icons.person_rounded,
                     label: 'Profile',
-                    isSelected: currentIndex == 4,
+                    isSelected: currentIndex == 3,
                   ),
                 ),
               ],

@@ -37,6 +37,11 @@ class AppRouter {
         path: '/register',
         builder: (context, state) => const TurfOwnerRegistrationScreen(),
       ),
+      // Standalone Full-Screen QR Scanner (Accessible via Top Header Bar & Booking Details)
+      GoRoute(
+        path: '/admin/qr-scanner',
+        builder: (context, state) => const AdminQrScannerScreen(),
+      ),
 
       // Shell Route for Turf Owner Dedicated Navigation
       StatefulShellRoute.indexedStack(
@@ -74,14 +79,6 @@ class AppRouter {
               GoRoute(
                 path: '/admin/tournaments',
                 builder: (context, state) => const AdminTournamentManagerScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/admin/qr-scanner',
-                builder: (context, state) => const AdminQrScannerScreen(),
               ),
             ],
           ),
