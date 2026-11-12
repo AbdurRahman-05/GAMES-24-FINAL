@@ -856,38 +856,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final dynamicRemainingSlots = (totalDailySlots - passedSlotsCount - upcomingBookedSlots - profile.blockedSlotsCount) > 0
         ? (totalDailySlots - passedSlotsCount - upcomingBookedSlots - profile.blockedSlotsCount)
         : 0;
-    final dynamicOccupancyPct = totalDailySlots > 0
-        ? ((dynamicBookedSlotsCount / totalDailySlots.toDouble()) * 100).round()
-        : 0;
-    final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Business Performance',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-                letterSpacing: -0.3,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Real-time Synced',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
-              ),
-            ),
-          ],
+        const Text(
+          'Business Performance',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+            letterSpacing: -0.3,
+          ),
         ),
         const SizedBox(height: 10),
 
@@ -913,43 +893,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 16),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Total Monthly Revenue (GMV)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFE2E8F0),
-                        ),
-                      ),
-                    ],
-                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF16A34A).withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF4ADE80).withValues(alpha: 0.5)),
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      '₹${dynamicMonthRev.toInt()} GMV',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF86EFAC),
-                      ),
+                    child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Total Monthly Revenue (GMV)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFE2E8F0),
                     ),
                   ),
                 ],
@@ -999,7 +958,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 title: "Today's Revenue",
                 value: '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
                 subtitle: 'From $dynamicTodayCount bookings today',
-                badgeText: 'Today',
+                badgeText: '',
                 badgeColor: const Color(0xFF16A34A),
                 icon: Icons.currency_rupee_rounded,
                 iconColor: const Color(0xFF154D36),
@@ -1012,7 +971,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 title: "Today's Slots",
                 value: '$dynamicTodayCount Booked',
                 subtitle: '$dynamicTodayPaid Paid • $dynamicTodayCash Cash',
-                badgeText: '+$dynamicTodayCount Today',
+                badgeText: '',
                 badgeColor: const Color(0xFF16A34A),
                 icon: Icons.confirmation_number_rounded,
                 iconColor: const Color(0xFF154D36),
@@ -1029,7 +988,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 title: "Month Bookings",
                 value: '${activeMonthList.length} Total',
                 subtitle: '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())} GMV',
-                badgeText: '${activeMonthList.length} Active',
+                badgeText: '',
                 badgeColor: const Color(0xFF0F6D38),
                 icon: Icons.calendar_month_rounded,
                 iconColor: const Color(0xFF0F6D38),
@@ -1042,7 +1001,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 title: "Court Occupancy",
                 value: '$dynamicRemainingSlots Free',
                 subtitle: '$passedSlotsCount Passed • $dynamicBookedSlotsCount Booked',
-                badgeText: dynamicSlotsBadge,
+                badgeText: '',
                 badgeColor: const Color(0xFF0284C7),
                 icon: Icons.pie_chart_rounded,
                 iconColor: const Color(0xFF0284C7),
