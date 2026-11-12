@@ -1047,8 +1047,13 @@ export class AuthService {
     const completedCount = bookings.filter((b) => b.status === 'Completed' || (b.date < new Date().toISOString().slice(0, 10) && b.status !== 'Cancelled')).length;
     const activeCount = bookings.filter((b) => b.status === 'Confirmed').length;
 
+    const playerId = user?.id
+      ? `PLY-${user.id.toString().padStart(4, '0')}`
+      : (last10.length >= 4 ? `PLY-${last10.slice(-4)}` : 'PLY-1001');
+
     return {
       id: user?.id || 0,
+      playerId,
       fullName: user?.fullName || 'Active Player',
       mobileNumber: user?.mobileNumber || phone,
       preferredSport: user?.preferredSport || 'Football',
@@ -1080,6 +1085,226 @@ export class AuthService {
     }
 
     return { success: true, message: 'Teams synced to database successfully' };
+  }
+
+  private getInvitationsFilePath(): string {
+    const dir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    return path.join(dir, 'team_invitations.json');
+  }
+
+  private readInvitations(): any[] {
+    try {
+      const file = this.getInvitationsFilePath();
+      if (fs.existsSync(file)) {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }
+
+  private writeInvitations(invites: any[]) {
+    try {
+      const file = this.getInvitationsFilePath();
+      fs.writeFileSync(file, JSON.stringify(invites, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Failed to write invitations', e);
+    }
+  }
+
+  async searchPlayer(query: string) {
+    if (!query || !query.trim()) return [];
+    const q = query.trim();
+    const cleanDigits = q.replace(/\D/g, '');
+    const isPlayerId = q.toUpperCase().startsWith('PLY-');
+    const numericPart = isPlayerId ? parseInt(q.replace(/\D/g, ''), 10) : (cleanDigits ? parseInt(cleanDigits, 10) : null);
+
+    const conditions: any[] = [];
+    if (numericPart && !isNaN(numericPart)) {
+      conditions.push({ id: numericPart });
+    }
+    if (cleanDigits.length >= 4) {
+      conditions.push({ mobileNumber: { contains: cleanDigits.slice(-10) } });
+    }
+    if (q.length >= 2) {
+      conditions.push({ fullName: { contains: q, mode: 'insensitive' } });
+    }
+
+    if (conditions.length === 0) return [];
+
+    const users = await this.prisma.user.findMany({
+      where: { OR: conditions },
+      take: 10,
+    });
+
+    return users.map((u) => {
+      const pId = `PLY-${u.id.toString().padStart(4, '0')}`;
+      return {
+        id: u.id,
+        playerId: pId,
+        fullName: u.fullName || 'Active Player',
+        mobileNumber: u.mobileNumber,
+        preferredSport: u.preferredSport || 'Football',
+      };
+    });
+  }
+
+  async sendTeamInvitation(body: {
+    senderPhone: string;
+    senderPlayerId?: string;
+    senderName?: string;
+    senderTeamId: string;
+    senderTeamCode?: string;
+    senderTeamName: string;
+    senderTeamSport: string;
+    targetPlayerId: string;
+    targetPhone?: string;
+    targetName?: string;
+    role?: string;
+  }) {
+    const invites = this.readInvitations();
+
+    const existing = invites.find(
+      (inv) =>
+        inv.senderTeamId === body.senderTeamId &&
+        inv.targetPlayerId.toUpperCase() === body.targetPlayerId.toUpperCase() &&
+        inv.status === 'pending'
+    );
+    if (existing) {
+      return { success: true, message: 'Invitation already sent and pending', invitation: existing };
+    }
+
+    const newInvite = {
+      id: `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      senderPhone: body.senderPhone,
+      senderPlayerId: body.senderPlayerId || 'PLY-0001',
+      senderName: body.senderName || 'Team Captain',
+      senderTeamId: body.senderTeamId,
+      senderTeamCode: body.senderTeamCode || body.senderTeamId,
+      senderTeamName: body.senderTeamName,
+      senderTeamSport: body.senderTeamSport,
+      targetPlayerId: body.targetPlayerId.toUpperCase(),
+      targetPhone: body.targetPhone || '',
+      targetName: body.targetName || 'Player',
+      role: body.role || 'Player',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    invites.unshift(newInvite);
+    this.writeInvitations(invites);
+
+    return { success: true, message: 'Squad invitation sent successfully!', invitation: newInvite };
+  }
+
+  async getPlayerInvitations(identifier: string) {
+    if (!identifier) return [];
+    const clean = identifier.trim().toUpperCase();
+    const cleanDigits = identifier.replace(/\D/g, '');
+    const last10 = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
+
+    const invites = this.readInvitations();
+    return invites.filter((inv) => {
+      const matchId = inv.targetPlayerId.toUpperCase() === clean;
+      const matchPhone = last10 && inv.targetPhone && inv.targetPhone.replace(/\D/g, '').includes(last10);
+      return (matchId || matchPhone) && inv.status === 'pending';
+    });
+  }
+
+  async respondTeamInvitation(inviteId: string, action: 'accept' | 'decline', playerData?: any) {
+    const invites = this.readInvitations();
+    const index = invites.findIndex((inv) => inv.id === inviteId);
+    if (index === -1) {
+      throw new BadRequestException('Invitation not found');
+    }
+
+    const invite = invites[index];
+    if (action === 'accept') {
+      invite.status = 'accepted';
+      invite.resolvedAt = new Date().toISOString();
+
+      if (invite.senderPhone) {
+        const senderClean = invite.senderPhone.trim().replace(/\D/g, '');
+        const senderUser = await this.prisma.user.findFirst({
+          where: {
+            OR: [
+              { mobileNumber: senderClean },
+              { mobileNumber: { contains: senderClean.slice(-10) } },
+            ],
+          },
+        });
+        if (senderUser && Array.isArray(senderUser.teamsJson)) {
+          const updatedTeams = (senderUser.teamsJson as any[]).map((t: any) => {
+            if (t.id === invite.senderTeamId) {
+              const members = Array.isArray(t.members) ? [...t.members] : [];
+              const alreadyMember = members.some(
+                (m: any) =>
+                  (m.playerId && m.playerId.toUpperCase() === invite.targetPlayerId.toUpperCase()) ||
+                  (playerData?.phone && m.phone === playerData.phone)
+              );
+              if (!alreadyMember) {
+                members.push({
+                  id: `MBR-${Date.now()}`,
+                  playerId: invite.targetPlayerId,
+                  name: playerData?.name || invite.targetName || 'Teammate',
+                  phone: playerData?.phone || invite.targetPhone || '',
+                  role: invite.role || 'Player',
+                });
+              }
+              return { ...t, members };
+            }
+            return t;
+          });
+
+          await this.prisma.user.update({
+            where: { id: senderUser.id },
+            data: { teamsJson: updatedTeams },
+          });
+        }
+      }
+
+      this.writeInvitations(invites);
+      return { success: true, message: `Joined ${invite.senderTeamName} successfully!`, team: invite };
+    } else {
+      invite.status = 'declined';
+      invite.resolvedAt = new Date().toISOString();
+      this.writeInvitations(invites);
+      return { success: true, message: 'Invitation declined' };
+    }
+  }
+
+  async createTeamMatchChallenge(body: any) {
+    const dir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const file = path.join(dir, 'team_challenges.json');
+    let challenges: any[] = [];
+    try {
+      if (fs.existsSync(file)) challenges = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {}
+
+    const newChallenge = {
+      id: `CHAL-${Date.now()}`,
+      challengerTeamId: body.challengerTeamId,
+      challengerTeamName: body.challengerTeamName,
+      opponentTeamId: body.opponentTeamId,
+      opponentTeamName: body.opponentTeamName,
+      sport: body.sport || 'Football',
+      venueName: body.venueName || 'Downtown Sports Arena',
+      courtName: body.courtName || 'Court A',
+      date: body.date || new Date().toISOString().slice(0, 10),
+      timeSlot: body.timeSlot || '07:00 PM - 08:00 PM',
+      status: 'scheduled',
+      createdAt: new Date().toISOString(),
+    };
+
+    challenges.unshift(newChallenge);
+    fs.writeFileSync(file, JSON.stringify(challenges, null, 2), 'utf8');
+
+    return { success: true, message: 'Team match scheduled successfully!', challenge: newChallenge };
   }
 
   async updateVerifiedAdminMetrics(id: number, metrics: any) {

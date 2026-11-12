@@ -1,5 +1,6 @@
 import 'main_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:games24_player_app/team_roster_screen.dart';
 import 'package:games24_player_app/team_manager.dart';
 import 'package:games24_player_app/match_score_manager.dart';
@@ -14,6 +15,34 @@ class TeamsHubScreen extends StatefulWidget {
 
 class _TeamsHubScreenState extends State<TeamsHubScreen> {
   final TextEditingController _codeController = TextEditingController();
+  String _myPlayerId = 'PLY-1001';
+  List<TeamInvitation> _incomingInvitations = [];
+  bool _loadingInvitations = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlayerId();
+    _loadInvitations();
+  }
+
+  Future<void> _loadPlayerId() async {
+    final pid = await TeamManager.getCurrentPlayerId();
+    if (mounted) {
+      setState(() => _myPlayerId = pid);
+    }
+  }
+
+  Future<void> _loadInvitations() async {
+    if (mounted) setState(() => _loadingInvitations = true);
+    final list = await TeamManager().fetchMyInvitations();
+    if (mounted) {
+      setState(() {
+        _incomingInvitations = list;
+        _loadingInvitations = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -405,6 +434,461 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
     );
   }
 
+  void _showInvitePlayerDialog(BuildContext context, {PlayerTeam? preselectedTeam}) {
+    final teams = TeamManager().teams;
+    if (teams.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please create a squad first before inviting players!')),
+      );
+      return;
+    }
+
+    PlayerTeam chosenTeam = preselectedTeam ?? teams.first;
+    final idController = TextEditingController();
+    String selectedRole = 'Player';
+    List<Map<String, dynamic>> searchResults = [];
+    bool isSearching = false;
+    Map<String, dynamic>? selectedPlayer;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                ),
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE5F5EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0F6D38), size: 20),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Invite Player by ID',
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Select Team
+                      const Text('Choose Squad to Invite Into', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: chosenTeam.id,
+                            isExpanded: true,
+                            items: teams.map((t) {
+                              return DropdownMenuItem(
+                                value: t.id,
+                                child: Text('${t.name} (${t.teamCode} • ${t.sport})'),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setSheetState(() {
+                                  chosenTeam = teams.firstWhere((t) => t.id == val);
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Enter Player ID / Phone
+                      const Text('Target Player ID or Mobile Number', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                        ),
+                        child: TextField(
+                          controller: idController,
+                          textCapitalization: TextCapitalization.characters,
+                          onChanged: (val) async {
+                            if (val.trim().length >= 2) {
+                              setSheetState(() => isSearching = true);
+                              final res = await TeamManager().searchPlayers(val.trim());
+                              setSheetState(() {
+                                searchResults = res;
+                                isSearching = false;
+                              });
+                            } else {
+                              setSheetState(() {
+                                searchResults = [];
+                                isSearching = false;
+                              });
+                            }
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'e.g. PLY-0005 or 9876543210',
+                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                            prefixIcon: const Icon(Icons.badge_outlined, size: 18, color: Color(0xFF0F6D38)),
+                            suffixIcon: isSearching
+                                ? const SizedBox(width: 16, height: 16, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                        ),
+                      ),
+
+                      if (searchResults.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFBBF7D0)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: searchResults.map((p) {
+                              final pId = p['playerId']?.toString() ?? '';
+                              final name = p['fullName']?.toString() ?? 'Player';
+                              final sport = p['preferredSport']?.toString() ?? 'Sports';
+                              return ListTile(
+                                dense: true,
+                                contentPadding: EdgeInsets.zero,
+                                leading: CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: const Color(0xFF0F6D38),
+                                  child: Text(name.isNotEmpty ? name[0] : 'P', style: const TextStyle(color: Colors.white, fontSize: 11)),
+                                ),
+                                title: Text('$name ($pId)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                subtitle: Text('Sport: $sport', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                trailing: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0F6D38),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                    elevation: 0,
+                                  ),
+                                  onPressed: () {
+                                    setSheetState(() {
+                                      selectedPlayer = p;
+                                      idController.text = pId;
+                                      searchResults = [];
+                                    });
+                                  },
+                                  child: const Text('Select', style: TextStyle(fontSize: 11)),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 14),
+
+                      // Player Role
+                      const Text('Role in Squad', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        children: ['Player', 'Vice Captain', 'Striker', 'Bowler', 'Midfielder', 'Goalkeeper'].map((r) {
+                          final isSelected = selectedRole == r;
+                          return ChoiceChip(
+                            label: Text(r),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFFE5F5EB),
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? const Color(0xFF0F6D38) : Colors.black87,
+                            ),
+                            onSelected: (val) {
+                              if (val) setSheetState(() => selectedRole = r);
+                            },
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F6D38),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 0,
+                          ),
+                          onPressed: () async {
+                            final targetId = idController.text.trim().toUpperCase();
+                            if (targetId.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please enter a target Player ID')),
+                              );
+                              return;
+                            }
+
+                            final nav = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+
+                            await TeamManager().sendTeamInvitation(
+                              senderTeamId: chosenTeam.id,
+                              senderTeamCode: chosenTeam.teamCode,
+                              senderTeamName: chosenTeam.name,
+                              senderTeamSport: chosenTeam.sport,
+                              targetPlayerId: targetId,
+                              targetName: selectedPlayer?['fullName']?.toString(),
+                              targetPhone: selectedPlayer?['mobileNumber']?.toString(),
+                              role: selectedRole,
+                            );
+
+                            nav.pop();
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Squad invitation sent to $targetId for ${chosenTeam.name}! 🚀'),
+                                backgroundColor: const Color(0xFF0F6D38),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.send_rounded, size: 16),
+                          label: const Text('Send Squad Invitation 🚀', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showChallengeTeamDialog(BuildContext context, PlayerTeam myTeam) {
+    final opponentCodeController = TextEditingController();
+    final opponentNameController = TextEditingController();
+    String selectedSlot = '07:00 PM - 08:00 PM';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.sports_kabaddi, color: Color(0xFFB45309), size: 20),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Challenge Team to Match',
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.shield, color: Color(0xFF0F6D38), size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Challenger: ${myTeam.name} (${myTeam.teamCode} • ${myTeam.sport})',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      const Text('Opponent Team ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: opponentCodeController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. TM-1042',
+                          prefixIcon: const Icon(Icons.tag, size: 18, color: Color(0xFF0F6D38)),
+                          filled: true,
+                          fillColor: const Color(0xFFF9FAFB),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      const Text('Opponent Team Name (Optional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: opponentNameController,
+                        decoration: InputDecoration(
+                          hintText: 'e.g. Thunder Strikers',
+                          prefixIcon: const Icon(Icons.sports, size: 18, color: Color(0xFF0F6D38)),
+                          filled: true,
+                          fillColor: const Color(0xFFF9FAFB),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      const Text('Match Time Slot', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        children: ['06:00 PM - 07:00 PM', '07:00 PM - 08:00 PM', '08:00 PM - 09:00 PM', '09:00 PM - 10:00 PM'].map((slot) {
+                          final isSelected = selectedSlot == slot;
+                          return ChoiceChip(
+                            label: Text(slot, style: const TextStyle(fontSize: 11)),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFFE5F5EB),
+                            onSelected: (val) {
+                              if (val) setSheetState(() => selectedSlot = slot);
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F6D38),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 0,
+                          ),
+                          onPressed: () async {
+                            final oppCode = opponentCodeController.text.trim().toUpperCase();
+                            if (oppCode.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please enter an Opponent Team ID')),
+                              );
+                              return;
+                            }
+
+                            final oppName = opponentNameController.text.trim().isNotEmpty
+                                ? opponentNameController.text.trim()
+                                : 'Team $oppCode';
+
+                            final nav = Navigator.of(context);
+                            final messenger = ScaffoldMessenger.of(context);
+
+                            await TeamManager().scheduleTeamMatch(
+                              challengerTeamId: myTeam.teamCode,
+                              challengerTeamName: myTeam.name,
+                              opponentTeamId: oppCode,
+                              opponentTeamName: oppName,
+                              sport: myTeam.sport,
+                              timeSlot: selectedSlot,
+                            );
+
+                            nav.pop();
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Challenge sent to $oppName ($oppCode)! Match scheduled for $selectedSlot ⚔️'),
+                                backgroundColor: const Color(0xFF0F6D38),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.flash_on_rounded, size: 18),
+                          label: const Text('Send Match Challenge ⚔️', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Future<void> _handleJoinTeam() async {
     final code = _codeController.text.trim();
     if (code.isEmpty) {
@@ -437,7 +921,11 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              _buildPlayerIdBanner(),
+              const SizedBox(height: 14),
+              _buildIncomingInvitationsSection(),
+              const SizedBox(height: 14),
               _buildCreateTeamCard(),
               const SizedBox(height: 16),
               _buildJoinTeamCard(),
@@ -448,6 +936,263 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlayerIdBanner() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0F6D38), Color(0xFF166534)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0F6D38).withValues(alpha: 0.25),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.badge_outlined, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Your Official Player ID',
+                          style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                        ),
+                        Text(
+                          'Share to Join Squads & Matches',
+                          style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: _myPlayerId));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Player ID $_myPlayerId copied to clipboard!'),
+                    backgroundColor: const Color(0xFF0F6D38),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.copy_rounded, size: 14, color: Color(0xFF0F6D38)),
+                    const SizedBox(width: 4),
+                    Text(
+                      _myPlayerId,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F6D38),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIncomingInvitationsSection() {
+    if (_incomingInvitations.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Text(
+                    'Squad Invitations & Requests',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                    ),
+                    child: Text(
+                      '${_incomingInvitations.length} Pending',
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                    ),
+                  ),
+                ],
+              ),
+              _loadingInvitations
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0F6D38)),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.refresh, size: 18, color: Color(0xFF0F6D38)),
+                      onPressed: _loadInvitations,
+                    ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ..._incomingInvitations.map((inv) => Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE5F5EB),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.group_add_rounded, color: Color(0xFF0F6D38), size: 18),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  inv.senderTeamName,
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${inv.senderTeamSport} • Captain: ${inv.senderName}',
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5F5EB),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        inv.role,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F6D38)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFDC2626),
+                          side: const BorderSide(color: Color(0xFFFECACA)),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () async {
+                          final ok = await TeamManager().respondToInvitation(inv.id, false);
+                          if (ok && mounted) {
+                            _loadInvitations();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Invitation declined')),
+                            );
+                          }
+                        },
+                        child: const Text('Decline ✕', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F6D38),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        onPressed: () async {
+                          final ok = await TeamManager().respondToInvitation(inv.id, true, invitation: inv);
+                          if (ok && mounted) {
+                            _loadInvitations();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Joined ${inv.senderTeamName} successfully! 🎉'),
+                                backgroundColor: const Color(0xFF0F6D38),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Accept & Join 🤝', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          )),
+        ],
       ),
     );
   }
@@ -919,6 +1664,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: _buildTeamCard(
                     context: context,
+                    team: team,
                     sportIcon: team.sport == 'Cricket'
                         ? Icons.sports_cricket
                         : (team.sport == 'Badminton'
@@ -955,6 +1701,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
 
   Widget _buildTeamCard({
     required BuildContext context,
+    required PlayerTeam team,
     required IconData sportIcon,
     required String teamName,
     required String roleBadge,
@@ -1091,6 +1838,48 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           fontSize: 12,
                           color: Color(0xFF6B7280),
                         ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F4F6),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFFE5E7EB)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.shield_outlined, size: 10, color: Color(0xFF166534)),
+                                const SizedBox(width: 3),
+                                Text(
+                                  team.teamCode,
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF166534),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                InkWell(
+                                  onTap: () {
+                                    Clipboard.setData(ClipboardData(text: team.teamCode));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Team ID ${team.teamCode} copied!'),
+                                        backgroundColor: const Color(0xFF0F6D38),
+                                      ),
+                                    );
+                                  },
+                                  child: const Icon(Icons.copy_rounded, size: 10, color: Color(0xFF166534)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1251,6 +2040,39 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF0F6D38),
+                      side: const BorderSide(color: Color(0xFFBBE5CA)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    onPressed: () => _showInvitePlayerDialog(context, preselectedTeam: team),
+                    icon: const Icon(Icons.person_add_alt_1_outlined, size: 14),
+                    label: const Text('Invite by ID 🆔', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F6D38),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      elevation: 0,
+                    ),
+                    onPressed: () => _showChallengeTeamDialog(context, team),
+                    icon: const Icon(Icons.sports_kabaddi, size: 14),
+                    label: const Text('Challenge ⚔️', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

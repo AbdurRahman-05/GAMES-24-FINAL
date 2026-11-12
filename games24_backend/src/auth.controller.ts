@@ -122,5 +122,33 @@ export class AuthController {
   ) {
     return this.authService.updateVerifiedAdminProfile(id, body);
   }
+
+  @Get('players/search')
+  async searchPlayers(@Query('q') q: string) {
+    return this.authService.searchPlayer(q || '');
+  }
+
+  @Post('team-invitations')
+  async sendTeamInvitation(@Body() body: any) {
+    return this.authService.sendTeamInvitation(body);
+  }
+
+  @Get('team-invitations')
+  async getPlayerInvitations(@Query('identifier') identifier: string) {
+    return this.authService.getPlayerInvitations(identifier || '');
+  }
+
+  @Post('team-invitations/:inviteId/respond')
+  async respondTeamInvitation(
+    @Param('inviteId') inviteId: string,
+    @Body() body: { action: 'accept' | 'decline'; playerData?: any },
+  ) {
+    return this.authService.respondTeamInvitation(inviteId, body.action, body.playerData);
+  }
+
+  @Post('team-match/challenge')
+  async createTeamMatchChallenge(@Body() body: any) {
+    return this.authService.createTeamMatchChallenge(body);
+  }
 }
 

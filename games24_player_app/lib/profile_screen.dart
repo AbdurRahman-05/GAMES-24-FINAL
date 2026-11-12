@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:games24_player_app/api_config.dart';
 import 'package:games24_player_app/my_bookings_screen.dart';
@@ -27,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _fullName = 'Loading...';
   String _mobileNumber = '';
   String _preferredSport = 'Football';
+  String _playerId = 'PLY-1001';
 
   @override
   void initState() {
@@ -37,10 +39,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    final rawPhone = prefs.getString('mobileNumber') ?? '';
+    final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
+    final fallbackId = 'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '1001'}';
+
     setState(() {
       _fullName = prefs.getString('fullName') ?? 'Active Player';
-      _mobileNumber = prefs.getString('mobileNumber') ?? '';
+      _mobileNumber = rawPhone;
       _preferredSport = prefs.getString('preferredSport') ?? 'Football';
+      _playerId = prefs.getString('playerId') ?? fallbackId;
     });
 
     if (_mobileNumber.isNotEmpty) {
@@ -48,17 +55,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=$_mobileNumber')).timeout(const Duration(seconds: 4));
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
-          if (data['fullName'] != null && data['fullName'].toString().isNotEmpty) {
-            if (mounted) {
-              setState(() {
+          if (mounted) {
+            setState(() {
+              if (data['fullName'] != null && data['fullName'].toString().isNotEmpty) {
                 _fullName = data['fullName'].toString();
-                if (data['preferredSport'] != null) {
-                  _preferredSport = data['preferredSport'].toString();
-                }
-              });
-            }
-            prefs.setString('fullName', _fullName);
-            prefs.setString('preferredSport', _preferredSport);
+                prefs.setString('fullName', _fullName);
+              }
+              if (data['preferredSport'] != null) {
+                _preferredSport = data['preferredSport'].toString();
+                prefs.setString('preferredSport', _preferredSport);
+              }
+              if (data['playerId'] != null && data['playerId'].toString().isNotEmpty) {
+                _playerId = data['playerId'].toString();
+                prefs.setString('playerId', _playerId);
+              }
+            });
           }
         }
       } catch (e) {
@@ -308,6 +319,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   style: const TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5F5EB),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFBBE5CA)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.badge_outlined, size: 12, color: Color(0xFF166534)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'ID: $_playerId',
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          color: Color(0xFF166534),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      InkWell(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: _playerId));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Player ID $_playerId copied!'),
+                              backgroundColor: const Color(0xFF0F6D38),
+                            ),
+                          );
+                        },
+                        child: const Icon(Icons.copy_rounded, size: 12, color: Color(0xFF166534)),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 8),
