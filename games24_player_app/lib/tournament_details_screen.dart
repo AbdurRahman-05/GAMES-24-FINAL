@@ -1,5 +1,6 @@
 import 'main_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:games24_player_app/tournament_manager.dart';
 import 'package:games24_player_app/tournament_registration_screen.dart';
 
@@ -49,6 +50,10 @@ class TournamentDetailsScreen extends StatelessWidget {
                   _buildHeader(),
                   const SizedBox(height: 24),
                   _buildFinancials(),
+                  if (tournament.externalTicketUrl != null && tournament.externalTicketUrl!.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    _buildExternalTicketCard(context),
+                  ],
                   const SizedBox(height: 24),
                   _buildRules(),
                   const SizedBox(height: 24),
@@ -143,11 +148,36 @@ class TournamentDetailsScreen extends StatelessWidget {
         const SizedBox(height: 16),
         _detailRow(Icons.calendar_today, 'Date', tournament.date),
         _detailRow(Icons.access_time, 'Time', tournament.time),
-        _detailRow(
-          Icons.location_on,
-          'Venue',
-          '${tournament.venue}, ${tournament.location}',
-        ),
+        if (tournament.isVenueTBA)
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFDE68A)),
+            ),
+            child: Row(
+              children: const [
+                Icon(Icons.location_searching_rounded, color: Color(0xFFD97706), size: 20),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '📍 Venue Details Launching Soon (TBA)\nExact arena and court schedule will be announced closer to kickoff.',
+                    style: TextStyle(color: Color(0xFF92400E), fontSize: 12, fontWeight: FontWeight.w600, height: 1.3),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          _detailRow(
+            Icons.location_on,
+            'Venue',
+            '${tournament.venue}, ${tournament.location}',
+          ),
+        if (tournament.courtsCount > 0)
+          _detailRow(Icons.stadium_rounded, 'Facilities', '${tournament.courtsCount} Dedicated Courts / Pitches Allocated'),
         _detailRow(Icons.sports, 'Format', tournament.format),
       ],
     );
@@ -190,6 +220,71 @@ class TournamentDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildExternalTicketCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBBF7D0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.confirmation_number_rounded, color: Color(0xFF166534), size: 18),
+              SizedBox(width: 8),
+              Text(
+                'External Ticket / Registration Pass 🎟️',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFF166534)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'The tournament organizer provided an external registration/pass URL:',
+            style: TextStyle(fontSize: 11.5, color: Color(0xFF374151)),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF86EFAC)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    tournament.externalTicketUrl ?? '',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.copy_rounded, size: 16, color: Color(0xFF166534)),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: tournament.externalTicketUrl ?? ''));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Ticket link copied to clipboard! 📋'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _financeItem(String label, String value, IconData icon) {
     return Column(
       children: [
@@ -209,24 +304,48 @@ class TournamentDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildRules() {
+    final rulesList = tournament.rules;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Rules & Guidelines',
+          'Rules & Guidelines 📜',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         _ruleItem('Reporting Time', tournament.reportingTime),
-        _ruleItem(
-          'Equipment',
-          'Standard kits required. Non-marking shoes mandatory for indoor.',
-        ),
-        _ruleItem(
-          'Match Rules',
-          'Referee decisions are final. Yellow/Red card penalties apply.',
-        ),
+        if (rulesList.isNotEmpty)
+          ...rulesList.map((r) => _ruleCheckItem(r))
+        else ...[
+          _ruleItem(
+            'Equipment',
+            'Standard kits required. Non-marking shoes mandatory for indoor.',
+          ),
+          _ruleItem(
+            'Match Rules',
+            'Referee decisions are final. Yellow/Red card penalties apply.',
+          ),
+        ],
       ],
+    );
+  }
+
+  Widget _ruleCheckItem(String rule) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.check_circle, color: Color(0xFF0F6D38), size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              rule,
+              style: const TextStyle(color: Color(0xFF374151), fontSize: 13, height: 1.3),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -199,11 +199,24 @@ class _CreatePublicTournamentStep2ScreenState
   Widget _buildTournamentPassPreview(TournamentFormData d) {
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF064E3B), Color(0xFF047857), Color(0xFF065F46)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFF064E3B),
+        image: d.imageUrl.isNotEmpty
+            ? DecorationImage(
+                image: NetworkImage(d.imageUrl),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withValues(alpha: 0.65),
+                  BlendMode.darken,
+                ),
+              )
+            : null,
+        gradient: d.imageUrl.isEmpty
+            ? const LinearGradient(
+                colors: [Color(0xFF064E3B), Color(0xFF047857), Color(0xFF065F46)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -217,9 +230,12 @@ class _CreatePublicTournamentStep2ScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Tags
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Top Tags (Responsive wrap prevents overflow)
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -230,10 +246,10 @@ class _CreatePublicTournamentStep2ScreenState
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.public_rounded, color: Colors.white, size: 13),
-                    const SizedBox(width: 5),
-                    const Text(
+                  children: const [
+                    Icon(Icons.public_rounded, color: Colors.white, size: 13),
+                    SizedBox(width: 5),
+                    Text(
                       'PUBLIC CHAMPIONSHIP',
                       style: TextStyle(
                         color: Colors.white,
@@ -258,6 +274,8 @@ class _CreatePublicTournamentStep2ScreenState
                     fontSize: 10.5,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -283,7 +301,7 @@ class _CreatePublicTournamentStep2ScreenState
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  '${d.venue}, ${d.location}',
+                  d.isVenueTBA ? '📍 Venue Details Launching Soon (TBA)' : '${d.venue}, ${d.location}',
                   style: const TextStyle(fontSize: 12, color: Colors.white70),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -295,9 +313,12 @@ class _CreatePublicTournamentStep2ScreenState
             children: [
               const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF86EFAC)),
               const SizedBox(width: 6),
-              Text(
-                '${d.date} • ${d.time}',
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
+              Expanded(
+                child: Text(
+                  '${d.date} • ${d.time}',
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -363,6 +384,14 @@ class _CreatePublicTournamentStep2ScreenState
           _buildParamRow('Max Capacity', '${d.maxTeams} Teams Knockout', Icons.groups_rounded),
           const Divider(height: 16),
           _buildParamRow('Discovery Status', 'Public (Open to all)', Icons.public_rounded),
+          if (d.courtsCount > 0) ...[
+            const Divider(height: 16),
+            _buildParamRow('Turf Facilities', '${d.courtsCount} Courts / Pitches', Icons.stadium_rounded),
+          ],
+          if (d.externalTicketUrl.isNotEmpty) ...[
+            const Divider(height: 16),
+            _buildParamRow('External Ticket Link', d.externalTicketUrl, Icons.confirmation_number_outlined),
+          ],
         ],
       ),
     );
@@ -387,9 +416,42 @@ class _CreatePublicTournamentStep2ScreenState
             ],
           ),
           const SizedBox(height: 12),
+          if (d.isVenueTBA) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.access_time_filled_rounded, size: 16, color: Color(0xFFD97706)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Venue Details Launching Soon (TBA) — Exact turf & court arena will be announced prior to kickoff.',
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           Text(d.venue, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
           const SizedBox(height: 2),
           Text(d.location, style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+          if (d.courtsCount > 0) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.grid_view_rounded, size: 13, color: Color(0xFF166534)),
+                const SizedBox(width: 6),
+                Text('${d.courtsCount} Dedicated Courts / Pitches', style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534), fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ],
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(10),
@@ -401,7 +463,13 @@ class _CreatePublicTournamentStep2ScreenState
               children: [
                 const Icon(Icons.access_time_rounded, size: 14, color: Color(0xFF166534)),
                 const SizedBox(width: 6),
-                Text('Schedule: ${d.date} • ${d.time}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                Expanded(
+                  child: Text(
+                    'Schedule: ${d.date} • ${d.time}',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
           ),

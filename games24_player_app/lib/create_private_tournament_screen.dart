@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'main_layout.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'tournament_form_data.dart';
 import 'create_private_tournament_step2_screen.dart';
 
@@ -23,6 +26,12 @@ class _CreatePrivateTournamentScreenState
   final _prizeController = TextEditingController();
   final _entryFeeController = TextEditingController();
   final _customRulesController = TextEditingController();
+  final _newRuleInputController = TextEditingController();
+  final _externalTicketController = TextEditingController();
+
+  // Banner Poster
+  String _bannerImageUrl = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800';
+  bool _isLocalBanner = false;
 
   // Sports & Format
   String _selectedSport = 'Football';
@@ -34,6 +43,9 @@ class _CreatePrivateTournamentScreenState
   String _selectedTimeSlot = '06:00 PM - 10:00 PM';
   String _selectedVenue = '';
   String _selectedLocation = '';
+  int _selectedVenueCourts = 3;
+  bool _isVenueTBA = false;
+  String _selectedCity = 'Madurai';
 
   // Toggleable Rules
   final Map<String, bool> _rulesMap = {
@@ -59,17 +71,61 @@ class _CreatePrivateTournamentScreenState
     'Group Stage + Knockout',
   ];
 
-  final List<Map<String, String>> _turfVenues = [
-    {'venue': 'Grand Arena Turf', 'loc': 'Downtown Sports Complex, Madurai'},
-    {'venue': 'Madurai Turf City', 'loc': 'Villapuram Main Road, Madurai'},
-    {'venue': 'Legends Box Cricket & Turf', 'loc': 'KK Nagar, Madurai'},
-    {'venue': 'Ace Badminton & Turf Club', 'loc': 'Bypass Road, Madurai'},
+  // Live Turfs with Court Count & Cities
+  final List<Map<String, dynamic>> _allTurfVenues = [
+    {'venue': 'Grand Arena Turf', 'loc': 'Downtown Sports Complex, Madurai', 'city': 'Madurai', 'courts': 3, 'sports': 'Football • Cricket'},
+    {'venue': 'Madurai Turf City', 'loc': 'Villapuram Main Road, Madurai', 'city': 'Madurai', 'courts': 2, 'sports': 'Football'},
+    {'venue': 'Legends Box Cricket & Turf', 'loc': 'KK Nagar, Madurai', 'city': 'Madurai', 'courts': 3, 'sports': 'Cricket'},
+    {'venue': 'Ace Badminton & Turf Club', 'loc': 'Bypass Road, Madurai', 'city': 'Madurai', 'courts': 4, 'sports': 'Badminton • Pickleball'},
+    {'venue': 'Inno Sports Arena (KK Nagar)', 'loc': 'KK Nagar, Chennai', 'city': 'Chennai', 'courts': 4, 'sports': 'Cricket • Football'},
+    {'venue': 'Champions Box Cricket & Turf', 'loc': 'T. Nagar, Chennai', 'city': 'Chennai', 'courts': 3, 'sports': 'Cricket'},
+    {'venue': 'Downtown Sports Complex', 'loc': 'Anna Nagar, Chennai', 'city': 'Chennai', 'courts': 5, 'sports': 'Football • Cricket • Badminton'},
+    {'venue': 'Coimbatore Turf Club', 'loc': 'Avinashi Road, Coimbatore', 'city': 'Coimbatore', 'courts': 4, 'sports': 'Football • Cricket'},
+    {'venue': 'Bangalore Sports Hub', 'loc': 'Koramangala, Bangalore', 'city': 'Bangalore', 'courts': 5, 'sports': 'Football • Badminton'},
+  ];
+
+  // Preset Poster Styles for Private Tournaments
+  final List<Map<String, String>> _presetPosters = [
+    {
+      'title': 'Cyber Neon Clash',
+      'url': 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800',
+      'desc': 'High Voltage Navy & Amber'
+    },
+    {
+      'title': 'Night Floodlight Match',
+      'url': 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800',
+      'desc': 'Atmospheric Turf Lights'
+    },
+    {
+      'title': 'Cricket Gold Trophy',
+      'url': 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800',
+      'desc': 'Gold & Green Cup'
+    },
+    {
+      'title': 'FIFA Pro Turf Arena',
+      'url': 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800',
+      'desc': 'Lush Championship Turf'
+    },
+    {
+      'title': 'Badminton Masters',
+      'url': 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
+      'desc': 'Indoor Invitational Cup'
+    },
   ];
 
   @override
   void initState() {
     super.initState();
     _generateRandomPin();
+    _loadUserCity();
+  }
+
+  Future<void> _loadUserCity() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedCity = prefs.getString('userCity');
+    if (savedCity != null && savedCity.isNotEmpty) {
+      setState(() => _selectedCity = savedCity);
+    }
   }
 
   @override
@@ -79,6 +135,8 @@ class _CreatePrivateTournamentScreenState
     _prizeController.dispose();
     _entryFeeController.dispose();
     _customRulesController.dispose();
+    _newRuleInputController.dispose();
+    _externalTicketController.dispose();
     super.dispose();
   }
 
@@ -120,12 +178,171 @@ class _CreatePrivateTournamentScreenState
     }
   }
 
+  Future<void> _pickCustomPoster() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+      if (picked != null) {
+        setState(() {
+          _bannerImageUrl = picked.path;
+          _isLocalBanner = true;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Custom poster banner loaded successfully! 🎨'),
+              backgroundColor: Color(0xFF0F172A),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load image: $e')),
+        );
+      }
+    }
+  }
+
+  void _showPresetPostersSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFCBD5E1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Select Tournament Poster Theme 🎨',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Choose a high-impact theme or upload your custom design',
+              style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+            ),
+            const SizedBox(height: 16),
+            ..._presetPosters.map((p) {
+              final isCurrent = _bannerImageUrl == p['url'];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isCurrent ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                    width: isCurrent ? 2 : 1,
+                  ),
+                ),
+                child: ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      p['url']!,
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  title: Text(p['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                  subtitle: Text(p['desc']!, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  trailing: isCurrent
+                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD97706))
+                      : const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF94A3B8)),
+                  onTap: () {
+                    setState(() {
+                      _bannerImageUrl = p['url']!;
+                      _isLocalBanner = false;
+                    });
+                    Navigator.pop(ctx);
+                  },
+                ),
+              );
+            }),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.photo_library_outlined, size: 18),
+                label: const Text('Upload Custom Poster Image from Gallery'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0F172A),
+                  side: const BorderSide(color: Color(0xFF0F172A)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _pickCustomPoster();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _addNewCustomRule() {
+    final text = _newRuleInputController.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      _rulesMap[text] = true;
+      _newRuleInputController.clear();
+    });
+
+    HapticFeedback.lightImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Rule "$text" added! ✔️'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF0F172A),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  bool _isDefaultRule(String rule) {
+    const defaults = [
+      'Strict invite-only: Valid access PIN required',
+      'Teams must report 15 mins prior to kickoff',
+      'Standard turf cleats and matching team jerseys',
+      'Rolling substitutions allowed with referee approval',
+      'Host organizer decisions are binding',
+    ];
+    return defaults.contains(rule);
+  }
+
   void _proceedToStep2() {
     if (_formKey.currentState?.validate() != true) return;
 
-    if (_selectedVenue.isEmpty) {
+    if (!_isVenueTBA && _selectedVenue.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a tournament venue')),
+        const SnackBar(content: Text('Please select a tournament venue or toggle "Decide Venue Later"')),
       );
       return;
     }
@@ -145,13 +362,17 @@ class _CreatePrivateTournamentScreenState
       maxTeams: _maxTeams,
       date: _formatDate(_selectedDate),
       time: _selectedTimeSlot,
-      venue: _selectedVenue,
-      location: _selectedLocation,
+      venue: _isVenueTBA ? 'Venue To Be Announced (TBA)' : _selectedVenue,
+      location: _isVenueTBA ? '$_selectedCity (Exact Arena TBA)' : _selectedLocation,
       format: _selectedFormat,
       isPrivate: true,
       accessCode: _pinController.text.trim(),
       rules: selectedRules,
       customRules: _customRulesController.text.trim(),
+      imageUrl: _bannerImageUrl,
+      isVenueTBA: _isVenueTBA,
+      externalTicketUrl: _externalTicketController.text.trim(),
+      courtsCount: _selectedVenueCourts,
     );
 
     Navigator.push(
@@ -220,6 +441,10 @@ class _CreatePrivateTournamentScreenState
             children: [
               // Hero Banner
               _buildHeroBadge(),
+              const SizedBox(height: 16),
+
+              // Hero Banner Poster Selector
+              _buildBannerPosterCard(),
               const SizedBox(height: 16),
 
               // Access PIN Security Card (Primary feature of private tournament)
@@ -369,6 +594,18 @@ class _CreatePrivateTournamentScreenState
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _externalTicketController,
+                      style: const TextStyle(fontSize: 12.5),
+                      decoration: InputDecoration(
+                        labelText: 'External Ticket / RSVP Link (Optional)',
+                        hintText: 'e.g. https://forms.gle/... or Event Pass',
+                        prefixIcon: const Icon(Icons.link_rounded, color: Color(0xFFD97706), size: 18),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 6,
@@ -383,7 +620,7 @@ class _CreatePrivateTournamentScreenState
               ),
               const SizedBox(height: 16),
 
-              // Capacity & Schedule
+              // Capacity & Schedule (with high-contrast ChoiceChips)
               _buildSectionCard(
                 title: 'Team Count & Timing 📅',
                 subtitle: 'Invite capacity and court time',
@@ -399,12 +636,22 @@ class _CreatePrivateTournamentScreenState
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 3.0),
                             child: ChoiceChip(
-                              label: Text('$count', style: const TextStyle(fontSize: 11)),
+                              showCheckmark: true,
+                              checkmarkColor: Colors.white,
+                              label: Text(
+                                '$count',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isSel ? Colors.white : const Color(0xFF0F172A),
+                                ),
+                              ),
                               selected: isSel,
                               selectedColor: const Color(0xFF0F172A),
+                              backgroundColor: const Color(0xFFF1F5F9),
                               labelStyle: TextStyle(
                                 color: isSel ? Colors.white : const Color(0xFF0F172A),
-                                fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: FontWeight.bold,
                               ),
                               onSelected: (_) => setState(() => _maxTeams = count),
                             ),
@@ -489,85 +736,202 @@ class _CreatePrivateTournamentScreenState
               ),
               const SizedBox(height: 16),
 
-              // Venue
+              // Venue Selection & TBA Toggle
               _buildSectionCard(
                 title: 'Host Turf Venue 🏟️',
-                subtitle: 'Venue for private matches',
-                child: InkWell(
-                  onTap: _showVenuePicker,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(Icons.stadium_rounded, color: Color(0xFFD97706), size: 22),
+                subtitle: 'Venue for private matches or launch details later',
+                child: Column(
+                  children: [
+                    // Decide Venue Later (TBA) Switch Card
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _isVenueTBA ? const Color(0xFFFEF3C7) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _isVenueTBA ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                          width: _isVenueTBA ? 1.5 : 1,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        activeThumbColor: const Color(0xFFD97706),
+                        title: const Text(
+                          'Decide Venue Later 📍 (TBA)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        subtitle: const Text(
+                          'Venue shows as "Launching Soon". Perfect if awaiting turf confirmation.',
+                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                        ),
+                        value: _isVenueTBA,
+                        onChanged: (val) {
+                          setState(() {
+                            _isVenueTBA = val;
+                            if (val) {
+                              _selectedVenue = 'Venue To Be Announced (TBA)';
+                              _selectedLocation = '$_selectedCity (Exact Arena TBA)';
+                              _selectedVenueCourts = 0;
+                            } else {
+                              _selectedVenue = '';
+                              _selectedLocation = '';
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (!_isVenueTBA)
+                      InkWell(
+                        onTap: _showVenuePicker,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                _selectedVenue.isNotEmpty ? _selectedVenue : 'Select Venue / Turf Ground',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  color: _selectedVenue.isNotEmpty ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEF3C7),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.stadium_rounded, color: Color(0xFFD97706), size: 22),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _selectedVenue.isNotEmpty ? _selectedVenue : 'Select Host Turf Arena',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.5,
+                                        color: _selectedVenue.isNotEmpty ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _selectedLocation.isNotEmpty
+                                          ? '$_selectedLocation • $_selectedVenueCourts Courts Available'
+                                          : 'Tap to browse venues in $_selectedCity',
+                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                _selectedLocation.isNotEmpty ? _selectedLocation : 'Tap to choose tournament venue',
-                                style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-                              ),
+                              const Icon(Icons.swap_horiz_rounded, color: Color(0xFFD97706), size: 20),
                             ],
                           ),
                         ),
-                        const Icon(Icons.swap_horiz_rounded, color: Color(0xFFD97706), size: 20),
-                      ],
-                    ),
-                  ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: Row(
+                          children: const [
+                            Icon(Icons.info_outline_rounded, color: Color(0xFF92400E), size: 20),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Venue Launching Soon mode active. Invited teams will receive notification when venue is finalized.',
+                                style: TextStyle(color: Color(0xFF92400E), fontSize: 11.5, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Rules
+              // Rules & Access Policy with Custom Rule Add Action
               _buildSectionCard(
                 title: 'Rules & Access Policy 📜',
                 subtitle: 'Tournament guidelines for invited squads',
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ..._rulesMap.keys.map((rule) {
                       final val = _rulesMap[rule] ?? false;
+                      final isCustom = !_isDefaultRule(rule);
+
                       return CheckboxListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                         activeColor: const Color(0xFFD97706),
-                        title: Text(rule, style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(rule, style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                            ),
+                            if (isCustom)
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () {
+                                  setState(() => _rulesMap.remove(rule));
+                                },
+                              ),
+                          ],
+                        ),
                         value: val,
                         onChanged: (checked) {
                           setState(() => _rulesMap[rule] = checked ?? false);
                         },
                       );
                     }),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
+                    // Add Custom Rule Input with Button
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _newRuleInputController,
+                            style: const TextStyle(fontSize: 12),
+                            decoration: InputDecoration(
+                              labelText: 'Add Custom Rule (e.g. ID verification)',
+                              hintText: 'Type rule and tap + Add',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            ),
+                            onSubmitted: (_) => _addNewCustomRule(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD97706),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: const Text('+ Add', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          onPressed: _addNewCustomRule,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     TextField(
                       controller: _customRulesController,
                       style: const TextStyle(fontSize: 12),
                       decoration: InputDecoration(
-                        labelText: 'Custom Host Notes (Optional)',
-                        hintText: 'e.g. Strict company ID verification at gate',
+                        labelText: 'Organizer Remarks / Match Notes (Optional)',
+                        hintText: 'e.g. Refreshments provided after quarterfinals',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       ),
@@ -600,6 +964,142 @@ class _CreatePrivateTournamentScreenState
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBannerPosterCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Stack(
+              children: [
+                _isLocalBanner
+                    ? Image.file(
+                        File(_bannerImageUrl),
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.network(
+                        _bannerImageUrl,
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 150,
+                          color: const Color(0xFF1E293B),
+                          child: const Center(
+                            child: Icon(Icons.sports_soccer, color: Colors.white54, size: 48),
+                          ),
+                        ),
+                      ),
+                Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.2),
+                        Colors.black.withValues(alpha: 0.75),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD97706),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.lock_rounded, color: Colors.white, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          'PRIVATE POSTER',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 12,
+                  left: 14,
+                  right: 14,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.image_rounded, color: Color(0xFFFDE68A), size: 16),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
+                          'Official Private Cup Banner',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF0F172A),
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    icon: const Icon(Icons.style_outlined, size: 16),
+                    label: const Text('Preset Posters 🎨', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    onPressed: _showPresetPostersSheet,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    icon: const Icon(Icons.upload_file_rounded, size: 16),
+                    label: const Text('Upload Image 📸', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    onPressed: _pickCustomPoster,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -804,6 +1304,113 @@ class _CreatePrivateTournamentScreenState
   }
 
   void _showVenuePicker() {
+    final cityFilteredVenues = _allTurfVenues
+        .where((v) => (v['city'] as String).toLowerCase() == _selectedCity.toLowerCase())
+        .toList();
+    final venuesToShow = cityFilteredVenues.isNotEmpty ? cityFilteredVenues : _allTurfVenues;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: const Color(0xFFCBD5E1), borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Select Host Turf Venue 🏟️', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
+                TextButton.icon(
+                  icon: const Icon(Icons.location_city_rounded, size: 16, color: Color(0xFFD97706)),
+                  label: Text(_selectedCity, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD97706))),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _showLocationPickerModal();
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text('Showing verified turf arenas in $_selectedCity with live court counts', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.5),
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: venuesToShow.length,
+                separatorBuilder: (_, index) => const Divider(height: 1),
+                itemBuilder: (c, idx) {
+                  final v = venuesToShow[idx];
+                  final isSel = _selectedVenue == v['venue'];
+                  final courtCount = v['courts'] as int? ?? 2;
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSel ? const Color(0xFFD97706) : const Color(0xFFFEF3C7),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.stadium_rounded, color: isSel ? Colors.white : const Color(0xFFD97706), size: 22),
+                    ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(v['venue'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF3C7),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$courtCount Courts',
+                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Text(
+                      '${v['loc']} • ${v['sports'] ?? 'All Sports'}',
+                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                    ),
+                    trailing: isSel
+                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD97706))
+                        : const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+                    onTap: () {
+                      setState(() {
+                        _selectedVenue = v['venue'] as String;
+                        _selectedLocation = v['loc'] as String;
+                        _selectedVenueCourts = courtCount;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLocationPickerModal() {
+    final cities = ['Madurai', 'Chennai', 'Coimbatore', 'Bangalore', 'Trichy', 'Salem'];
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
@@ -813,18 +1420,24 @@ class _CreatePrivateTournamentScreenState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Select Host Turf Venue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 14),
-            ..._turfVenues.map((v) => ListTile(
-                  leading: const Icon(Icons.stadium_rounded, color: Color(0xFFD97706)),
-                  title: Text(v['venue']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                  subtitle: Text(v['loc']!, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                  onTap: () {
+            const Text('Change Tournament City 📍', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 12),
+            ...cities.map((city) => ListTile(
+                  title: Text(city, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  trailing: _selectedCity.toLowerCase() == city.toLowerCase() ? const Icon(Icons.check, color: Color(0xFFD97706)) : null,
+                  onTap: () async {
                     setState(() {
-                      _selectedVenue = v['venue']!;
-                      _selectedLocation = v['loc']!;
+                      _selectedCity = city;
+                      _selectedVenue = '';
+                      _selectedLocation = '';
                     });
-                    Navigator.pop(ctx);
+                    final nav = Navigator.of(ctx);
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('userCity', city);
+                    if (nav.mounted) {
+                      nav.pop();
+                      _showVenuePicker();
+                    }
                   },
                 )),
           ],

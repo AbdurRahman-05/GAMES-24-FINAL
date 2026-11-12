@@ -16,6 +16,9 @@ class TournamentFormData {
   final List<String> rules;
   final String customRules;
   final String imageUrl;
+  final bool isVenueTBA;
+  final String externalTicketUrl;
+  final int courtsCount;
 
   TournamentFormData({
     required this.title,
@@ -33,6 +36,9 @@ class TournamentFormData {
     this.rules = const [],
     this.customRules = '',
     this.imageUrl = 'https://picsum.photos/seed/turf1/800/400',
+    this.isVenueTBA = false,
+    this.externalTicketUrl = '',
+    this.courtsCount = 2,
   });
 
   Tournament toTournament() {
@@ -43,7 +49,7 @@ class TournamentFormData {
       status: TournamentStatus.upcoming,
       date: date,
       time: time,
-      venue: venue,
+      venue: isVenueTBA ? 'Venue To Be Announced (TBA)' : venue,
       location: location,
       entryFee: entryFee.trim().isNotEmpty ? entryFee.trim() : 'Free Entry',
       prizePool: prizePool.trim().isNotEmpty ? prizePool.trim() : '₹10,000 + Trophy',
@@ -55,6 +61,10 @@ class TournamentFormData {
       reportingTime: '15 mins before match',
       isPrivate: isPrivate,
       accessCode: isPrivate ? accessCode : null,
+      rules: rules,
+      isVenueTBA: isVenueTBA,
+      externalTicketUrl: externalTicketUrl.isNotEmpty ? externalTicketUrl : null,
+      courtsCount: courtsCount,
     );
   }
 }

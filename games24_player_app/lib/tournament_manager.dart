@@ -28,6 +28,10 @@ class Tournament {
   registeredUsers; // List of registered team data
   final bool isPrivate;
   final String? accessCode;
+  final List<String> rules;
+  final bool isVenueTBA;
+  final String? externalTicketUrl;
+  final int courtsCount;
 
   Tournament({
     required this.id,
@@ -51,6 +55,10 @@ class Tournament {
     this.registeredUsers = const [],
     this.isPrivate = false,
     this.accessCode,
+    this.rules = const [],
+    this.isVenueTBA = false,
+    this.externalTicketUrl,
+    this.courtsCount = 2,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -107,6 +115,10 @@ class Tournament {
       registeredUsers: regUsers,
       isPrivate: json['isPrivate'] == true,
       accessCode: json['accessCode']?.toString(),
+      rules: (json['rules'] is List) ? List<String>.from(json['rules']) : const [],
+      isVenueTBA: json['isVenueTBA'] == true || (json['venue']?.toString().contains('TBA') ?? false),
+      externalTicketUrl: json['externalTicketUrl']?.toString(),
+      courtsCount: (json['courtsCount'] is num) ? (json['courtsCount'] as num).toInt() : 2,
     );
   }
 

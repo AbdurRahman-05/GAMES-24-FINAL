@@ -352,11 +352,15 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        tournament.location,
+                        tournament.isVenueTBA
+                            ? '📍 Venue Details Launching Soon (TBA)'
+                            : '${tournament.venue}, ${tournament.location}',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 13,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
