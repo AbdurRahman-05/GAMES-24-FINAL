@@ -716,16 +716,16 @@ class _HomeScreenState extends State<HomeScreen> {
     VoidCallback? onActionTap,
   }) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(
+              Expanded(
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                     color: Color(0xFF111827),
@@ -735,9 +735,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               if (hasLiveBadge) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFF166534),
                     borderRadius: BorderRadius.circular(12),
@@ -760,6 +760,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: onActionTap,
           behavior: HitTestBehavior.opaque,
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               if (trailingIcon != null) ...[
                 Icon(trailingIcon, size: 14, color: const Color(0xFF166534)),
@@ -1061,9 +1062,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Expanded(
+                          ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.45),
                             child: Text(
                               turfName,
                               style: const TextStyle(
@@ -1075,8 +1080,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          if (match['isOpenMatch'] == true) ...[
+                          if (match['isOpenMatch'] == true)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
@@ -1093,8 +1097,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 4),
-                          ],
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
@@ -1359,10 +1361,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
-                                    if (booking['isOpenMatch'] == true || booking['is_open_match'] == true) ...[
+                                    if (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
                                       Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 6,
@@ -1382,29 +1386,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 4),
-                                    ] else ...[
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2.5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFF1F5F9),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: const Color(0xFFE2E8F0)),
-                                        ),
-                                        child: const Text(
-                                          '🔒 Private',
-                                          style: TextStyle(
-                                            fontSize: 9.5,
-                                            color: Color(0xFF475569),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                    ],
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 7,

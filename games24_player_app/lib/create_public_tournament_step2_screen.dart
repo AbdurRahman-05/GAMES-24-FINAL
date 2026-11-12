@@ -237,7 +237,7 @@ class _CreatePublicTournamentStep2ScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Tags (Responsive wrap prevents overflow)
+          // Top Tags (Responsive wrap prevents overflow on all mobile widths)
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -251,9 +251,9 @@ class _CreatePublicTournamentStep2ScreenState
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white24),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Icon(Icons.public_rounded, color: Colors.white, size: 13),
                     SizedBox(width: 5),
                     Text(
@@ -268,21 +268,26 @@ class _CreatePublicTournamentStep2ScreenState
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFDE68A),
-                  borderRadius: BorderRadius.circular(20),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.75,
                 ),
-                child: Text(
-                  '${d.sport} • ${d.format}',
-                  style: const TextStyle(
-                    color: Color(0xFF92400E),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.bold,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDE68A),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  child: Text(
+                    '${d.sport} • ${d.format}',
+                    style: const TextStyle(
+                      color: Color(0xFF92400E),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],
@@ -577,8 +582,16 @@ class _CreatePublicTournamentStep2ScreenState
         Icon(icon, size: 16, color: const Color(0xFF64748B)),
         const SizedBox(width: 8),
         Text(label, style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B))),
-        const Spacer(),
-        Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            textAlign: TextAlign.end,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }

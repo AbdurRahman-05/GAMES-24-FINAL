@@ -1318,7 +1318,15 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
-          Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF0F172A))),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -1390,9 +1398,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                         children: [
                           Row(
                             children: [
-                              Text(
-                                b.customerName,
-                                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                              Flexible(
+                                child: Text(
+                                  b.customerName,
+                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                               const SizedBox(width: 6),
                               Container(

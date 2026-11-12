@@ -627,12 +627,15 @@ class _CreatePublicTournamentScreenState
                                     width: isSel ? 1.5 : 1.0,
                                   ),
                                 ),
-                                child: Text(
-                                  '$count',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSel ? Colors.white : const Color(0xFF1E293B),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    '$count',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: isSel ? Colors.white : const Color(0xFF1E293B),
+                                    ),
                                   ),
                                 ),
                               ),

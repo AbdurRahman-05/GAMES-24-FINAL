@@ -432,7 +432,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         const Icon(Icons.emoji_events_rounded, color: Colors.amberAccent, size: 14),
                         const SizedBox(width: 5),
-                        Flexible(
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.42),
                           child: Text(
                             '$_rank in $_city • $_points PTS',
                             style: const TextStyle(
@@ -455,12 +456,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: const [
                     Icon(Icons.star_outline, color: Colors.orange, size: 16),
                     SizedBox(width: 4),
-                    Text(
-                      '5.0 Player Rating',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: Color(0xFF111827),
+                    Flexible(
+                      child: Text(
+                        '5.0 Player Rating',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Color(0xFF111827),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

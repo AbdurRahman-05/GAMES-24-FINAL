@@ -338,6 +338,7 @@ class _AdminSlotManagerScreenState
       elevation: 0,
       scrolledUnderElevation: 0,
       toolbarHeight: 64,
+      titleSpacing: 0,
       shape: const Border(
         bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
       ),
@@ -386,16 +387,18 @@ class _AdminSlotManagerScreenState
                 ),
               ),
               const SizedBox(width: 5),
-              Text(
-                profile.venueName.isNotEmpty
-                    ? '${profile.venueName} • Live Controls'
-                    : 'Live Operating Control',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF16A34A),
+              Flexible(
+                child: Text(
+                  profile.venueName.isNotEmpty
+                      ? '${profile.venueName} • Live Controls'
+                      : 'Live Operating Control',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF16A34A),
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -800,24 +803,31 @@ class _AdminSlotManagerScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.event_rounded,
-                    size: 16,
-                    color: Color(0xFF154D36),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    DateFormat('EEEE, d MMMM yyyy').format(_selectedDate),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.event_rounded,
+                      size: 16,
+                      color: Color(0xFF154D36),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        DateFormat('EEEE, d MMMM yyyy').format(_selectedDate),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 6),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
@@ -1566,13 +1576,15 @@ class _AdminSlotManagerScreenState
   ) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
         return SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1719,6 +1731,7 @@ class _AdminSlotManagerScreenState
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 14, color: const Color(0xFF64748B)),
             const SizedBox(width: 8),
@@ -1732,12 +1745,17 @@ class _AdminSlotManagerScreenState
             ),
           ],
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF0F172A),
+            ),
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -2287,10 +2305,12 @@ class _AdminSlotManagerScreenState
                 top: 20,
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   Center(
                     child: Container(
                       width: 40,
@@ -2593,8 +2613,9 @@ class _AdminSlotManagerScreenState
                   ),
                 ],
               ),
-            );
-          },
+            ),
+          );
+        },
         );
       },
     );

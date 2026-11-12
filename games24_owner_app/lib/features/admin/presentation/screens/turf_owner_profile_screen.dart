@@ -1525,6 +1525,7 @@ class _TurfOwnerProfileScreenState
     return AppBar(
       backgroundColor: const Color(0xFF0C2B1E),
       elevation: 0,
+      titleSpacing: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
         tooltip: 'Back to Dashboard',
@@ -1554,6 +1555,8 @@ class _TurfOwnerProfileScreenState
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -1742,12 +1745,15 @@ class _TurfOwnerProfileScreenState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
-            color: color,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w900,
+              color: color,
+            ),
           ),
         ),
         const SizedBox(height: 1),
