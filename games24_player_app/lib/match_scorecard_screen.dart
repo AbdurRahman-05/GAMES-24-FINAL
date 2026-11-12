@@ -56,6 +56,21 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   bool _isOpenChallenge = false;
   Challenge? _linkedChallenge;
 
+  bool get _hasOpponent {
+    if (_linkedChallenge?.isJoined == true) return true;
+    if (_linkedChallenge?.opponentName != null &&
+        _linkedChallenge!.opponentName!.trim().isNotEmpty) {
+      return true;
+    }
+    if (_teamBPlayers.isNotEmpty) return true;
+    if (!_teamBName.contains('Waiting') &&
+        _teamBName.trim().isNotEmpty &&
+        _teamBName != 'Opponent Team') {
+      return true;
+    }
+    return false;
+  }
+
   // Teams & Rosters
   String _teamAName = 'Blazing Strikers (My Team)';
   String _teamBName = 'Thunder Smashers';
@@ -1084,6 +1099,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // ---------------------------------------------------------------------------
   void _executeCoinToss() {
     if (_isTossing) return;
+    if (_isOpenChallenge && !_hasOpponent) {
+      _showSetOpponentDialog();
+      return;
+    }
     setState(() {
       _isTossing = true;
       _tossResult = null;
@@ -2932,7 +2951,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
           if (_isOpenChallenge && !hasOpponent)
             _buildOpenMatchOpponentCard()
-          else
+          else ...[
             _buildTeamCard(
               teamName: _teamBName,
               players: _teamBPlayers,
@@ -2944,6 +2963,40 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               },
               onAddPlayer: () => _openContactsPicker(false),
             ),
+            if (_isOpenChallenge) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: _showSetOpponentDialog,
+                    icon: const Icon(Icons.edit, size: 14, color: Color(0xFF166534)),
+                    label: const Text(
+                      'Edit Opponent Team',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF166534),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: _confirmConvertToPrivate,
+                    icon: const Icon(Icons.lock_outline, size: 14, color: Color(0xFF1E40AF)),
+                    label: const Text(
+                      'Convert to Private',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF1E40AF),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
           const SizedBox(height: 20),
 
           // Save Squad Lineup Button
@@ -3055,10 +3108,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   }
 
   Widget _buildOpenMatchOpponentCard() {
-    final hasOpponent =
-        _linkedChallenge?.isJoined == true ||
-        (_linkedChallenge?.opponentName != null &&
-            _linkedChallenge!.opponentName!.trim().isNotEmpty);
+    final hasOpponent = _hasOpponent;
 
     return Container(
       decoration: BoxDecoration(
@@ -3184,7 +3234,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                       Text(
                         hasOpponent
                             ? 'Team $_teamBName has accepted this challenge. Opponent roster is managed by their squad.'
-                            : 'This court booking is an Open Match. You only manage your own squad (Team A). Opponents cannot be manually set or edited.',
+                            : 'This booking was posted as an Open Challenge. If no team has joined online yet, you can set the opponent team manually to start the match immediately, or convert to a private friendly.',
                         style: TextStyle(
                           fontSize: 11,
                           color: hasOpponent
@@ -3235,16 +3285,78 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               }).toList(),
             ),
           ] else if (!hasOpponent) ...[
-            const SizedBox(height: 12),
-            Center(
-              child: Text(
-                'Waiting for an opponent squad to accept and join your open challenge...',
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey.shade500,
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF3C7).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.touch_app_outlined, size: 16, color: Color(0xFFB45309)),
+                      SizedBox(width: 6),
+                      Text(
+                        'Ready to play now?',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF92400E),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'You do not have to wait! Set the opponent team manually to unlock the toss and scorecard immediately.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF78350F), height: 1.3),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton.icon(
+                onPressed: _showSetOpponentDialog,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF166534),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                textAlign: TextAlign.center,
+                icon: const Icon(Icons.sports_martial_arts, size: 20),
+                label: const Text(
+                  'Set Opponent Team Manually ⚔️',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 42,
+              child: OutlinedButton.icon(
+                onPressed: _confirmConvertToPrivate,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF1E40AF),
+                  side: const BorderSide(color: Color(0xFFBFDBFE)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.lock_outline, size: 16),
+                label: const Text(
+                  'Convert to Normal Private Match 🔒',
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
           ],
@@ -3612,6 +3724,238 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
   }
 
+  void _showSetOpponentDialog() {
+    final nameCtrl = TextEditingController(
+      text: (_teamBName.contains('Waiting') ? '' : _teamBName),
+    );
+    final phoneCtrl = TextEditingController(
+      text: _teamBPlayers.isNotEmpty ? _teamBPlayers.first.phone : '',
+    );
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: const [
+                  Icon(Icons.sports_martial_arts, color: Color(0xFF166534), size: 24),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Set Opponent Team Manually',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'No one joined online? Enter the team you are playing against at the venue to start the match immediately.',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.3),
+              ),
+              const SizedBox(height: 18),
+              TextField(
+                controller: nameCtrl,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Opponent Team Name *',
+                  hintText: 'e.g., Royal Challengers, Thunderbolts',
+                  prefixIcon: const Icon(Icons.shield_outlined, color: Color(0xFF166534)),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: 'Captain Phone / Contact (Optional)',
+                  hintText: 'e.g., 9876543210',
+                  prefixIcon: const Icon(Icons.phone_outlined, color: Color(0xFF64748B)),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final enteredName = nameCtrl.text.trim();
+                        if (enteredName.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter an opponent team name')),
+                          );
+                          return;
+                        }
+                        Navigator.pop(ctx);
+                        final oppPhone = phoneCtrl.text.trim();
+                        setState(() {
+                          _teamBName = enteredName;
+                          if (_linkedChallenge != null) {
+                            _linkedChallenge!.isJoined = true;
+                            _linkedChallenge!.opponentName = enteredName;
+                            _linkedChallenge!.opponentContact = oppPhone;
+                          }
+                          if (_teamBPlayers.isEmpty) {
+                            _teamBPlayers.add(
+                              PlayerItem(
+                                id: 'opp_captain_${DateTime.now().millisecondsSinceEpoch}',
+                                name: enteredName,
+                                phone: oppPhone,
+                                role: 'Captain',
+                              ),
+                            );
+                          } else {
+                            _teamBPlayers[0] = PlayerItem(
+                              id: _teamBPlayers[0].id,
+                              name: enteredName,
+                              phone: oppPhone,
+                              role: _teamBPlayers[0].role,
+                            );
+                          }
+                          if (_tossCaller == null || _tossCaller!.contains('Waiting')) {
+                            _tossCaller = _teamAName;
+                          }
+                        });
+
+                        await BookingManager().updateBookingOpponent(
+                          widget.bookingId,
+                          enteredName,
+                          opponentPhone: oppPhone,
+                        );
+                        _saveSquad(showFeedback: false);
+
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: const Color(0xFF166534),
+                              content: Text('Opponent set to "$enteredName"! Match ready.'),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF166534),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Confirm Opponent', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmConvertToPrivate() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: const [
+            Icon(Icons.lock_rounded, color: Color(0xFF1E40AF), size: 24),
+            SizedBox(width: 8),
+            Text('Convert to Normal Match', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Do you want to convert this booking into a standard private match?\n\n'
+          'This will remove it from the public Open Challenges feed and allow you to manually edit and manage both teams on the spot.',
+          style: TextStyle(fontSize: 13, height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E40AF),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              setState(() {
+                _isOpenChallenge = false;
+                if (_teamBName.contains('Waiting')) {
+                  _teamBName = 'Opponent Team';
+                }
+              });
+
+              await BookingManager().convertBookingToPrivate(widget.bookingId);
+              _saveSquad(showFeedback: false);
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    backgroundColor: Color(0xFF1E40AF),
+                    content: Text('Match converted to Normal Private Match! Both teams are now editable.'),
+                  ),
+                );
+              }
+            },
+            child: const Text('Convert to Private', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ===========================================================================
   // TAB 2: COIN TOSS (Head / Tail + Sport Specific Decision)
   // ===========================================================================
@@ -3733,34 +4077,83 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           ),
           const SizedBox(height: 20),
 
-          if (_isOpenChallenge &&
-              (_linkedChallenge?.opponentName == null ||
-                  _linkedChallenge!.opponentName!.isEmpty))
+          if (_isOpenChallenge && !_hasOpponent)
             Container(
               margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFDE68A)),
               ),
-              child: Row(
-                children: const [
-                  Icon(
-                    Icons.hourglass_top_rounded,
-                    color: Color(0xFF1D4ED8),
-                    size: 18,
-                  ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Open Match: Waiting for Opponent Team to join. Official toss will be active once accepted.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF1E40AF),
-                        fontWeight: FontWeight.w600,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(
+                        Icons.hourglass_top_rounded,
+                        color: Color(0xFFB45309),
+                        size: 20,
                       ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Waiting for Opponent Team',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF92400E),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'No online opponent joined yet. Set the opponent team manually to unlock the official coin toss and start scoring!',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFF78350F),
+                      height: 1.3,
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: _showSetOpponentDialog,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF166534),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          icon: const Icon(Icons.sports_martial_arts, size: 16),
+                          label: const Text(
+                            'Set Opponent Manually ⚔️',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        onPressed: _confirmConvertToPrivate,
+                        style: TextButton.styleFrom(
+                          foregroundColor: const Color(0xFF1E40AF),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        ),
+                        icon: const Icon(Icons.lock_outline, size: 16),
+                        label: const Text(
+                          'Make Private 🔒',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

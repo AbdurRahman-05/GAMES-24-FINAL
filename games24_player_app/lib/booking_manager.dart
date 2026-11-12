@@ -287,4 +287,76 @@ class BookingManager {
       } catch (_) {}
     }
   }
+
+  Future<bool> updateBookingOpponent(dynamic bookingId, String opponentName, {String opponentPhone = ''}) async {
+    final strId = bookingId?.toString() ?? '';
+    if (strId.isEmpty) return false;
+
+    final current = List<Map<String, dynamic>>.from(bookingsNotifier.value);
+    for (int i = 0; i < current.length; i++) {
+      final b = Map<String, dynamic>.from(current[i]);
+      final bId = (b['id'] ?? b['bookingId'] ?? b['booking_code'])?.toString();
+      final bCode = b['bookingCode']?.toString();
+      if (bId == strId || bCode == strId) {
+        b['opponentName'] = opponentName;
+        b['opponentPhone'] = opponentPhone;
+        b['openMatchStatus'] = 'OPPONENT_JOINED';
+        current[i] = b;
+        break;
+      }
+    }
+    bookingsNotifier.value = current;
+    await _saveToCache(current);
+
+    final intId = int.tryParse(strId.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (intId != null) {
+      try {
+        final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$intId/set-opponent');
+        final res = await http.post(
+          uri,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'opponentName': opponentName,
+            'opponentPhone': opponentPhone,
+          }),
+        ).timeout(const Duration(seconds: 5));
+        return res.statusCode == 200 || res.statusCode == 201;
+      } catch (e) {
+        debugPrint('Error updating booking opponent: $e');
+      }
+    }
+    return true;
+  }
+
+  Future<bool> convertBookingToPrivate(dynamic bookingId) async {
+    final strId = bookingId?.toString() ?? '';
+    if (strId.isEmpty) return false;
+
+    final current = List<Map<String, dynamic>>.from(bookingsNotifier.value);
+    for (int i = 0; i < current.length; i++) {
+      final b = Map<String, dynamic>.from(current[i]);
+      final bId = (b['id'] ?? b['bookingId'] ?? b['booking_code'])?.toString();
+      final bCode = b['bookingCode']?.toString();
+      if (bId == strId || bCode == strId) {
+        b['isOpenMatch'] = false;
+        b['openMatchStatus'] = null;
+        current[i] = b;
+        break;
+      }
+    }
+    bookingsNotifier.value = current;
+    await _saveToCache(current);
+
+    final intId = int.tryParse(strId.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (intId != null) {
+      try {
+        final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$intId/convert-to-private');
+        final res = await http.post(uri).timeout(const Duration(seconds: 5));
+        return res.statusCode == 200 || res.statusCode == 201;
+      } catch (e) {
+        debugPrint('Error converting booking to private: $e');
+      }
+    }
+    return true;
+  }
 }

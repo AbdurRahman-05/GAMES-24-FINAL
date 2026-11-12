@@ -2230,6 +2230,103 @@ export class TurfService {
     };
   }
 
+  async setManualOpponent(bookingId: number, body: any) {
+    const booking = await this.prisma.turfBooking.findFirst({
+      where: {
+        OR: [
+          { id: bookingId },
+          { bookingCode: String(bookingId) },
+        ],
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`Booking #${bookingId} not found`);
+    }
+
+    const opponentName = (body.opponentName || body.teamName || 'Opponent Team').trim();
+    const opponentPhone = (body.opponentPhone || body.opponentContact || '').trim();
+
+    const updated = await this.prisma.turfBooking.update({
+      where: { id: booking.id },
+      data: {
+        openMatchStatus: 'OPPONENT_JOINED',
+        opponentName,
+        opponentPhone,
+      },
+    });
+
+    // Also update any corresponding openChallenge so other users don't see it as open
+    await this.prisma.openChallenge.updateMany({
+      where: {
+        OR: [
+          { bookingId: booking.id },
+          {
+            date: booking.date,
+            time: { contains: booking.timeSlot },
+          },
+        ],
+      },
+      data: {
+        isJoined: true,
+        status: 'ACCEPTED',
+        opponentName,
+        opponentContact: opponentPhone,
+      },
+    }).catch(() => null);
+
+    return {
+      success: true,
+      message: `Opponent team set to ${opponentName}! Match is ready to play.`,
+      booking: updated,
+    };
+  }
+
+  async convertBookingToPrivate(bookingId: number) {
+    const booking = await this.prisma.turfBooking.findFirst({
+      where: {
+        OR: [
+          { id: bookingId },
+          { bookingCode: String(bookingId) },
+        ],
+      },
+    });
+
+    if (!booking) {
+      throw new NotFoundException(`Booking #${bookingId} not found`);
+    }
+
+    const updated = await this.prisma.turfBooking.update({
+      where: { id: booking.id },
+      data: {
+        isOpenMatch: false,
+        openMatchStatus: null,
+      },
+    });
+
+    // Cancel the open challenge so it is removed from public open challenge list
+    await this.prisma.openChallenge.updateMany({
+      where: {
+        OR: [
+          { bookingId: booking.id },
+          {
+            date: booking.date,
+            time: { contains: booking.timeSlot },
+          },
+        ],
+      },
+      data: {
+        status: 'CANCELLED',
+      },
+    }).catch(() => null);
+
+    return {
+      success: true,
+      message: 'Booking converted to private match! Both teams can now be managed manually.',
+      booking: updated,
+    };
+  }
+
   async getAllTournaments(sport?: string) {
     const where: any = {
       status: { not: 'CANCELLED' },

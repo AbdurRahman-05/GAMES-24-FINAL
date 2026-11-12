@@ -88,6 +88,21 @@ export class TurfController {
     return this.turfService.completeBooking(bookingId);
   }
 
+  @Post('bookings/:bookingId/set-opponent')
+  async setOpponent(
+    @Param('bookingId', ParseIntPipe) bookingId: number,
+    @Body() body: any,
+  ) {
+    return this.turfService.setManualOpponent(bookingId, body);
+  }
+
+  @Post('bookings/:bookingId/convert-to-private')
+  async convertToPrivate(
+    @Param('bookingId', ParseIntPipe) bookingId: number,
+  ) {
+    return this.turfService.convertBookingToPrivate(bookingId);
+  }
+
   @Post('check-in')
   async checkInGlobal(
     @Body() body: any,
