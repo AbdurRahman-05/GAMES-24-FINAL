@@ -320,6 +320,67 @@ class TournamentModel {
     this.sponsors = const [],
   });
 
+  factory TournamentModel.fromJson(Map<String, dynamic> json) {
+    final statusStr = (json['status'] ?? '').toString();
+    String normalizedStatus = 'Upcoming';
+    if (statusStr.toLowerCase().contains('live') || statusStr.toLowerCase().contains('ongoing')) {
+      normalizedStatus = 'Live';
+    } else if (statusStr.toLowerCase().contains('completed') || statusStr.toLowerCase().contains('finished')) {
+      normalizedStatus = 'Completed';
+    }
+
+    final entryFeeNum = (json['entryFee'] is num)
+        ? (json['entryFee'] as num).toDouble()
+        : (double.tryParse(json['entryFee']?.toString().replaceAll(RegExp(r'[^0-9.]'), '') ?? '') ?? 1500.0);
+
+    final maxTeamsNum = (json['maxTeams'] is num)
+        ? (json['maxTeams'] as num).toInt()
+        : (int.tryParse(json['maxTeams']?.toString() ?? '') ?? 12);
+
+    final regTeamsNum = (json['registeredTeams'] is num)
+        ? (json['registeredTeams'] as num).toInt()
+        : (int.tryParse(json['registeredTeams']?.toString() ?? '') ?? 0);
+
+    final venueName = json['venue']?.toString() ?? (json['venueName']?.toString() ?? 'Champions Arena');
+
+    return TournamentModel(
+      id: json['id']?.toString() ?? 'tourn_${DateTime.now().millisecondsSinceEpoch}',
+      title: json['title']?.toString() ?? 'Championship Tournament',
+      subtitle: json['format']?.toString() ?? 'Open Tournament',
+      bannerUrl: json['imageUrl']?.toString() ?? (json['bannerUrl']?.toString() ?? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'),
+      logoUrl: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
+      description: 'Official tournament at $venueName',
+      rules: '1. Standard tournament rules apply.\n2. Referee decision is final.',
+      organizerName: json['organizerName']?.toString() ?? 'Games24 Community',
+      contactPerson: 'Venue Manager',
+      phone: json['organizerPhone']?.toString() ?? '9876543210',
+      whatsapp: json['organizerPhone']?.toString() ?? '9876543210',
+      email: 'support@games24.live',
+      tournamentType: json['format']?.toString() ?? 'Knockout',
+      sportType: json['sport']?.toString() ?? 'Football',
+      courtAllocation: venueName,
+      regStartDate: json['date']?.toString() ?? '',
+      regEndDate: json['date']?.toString() ?? '',
+      startDate: json['date']?.toString() ?? '',
+      endDate: json['date']?.toString() ?? '',
+      matchStartTime: json['time']?.toString() ?? '09:00 AM',
+      matchEndTime: '06:00 PM',
+      matchDurationMinutes: 40,
+      breakMinutes: 10,
+      teamEntryFee: entryFeeNum,
+      regularPrice: entryFeeNum,
+      maxTeams: maxTeamsNum,
+      minTeams: 4,
+      playersPerTeam: 8,
+      substitutePlayers: 2,
+      championPrize: json['prizePool']?.toString() ?? (json['grandPrize']?.toString() ?? '₹15,000'),
+      runnerUpPrize: 'Trophy + Medals',
+      status: normalizedStatus,
+      registeredTeamsCount: regTeamsNum,
+      totalRevenue: entryFeeNum * regTeamsNum,
+    );
+  }
+
   TournamentModel copyWith({
     String? status,
     String? tournamentType,

@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import '../../../../api_config.dart';
 import '../../../../core/utils/toast_utils.dart';
 import '../../../tournaments/data/models/tournament_model.dart';
 import '../../../tournaments/presentation/widgets/tournament_bracket_view.dart';
@@ -103,7 +106,7 @@ class _AdminTournamentManagerScreenState
     super.dispose();
   }
 
-  void _submitCreateTournament() {
+  void _submitCreateTournament() async {
     if (_titleCtrl.text.trim().isEmpty) {
       ToastUtils.showError(context, "Please enter Tournament Name");
       return;
@@ -111,6 +114,10 @@ class _AdminTournamentManagerScreenState
 
     final todayStr =
         "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
+
+    final venueProfile = ref.read(turfProfileProvider);
+    final verifiedAdminId = venueProfile.turfId;
+    final venueName = venueProfile.venueName.isNotEmpty ? venueProfile.venueName : 'Champions Arena';
 
     final newTournament = TournamentModel(
       id: 'tourn_${DateTime.now().millisecondsSinceEpoch}',
@@ -128,11 +135,11 @@ class _AdminTournamentManagerScreenState
       rules: _rulesCtrl.text.trim().isEmpty
           ? '1. Standard tournament rules apply.'
           : _rulesCtrl.text.trim(),
-      organizerName: _organizerCtrl.text.trim(),
+      organizerName: _organizerCtrl.text.trim().isNotEmpty ? _organizerCtrl.text.trim() : venueProfile.ownerName,
       contactPerson: 'Venue Manager',
-      phone: _phoneCtrl.text.trim(),
-      whatsapp: _phoneCtrl.text.trim(),
-      email: _emailCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim().isNotEmpty ? _phoneCtrl.text.trim() : venueProfile.ownerPhone,
+      whatsapp: _phoneCtrl.text.trim().isNotEmpty ? _phoneCtrl.text.trim() : venueProfile.ownerPhone,
+      email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : venueProfile.ownerEmail,
       tournamentType: _selectedType,
       sportType: _selectedSport,
       courtAllocation: _selectedCourt,
@@ -150,12 +157,46 @@ class _AdminTournamentManagerScreenState
       minTeams: 6,
       playersPerTeam: int.tryParse(_playersPerTeamCtrl.text.trim()) ?? 8,
       substitutePlayers: 2,
-      championPrize: _championPrizeCtrl.text.trim(),
+      championPrize: _championPrizeCtrl.text.trim().isNotEmpty ? _championPrizeCtrl.text.trim() : '₹15,000 Cash',
       runnerUpPrize: _runnerUpPrizeCtrl.text.trim(),
       status: 'Upcoming',
     );
 
-    ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
+    // 1. Immediately persist tournament to backend database
+    try {
+      final payload = {
+        'title': newTournament.title,
+        'sport': newTournament.sportType,
+        'format': newTournament.tournamentType,
+        'date': newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr,
+        'time': newTournament.matchStartTime,
+        'venueName': venueName,
+        'location': venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai',
+        'entryFee': newTournament.teamEntryFee,
+        'prizePool': newTournament.championPrize,
+        'maxTeams': newTournament.maxTeams,
+        'organizerName': newTournament.organizerName,
+        'organizerPhone': newTournament.phone,
+        'bannerUrl': newTournament.bannerUrl,
+        'verifiedAdminId': verifiedAdminId,
+      };
+
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Refresh from backend
+        await ref.read(adminTournamentProvider.notifier).fetchTournamentsFromBackend();
+      } else {
+        ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
+      }
+    } catch (e) {
+      debugPrint("Error creating tournament on backend: $e");
+      ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
+    }
 
     // Auto Lock Court Slots in Admin Slot Provider
     ref.read(adminSlotProvider.notifier).reserveTournamentSlots(
@@ -176,10 +217,12 @@ class _AdminTournamentManagerScreenState
 
     _tabController.animateTo(0);
 
-    ToastUtils.showSuccess(
-      context,
-      'Tournament "${newTournament.title}" created & synced with Player App!',
-    );
+    if (mounted) {
+      ToastUtils.showSuccess(
+        context,
+        'Tournament "${newTournament.title}" created & published across Games24 platform!',
+      );
+    }
   }
 
   void _showLiveScoreDialog(TournamentModel t) {

@@ -42,12 +42,19 @@ class _CreatePrivateTournamentStep2ScreenState
     setState(() => _isPublishing = true);
     HapticFeedback.heavyImpact();
 
-    await Future.delayed(const Duration(milliseconds: 400));
+    final backendPayload = widget.formData.toBackendJson();
+    final success = await TournamentManager().createTournamentInBackend(backendPayload);
 
-    final newTourney = widget.formData.toTournament();
-    TournamentManager().addTournament(newTourney);
+    if (!success) {
+      // Fallback: also ensure local entry exists
+      final newTourney = widget.formData.toTournament();
+      TournamentManager().addTournament(newTourney);
+    }
 
     if (mounted) {
+      final tournamentTitle = widget.formData.title.trim().isNotEmpty
+          ? widget.formData.title.trim()
+          : 'Private Invitational Cup';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -59,7 +66,7 @@ class _CreatePrivateTournamentStep2ScreenState
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Private Tournament "${newTourney.title}" Created! PIN: ${widget.formData.accessCode} 🔒',
+                  'Private Tournament "$tournamentTitle" Created! PIN: ${widget.formData.accessCode} 🔒',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),

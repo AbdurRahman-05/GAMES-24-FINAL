@@ -67,5 +67,29 @@ class TournamentFormData {
       courtsCount: courtsCount,
     );
   }
+
+  Map<String, dynamic> toBackendJson({String? organizerName, String? organizerPhone, int? verifiedAdminId}) {
+    final cleanFee = entryFee.replaceAll(RegExp(r'[^0-9]'), '');
+    final numFee = double.tryParse(cleanFee) ?? 0.0;
+
+    return {
+      'title': title.trim().isNotEmpty ? title.trim() : (isPrivate ? 'Private Invitational Cup' : 'City Championship 2026'),
+      'sport': sport,
+      'format': format,
+      'date': date,
+      'time': time,
+      'venueName': isVenueTBA ? 'Venue To Be Announced (TBA)' : (venue.isNotEmpty ? venue : 'Games24 Arena'),
+      'location': location.isNotEmpty ? location : 'Madurai',
+      'entryFee': numFee,
+      'prizePool': prizePool.trim().isNotEmpty ? prizePool.trim() : '₹10,000 + Trophy',
+      'maxTeams': maxTeams > 0 ? maxTeams : 16,
+      'organizerName': organizerName ?? (isPrivate ? 'Private Organizer' : 'Games24 Community'),
+      'organizerPhone': organizerPhone ?? '9876543210',
+      'bannerUrl': imageUrl,
+      'isPrivate': isPrivate,
+      'accessCode': isPrivate ? accessCode : null,
+      'verifiedAdminId': verifiedAdminId,
+    };
+  }
 }
 

@@ -28,12 +28,19 @@ class _CreatePublicTournamentStep2ScreenState
     setState(() => _isPublishing = true);
     HapticFeedback.heavyImpact();
 
-    await Future.delayed(const Duration(milliseconds: 400));
+    final backendPayload = widget.formData.toBackendJson();
+    final success = await TournamentManager().createTournamentInBackend(backendPayload);
 
-    final newTourney = widget.formData.toTournament();
-    TournamentManager().addTournament(newTourney);
+    if (!success) {
+      // Fallback: also ensure local entry exists
+      final newTourney = widget.formData.toTournament();
+      TournamentManager().addTournament(newTourney);
+    }
 
     if (mounted) {
+      final tournamentTitle = widget.formData.title.trim().isNotEmpty
+          ? widget.formData.title.trim()
+          : 'City Championship 2026';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -45,7 +52,7 @@ class _CreatePublicTournamentStep2ScreenState
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Tournament "${newTourney.title}" Published Successfully! 🏆',
+                  'Tournament "$tournamentTitle" Published Successfully! 🏆',
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
               ),

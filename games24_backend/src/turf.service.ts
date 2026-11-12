@@ -2378,44 +2378,54 @@ export class TurfService {
   }
 
   async createTournament(body: any) {
-    const {
-      title,
-      sport,
-      format,
-      date,
-      time,
-      venueName,
-      location,
-      entryFee,
-      prizePool,
-      maxTeams,
-      organizerName,
-      organizerPhone,
-      verifiedAdminId,
-    } = body || {};
+    const title = (body?.title || '').toString().trim();
+    const venueName = (body?.venueName || body?.venue || 'Games24 Arena').toString().trim();
+    const todayStr = new Date().toISOString().split('T')[0];
+    const date = (body?.date || todayStr).toString().trim();
 
-    if (!title || !date || !venueName) {
-      throw new BadRequestException('Title, date, and venue name are required for creating a tournament');
+    if (!title) {
+      throw new BadRequestException('Tournament title is required for creating a tournament');
+    }
+
+    const sport = (body?.sport || body?.sportType || 'Football').toString().trim();
+    const format = (body?.format || body?.tournamentType || 'Knockout').toString().trim();
+    const time = (body?.time || body?.matchStartTime || '09:00 AM').toString().trim();
+    const location = (body?.location || 'Madurai').toString().trim();
+    const entryFee = Number(body?.entryFee ?? body?.teamEntryFee ?? 1500) || 0;
+    const prizePool = (body?.prizePool || body?.championPrize || '₹15,000').toString().trim();
+    const maxTeams = Number(body?.maxTeams) || 16;
+    const organizerName = (body?.organizerName || 'Games24 Community').toString().trim();
+    const organizerPhone = (body?.organizerPhone || body?.phone || '9876543210').toString().trim();
+    const bannerUrl = (body?.bannerUrl || body?.imageUrl || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80').toString().trim();
+
+    let verifiedAdminId = body?.verifiedAdminId ? Number(body.verifiedAdminId) : null;
+    if (!verifiedAdminId && venueName && !venueName.toLowerCase().includes('tba')) {
+      const match = await this.prisma.verifiedAdmin.findFirst({
+        where: { venueName: { equals: venueName, mode: 'insensitive' } },
+      });
+      if (match) verifiedAdminId = match.id;
     }
 
     const created = await this.prisma.tournament.create({
       data: {
         title,
-        sport: sport || 'Football',
-        format: format || 'Knockout',
+        sport,
+        format,
         date,
-        time: time || '09:00 AM',
+        time,
         venueName,
-        location: location || 'Madurai',
-        entryFee: Number(entryFee) || 1500.0,
-        prizePool: prizePool || '₹15,000',
-        maxTeams: Number(maxTeams) || 12,
+        location,
+        entryFee,
+        prizePool,
+        maxTeams,
         registeredTeams: 0,
         registeredUsers: [],
-        organizerName: organizerName || 'Games24 Community',
-        organizerPhone: organizerPhone || '9876543210',
+        organizerName,
+        organizerPhone,
+        bannerUrl,
         status: 'UPCOMING',
-        verifiedAdminId: verifiedAdminId ? Number(verifiedAdminId) : null,
+        isHold: false,
+        verifiedAdminId,
       },
     });
 

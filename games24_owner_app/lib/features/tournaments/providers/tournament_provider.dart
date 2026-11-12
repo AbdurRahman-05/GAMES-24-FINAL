@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import '../../../../api_config.dart';
 import '../data/models/tournament_model.dart';
 
 import '../services/realtime_score_sync_service.dart';
@@ -42,9 +45,28 @@ class AdminTournamentState {
 class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
   @override
   AdminTournamentState build() {
+    Future.microtask(() => fetchTournamentsFromBackend());
     return AdminTournamentState(
       tournaments: const [],
     );
+  }
+
+  Future<void> fetchTournamentsFromBackend() async {
+    try {
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments'));
+      if (res.statusCode == 200) {
+        final dynamic decoded = jsonDecode(res.body);
+        if (decoded is List && decoded.isNotEmpty) {
+          final items = decoded
+              .map((item) => TournamentModel.fromJson(Map<String, dynamic>.from(item)))
+              .toList();
+          state = state.copyWith(tournaments: items);
+          return;
+        }
+      }
+    } catch (e) {
+      // Silently fall back to cached/default
+    }
   }
 
   void filterStatus(String status) {
