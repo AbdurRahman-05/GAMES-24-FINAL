@@ -20,8 +20,14 @@ export class TurfController {
   }
 
   @Get('tournaments')
-  async getAllTournaments(@Query('sport') sport?: string) {
-    return this.turfService.getAllTournaments(sport);
+  async getAllTournaments(
+    @Query('sport') sport?: string,
+    @Query('turfId') turfId?: string,
+    @Query('phone') phone?: string,
+    @Query('venue') venue?: string,
+    @Query('ownerOnly') ownerOnly?: string,
+  ) {
+    return this.turfService.getAllTournaments(sport, turfId, phone, venue, ownerOnly);
   }
 
   @Post('tournaments')

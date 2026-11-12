@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../../../../api_config.dart';
+import '../../admin/providers/admin_providers.dart';
 import '../data/models/tournament_model.dart';
 
 import '../services/realtime_score_sync_service.dart';
@@ -51,14 +52,49 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
     );
   }
 
-  Future<void> fetchTournamentsFromBackend() async {
+  Future<void> fetchTournamentsFromBackend({
+    int? turfId,
+    String? phone,
+    String? venue,
+  }) async {
     try {
-      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments'));
+      final profile = ref.read(turfProfileProvider);
+      final targetTurfId = turfId ?? (profile.turfId > 0 ? profile.turfId : null);
+      final targetPhone = (phone ?? profile.ownerPhone).trim();
+      final targetVenue = (venue ?? profile.venueName).trim();
+
+      final List<String> queryParts = ['ownerOnly=true'];
+      if (targetTurfId != null) queryParts.add('turfId=$targetTurfId');
+      if (targetPhone.isNotEmpty) queryParts.add('phone=${Uri.encodeComponent(targetPhone)}');
+      if (targetVenue.isNotEmpty) queryParts.add('venue=${Uri.encodeComponent(targetVenue)}');
+
+      final url = '${ApiConfig.baseUrl}/turfs/tournaments?${queryParts.join('&')}';
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 4));
       if (res.statusCode == 200) {
         final dynamic decoded = jsonDecode(res.body);
-        if (decoded is List && decoded.isNotEmpty) {
+        if (decoded is List) {
           final items = decoded
               .map((item) => TournamentModel.fromJson(Map<String, dynamic>.from(item)))
+              .where((t) {
+                // Owner-only filter: only tournaments created by / for this turf owner
+                if (targetTurfId != null && t.verifiedAdminId != null) {
+                  if (t.verifiedAdminId == targetTurfId) return true;
+                }
+                final cleanTargetPhone = targetPhone.replaceAll(RegExp(r'[^0-9]'), '');
+                final cleanTournPhone = t.phone.replaceAll(RegExp(r'[^0-9]'), '');
+                if (cleanTargetPhone.isNotEmpty && cleanTournPhone.isNotEmpty) {
+                  final targetEnd = cleanTargetPhone.length >= 10 ? cleanTargetPhone.substring(cleanTargetPhone.length - 10) : cleanTargetPhone;
+                  final tournEnd = cleanTournPhone.length >= 10 ? cleanTournPhone.substring(cleanTournPhone.length - 10) : cleanTournPhone;
+                  if (targetEnd == tournEnd) return true;
+                }
+                if (targetVenue.isNotEmpty) {
+                  if (t.courtAllocation.toLowerCase().contains(targetVenue.toLowerCase()) ||
+                      targetVenue.toLowerCase().contains(t.courtAllocation.toLowerCase())) {
+                    return true;
+                  }
+                }
+                return targetTurfId == null && targetPhone.isEmpty && targetVenue.isEmpty;
+              })
               .toList();
           state = state.copyWith(tournaments: items);
           return;

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -83,6 +84,14 @@ class _AdminTournamentManagerScreenState
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profile = ref.read(turfProfileProvider);
+      ref.read(adminTournamentProvider.notifier).fetchTournamentsFromBackend(
+            turfId: profile.turfId > 0 ? profile.turfId : null,
+            phone: profile.ownerPhone,
+            venue: profile.venueName,
+          );
     });
   }
 
@@ -188,8 +197,12 @@ class _AdminTournamentManagerScreenState
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Refresh from backend
-        await ref.read(adminTournamentProvider.notifier).fetchTournamentsFromBackend();
+        // Refresh from backend for this owner
+        await ref.read(adminTournamentProvider.notifier).fetchTournamentsFromBackend(
+              turfId: verifiedAdminId,
+              phone: venueProfile.ownerPhone,
+              venue: venueName,
+            );
       } else {
         ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
       }
@@ -223,6 +236,339 @@ class _AdminTournamentManagerScreenState
         'Tournament "${newTournament.title}" created & published across Games24 platform!',
       );
     }
+  }
+
+  void _showRegisteredTeamsDialog(TournamentModel t) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final teams = t.registeredTeams;
+        final totalFees = teams.length * t.teamEntryFee;
+
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: Column(
+            children: [
+              // Modal Handle & Header
+              Padding(
+                padding: const EdgeInsets.only(top: 12, bottom: 8),
+                child: Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.groups_rounded, color: Color(0xFF15803D), size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.title,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Registered Squads: ${teams.length} / ${t.maxTeams} Teams • Fee: ₹${t.teamEntryFee.toInt()}',
+                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Summary Stats Strip
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildStatCol('Slots Filled', '${teams.length}/${t.maxTeams}', const Color(0xFF154D36)),
+                    Container(width: 1, height: 26, color: const Color(0xFFCBD5E1)),
+                    _buildStatCol('Collected Fees', '₹${totalFees.toInt()}', const Color(0xFF15803D)),
+                    Container(width: 1, height: 26, color: const Color(0xFFCBD5E1)),
+                    _buildStatCol('Slots Left', '${(t.maxTeams - teams.length).clamp(0, t.maxTeams)} Open', const Color(0xFFD97706)),
+                  ],
+                ),
+              ),
+              const Divider(color: Color(0xFFF1F5F9), height: 16),
+
+              // Teams List
+              Expanded(
+                child: teams.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFF1F5F9),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.groups_outlined, size: 48, color: Color(0xFF94A3B8)),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'No Squads Registered Yet',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'When players register for this tournament from the Games24 app, their squad name, captain phone, roster count, and payment info will appear here immediately.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B), height: 1.4),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        itemCount: teams.length,
+                        itemBuilder: (context, idx) {
+                          final team = teams[idx];
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.03),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF154D36),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '#${idx + 1}',
+                                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        team.teamName,
+                                        style: const TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFDCFCE7),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: const Color(0xFF86EFAC)),
+                                      ),
+                                      child: Text(
+                                        team.paymentStatus.isNotEmpty ? team.paymentStatus : 'Paid',
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF15803D),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Details Grid
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.person_rounded, size: 14, color: Color(0xFF154D36)),
+                                          const SizedBox(width: 6),
+                                          const Text('Captain: ', style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                                          Expanded(
+                                            child: Text(
+                                              team.captainName.isNotEmpty ? team.captainName : 'Captain',
+                                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFE2E8F0),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              '👥 ${team.playerCount} Players',
+                                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      if (team.captainPhone.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.phone_rounded, size: 14, color: Color(0xFF154D36)),
+                                            const SizedBox(width: 6),
+                                            const Text('Phone: ', style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                                            Expanded(
+                                              child: Text(
+                                                team.captainPhone,
+                                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(ClipboardData(text: team.captainPhone));
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Phone ${team.captainPhone} copied!'),
+                                                    backgroundColor: const Color(0xFF154D36),
+                                                    duration: const Duration(seconds: 2),
+                                                  ),
+                                                );
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                                child: Row(
+                                                  children: [
+                                                    Icon(Icons.copy_rounded, size: 13, color: Color(0xFF154D36)),
+                                                    SizedBox(width: 3),
+                                                    Text('Copy', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                      if (team.captainEmail.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.email_outlined, size: 14, color: Color(0xFF154D36)),
+                                            const SizedBox(width: 6),
+                                            const Text('Email: ', style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                                            Expanded(
+                                              child: Text(
+                                                team.captainEmail,
+                                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: Color(0xFF0F172A)),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                      if (team.registrationDate.isNotEmpty) ...[
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF64748B)),
+                                            const SizedBox(width: 6),
+                                            const Text('Registered: ', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                            Expanded(
+                                              child: Text(
+                                                team.registrationDate.contains('T') ? team.registrationDate.split('T')[0] : team.registrationDate,
+                                                style: const TextStyle(fontSize: 11, color: Color(0xFF475569)),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStatCol(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: color)),
+        const SizedBox(height: 2),
+        Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+      ],
+    );
   }
 
   void _showLiveScoreDialog(TournamentModel t) {
@@ -1292,33 +1638,59 @@ class _AdminTournamentManagerScreenState
                 ),
                 const SizedBox(height: 10),
 
-                // Team Registration Progress
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Registrations: ${t.registeredTeamsCount} / ${t.maxTeams} Teams',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
-                    ),
-                    Text(
-                      '${(progress * 100).toInt()}% Filled',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 5),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 6,
-                    backgroundColor: const Color(0xFFF1F5F9),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFF154D36),
+                // Team Registration Progress (Interactive to inspect registered teams)
+                InkWell(
+                  onTap: () => _showRegisteredTeamsDialog(t),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Icons.groups_rounded, size: 14, color: Color(0xFF154D36)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Registrations: ${t.registeredTeamsCount} / ${t.maxTeams} Teams',
+                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF154D36)),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFDCFCE7),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    'View Squads (${t.registeredTeams.length})',
+                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                  ),
+                                  const Icon(Icons.chevron_right_rounded, size: 12, color: Color(0xFF15803D)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 6,
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFF154D36),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -1328,6 +1700,7 @@ class _AdminTournamentManagerScreenState
                 Row(
                   children: [
                     Expanded(
+                      flex: 4,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFF154D36),
@@ -1336,16 +1709,40 @@ class _AdminTournamentManagerScreenState
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
-                        icon: const Icon(Icons.live_tv_rounded, size: 14),
+                        icon: const Icon(Icons.live_tv_rounded, size: 13),
                         label: Text(
-                          isLive ? 'Live Controller' : 'Manage Live',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          isLive ? 'Live Ctrl' : 'Manage Live',
+                          style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         onPressed: () => _showLiveScoreDialog(t),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Expanded(
+                      flex: 4,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F172A),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.groups_rounded, size: 13, color: Color(0xFF4ADE80)),
+                        label: Text(
+                          'Teams (${t.registeredTeams.length})',
+                          style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onPressed: () => _showRegisteredTeamsDialog(t),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      flex: 3,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF154D36),
@@ -1353,14 +1750,14 @@ class _AdminTournamentManagerScreenState
                           side: const BorderSide(color: Color(0xFFCBD5E1)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        icon: const Icon(Icons.account_tree_rounded, size: 14),
-                        label: const Text('Fixtures', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.account_tree_rounded, size: 13),
+                        label: const Text('Fixtures', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
                         onPressed: () {
                           _tabController.animateTo(2);
                         },
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 4),
                     IconButton(
                       visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),

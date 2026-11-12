@@ -2327,7 +2327,13 @@ export class TurfService {
     };
   }
 
-  async getAllTournaments(sport?: string) {
+  async getAllTournaments(
+    sport?: string,
+    turfId?: string,
+    phone?: string,
+    venue?: string,
+    ownerOnly?: string,
+  ) {
     const where: any = {
       status: { notIn: ['CANCELLED', 'ON_HOLD', 'DELETED'] },
       isHold: false,
@@ -2335,6 +2341,30 @@ export class TurfService {
     if (sport && sport !== 'All Sports') {
       where.sport = { contains: sport, mode: 'insensitive' };
     }
+
+    const isOwnerFilter = ownerOnly === 'true' || Boolean(turfId || phone || venue);
+    if (isOwnerFilter) {
+      const ownerConditions: any[] = [];
+      if (turfId && !isNaN(Number(turfId)) && Number(turfId) > 0) {
+        ownerConditions.push({ verifiedAdminId: Number(turfId) });
+      }
+      if (phone && phone.trim()) {
+        const cleanPhone = phone.trim().replace(/[^0-9]/g, '');
+        const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+        if (last10.length > 0) {
+          ownerConditions.push({ organizerPhone: { contains: last10 } });
+        }
+      }
+      if (venue && venue.trim()) {
+        ownerConditions.push({ venueName: { equals: venue.trim(), mode: 'insensitive' } });
+      }
+      if (ownerConditions.length > 0) {
+        where.OR = ownerConditions;
+      } else if (ownerOnly === 'true') {
+        return [];
+      }
+    }
+
     const tournaments = await this.prisma.tournament.findMany({
       where,
       orderBy: { createdAt: 'desc' },
@@ -2361,6 +2391,7 @@ export class TurfService {
       date: t.date,
       time: t.time || '09:00 AM',
       venue: t.venueName,
+      venueName: t.venueName,
       location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
       entryFee: `₹${t.entryFee.toFixed(0)}`,
       prizePool: t.prizePool || '₹15,000',
@@ -2374,6 +2405,7 @@ export class TurfService {
       registeredUsers: Array.isArray(t.registeredUsers) ? t.registeredUsers : [],
       organizerName: t.organizerName,
       organizerPhone: t.organizerPhone,
+      verifiedAdminId: t.verifiedAdminId,
     }));
   }
 

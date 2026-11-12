@@ -262,6 +262,7 @@ class TournamentModel {
 
   final String championTeam;
   final String championLogo;
+  final int? verifiedAdminId;
 
   final List<TournamentFixture> fixtures;
   final List<LeagueStandingRow> standings;
@@ -314,6 +315,7 @@ class TournamentModel {
     this.liveCommentary = '',
     this.championTeam = '',
     this.championLogo = '',
+    this.verifiedAdminId,
     this.fixtures = const [],
     this.standings = const [],
     this.registeredTeams = const [],
@@ -342,6 +344,37 @@ class TournamentModel {
         : (int.tryParse(json['registeredTeams']?.toString() ?? '') ?? 0);
 
     final venueName = json['venue']?.toString() ?? (json['venueName']?.toString() ?? 'Champions Arena');
+
+    final adminIdNum = (json['verifiedAdminId'] is num)
+        ? (json['verifiedAdminId'] as num).toInt()
+        : int.tryParse(json['verifiedAdminId']?.toString() ?? '');
+
+    // Parse registeredUsers into List<TeamRegistrationModel>
+    List<TeamRegistrationModel> parsedTeams = [];
+    if (json['registeredUsers'] is List) {
+      final list = json['registeredUsers'] as List;
+      for (int i = 0; i < list.length; i++) {
+        final u = list[i];
+        if (u is Map) {
+          final map = Map<String, dynamic>.from(u);
+          parsedTeams.add(
+            TeamRegistrationModel(
+              id: map['id']?.toString() ?? 'reg_${i + 1}',
+              teamName: (map['teamName'] ?? 'Team ${i + 1}').toString(),
+              captainName: (map['captainName'] ?? 'Captain').toString(),
+              captainPhone: (map['contact'] ?? map['phone'] ?? map['captainPhone'] ?? '').toString(),
+              captainEmail: (map['email'] ?? map['captainEmail'] ?? '').toString(),
+              playerCount: int.tryParse(map['playersCount']?.toString() ?? '') ?? 8,
+              paymentStatus: (map['paymentStatus'] ?? 'Paid').toString(),
+              registrationDate: (map['registeredAt'] ?? map['date'] ?? 'Recently').toString(),
+              logoUrl: (map['logoUrl'] ?? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=100&q=80').toString(),
+            ),
+          );
+        }
+      }
+    }
+
+    final actualTeamsCount = parsedTeams.isNotEmpty ? parsedTeams.length : regTeamsNum;
 
     return TournamentModel(
       id: json['id']?.toString() ?? 'tourn_${DateTime.now().millisecondsSinceEpoch}',
@@ -376,8 +409,10 @@ class TournamentModel {
       championPrize: json['prizePool']?.toString() ?? (json['grandPrize']?.toString() ?? '₹15,000'),
       runnerUpPrize: 'Trophy + Medals',
       status: normalizedStatus,
-      registeredTeamsCount: regTeamsNum,
-      totalRevenue: entryFeeNum * regTeamsNum,
+      registeredTeamsCount: actualTeamsCount,
+      totalRevenue: entryFeeNum * actualTeamsCount,
+      verifiedAdminId: adminIdNum,
+      registeredTeams: parsedTeams,
     );
   }
 
@@ -390,6 +425,7 @@ class TournamentModel {
     String? liveCommentary,
     String? championTeam,
     String? championLogo,
+    int? verifiedAdminId,
     List<TournamentFixture>? fixtures,
     List<LeagueStandingRow>? standings,
     List<TeamRegistrationModel>? registeredTeams,
@@ -440,6 +476,7 @@ class TournamentModel {
       liveCommentary: liveCommentary ?? this.liveCommentary,
       championTeam: championTeam ?? this.championTeam,
       championLogo: championLogo ?? this.championLogo,
+      verifiedAdminId: verifiedAdminId ?? this.verifiedAdminId,
       fixtures: fixtures ?? this.fixtures,
       standings: standings ?? this.standings,
       registeredTeams: registeredTeams ?? this.registeredTeams,
