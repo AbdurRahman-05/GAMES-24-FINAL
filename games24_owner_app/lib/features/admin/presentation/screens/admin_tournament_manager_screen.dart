@@ -1055,6 +1055,7 @@ class _AdminTournamentManagerScreenState
       backgroundColor: Colors.white,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
+      titleSpacing: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Color(0xFF0F172A)),
         onPressed: () {
@@ -1068,17 +1069,21 @@ class _AdminTournamentManagerScreenState
       ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
             'Championship & Leagues',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 15.5,
               fontWeight: FontWeight.w900,
               color: Color(0xFF0F172A),
               letterSpacing: -0.3,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 width: 6,
@@ -1089,12 +1094,16 @@ class _AdminTournamentManagerScreenState
                 ),
               ),
               const SizedBox(width: 5),
-              const Text(
-                'Live Fixture & Bracket Engine',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF64748B),
+              const Flexible(
+                child: Text(
+                  'Live Fixture & Bracket Engine',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF64748B),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -1110,10 +1119,11 @@ class _AdminTournamentManagerScreenState
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            icon: const Icon(Icons.add_rounded, size: 15),
+            icon: const Icon(Icons.add_rounded, size: 14),
             label: const Text(
               'New Tourney',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
@@ -1612,24 +1622,32 @@ class _AdminTournamentManagerScreenState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFFDE68A)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.emoji_events_rounded, color: Color(0xFFD97706), size: 13),
-                          const SizedBox(width: 4),
-                          Text(
-                            t.championPrize,
-                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF92400E)),
-                          ),
-                        ],
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF3C7),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.emoji_events_rounded, color: Color(0xFFD97706), size: 13),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                t.championPrize,
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF92400E)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       '₹${t.teamEntryFee.toInt()} / Team',
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
@@ -1650,16 +1668,24 @@ class _AdminTournamentManagerScreenState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.groups_rounded, size: 14, color: Color(0xFF154D36)),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Registrations: ${t.registeredTeamsCount} / ${t.maxTeams} Teams',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF154D36)),
-                                ),
-                              ],
+                            Expanded(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.groups_rounded, size: 14, color: Color(0xFF154D36)),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      'Registrations: ${t.registeredTeamsCount}/${t.maxTeams} Teams',
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF154D36)),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
@@ -1667,6 +1693,7 @@ class _AdminTournamentManagerScreenState
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     'View Squads (${t.registeredTeams.length})',
@@ -1696,76 +1723,91 @@ class _AdminTournamentManagerScreenState
                 ),
                 const SizedBox(height: 12),
 
-                // Quick Action Bar
+                // Quick Action Bar - Row 1: Live Scores & Team Squads
                 Row(
                   children: [
                     Expanded(
-                      flex: 4,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFF154D36),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
-                        icon: const Icon(Icons.live_tv_rounded, size: 13),
+                        icon: const Icon(Icons.live_tv_rounded, size: 14),
                         label: Text(
-                          isLive ? 'Live Ctrl' : 'Manage Live',
-                          style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                          isLive ? 'Live Controller' : 'Manage Live',
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         onPressed: () => _showLiveScoreDialog(t),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Expanded(
-                      flex: 4,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0F172A),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
-                        icon: const Icon(Icons.groups_rounded, size: 13, color: Color(0xFF4ADE80)),
+                        icon: const Icon(Icons.groups_rounded, size: 14, color: Color(0xFF4ADE80)),
                         label: Text(
                           'Teams (${t.registeredTeams.length})',
-                          style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         onPressed: () => _showRegisteredTeamsDialog(t),
                       ),
                     ),
-                    const SizedBox(width: 6),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Quick Action Bar - Row 2: Match Fixtures Engine & Delete Action
+                Row(
+                  children: [
                     Expanded(
-                      flex: 3,
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF154D36),
-                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                           side: const BorderSide(color: Color(0xFFCBD5E1)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        icon: const Icon(Icons.account_tree_rounded, size: 13),
-                        label: const Text('Fixtures', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.account_tree_rounded, size: 14),
+                        label: const Text(
+                          'Match Fixtures & Brackets',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         onPressed: () {
                           _tabController.animateTo(2);
                         },
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
-                      tooltip: 'Delete Tournament',
-                      onPressed: () {
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () {
                         ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
                         ToastUtils.showInfo(context, 'Tournament "${t.title}" deleted');
                       },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.all(7.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
+                      ),
                     ),
                   ],
                 ),
