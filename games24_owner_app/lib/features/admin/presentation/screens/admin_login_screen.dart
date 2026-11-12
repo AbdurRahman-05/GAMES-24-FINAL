@@ -64,14 +64,14 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     }
 
     if (otp.isEmpty) {
-      setState(() => _errorMessage = 'Please enter the 4-digit OTP (Mock: 1234).');
+      setState(() => _errorMessage = 'Please enter the 4-digit OTP.');
       ToastUtils.showError(context, 'Please enter OTP.');
       return;
     }
 
     if (otp != '1234') {
-      setState(() => _errorMessage = 'Invalid OTP! Please enter correct mock OTP: 1234.');
-      ToastUtils.showError(context, 'Invalid OTP! Enter 1234.');
+      setState(() => _errorMessage = 'Invalid OTP! Please check your OTP and try again.');
+      ToastUtils.showError(context, 'Invalid OTP! Try again.');
       return;
     }
 
@@ -161,33 +161,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   fit: BoxFit.contain,
                 ),
               ),
-              const SizedBox(height: 14),
-
-              // Partner Hub Pill Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF166534).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.shield_rounded, size: 14, color: Color(0xFF166534)),
-                    SizedBox(width: 6),
-                    Text(
-                      'TURF OWNER & PARTNER HUB',
-                      style: TextStyle(
-                        color: Color(0xFF166534),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
 
               // Header Titles
               const Text(
@@ -353,65 +327,12 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           letterSpacing: 2.0,
                           color: Color(0xFF111827),
                         ),
-                        decoration: InputDecoration(
-                          prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF166534), size: 20),
-                          suffixIcon: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF166534).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text(
-                              'Mock: 1234',
-                              style: TextStyle(
-                                color: Color(0xFF166534),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.lock_outline_rounded, color: Color(0xFF166534), size: 20),
                           hintText: 'Enter 4-digit OTP',
-                          hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 13.5, letterSpacing: 0),
+                          hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13.5, letterSpacing: 0),
                           border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Quick-Fill Helper Button
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _phoneController.text = '7010396732';
-                          _otpController.text = '1234';
-                          _errorMessage = null;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFBBF7D0)),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.touch_app_rounded, size: 16, color: Color(0xFF166534)),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Tap to autofill verified partner (7010396732)',
-                                style: TextStyle(
-                                  color: Color(0xFF166534),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
+                          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                         ),
                       ),
                     ),
