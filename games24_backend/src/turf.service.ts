@@ -676,7 +676,7 @@ export class TurfService {
     }
 
     if (turf.isBookingHold || turf.status !== 'VERIFIED') {
-      throw new BadRequestException('This turf is currently inactive due to expired platform subscription and cannot accept bookings.');
+      throw new BadRequestException(`Bookings for "${turf.venueName}" are currently on hold by platform administrator and cannot accept new reservations.`);
     }
 
     const verifiedAdminId = turf.id;
@@ -2329,7 +2329,7 @@ export class TurfService {
 
   async getAllTournaments(sport?: string) {
     const where: any = {
-      status: { not: 'CANCELLED' },
+      status: { notIn: ['CANCELLED', 'ON_HOLD', 'DELETED'] },
       isHold: false,
     };
     if (sport && sport !== 'All Sports') {
@@ -2340,7 +2340,19 @@ export class TurfService {
       orderBy: { createdAt: 'desc' },
       include: { verifiedAdmin: true },
     });
-    return tournaments.map((t) => ({
+
+    // Exclude tournaments if tournament itself is held, or if the host turf is held or inactive
+    const activeTournaments = tournaments.filter((t) => {
+      if (t.isHold || t.status === 'ON_HOLD' || t.status === 'CANCELLED') return false;
+      if (t.verifiedAdmin) {
+        if (t.verifiedAdmin.isBookingHold || t.verifiedAdmin.status !== 'VERIFIED') {
+          return false;
+        }
+      }
+      return true;
+    });
+
+    return activeTournaments.map((t) => ({
       id: t.id.toString(),
       title: t.title,
       sport: t.sport,
@@ -2417,9 +2429,16 @@ export class TurfService {
   async registerTournament(id: number, body: any) {
     const tournament = await this.prisma.tournament.findUnique({
       where: { id },
+      include: { verifiedAdmin: true },
     });
     if (!tournament) {
       throw new NotFoundException('Tournament not found');
+    }
+    if (tournament.isHold || tournament.status === 'ON_HOLD' || tournament.status === 'CANCELLED') {
+      throw new BadRequestException('This tournament is currently placed on hold by platform administrator and cannot accept registrations.');
+    }
+    if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status !== 'VERIFIED')) {
+      throw new BadRequestException('The venue for this tournament is currently on hold by platform administrator.');
     }
     if (tournament.registeredTeams >= tournament.maxTeams) {
       throw new BadRequestException('Tournament registration is full!');

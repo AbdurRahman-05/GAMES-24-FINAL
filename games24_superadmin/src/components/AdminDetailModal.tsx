@@ -17,14 +17,17 @@ import {
   Calendar,
   CheckCircle2,
   Tag,
+  Trash2,
 } from 'lucide-react';
 
 interface Props {
   admin: VerifiedAdmin | null;
   onClose: () => void;
+  onToggleHold?: (admin: VerifiedAdmin) => void;
+  onDelete?: (admin: VerifiedAdmin) => void;
 }
 
-export default function AdminDetailModal({ admin, onClose }: Props) {
+export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelete }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   if (!admin) return null;
@@ -194,7 +197,33 @@ export default function AdminDetailModal({ admin, onClose }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1E2638] bg-[#111727]/90 rounded-b-2xl flex items-center justify-end">
+        <div className="px-6 py-4 border-t border-[#1E2638] bg-[#111727]/90 rounded-b-2xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {onToggleHold && (
+              <button
+                type="button"
+                onClick={() => onToggleHold(admin)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  admin.isBookingHold || admin.status === 'HOLD'
+                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                    : 'bg-[#182033] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                }`}
+              >
+                {admin.isBookingHold || admin.status === 'HOLD' ? 'Resume Account & Bookings' : 'Place Account On Hold'}
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(admin)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600/20 hover:bg-rose-600 hover:text-white text-rose-300 border border-rose-500/30 transition-all flex items-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Account</span>
+              </button>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={onClose}

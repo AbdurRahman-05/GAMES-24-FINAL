@@ -18,6 +18,8 @@ import {
   toggleBookingHold,
   cancelBookingByAdmin,
   toggleTournamentHold,
+  deleteVerifiedAdmin,
+  deleteTournament,
   BACKEND_URL,
 } from '@/lib/api';
 import {
@@ -26,6 +28,8 @@ import {
   XCircle,
   Clock,
   AlertCircle,
+  AlertTriangle,
+  Trash2,
   Building,
   Calendar,
   Users,
@@ -96,6 +100,10 @@ export default function SuperAdminDashboard() {
   const [newTournDate, setNewTournDate] = useState('');
   const [newTournEntryFee, setNewTournEntryFee] = useState('1500');
   const [newTournPrize, setNewTournPrize] = useState('₹15,000 Cash');
+
+  // Delete Confirmation Dialogs
+  const [deleteConfirmTourn, setDeleteConfirmTourn] = useState<TournamentItem | null>(null);
+  const [deleteConfirmTurf, setDeleteConfirmTurf] = useState<{ turfId: number; venueName: string; ownerName?: string } | null>(null);
 
   // Toast state
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -239,6 +247,37 @@ export default function SuperAdminDashboard() {
       loadOverview();
     } catch (err: any) {
       showToast(err.message || 'Failed to update tournament hold', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // ACTION: Delete Tournament Permanently
+  const handleDeleteTournament = async (tournId: number) => {
+    setActionLoadingId(`del_tourn_${tournId}`);
+    try {
+      const res = await deleteTournament(tournId);
+      showToast(res.message);
+      setDeleteConfirmTourn(null);
+      loadTournaments();
+      loadOverview();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete tournament', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // ACTION: Delete Turf Owner Account Permanently
+  const handleDeleteTurf = async (turfId: number) => {
+    setActionLoadingId(`del_turf_${turfId}`);
+    try {
+      const res = await deleteVerifiedAdmin(turfId);
+      showToast(res.message);
+      setDeleteConfirmTurf(null);
+      loadOverview();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete turf owner account', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -1152,18 +1191,29 @@ export default function SuperAdminDashboard() {
 
                     <div className="mt-5 pt-3 border-t border-[#1C2538] flex items-center justify-between gap-2">
                       <span className="text-[11px] font-mono text-slate-400">📅 {tourn.date}</span>
-                      <button
-                        type="button"
-                        disabled={actionLoadingId === `tourn_${tourn.id}`}
-                        onClick={() => handleToggleTournHold(tourn.id, tourn.isHold)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
-                          tourn.isHold
-                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                            : 'bg-[#182033] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
-                        }`}
-                      >
-                        {tourn.isHold ? 'Resume Tournament' : 'Hold Registrations'}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          disabled={actionLoadingId === `tourn_${tourn.id}`}
+                          onClick={() => handleToggleTournHold(tourn.id, tourn.isHold)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
+                            tourn.isHold
+                              ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              : 'bg-[#182033] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
+                          }`}
+                        >
+                          {tourn.isHold ? 'Resume' : 'Hold'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={actionLoadingId === `del_tourn_${tourn.id}`}
+                          onClick={() => setDeleteConfirmTourn(tourn)}
+                          className="p-1 rounded-lg text-rose-400 hover:text-white hover:bg-rose-600/30 border border-rose-500/30 transition-all disabled:opacity-50"
+                          title="Delete Tournament Permanently"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1245,18 +1295,29 @@ export default function SuperAdminDashboard() {
                             )}
                           </td>
                           <td className="py-3.5 px-4">
-                            <button
-                              type="button"
-                              disabled={actionLoadingId === `turf_${t.turfId}`}
-                              onClick={() => handleToggleTurfHold(t.turfId, t.isBookingHold)}
-                              className={`px-3 py-1 rounded-md text-xs font-semibold transition-all disabled:opacity-50 ${
-                                t.isBookingHold
-                                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                                  : 'bg-[#182033] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
-                              }`}
-                            >
-                              {t.isBookingHold ? 'Resume' : 'Hold'}
-                            </button>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                disabled={actionLoadingId === `turf_${t.turfId}`}
+                                onClick={() => handleToggleTurfHold(t.turfId, t.isBookingHold)}
+                                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all disabled:opacity-50 ${
+                                  t.isBookingHold
+                                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                                    : 'bg-[#182033] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
+                                }`}
+                              >
+                                {t.isBookingHold ? 'Resume' : 'Hold'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={actionLoadingId === `del_turf_${t.turfId}`}
+                                onClick={() => setDeleteConfirmTurf({ turfId: t.turfId, venueName: t.venueName, ownerName: t.ownerName })}
+                                className="p-1 rounded-md text-rose-400 hover:text-white hover:bg-rose-600/30 border border-rose-500/30 transition-all disabled:opacity-50"
+                                title="Delete Venue & Turf Owner"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -1434,6 +1495,108 @@ export default function SuperAdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Tournament Confirmation Modal */}
+      {deleteConfirmTourn && (
+        <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D121F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Permanently Delete Tournament?</h3>
+                <p className="text-xs text-slate-400">Irreversible super admin removal</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#161014] border border-rose-500/20 text-xs text-slate-300 space-y-2">
+              <p>
+                You are about to delete tournament <strong className="text-white">&quot;{deleteConfirmTourn.title}&quot;</strong> at{' '}
+                <strong className="text-white">{deleteConfirmTourn.venueName}</strong>.
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-400 font-mono text-[11px]">
+                <li>Tournament will be removed from player discovery and tournament schedules.</li>
+                <li>Registered squad slots and team applications will be terminated.</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTourn(null)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2F] border border-[#28354F]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={actionLoadingId === `del_tourn_${deleteConfirmTourn.id}`}
+                onClick={() => handleDeleteTournament(deleteConfirmTourn.id)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50"
+              >
+                {actionLoadingId === `del_tourn_${deleteConfirmTourn.id}` ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>Confirm Deletion</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Turf Owner Confirmation Modal */}
+      {deleteConfirmTurf && (
+        <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D121F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Permanently Delete Turf Owner?</h3>
+                <p className="text-xs text-slate-400">Irreversible super admin removal</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#161014] border border-rose-500/20 text-xs text-slate-300 space-y-2">
+              <p>
+                You are about to delete <strong className="text-white">{deleteConfirmTurf.venueName}</strong>
+                {deleteConfirmTurf.ownerName ? ` managed by ${deleteConfirmTurf.ownerName}` : ''}.
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-400 font-mono text-[11px]">
+                <li>Venue will be immediately removed from player app turf listings.</li>
+                <li>All bookings, slot offers, and open challenges will be removed.</li>
+                <li>Owner portal account will be terminated.</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTurf(null)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2F] border border-[#28354F]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={actionLoadingId === `del_turf_${deleteConfirmTurf.turfId}`}
+                onClick={() => handleDeleteTurf(deleteConfirmTurf.turfId)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50"
+              >
+                {actionLoadingId === `del_turf_${deleteConfirmTurf.turfId}` ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>Confirm Permanent Deletion</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

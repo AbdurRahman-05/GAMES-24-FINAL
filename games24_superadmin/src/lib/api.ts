@@ -395,3 +395,43 @@ export async function toggleTournamentHold(
   if (!res.ok) throw new Error('Failed to update tournament hold status');
   return res.json();
 }
+
+export async function deleteVerifiedAdmin(
+  turfId: number
+): Promise<{ success: boolean; message: string }> {
+  let res = await fetch(`${BACKEND_URL}/super-admin/verified-admins/${turfId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    res = await fetch(`${BACKEND_URL}/super-admin/verified-admins/${turfId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to delete turf owner account');
+  }
+  return res.json();
+}
+
+export async function deleteTournament(
+  tournamentId: number
+): Promise<{ success: boolean; message: string }> {
+  let res = await fetch(`${BACKEND_URL}/super-admin/tournaments/${tournamentId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    res = await fetch(`${BACKEND_URL}/super-admin/tournaments/${tournamentId}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to delete tournament');
+  }
+  return res.json();
+}

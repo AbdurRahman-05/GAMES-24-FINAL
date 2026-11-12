@@ -541,7 +541,7 @@ export class SuperAdminService {
     };
   }
 
-  // HOLD / RESUME TURF BOOKINGS
+  // HOLD / RESUME TURF OWNER ACCOUNT & BOOKINGS
   async toggleTurfBookingHold(turfId: number, body?: { hold?: boolean }) {
     const turf = await this.prisma.verifiedAdmin.findUnique({
       where: { id: turfId },
@@ -561,6 +561,14 @@ export class SuperAdminService {
       },
     });
 
+    // If placed on hold, hold all active tournaments hosted at this turf
+    if (newHold) {
+      await this.prisma.tournament.updateMany({
+        where: { verifiedAdminId: turfId, status: { in: ['LIVE', 'UPCOMING'] } },
+        data: { isHold: true, status: 'ON_HOLD' },
+      }).catch(() => {});
+    }
+
     return {
       success: true,
       turfId,
@@ -568,8 +576,8 @@ export class SuperAdminService {
       isBookingHold: updated.isBookingHold,
       status: updated.status,
       message: newHold
-        ? `Bookings for "${updated.venueName}" are now ON HOLD.`
-        : `Bookings for "${updated.venueName}" are now RESUMED and live.`,
+        ? `Account & bookings for "${updated.venueName}" are now ON HOLD.`
+        : `Account & bookings for "${updated.venueName}" are now RESUMED and live.`,
     };
   }
 
@@ -791,6 +799,76 @@ export class SuperAdminService {
     return {
       success: true,
       tournament: created,
+    };
+  }
+
+  // DELETE VERIFIED TURF OWNER ACCOUNT AND CASCADE REMOVAL
+  async deleteVerifiedAdmin(turfId: number) {
+    const turf = await this.prisma.verifiedAdmin.findUnique({
+      where: { id: turfId },
+    });
+    if (!turf) {
+      throw new NotFoundException(`Turf owner #${turfId} not found`);
+    }
+
+    const adminUserId = turf.adminUserId;
+    const turfName = turf.venueName;
+
+    // 1. Delete all tournaments created at this turf
+    await this.prisma.tournament.deleteMany({
+      where: { verifiedAdminId: turfId },
+    }).catch(() => {});
+
+    // 2. Delete open challenges associated with this turf
+    await this.prisma.openChallenge.deleteMany({
+      where: {
+        OR: [
+          { turfId: turfId },
+          { turfName: { equals: turfName, mode: 'insensitive' } },
+        ],
+      },
+    }).catch(() => {});
+
+    // 3. Delete VerifiedAdmin (Prisma schema cascades bookings, blockedSlots, offers, dashboard)
+    await this.prisma.verifiedAdmin.delete({
+      where: { id: turfId },
+    });
+
+    // 4. Delete the original AdminUser record so it completely disappears from all admin lists
+    if (adminUserId) {
+      try {
+        await this.prisma.adminUser.delete({
+          where: { id: adminUserId },
+        });
+      } catch (e) {
+        // Ignored if already deleted
+      }
+    }
+
+    return {
+      success: true,
+      turfId,
+      message: `Turf owner account "${turfName}" and all associated data have been permanently removed.`,
+    };
+  }
+
+  // DELETE TOURNAMENT PERMANENTLY
+  async deleteTournament(tournamentId: number) {
+    const tourn = await this.prisma.tournament.findUnique({
+      where: { id: tournamentId },
+    });
+    if (!tourn) {
+      throw new NotFoundException(`Tournament #${tournamentId} not found`);
+    }
+
+    await this.prisma.tournament.delete({
+      where: { id: tournamentId },
+    });
+
+    return {
+      success: true,
+      tournamentId,
+      message: `Tournament "${tourn.title}" has been permanently deleted.`,
     };
   }
 }

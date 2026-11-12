@@ -8,6 +8,8 @@ import {
   SystemStats,
   getVerifiedAdmins,
   getStats,
+  toggleTurfBookingHold,
+  deleteVerifiedAdmin,
   BACKEND_URL,
 } from '@/lib/api';
 import {
@@ -26,6 +28,10 @@ import {
   Sparkles,
   Tag,
   CheckCircle2,
+  Trash2,
+  AlertTriangle,
+  Check,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -44,6 +50,16 @@ export default function AdminsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Actions state
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [deleteConfirmAdmin, setDeleteConfirmAdmin] = useState<VerifiedAdmin | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const loadAdmins = useCallback(async () => {
     setLoading(true);
@@ -78,9 +94,85 @@ export default function AdminsPage() {
     loadAdmins();
   }, [loadAdmins]);
 
+  // ACTION: Hold / Resume Turf Owner Account
+  const handleToggleHold = async (admin: VerifiedAdmin) => {
+    const isCurrentlyHold = admin.isBookingHold || admin.status === 'HOLD';
+    setActionLoadingId(`hold_${admin.id}`);
+    try {
+      const res = await toggleTurfBookingHold(admin.id, !isCurrentlyHold);
+      showToast(res.message, 'success');
+      
+      // Optimistically update local list
+      setAdmins((prev) =>
+        prev.map((a) =>
+          a.id === admin.id
+            ? { ...a, isBookingHold: !isCurrentlyHold, status: !isCurrentlyHold ? 'HOLD' : 'VERIFIED' }
+            : a
+        )
+      );
+
+      // If modal is open for this admin, update selectedAdmin
+      if (selectedAdmin && selectedAdmin.id === admin.id) {
+        setSelectedAdmin({
+          ...selectedAdmin,
+          isBookingHold: !isCurrentlyHold,
+          status: !isCurrentlyHold ? 'HOLD' : 'VERIFIED',
+        });
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to toggle account hold status', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // ACTION: Delete Turf Owner Account Permanently
+  const handleDeleteAdmin = async (admin: VerifiedAdmin) => {
+    setActionLoadingId(`del_${admin.id}`);
+    try {
+      const res = await deleteVerifiedAdmin(admin.id);
+      showToast(res.message || `Deleted turf owner "${admin.venueName}" successfully.`, 'success');
+
+      // Remove from local lists
+      setAdmins((prev) => prev.filter((a) => a.id !== admin.id));
+      setTotalCount((c) => Math.max(0, c - 1));
+      if (selectedAdmin && selectedAdmin.id === admin.id) {
+        setSelectedAdmin(null);
+      }
+      setDeleteConfirmAdmin(null);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete turf owner account', 'error');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#090D16] text-slate-100 font-sans">
       <Navbar waitingCount={stats.waiting} />
+
+      {/* Floating Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 duration-200">
+          <div
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl text-xs font-semibold ${
+              toast.type === 'success'
+                ? 'bg-[#0E1E17] border-emerald-500/40 text-emerald-300'
+                : 'bg-[#2A1118] border-rose-500/40 text-rose-300'
+            }`}
+          >
+            {toast.type === 'success' ? (
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <span>{toast.message}</span>
+            <button onClick={() => setToast(null)} className="ml-2 text-slate-400 hover:text-white">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Render-style Breadcrumb / Header */}
@@ -100,7 +192,7 @@ export default function AdminsPage() {
               </span>
             </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Authoritative list of KYC-verified turf managers, physical location audits, and rate benchmarks.
+              Authoritative list of KYC-verified turf managers, physical location audits, rate benchmarks, and account suspension controls.
             </p>
           </div>
 
@@ -160,68 +252,121 @@ export default function AdminsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {admins.map((admin) => (
-              <div
-                key={admin.id}
-                className="group relative flex flex-col justify-between p-5 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 hover:bg-[#13192B] transition-all duration-200 shadow-sm"
-              >
-                <div>
-                  {/* Status & Tracking Chip */}
-                  <div className="flex items-center justify-between gap-2 mb-3">
-                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#182033] text-indigo-300 border border-[#28354F]">
-                      {admin.trackingCode || `#ADM-${admin.id}`}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      Verified
-                    </span>
+            {admins.map((admin) => {
+              const isHeld = admin.isBookingHold || admin.status === 'HOLD';
+              const isLoading = actionLoadingId === `hold_${admin.id}` || actionLoadingId === `del_${admin.id}`;
+
+              return (
+                <div
+                  key={admin.id}
+                  className={`group relative flex flex-col justify-between p-5 rounded-xl bg-[#111625] border transition-all duration-200 shadow-sm ${
+                    isHeld
+                      ? 'border-amber-500/40 bg-[#16130D]'
+                      : 'border-[#1F293D] hover:border-indigo-500/40 hover:bg-[#13192B]'
+                  }`}
+                >
+                  <div>
+                    {/* Status & Tracking Chip */}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#182033] text-indigo-300 border border-[#28354F]">
+                        {admin.trackingCode || `#ADM-${admin.id}`}
+                      </span>
+
+                      {isHeld ? (
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-300 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                          Account On Hold
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                          Verified Active
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Venue Title & Location */}
+                    <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors">
+                      {admin.venueName}
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <span>{admin.neighborhoodArea || 'Chennai'}</span>
+                    </p>
+
+                    {/* Rates Bar */}
+                    <div className="mt-4 pt-3 border-t border-[#1C2538] flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Active Rate</span>
+                      <span className="text-white font-semibold">
+                        ₹{admin.weekdayRate || 1200}
+                        <span className="text-slate-500 font-normal"> /hr</span>
+                      </span>
+                    </div>
+
+                    {/* Owner Contact */}
+                    <div className="mt-2.5 flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Manager</span>
+                      <span className="text-slate-300">{admin.ownerName}</span>
+                    </div>
                   </div>
 
-                  {/* Venue Title & Location */}
-                  <h3 className="text-base font-bold text-white group-hover:text-indigo-300 transition-colors">
-                    {admin.venueName}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                    <span>{admin.neighborhoodArea || 'Chennai'}</span>
-                  </p>
+                  {/* Actions Bar */}
+                  <div className="mt-5 pt-3 border-t border-[#1C2538] flex items-center justify-between gap-2">
+                    <a
+                      href={`tel:${admin.ownerPhone}`}
+                      className="text-xs font-mono text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
+                    >
+                      <Phone className="w-3 h-3 text-slate-500" />
+                      <span>{admin.ownerPhone}</span>
+                    </a>
 
-                  {/* Rates Bar */}
-                  <div className="mt-4 pt-3 border-t border-[#1C2538] flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Active Rate</span>
-                    <span className="text-white font-semibold">
-                      ₹{admin.weekdayRate || 1200}
-                      <span className="text-slate-500 font-normal"> /hr</span>
-                    </span>
-                  </div>
+                    <div className="flex items-center gap-1.5">
+                      {/* Hold / Resume Button */}
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => handleToggleHold(admin)}
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 disabled:opacity-50 ${
+                          isHeld
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            : 'bg-[#182033] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        }`}
+                        title={isHeld ? 'Resume Account & Live Bookings' : 'Place Account On Hold'}
+                      >
+                        {actionLoadingId === `hold_${admin.id}` ? (
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                        ) : isHeld ? (
+                          'Resume'
+                        ) : (
+                          'Hold'
+                        )}
+                      </button>
 
-                  {/* Owner Contact */}
-                  <div className="mt-2.5 flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400">Manager</span>
-                    <span className="text-slate-300">{admin.ownerName}</span>
+                      {/* Delete Account Button */}
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => setDeleteConfirmAdmin(admin)}
+                        className="p-1.5 rounded-lg text-rose-400 hover:text-white hover:bg-rose-600/30 border border-rose-500/30 transition-all disabled:opacity-50"
+                        title="Delete Turf Owner Permanently"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+
+                      {/* Inspect Button */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAdmin(admin)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#182033] hover:bg-indigo-600 hover:text-white text-indigo-300 border border-indigo-500/20 transition-all flex items-center gap-1"
+                      >
+                        <span>Inspect</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                {/* Inspect Action */}
-                <div className="mt-5 pt-3 border-t border-[#1C2538] flex items-center justify-between gap-2">
-                  <a
-                    href={`tel:${admin.ownerPhone}`}
-                    className="text-xs font-mono text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors"
-                  >
-                    <Phone className="w-3 h-3 text-slate-500" />
-                    <span>{admin.ownerPhone}</span>
-                  </a>
-
-                  <button
-                    onClick={() => setSelectedAdmin(admin)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#182033] hover:bg-indigo-600 hover:text-white text-indigo-300 border border-indigo-500/20 transition-all flex items-center gap-1"
-                  >
-                    <span>Inspect</span>
-                    <ChevronRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -251,7 +396,68 @@ export default function AdminsPage() {
 
       {/* Admin Detail Modal */}
       {selectedAdmin && (
-        <AdminDetailModal admin={selectedAdmin} onClose={() => setSelectedAdmin(null)} />
+        <AdminDetailModal
+          admin={selectedAdmin}
+          onClose={() => setSelectedAdmin(null)}
+          onToggleHold={(adm) => handleToggleHold(adm)}
+          onDelete={(adm) => {
+            setSelectedAdmin(null);
+            setDeleteConfirmAdmin(adm);
+          }}
+        />
+      )}
+
+      {/* Delete Turf Owner Confirmation Modal */}
+      {deleteConfirmAdmin && (
+        <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0D121F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Permanently Delete Turf Owner?</h3>
+                <p className="text-xs text-slate-400">Irreversible super admin removal</p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#161014] border border-rose-500/20 text-xs text-slate-300 space-y-2">
+              <p>
+                You are about to delete <strong className="text-white">{deleteConfirmAdmin.venueName}</strong> managed by{' '}
+                <strong className="text-white">{deleteConfirmAdmin.ownerName}</strong> ({deleteConfirmAdmin.ownerPhone}).
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-slate-400 font-mono text-[11px]">
+                <li>Venue will be completely removed from player app discovery & booking.</li>
+                <li>Associated slot offers, operating schedule, and open matches will be deleted.</li>
+                <li>Any tournaments hosted at this turf will be cancelled.</li>
+                <li>Turf owner will no longer be able to log in to the owner portal.</li>
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmAdmin(null)}
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2F] border border-[#28354F]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={actionLoadingId === `del_${deleteConfirmAdmin.id}`}
+                onClick={() => handleDeleteAdmin(deleteConfirmAdmin)}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50"
+              >
+                {actionLoadingId === `del_${deleteConfirmAdmin.id}` ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>Confirm Permanent Deletion</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Query, Body, ParseIntPipe } from '@nestjs/common';
 import { SuperAdminService } from './super-admin.service.js';
 
 @Controller('super-admin')
@@ -66,13 +66,32 @@ export class SuperAdminController {
     return this.superAdminService.getAdminStatus(identifier);
   }
 
-  // HOLD / RESUME TURF BOOKINGS
+  // HOLD / RESUME TURF OWNER ACCOUNT & BOOKINGS
   @Post('turfs/:id/toggle-hold')
   async toggleTurfBookingHold(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { hold?: boolean },
   ) {
     return this.superAdminService.toggleTurfBookingHold(id, body);
+  }
+
+  @Post('verified-admins/:id/toggle-hold')
+  async toggleVerifiedAdminHold(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { hold?: boolean },
+  ) {
+    return this.superAdminService.toggleTurfBookingHold(id, body);
+  }
+
+  // DELETE TURF OWNER PERMANENTLY (Cascades venue, bookings, challenges, tournaments)
+  @Delete('verified-admins/:id')
+  async deleteVerifiedAdminDelete(@Param('id', ParseIntPipe) id: number) {
+    return this.superAdminService.deleteVerifiedAdmin(id);
+  }
+
+  @Post('verified-admins/:id/delete')
+  async deleteVerifiedAdminPost(@Param('id', ParseIntPipe) id: number) {
+    return this.superAdminService.deleteVerifiedAdmin(id);
   }
 
   // ALL BOOKINGS MANAGEMENT
@@ -119,6 +138,17 @@ export class SuperAdminController {
     @Body() body: { isHold?: boolean },
   ) {
     return this.superAdminService.toggleTournamentHold(id, body);
+  }
+
+  // DELETE TOURNAMENT PERMANENTLY
+  @Delete('tournaments/:id')
+  async deleteTournamentDelete(@Param('id', ParseIntPipe) id: number) {
+    return this.superAdminService.deleteTournament(id);
+  }
+
+  @Post('tournaments/:id/delete')
+  async deleteTournamentPost(@Param('id', ParseIntPipe) id: number) {
+    return this.superAdminService.deleteTournament(id);
   }
 
   @Post('tournaments')
