@@ -534,30 +534,44 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF166534),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        icon: const Icon(Icons.scoreboard_outlined, size: 16),
-                        label: const Text('Scorecard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MatchScorecardScreen(
-                                bookingId: bookingId,
-                                turfName: turfName,
-                                sport: sport,
-                                date: date,
-                                timeSlot: timeSlot,
-                                isOpenMatch: booking['isOpenMatch'] == true ||
-                                    booking['is_open_match'] == true,
-                              ),
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: MatchScoreManager().liveStateNotifier,
+                        builder: (context, _, child) {
+                          final live = MatchScoreManager().getLiveStateSync(bookingId);
+                          final isLive = live != null && live.isLive;
+                          final isDone = live != null && live.isMatchCompleted;
+                          return ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isLive
+                                  ? const Color(0xFFDC2626)
+                                  : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534)),
+                              foregroundColor: Colors.white,
+                              elevation: isLive ? 2 : 0,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
+                            icon: Icon(isLive ? Icons.play_circle_fill_rounded : Icons.scoreboard_outlined, size: 16),
+                            label: Text(
+                              isLive ? 'Continue 🔴' : (isDone ? 'Scorecard 🏆' : 'Scorecard'),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MatchScorecardScreen(
+                                    bookingId: bookingId,
+                                    turfName: turfName,
+                                    sport: sport,
+                                    date: date,
+                                    timeSlot: timeSlot,
+                                    initialTab: isLive ? 2 : (isDone ? 3 : 0),
+                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                        booking['is_open_match'] == true,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),
@@ -686,29 +700,43 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 const SizedBox(height: 14),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF166534),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    icon: const Icon(Icons.scoreboard_outlined, size: 16),
-                    label: const Text('Open Scorecard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MatchScorecardScreen(
-                            bookingId: challenge.id,
-                            turfName: challenge.turfName,
-                            sport: challenge.sport,
-                            date: challenge.date,
-                            timeSlot: challenge.time,
-                            isOpenMatch: true,
-                          ),
+                  child: ValueListenableBuilder<int>(
+                    valueListenable: MatchScoreManager().liveStateNotifier,
+                    builder: (context, _, child) {
+                      final live = MatchScoreManager().getLiveStateSync(challenge.id);
+                      final isLive = live != null && live.isLive;
+                      final isDone = live != null && live.isMatchCompleted;
+                      return ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isLive
+                              ? const Color(0xFFDC2626)
+                              : (isDone ? const Color(0xFF0F6D38) : const Color(0xFF166534)),
+                          foregroundColor: Colors.white,
+                          elevation: isLive ? 2 : 0,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
+                        icon: Icon(isLive ? Icons.play_circle_fill_rounded : Icons.scoreboard_outlined, size: 16),
+                        label: Text(
+                          isLive ? 'Continue Match 🔴 (${live.liveScoreSummary})' : (isDone ? 'View Scorecard 🏆' : 'Open Scorecard'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MatchScorecardScreen(
+                                bookingId: challenge.id,
+                                turfName: challenge.turfName,
+                                sport: challenge.sport,
+                                date: challenge.date,
+                                timeSlot: challenge.time,
+                                initialTab: isLive ? 2 : (isDone ? 3 : 0),
+                                isOpenMatch: true,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),
@@ -834,30 +862,44 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF166534),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        icon: const Icon(Icons.sports_cricket, size: 16),
-                        label: const Text('Live Scorecard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MatchScorecardScreen(
-                                bookingId: bookingId,
-                                turfName: turfName,
-                                sport: sport,
-                                date: date,
-                                timeSlot: timeSlot,
-                                isOpenMatch: booking['isOpenMatch'] == true ||
-                                    booking['is_open_match'] == true,
-                              ),
+                      child: Builder(
+                        builder: (context) {
+                          final liveState = MatchScoreManager().getLiveStateSync(bookingId);
+                          final isLive = liveState != null && liveState.isLive;
+                          final isCompleted = MatchScoreManager().isMatchCompleted(bookingId);
+                          final btnLabel = isCompleted
+                              ? 'View Scorecard 🏆'
+                              : (isLive ? 'Continue 🔴' : 'Live Scorecard');
+                          final btnColor = isLive ? const Color(0xFFDC2626) : const Color(0xFF166534);
+                          final initialTab = isCompleted ? 3 : (isLive ? 2 : 0);
+
+                          return ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: btnColor,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             ),
+                            icon: Icon(isLive ? Icons.play_circle_fill : Icons.sports_cricket, size: 16),
+                            label: Text(btnLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MatchScorecardScreen(
+                                    bookingId: bookingId,
+                                    turfName: turfName,
+                                    sport: sport,
+                                    date: date,
+                                    timeSlot: timeSlot,
+                                    initialTab: initialTab,
+                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                        booking['is_open_match'] == true,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       ),

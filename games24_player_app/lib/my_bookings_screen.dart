@@ -2,6 +2,7 @@ import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'booking_manager.dart';
 import 'match_scorecard_screen.dart';
+import 'match_score_manager.dart';
 import 'booking_qr_pass_modal.dart';
 
 class MyBookingsScreen extends StatefulWidget {
@@ -756,7 +757,64 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   ),
                 ),
                 if (!isCancelled && bookingId != null) ...[
-                  const SizedBox(height: 16),
+                  ValueListenableBuilder<int>(
+                    valueListenable: MatchScoreManager().liveStateNotifier,
+                    builder: (context, _, child) {
+                      final liveState = MatchScoreManager().getLiveStateSync(bookingId.toString());
+                      if (liveState == null || !liveState.isLive) return const SizedBox.shrink();
+
+                      return Container(
+                        margin: const EdgeInsets.only(top: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFDC2626),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'LIVE MATCH IN PROGRESS',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFDC2626),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            if (liveState.liveScoreSummary.isNotEmpty) ...[
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDC2626),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  liveState.liveScoreSummary,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 14),
                   const Divider(height: 1, color: Color(0xFFF3F4F6)),
                   const SizedBox(height: 12),
                   Wrap(
@@ -765,23 +823,46 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     alignment: WrapAlignment.spaceBetween,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Builder(
-                        builder: (context) {
-                          final isCompleted = isPast ||
-                              (booking['status'] ?? '')
-                                      .toString()
-                                      .toLowerCase() ==
-                                  'completed';
+                      ValueListenableBuilder<int>(
+                        valueListenable: MatchScoreManager().liveStateNotifier,
+                        builder: (context, _, child) {
+                          final liveState = MatchScoreManager().getLiveStateSync(bookingId.toString());
+                          final isLive = liveState != null && liveState.isLive;
+                          final isMatchFinished = isPast ||
+                              (booking['status'] ?? '').toString().toLowerCase() == 'completed' ||
+                              (liveState != null && liveState.isMatchCompleted);
                           final isStarted = BookingManager.isMatchStarted(
                               dateStr: dateStr, timeSlot: timeSlot);
 
+                          Color btnColor;
+                          IconData btnIcon;
+                          String btnText;
+                          int targetTab;
+
+                          if (isLive) {
+                            btnColor = const Color(0xFFDC2626);
+                            btnIcon = Icons.play_circle_fill_rounded;
+                            btnText = 'Continue Live Match 🔴 (${liveState.liveScoreSummary})';
+                            targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
+                          } else if (isMatchFinished) {
+                            btnColor = const Color(0xFF0F6D38);
+                            btnIcon = Icons.emoji_events_rounded;
+                            btnText = 'View Scorecard 🏆';
+                            targetTab = 3;
+                          } else {
+                            btnColor = const Color(0xFF166534);
+                            btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
+                            btnText = isOpenChallenge
+                                ? (isStarted ? 'Start Match ⚔️' : 'Challenge Squad ⚔️')
+                                : (isStarted ? 'Start Scorecard 🏏' : 'Team Lineup 🛡️');
+                            targetTab = 0;
+                          }
+
                           return ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isCompleted
-                                  ? const Color(0xFF0F6D38)
-                                  : const Color(0xFF166534),
+                              backgroundColor: btnColor,
                               foregroundColor: Colors.white,
-                              elevation: 0,
+                              elevation: isLive ? 2 : 0,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 8,
@@ -800,33 +881,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                     sport: booking['sport']?.toString() ?? 'Cricket',
                                     date: dateStr,
                                     timeSlot: timeSlot,
-                                    initialTab: isCompleted ? 3 : 0,
+                                    initialTab: targetTab,
                                     isOpenMatch: booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),
                                 ),
                               );
                             },
-                            icon: Icon(
-                              isCompleted
-                                  ? Icons.analytics_outlined
-                                  : (isStarted
-                                      ? Icons.sports_score_rounded
-                                      : Icons.groups_rounded),
-                              size: 16,
-                            ),
+                            icon: Icon(btnIcon, size: 16),
                             label: Text(
-                              isOpenChallenge
-                                  ? (isCompleted
-                                      ? 'Challenge Match 📋'
-                                      : (isStarted
-                                          ? 'Scorecard 🏆'
-                                          : 'Challenge Squad ⚔️'))
-                                  : (isCompleted
-                                      ? 'Match Details 📋'
-                                      : (isStarted
-                                          ? 'Scorecard 🏆'
-                                          : 'Team Lineup 🛡️')),
+                              btnText,
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.bold,

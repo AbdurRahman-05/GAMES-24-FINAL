@@ -10,6 +10,7 @@ import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/booking_manager.dart';
 import 'package:games24_player_app/match_scorecard_screen.dart';
+import 'package:games24_player_app/match_score_manager.dart';
 import 'package:games24_player_app/match_schedule_screen.dart';
 import 'package:games24_player_app/location_manager.dart';
 
@@ -993,15 +994,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
+            final bId = (match['id'] ?? match['bookingId'] ?? '').toString();
+            final live = MatchScoreManager().getLiveStateSync(bId);
+            final targetTab = live != null && live.isLive
+                ? 2
+                : (live != null && live.isMatchCompleted ? 3 : 0);
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => MatchScorecardScreen(
-                  bookingId: (match['id'] ?? match['bookingId'] ?? '').toString(),
+                  bookingId: bId,
                   turfName: turfName,
                   sport: sport,
                   date: (match['date'] ?? '').toString(),
                   timeSlot: timeSlot,
+                  initialTab: targetTab,
                   isOpenMatch: match['isOpenMatch'] == true,
                 ),
               ),
@@ -1435,55 +1442,70 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MatchScorecardScreen(
-                                bookingId: (booking['id'] ?? 'BK-1').toString(),
-                                turfName: turfName,
-                                sport: (booking['sport'] ?? 'Cricket').toString(),
-                                date: dateStr,
-                                timeSlot: timeSlot,
-                                initialTab: isCompleted ? 3 : 0,
-                                isOpenMatch: booking['isOpenMatch'] == true ||
-                                    booking['is_open_match'] == true,
-                              ),
+                      ValueListenableBuilder<int>(
+                        valueListenable: MatchScoreManager().liveStateNotifier,
+                        builder: (context, _, child) {
+                          final bId = (booking['id'] ?? 'BK-1').toString();
+                          final liveState = MatchScoreManager().getLiveStateSync(bId);
+                          final isLive = liveState != null && liveState.isLive;
+                          final isMatchFinished = isCompleted || (liveState != null && liveState.isMatchCompleted);
+
+                          Color btnColor;
+                          IconData btnIcon;
+                          String btnText;
+                          int targetTab;
+
+                          if (isLive) {
+                            btnColor = const Color(0xFFDC2626);
+                            btnIcon = Icons.play_circle_fill_rounded;
+                            btnText = 'Continue Live Match 🔴 (${liveState.liveScoreSummary})';
+                            targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
+                          } else if (isMatchFinished) {
+                            btnColor = const Color(0xFF0F6D38);
+                            btnIcon = Icons.emoji_events_rounded;
+                            btnText = 'View Scorecard 🏆';
+                            targetTab = 3;
+                          } else {
+                            btnColor = const Color(0xFF166534);
+                            btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
+                            btnText = (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
+                                ? (isStarted ? 'Scorecard & Toss 🏆' : 'Challenge Squad ⚔️')
+                                : (isStarted ? 'Scorecard & Toss 🏆' : 'Team Lineup 🛡️');
+                            targetTab = 0;
+                          }
+
+                          return ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MatchScorecardScreen(
+                                    bookingId: bId,
+                                    turfName: turfName,
+                                    sport: (booking['sport'] ?? 'Cricket').toString(),
+                                    date: dateStr,
+                                    timeSlot: timeSlot,
+                                    initialTab: targetTab,
+                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                        booking['is_open_match'] == true,
+                                  ),
+                                ),
+                              );
+                            },
+                            icon: Icon(btnIcon, size: 16),
+                            label: Text(
+                              btnText,
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: btnColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: isLive ? 2 : 0,
                             ),
                           );
                         },
-                        icon: Icon(
-                          isCompleted
-                              ? Icons.analytics_outlined
-                              : (isStarted
-                                  ? Icons.sports_score_rounded
-                                  : Icons.groups_rounded),
-                          size: 16,
-                        ),
-                        label: Text(
-                          (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
-                              ? (isCompleted
-                                  ? 'Challenge Details 📋'
-                                  : (isStarted
-                                      ? 'Scorecard & Toss 🏆'
-                                      : 'Challenge Squad ⚔️'))
-                              : (isCompleted
-                                  ? 'Match Details & Result 📋'
-                                  : (isStarted
-                                      ? 'Scorecard & Toss 🏆'
-                                      : 'Team Lineup 🛡️')),
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isCompleted
-                              ? const Color(0xFF0F6D38)
-                              : const Color(0xFF166534),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
-                        ),
                       ),
                       const Text(
                         'View Booking →',

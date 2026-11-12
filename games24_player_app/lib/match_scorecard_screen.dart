@@ -282,6 +282,11 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       vsync: this,
       initialIndex: widget.initialTab.clamp(0, 3),
     );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        _saveCurrentLiveState();
+      }
+    });
     _initializeDefaultTeams();
     _loadHistoricalMatches();
     _loadSavedSquad();
@@ -364,6 +369,31 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
     if (state != null && mounted) {
       setState(() {
+        if (state.sport.isNotEmpty) {
+          _currentSport = state.sport;
+        }
+        if (state.teamAName.isNotEmpty) {
+          _teamAName = state.teamAName;
+        }
+        if (state.teamBName.isNotEmpty &&
+            !state.teamBName.contains('Waiting')) {
+          _teamBName = state.teamBName;
+        }
+        if (state.teamAPlayers.isNotEmpty) {
+          _teamAPlayers.clear();
+          _teamAPlayers.addAll(state.teamAPlayers);
+        }
+        if (state.teamBPlayers.isNotEmpty) {
+          _teamBPlayers.clear();
+          _teamBPlayers.addAll(state.teamBPlayers);
+        }
+        if (state.overs > 0) {
+          _selectedOvers = state.overs;
+        }
+        if (state.teamSize.isNotEmpty) {
+          _selectedTeamSize = state.teamSize;
+        }
+
         if (state.tossCompleted) {
           _tossCompleted = true;
           _tossWinner = state.tossWinner;
@@ -388,6 +418,19 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
         _cricketTarget = state.cricketTarget;
 
+        _footballGoalsA = state.footballGoalsA;
+        _footballGoalsB = state.footballGoalsB;
+        _footballEvents.clear();
+        _footballEvents.addAll(state.footballEvents);
+
+        _pointsA = state.pointsA;
+        _pointsB = state.pointsB;
+        _setsWonA = state.setsWonA;
+        _setsWonB = state.setsWonB;
+        _currentSet = state.currentSet;
+        _setHistory.clear();
+        _setHistory.addAll(state.setHistory);
+
         if (state.isMatchCompleted) {
           _isMatchCompleted = true;
           _finalWinner = state.finalWinner;
@@ -407,26 +450,40 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         final battingSquad = _currentBattingSquad;
         final bowlingSquad = _currentBowlingSquad;
 
-        if (state.strikerName != null) {
+        if (state.strikerName != null && battingSquad.isNotEmpty) {
           try {
             _striker = battingSquad.firstWhere(
               (p) => p.name == state.strikerName,
             );
           } catch (_) {}
         }
-        if (state.nonStrikerName != null) {
+        if (state.nonStrikerName != null && battingSquad.isNotEmpty) {
           try {
             _nonStriker = battingSquad.firstWhere(
               (p) => p.name == state.nonStrikerName,
             );
           } catch (_) {}
         }
-        if (state.bowlerName != null) {
+        if (state.bowlerName != null && bowlingSquad.isNotEmpty) {
           try {
             _currentBowler = bowlingSquad.firstWhere(
               (p) => p.name == state.bowlerName,
             );
           } catch (_) {}
+        }
+
+        // Ensure active players
+        _ensureActivePlayers();
+
+        // AUTO-NAVIGATE to the active tab!
+        int targetTab = state.activeTabIndex;
+        if (widget.initialTab == 3 || state.isMatchCompleted) {
+          targetTab = 3;
+        } else if (state.isLive || state.tossCompleted) {
+          targetTab = 2; // Scorecard
+        }
+        if (targetTab >= 0 && targetTab < 4 && _tabController.index != targetTab) {
+          _tabController.animateTo(targetTab);
         }
       });
     }
@@ -440,6 +497,12 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     final state = SavedMatchLiveState(
       bookingId: widget.bookingId,
+      sport: _currentSport,
+      teamAName: _teamAName,
+      teamBName: _teamBName,
+      teamAPlayers: List<PlayerItem>.from(_teamAPlayers),
+      teamBPlayers: List<PlayerItem>.from(_teamBPlayers),
+      activeTabIndex: _tabController.index,
       tossCompleted: _tossCompleted,
       tossWinner: _tossWinner,
       tossDecision: _tossDecision,
@@ -460,6 +523,17 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       nonStrikerName: _nonStriker?.name,
       bowlerName: _currentBowler?.name,
       playerStatsMap: statsMap,
+      overs: _selectedOvers,
+      teamSize: _selectedTeamSize,
+      footballGoalsA: _footballGoalsA,
+      footballGoalsB: _footballGoalsB,
+      footballEvents: List<String>.from(_footballEvents),
+      pointsA: _pointsA,
+      pointsB: _pointsB,
+      setsWonA: _setsWonA,
+      setsWonB: _setsWonB,
+      currentSet: _currentSet,
+      setHistory: List<String>.from(_setHistory),
       isMatchCompleted: _isMatchCompleted,
       finalWinner: _finalWinner,
       finalMargin: _finalMargin,
@@ -1092,6 +1166,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     final temp = _striker;
     _striker = _nonStriker;
     _nonStriker = temp;
+    _saveCurrentLiveState();
   }
 
   // ---------------------------------------------------------------------------
@@ -1528,6 +1603,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     ),
                     onSelected: (_) {
                       setState(() => _striker = b);
+                      _saveCurrentLiveState();
                       Navigator.pop(ctx);
                     },
                   );
@@ -1684,6 +1760,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         );
       }
     });
+    _saveCurrentLiveState();
   }
 
   // ---------------------------------------------------------------------------
@@ -1717,6 +1794,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
         _pointsB = 0;
       }
     });
+    _saveCurrentLiveState();
   }
 
   // ---------------------------------------------------------------------------
@@ -1981,147 +2059,157 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    if (_isCompletedMatch) {
-      // Completed Match: Show Match Details, Results, Timing, and option to launch a new match
-      return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFB),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Colors.black87,
-              size: 20,
-            ),
-            onPressed: () {
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
-              } else {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const MainLayout()),
-                );
-              }
-            },
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Match Details & Results 📋',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                '${widget.turfName} • ${widget.timeSlot}',
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
-              ),
-            ],
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: TextButton.icon(
-                onPressed: _startNewMatch,
+    final scaffold = _isCompletedMatch
+        ? Scaffold(
+            backgroundColor: const Color(0xFFF9FAFB),
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
                 icon: const Icon(
-                  Icons.bolt_rounded,
-                  color: Color(0xFF166534),
-                  size: 18,
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.black87,
+                  size: 20,
                 ),
-                label: Text(
-                  'Match #${_slotMatches.length + 1} ⚡',
-                  style: const TextStyle(
-                    color: Color(0xFF166534),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                onPressed: () {
+                  _saveCurrentLiveState();
+                  _saveSquad(showFeedback: false);
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const MainLayout()),
+                    );
+                  }
+                },
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Match Details & Results 📋',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '${widget.turfName} • ${widget.timeSlot}',
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: TextButton.icon(
+                    onPressed: _startNewMatch,
+                    icon: const Icon(
+                      Icons.bolt_rounded,
+                      color: Color(0xFF166534),
+                      size: 18,
+                    ),
+                    label: Text(
+                      'Match #${_slotMatches.length + 1} ⚡',
+                      style: const TextStyle(
+                        color: Color(0xFF166534),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ),
+              ],
+            ),
+            body: _buildResultTab(),
+          )
+        : Scaffold(
+            backgroundColor: const Color(0xFFF9FAFB),
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.black87,
+                  size: 20,
+                ),
+                onPressed: () {
+                  _saveCurrentLiveState();
+                  _saveSquad(showFeedback: false);
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => const MainLayout()),
+                    );
+                  }
+                },
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$_currentSport Match Center',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '${widget.turfName} • ${widget.timeSlot}',
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  tooltip: 'Save Squad Lineup',
+                  icon: const Icon(Icons.save_rounded, color: Color(0xFF166534)),
+                  onPressed: () => _saveSquad(showFeedback: true),
+                ),
+              ],
+              bottom: TabBar(
+                controller: _tabController,
+                labelColor: const Color(0xFF166534),
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: const Color(0xFF166534),
+                indicatorWeight: 3,
+                isScrollable: true,
+                tabs: const [
+                  Tab(icon: Icon(Icons.group_rounded, size: 18), text: '1. Teams'),
+                  Tab(icon: Icon(Icons.toll_rounded, size: 18), text: '2. Coin Toss'),
+                  Tab(
+                    icon: Icon(Icons.scoreboard_rounded, size: 18),
+                    text: '3. Scorecard',
+                  ),
+                  Tab(
+                    icon: Icon(Icons.emoji_events_rounded, size: 18),
+                    text: '4. Result & Awards',
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-        body: _buildResultTab(),
-      );
-    }
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildTeamsTab(),
+                _buildCoinTossTab(),
+                _buildScorecardTab(),
+                _buildResultTab(),
+              ],
+            ),
+          );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.black87,
-            size: 20,
-          ),
-          onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-            } else {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const MainLayout()),
-              );
-            }
-          },
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$_currentSport Match Center',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            Text(
-              '${widget.turfName} • ${widget.timeSlot}',
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Save Squad Lineup',
-            icon: const Icon(Icons.save_rounded, color: Color(0xFF166534)),
-            onPressed: () => _saveSquad(showFeedback: true),
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: const Color(0xFF166534),
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF166534),
-          indicatorWeight: 3,
-          isScrollable: true,
-          tabs: const [
-            Tab(icon: Icon(Icons.group_rounded, size: 18), text: '1. Teams'),
-            Tab(icon: Icon(Icons.toll_rounded, size: 18), text: '2. Coin Toss'),
-            Tab(
-              icon: Icon(Icons.scoreboard_rounded, size: 18),
-              text: '3. Scorecard',
-            ),
-            Tab(
-              icon: Icon(Icons.emoji_events_rounded, size: 18),
-              text: '4. Result & Awards',
-            ),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTeamsTab(),
-          _buildCoinTossTab(),
-          _buildScorecardTab(),
-          _buildResultTab(),
-        ],
-      ),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        _saveCurrentLiveState();
+        _saveSquad(showFeedback: false);
+      },
+      child: scaffold,
     );
   }
 
@@ -4320,6 +4408,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                             _tossDecision = opt;
                             _ensureActivePlayers();
                           });
+                          _saveCurrentLiveState();
                         },
                       );
                     }).toList(),
@@ -4332,7 +4421,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => setState(() => _tossCompleted = false),
+                    onPressed: () {
+                      setState(() => _tossCompleted = false);
+                      _saveCurrentLiveState();
+                    },
                     child: const Text('Re-toss'),
                   ),
                 ),
@@ -4345,7 +4437,10 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                     ),
                     onPressed: _tossDecision == null
                         ? null
-                        : () => _tabController.animateTo(2),
+                        : () {
+                            _saveCurrentLiveState();
+                            _tabController.animateTo(2);
+                          },
                     child: const Text('Start Scoring'),
                   ),
                 ),

@@ -327,12 +327,20 @@ class SavedSquadConfig {
 
 class SavedMatchLiveState {
   final String bookingId;
+  final String sport;
+  final String teamAName;
+  final String teamBName;
+  final List<PlayerItem> teamAPlayers;
+  final List<PlayerItem> teamBPlayers;
+  final int activeTabIndex;
+
   final bool tossCompleted;
   final String? tossWinner;
   final String? tossDecision;
   final String? tossResult;
   final String? tossCaller;
   final String? tossCall;
+
   final int currentInning;
   final int cricketRunsA;
   final int cricketWicketsA;
@@ -347,6 +355,20 @@ class SavedMatchLiveState {
   final String? nonStrikerName;
   final String? bowlerName;
   final Map<String, dynamic> playerStatsMap;
+  final int overs;
+  final String teamSize;
+
+  final int footballGoalsA;
+  final int footballGoalsB;
+  final List<String> footballEvents;
+
+  final int pointsA;
+  final int pointsB;
+  final int setsWonA;
+  final int setsWonB;
+  final int currentSet;
+  final List<String> setHistory;
+
   final bool isMatchCompleted;
   final String? finalWinner;
   final String? finalMargin;
@@ -354,6 +376,12 @@ class SavedMatchLiveState {
 
   SavedMatchLiveState({
     required this.bookingId,
+    this.sport = 'Cricket',
+    this.teamAName = 'My Team',
+    this.teamBName = 'Opponent Team',
+    this.teamAPlayers = const [],
+    this.teamBPlayers = const [],
+    this.activeTabIndex = 2,
     this.tossCompleted = false,
     this.tossWinner,
     this.tossDecision,
@@ -374,14 +402,65 @@ class SavedMatchLiveState {
     this.nonStrikerName,
     this.bowlerName,
     this.playerStatsMap = const {},
+    this.overs = 10,
+    this.teamSize = '7v7',
+    this.footballGoalsA = 0,
+    this.footballGoalsB = 0,
+    this.footballEvents = const [],
+    this.pointsA = 0,
+    this.pointsB = 0,
+    this.setsWonA = 0,
+    this.setsWonB = 0,
+    this.currentSet = 1,
+    this.setHistory = const [],
     this.isMatchCompleted = false,
     this.finalWinner,
     this.finalMargin,
     DateTime? updatedAt,
   }) : updatedAt = updatedAt ?? DateTime.now();
 
+  bool get isLive {
+    if (isMatchCompleted) return false;
+    if (cricketBallsA > 0 || cricketBallsB > 0 || cricketRunsA > 0 || cricketRunsB > 0) {
+      return true;
+    }
+    if (footballGoalsA > 0 || footballGoalsB > 0 || footballEvents.isNotEmpty) {
+      return true;
+    }
+    if (pointsA > 0 || pointsB > 0 || setsWonA > 0 || setsWonB > 0 || setHistory.isNotEmpty) {
+      return true;
+    }
+    if (tossCompleted) {
+      return true;
+    }
+    return false;
+  }
+
+  String get liveScoreSummary {
+    final sp = sport.toLowerCase();
+    if (sp.contains('football') || sp.contains('soccer')) {
+      return '$footballGoalsA - $footballGoalsB';
+    } else if (sp.contains('badminton') || sp.contains('tennis') || sp.contains('pickle')) {
+      return 'Set $currentSet: $pointsA-$pointsB ($setsWonA-$setsWonB)';
+    } else {
+      final ovA = '${cricketBallsA ~/ 6}.${cricketBallsA % 6}';
+      if (currentInning == 1) {
+        return '$cricketRunsA/$cricketWicketsA ($ovA ov)';
+      }
+      final ovB = '${cricketBallsB ~/ 6}.${cricketBallsB % 6}';
+      final tgt = cricketTarget ?? (cricketRunsA + 1);
+      return '$cricketRunsB/$cricketWicketsB ($ovB ov) • Tgt: $tgt';
+    }
+  }
+
   Map<String, dynamic> toJson() => {
         'bookingId': bookingId,
+        'sport': sport,
+        'teamAName': teamAName,
+        'teamBName': teamBName,
+        'teamAPlayers': teamAPlayers.map((p) => p.toJson()).toList(),
+        'teamBPlayers': teamBPlayers.map((p) => p.toJson()).toList(),
+        'activeTabIndex': activeTabIndex,
         'tossCompleted': tossCompleted,
         'tossWinner': tossWinner,
         'tossDecision': tossDecision,
@@ -402,6 +481,17 @@ class SavedMatchLiveState {
         'nonStrikerName': nonStrikerName,
         'bowlerName': bowlerName,
         'playerStatsMap': playerStatsMap,
+        'overs': overs,
+        'teamSize': teamSize,
+        'footballGoalsA': footballGoalsA,
+        'footballGoalsB': footballGoalsB,
+        'footballEvents': footballEvents,
+        'pointsA': pointsA,
+        'pointsB': pointsB,
+        'setsWonA': setsWonA,
+        'setsWonB': setsWonB,
+        'currentSet': currentSet,
+        'setHistory': setHistory,
         'isMatchCompleted': isMatchCompleted,
         'finalWinner': finalWinner,
         'finalMargin': finalMargin,
@@ -411,6 +501,19 @@ class SavedMatchLiveState {
   factory SavedMatchLiveState.fromJson(Map<String, dynamic> json) =>
       SavedMatchLiveState(
         bookingId: json['bookingId']?.toString() ?? '',
+        sport: json['sport']?.toString() ?? 'Cricket',
+        teamAName: json['teamAName']?.toString() ?? 'My Team',
+        teamBName: json['teamBName']?.toString() ?? 'Opponent Team',
+        teamAPlayers: (json['teamAPlayers'] as List?)
+                ?.map((p) => PlayerItem.fromJson(Map<String, dynamic>.from(p)))
+                .toList() ??
+            [],
+        teamBPlayers: (json['teamBPlayers'] as List?)
+                ?.map((p) => PlayerItem.fromJson(Map<String, dynamic>.from(p)))
+                .toList() ??
+            [],
+        activeTabIndex:
+            int.tryParse(json['activeTabIndex']?.toString() ?? '2') ?? 2,
         tossCompleted: json['tossCompleted'] == true,
         tossWinner: json['tossWinner']?.toString(),
         tossDecision: json['tossDecision']?.toString(),
@@ -446,6 +549,25 @@ class SavedMatchLiveState {
         playerStatsMap: (json['playerStatsMap'] is Map)
             ? Map<String, dynamic>.from(json['playerStatsMap'])
             : {},
+        overs: int.tryParse(json['overs']?.toString() ?? '10') ?? 10,
+        teamSize: json['teamSize']?.toString() ?? '7v7',
+        footballGoalsA:
+            int.tryParse(json['footballGoalsA']?.toString() ?? '0') ?? 0,
+        footballGoalsB:
+            int.tryParse(json['footballGoalsB']?.toString() ?? '0') ?? 0,
+        footballEvents: (json['footballEvents'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
+        pointsA: int.tryParse(json['pointsA']?.toString() ?? '0') ?? 0,
+        pointsB: int.tryParse(json['pointsB']?.toString() ?? '0') ?? 0,
+        setsWonA: int.tryParse(json['setsWonA']?.toString() ?? '0') ?? 0,
+        setsWonB: int.tryParse(json['setsWonB']?.toString() ?? '0') ?? 0,
+        currentSet: int.tryParse(json['currentSet']?.toString() ?? '1') ?? 1,
+        setHistory: (json['setHistory'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [],
         isMatchCompleted: json['isMatchCompleted'] == true,
         finalWinner: json['finalWinner']?.toString(),
         finalMargin: json['finalMargin']?.toString(),
@@ -460,8 +582,10 @@ class MatchScoreManager {
   factory MatchScoreManager() => _instance;
 
   final ValueNotifier<int> statsNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<int> liveStateNotifier = ValueNotifier<int>(0);
   final List<MatchResultItem> _matches = [];
   final Map<String, SavedSquadConfig> _savedSquads = {};
+  final Map<String, SavedMatchLiveState> _savedLiveStates = {};
 
   int _extraWins = 0;
   int _extraMatches = 0;
@@ -603,18 +727,62 @@ class MatchScoreManager {
     }
   }
 
-  final Map<String, SavedMatchLiveState> _savedLiveStates = {};
+  SavedMatchLiveState? getLiveStateSync(String bookingId) {
+    final strId = bookingId.trim();
+    if (strId.isEmpty) return null;
+    if (_savedLiveStates.containsKey(strId)) {
+      return _savedLiveStates[strId];
+    }
+    final clean = strId.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.isNotEmpty && _savedLiveStates.containsKey(clean)) {
+      return _savedLiveStates[clean];
+    }
+    for (final entry in _savedLiveStates.entries) {
+      if (entry.key == strId ||
+          entry.key == 'BK-$strId' ||
+          entry.key == 'ch_$strId' ||
+          (clean.isNotEmpty && entry.key.replaceAll(RegExp(r'[^0-9]'), '') == clean)) {
+        return entry.value;
+      }
+    }
+    return null;
+  }
+
+  bool isMatchCompleted(dynamic bookingId) {
+    final str = bookingId?.toString().trim() ?? '';
+    if (str.isEmpty) return false;
+    final clean = str.replaceAll(RegExp(r'[^0-9]'), '');
+    final match = _matches.any((m) {
+      final mId = m.bookingId.toString().trim();
+      final mClean = mId.replaceAll(RegExp(r'[^0-9]'), '');
+      return mId == str || (clean.isNotEmpty && mClean == clean);
+    });
+    if (match) return true;
+    final live = getLiveStateSync(str);
+    return live != null && live.isMatchCompleted;
+  }
 
   Future<SavedMatchLiveState?> getOrLoadMatchLiveState(String bookingId) async {
-    if (_savedLiveStates.containsKey(bookingId)) {
-      return _savedLiveStates[bookingId];
-    }
+    final strId = bookingId.trim();
+    if (strId.isEmpty) return null;
+
+    final cached = getLiveStateSync(strId);
+    if (cached != null) return cached;
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      final str = prefs.getString('live_state_$bookingId');
+      String? str = prefs.getString('live_state_$strId');
+      final clean = strId.replaceAll(RegExp(r'[^0-9]'), '');
+      if ((str == null || str.isEmpty) && clean.isNotEmpty) {
+        str = prefs.getString('live_state_$clean');
+      }
       if (str != null && str.isNotEmpty) {
         final state = SavedMatchLiveState.fromJson(Map<String, dynamic>.from(jsonDecode(str)));
-        _savedLiveStates[bookingId] = state;
+        _savedLiveStates[strId] = state;
+        if (clean.isNotEmpty) {
+          _savedLiveStates[clean] = state;
+        }
+        liveStateNotifier.value++;
         return state;
       }
     } catch (_) {}
@@ -622,18 +790,37 @@ class MatchScoreManager {
   }
 
   Future<void> saveMatchLiveState(SavedMatchLiveState state) async {
-    _savedLiveStates[state.bookingId] = state;
+    final strId = state.bookingId.trim();
+    _savedLiveStates[strId] = state;
+    final clean = strId.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.isNotEmpty) {
+      _savedLiveStates[clean] = state;
+    }
+    liveStateNotifier.value++;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('live_state_${state.bookingId}', jsonEncode(state.toJson()));
+      final jsonStr = jsonEncode(state.toJson());
+      await prefs.setString('live_state_$strId', jsonStr);
+      if (clean.isNotEmpty && clean != strId) {
+        await prefs.setString('live_state_$clean', jsonStr);
+      }
     } catch (_) {}
   }
 
   Future<void> clearMatchLiveState(String bookingId) async {
-    _savedLiveStates.remove(bookingId);
+    final strId = bookingId.trim();
+    _savedLiveStates.remove(strId);
+    final clean = strId.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.isNotEmpty) {
+      _savedLiveStates.remove(clean);
+    }
+    liveStateNotifier.value++;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('live_state_$bookingId');
+      await prefs.remove('live_state_$strId');
+      if (clean.isNotEmpty) {
+        await prefs.remove('live_state_$clean');
+      }
     } catch (_) {}
   }
 
@@ -661,6 +848,31 @@ class MatchScoreManager {
           _savedSquads[k] = SavedSquadConfig.fromJson(Map<String, dynamic>.from(v));
         });
       }
+
+      // Load all saved live states from SharedPreferences
+      final allKeys = prefs.getKeys();
+      for (final key in allKeys) {
+        if (key.startsWith('live_state_')) {
+          final bId = key.replaceFirst('live_state_', '');
+          final str = prefs.getString(key);
+          if (str != null && str.isNotEmpty) {
+            try {
+              final state = SavedMatchLiveState.fromJson(
+                Map<String, dynamic>.from(jsonDecode(str)),
+              );
+              _savedLiveStates[bId] = state;
+              final clean = bId.replaceAll(RegExp(r'[^0-9]'), '');
+              if (clean.isNotEmpty) {
+                _savedLiveStates[clean] = state;
+              }
+            } catch (e) {
+              debugPrint('Error loading live match state for $key: $e');
+            }
+          }
+        }
+      }
+
+      liveStateNotifier.value++;
       statsNotifier.value++;
     } catch (e) {
       debugPrint('Error loading MatchScoreManager data: $e');
