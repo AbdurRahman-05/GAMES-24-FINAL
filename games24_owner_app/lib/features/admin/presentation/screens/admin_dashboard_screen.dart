@@ -140,11 +140,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             children: [
               // 1. Live Operating Status & Quick Date Bar
               _buildVenueHeaderPulseBar(profile, nowFormatted),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
-              // 2. Subscription Status Banner (Urgent Alert or Pro Membership Status)
-              _buildSubscriptionCard(context, profile),
-              const SizedBox(height: 16),
+              if (profile.isSubscriptionEndingSoon) ...[
+                _buildSubscriptionCard(context, profile),
+                const SizedBox(height: 14),
+              ],
 
               // 3. Financial & Operational Bento Grid
               _buildPerformanceBentoSection(profile),
@@ -256,26 +257,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ],
       ),
       actions: [
-        // Sync / Refresh Indicator
-        IconButton(
-          onPressed: _refreshRealtimeData,
-          tooltip: 'Refresh Real-time Data',
-          icon: _isRefreshing
-              ? const SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF154D36)),
-                )
-              : Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: const Icon(Icons.sync_rounded, color: Color(0xFF334155), size: 18),
-                ),
-        ),
         // Fast Gate QR Scanner Shortcut
         IconButton(
           onPressed: () => context.push('/admin/qr-scanner'),
@@ -581,29 +562,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     fontSize: 10.5,
                     color: Color(0xFF64748B),
                     fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFDCFCE7),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF86EFAC)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF15803D)),
-                SizedBox(width: 4),
-                Text(
-                  'Verified KYC',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF15803D),
                   ),
                 ),
               ],
