@@ -128,34 +128,96 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildProAppBar(context, profile),
-      body: RefreshIndicator(
-        onRefresh: _refreshRealtimeData,
-        color: AppColors.primary,
-        backgroundColor: Colors.white,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Live Operating Status & Quick Date Bar
-              _buildVenueHeaderPulseBar(profile, nowFormatted),
-              const SizedBox(height: 14),
-
-              if (profile.isSubscriptionEndingSoon) ...[
-                _buildSubscriptionCard(context, profile),
-                const SizedBox(height: 14),
-              ],
-
-              // 3. Financial & Operational Bento Grid
-              _buildPerformanceBentoSection(profile),
-              const SizedBox(height: 20),
-
-              // 4. Live Customer Bookings Stream & Filter Header
-              _buildBookingsStreamSection(context, profile, bookings),
-            ],
+      body: Stack(
+        children: [
+          // Ambient Background Glow Elements
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF154D36).withValues(alpha: 0.09),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+          Positioned(
+            top: 260,
+            left: -60,
+            child: Container(
+              width: 230,
+              height: 230,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF0284C7).withValues(alpha: 0.06),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 80,
+            right: -40,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFEAB308).withValues(alpha: 0.05),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Main Scrollable Content
+          RefreshIndicator(
+            onRefresh: _refreshRealtimeData,
+            color: AppColors.primary,
+            backgroundColor: Colors.white,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 1. Live Operating Status & Quick Date Bar
+                  _buildVenueHeaderPulseBar(profile, nowFormatted),
+                  const SizedBox(height: 14),
+
+                  if (profile.isSubscriptionEndingSoon) ...[
+                    _buildSubscriptionCard(context, profile),
+                    const SizedBox(height: 14),
+                  ],
+
+                  // 2. Financial & Operational Bento Grid
+                  _buildPerformanceBentoSection(profile),
+                  const SizedBox(height: 14),
+
+                  // 3. Quick Operations Dock
+                  _buildQuickActionDock(context),
+                  const SizedBox(height: 20),
+
+                  // 4. Live Customer Bookings Stream & Filter Header
+                  _buildBookingsStreamSection(context, profile, bookings),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -527,30 +589,30 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   // --- 2. OPERATING STATUS & DATE PULSE BAR ---
   Widget _buildVenueHeaderPulseBar(TurfProfileState profile, String formattedDate) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(7.5),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFDCFCE7),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF475569)),
+            child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF15803D)),
           ),
-          const SizedBox(width: 9),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -558,18 +620,42 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 Text(
                   formattedDate,
                   style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.2,
                   ),
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  'Hours: ${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
+                  'Operating Hours: ${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
                   style: const TextStyle(
                     fontSize: 10.5,
                     color: Color(0xFF64748B),
                     fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF16A34A).withValues(alpha: 0.2)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF16A34A), size: 9),
+                SizedBox(width: 4),
+                Text(
+                  'Live',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF16A34A),
                   ),
                 ),
               ],
@@ -868,99 +954,183 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Business Performance',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 10),
-
-        // Hero Metric Card: Monthly Revenue GMV
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF154D36).withValues(alpha: 0.25),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Business Performance',
+              style: TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+                letterSpacing: -0.3,
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF16A34A).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 16),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Total Monthly Revenue (GMV)',
+                  Icon(Icons.sync_rounded, color: Color(0xFF16A34A), size: 12),
+                  SizedBox(width: 4),
+                  Text(
+                    'Live Synced',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFE2E8F0),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF16A34A),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                dynamicMonthRev > 0
-                    ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
-                    : '₹0',
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        // Hero Metric Card: Monthly Revenue GMV with Deep Obsidian Emerald & Watermark
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF071F15), Color(0xFF0C2B1E), Color(0xFF154D36)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: const Color(0xFF34D399).withValues(alpha: 0.25),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF154D36).withValues(alpha: 0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Pitch Watermark in top right corner
+              Positioned(
+                right: -25,
+                top: -25,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      width: 16,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '${activeMonthList.length} active bookings this month (${cancelledList.length} cancelled)',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.75),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
-                  minHeight: 5,
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 16),
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Total Monthly Revenue (GMV)',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFE2E8F0),
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF16A34A).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFF4ADE80).withValues(alpha: 0.4)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.trending_up_rounded, color: Color(0xFF4ADE80), size: 11),
+                            SizedBox(width: 3),
+                            Text(
+                              'Pacing',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF4ADE80),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      dynamicMonthRev > 0
+                          ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
+                          : '₹0',
+                      style: const TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.8,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${activeMonthList.length} active bookings this month (${cancelledList.length} cancelled)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withValues(alpha: 0.75),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: LinearProgressIndicator(
+                      value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
+                      minHeight: 5.5,
+                      backgroundColor: Colors.white.withValues(alpha: 0.15),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
         const SizedBox(height: 10),
 
-        // 4-Metric Grid: Today's Revenue, Today's Bookings, Month Bookings, Court Occupancy
+        // 4 Distinct Bento Mini Cards
         Row(
           children: [
-            // 1. Today's Revenue (Earnings)
+            // 1. Today's Revenue (Emerald Glow)
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Today's Revenue",
@@ -969,11 +1139,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 badgeText: '',
                 badgeColor: const Color(0xFF16A34A),
                 icon: Icons.currency_rupee_rounded,
-                iconColor: const Color(0xFF154D36),
+                iconColor: const Color(0xFF15803D),
+                gradientColors: const [Color(0xFFF0FDF4), Color(0xFFE8F9EE)],
+                borderColor: const Color(0xFF86EFAC),
               ),
             ),
             const SizedBox(width: 10),
-            // 2. Today's Booked Slots
+            // 2. Today's Booked Slots (Indigo Sport)
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Today's Slots",
@@ -982,7 +1154,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 badgeText: '',
                 badgeColor: const Color(0xFF16A34A),
                 icon: Icons.confirmation_number_rounded,
-                iconColor: const Color(0xFF154D36),
+                iconColor: const Color(0xFF4338CA),
+                gradientColors: const [Color(0xFFEEF2FF), Color(0xFFE5EAFF)],
+                borderColor: const Color(0xFFA5B4FC),
               ),
             ),
           ],
@@ -990,7 +1164,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         const SizedBox(height: 10),
         Row(
           children: [
-            // 3. Month Total Bookings
+            // 3. Month Total Bookings (Amber Champions)
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Month Bookings",
@@ -999,11 +1173,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 badgeText: '',
                 badgeColor: const Color(0xFF0F6D38),
                 icon: Icons.calendar_month_rounded,
-                iconColor: const Color(0xFF0F6D38),
+                iconColor: const Color(0xFFB45309),
+                gradientColors: const [Color(0xFFFFFBEB), Color(0xFFFEF5D4)],
+                borderColor: const Color(0xFFFCD34D),
               ),
             ),
             const SizedBox(width: 10),
-            // 4. Court Occupancy & Remaining
+            // 4. Court Occupancy (Sky Radar)
             Expanded(
               child: _buildBentoMiniCard(
                 title: "Court Occupancy",
@@ -1013,6 +1189,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 badgeColor: const Color(0xFF0284C7),
                 icon: Icons.pie_chart_rounded,
                 iconColor: const Color(0xFF0284C7),
+                gradientColors: const [Color(0xFFF0F9FF), Color(0xFFE2F3FF)],
+                borderColor: const Color(0xFF7DD3FC),
               ),
             ),
           ],
@@ -1079,18 +1257,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     required Color badgeColor,
     required IconData icon,
     required Color iconColor,
+    required List<Color> gradientColors,
+    required Color borderColor,
   }) {
     return Container(
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: borderColor, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: gradientColors.last.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1101,10 +1285,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(6.5),
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(9),
+                  boxShadow: [
+                    BoxShadow(
+                      color: iconColor.withValues(alpha: 0.12),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(icon, color: iconColor, size: 16),
               ),
@@ -1163,6 +1354,96 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+
+  // --- QUICK OPERATIONS DOCK ---
+  Widget _buildQuickActionDock(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildQuickActionItem(
+            icon: Icons.add_circle_outline_rounded,
+            label: 'Walk-in',
+            color: const Color(0xFF154D36),
+            bgColor: const Color(0xFFDCFCE7),
+            onTap: () => context.push('/admin/slots'),
+          ),
+          _buildQuickActionItem(
+            icon: Icons.qr_code_scanner_rounded,
+            label: 'Gate Pass',
+            color: const Color(0xFF0369A1),
+            bgColor: const Color(0xFFE0F2FE),
+            onTap: () => context.push('/admin/qr-scanner'),
+          ),
+          _buildQuickActionItem(
+            icon: Icons.calendar_month_rounded,
+            label: 'Slot Grid',
+            color: const Color(0xFF4338CA),
+            bgColor: const Color(0xFFEEF2FF),
+            onTap: () => context.push('/admin/slots'),
+          ),
+          _buildQuickActionItem(
+            icon: Icons.emoji_events_rounded,
+            label: 'Tourneys',
+            color: const Color(0xFFB45309),
+            bgColor: const Color(0xFFFEF3C7),
+            onTap: () => context.push('/admin/tournaments'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActionItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required Color bgColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 19),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1443,7 +1724,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isLiveNow
               ? const Color(0xFF16A34A)
@@ -1452,8 +1733,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 8,
+            color: isLiveNow
+                ? const Color(0xFF16A34A).withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
@@ -1461,287 +1744,337 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           onTap: () => _openBookingDetailsSheet(context, booking),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-            // Header Row: Sport Tag, Booking ID & Status Pill (Responsive Wrap to prevent overflow)
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF154D36).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(_getSportEmoji(booking.sport), style: const TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
-                          Text(
-                            booking.sport,
-                            style: const TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              color: Color(0xFF154D36),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      booking.id,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ),
-                Wrap(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Match Header Row
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+                child: Wrap(
                   spacing: 6,
-                  runSpacing: 4,
+                  runSpacing: 6,
+                  alignment: WrapAlignment.spaceBetween,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    if (booking.isOpenMatch)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFF1F2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFFECDD3)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFBE123C)),
-                            const SizedBox(width: 3),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 120),
-                              child: Text(
-                                booking.teamName != null && booking.teamName!.isNotEmpty
-                                    ? '⚔️ ${booking.teamName}'
-                                    : '⚔️ Open Challenge',
-                                style: const TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFFBE123C),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                      decoration: BoxDecoration(
-                        color: badgeBg,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isLiveNow) ...[
-                            Container(
-                              width: 5,
-                              height: 5,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF16A34A),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            badgeLabel,
-                            style: TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w800,
-                              color: badgeTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const Divider(height: 16, color: Color(0xFFF1F5F9)),
-
-            // Player Info & Schedule Breakdown
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFDCFCE7),
-                  child: Text(
-                    booking.customerName.isNotEmpty ? booking.customerName[0].toUpperCase() : 'P',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        booking.customerName,
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      _buildBookingScheduleDisplay(booking),
-                      const SizedBox(height: 3),
-                      Text(
-                        booking.courtName,
-                        style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '₹${booking.amount.toInt()}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    if (booking.customerPhone.isNotEmpty)
-                      InkWell(
-                        onTap: () {
-                          ToastUtils.showSuccess(context, "Contacting ${booking.customerName}: ${booking.customerPhone}");
-                        },
-                        borderRadius: BorderRadius.circular(6),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(6),
+                            color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.call_rounded, size: 10, color: Color(0xFF475569)),
-                              SizedBox(width: 3),
-                              Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                              Text(_getSportEmoji(booking.sport), style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 4),
+                              Text(
+                                booking.sport,
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF154D36),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Operational Action Buttons
-            if (isCompleted)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: const [
-                        Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF16A34A)),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          'Match Completed & Closed',
-                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                          booking.id,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF64748B),
+                          ),
                         ),
                       ],
                     ),
-                    Text(
-                      '₹${booking.amount.toInt()} Settled',
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        if (booking.isOpenMatch)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF1F2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFFECDD3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFBE123C)),
+                                const SizedBox(width: 3),
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 120),
+                                  child: Text(
+                                    booking.teamName != null && booking.teamName!.isNotEmpty
+                                        ? '⚔️ ${booking.teamName}'
+                                        : '⚔️ Open Challenge',
+                                    style: const TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFFBE123C),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                          decoration: BoxDecoration(
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isLiveNow) ...[
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF16A34A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Text(
+                                badgeLabel,
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: badgeTextColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              )
-            else if (isCancelled)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFECACA)),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFFDC2626)),
-                    SizedBox(width: 6),
-                    Text(
-                      'Slot Cancelled & Released',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFDC2626)),
-                    ),
-                  ],
-                ),
-              )
-            else
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF154D36),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 0,
-                  ),
-                  icon: const Icon(Icons.visibility_outlined, size: 15),
-                  label: const Text(
-                    'View Details',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () => _openBookingDetailsSheet(context, booking),
                 ),
               ),
-          ],
+
+              // 2. Player Info & Schedule Breakdown
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 19,
+                      backgroundColor: isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFDCFCE7),
+                      child: Text(
+                        booking.customerName.isNotEmpty ? booking.customerName[0].toUpperCase() : 'P',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            booking.customerName,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          _buildBookingScheduleDisplay(booking),
+                          const SizedBox(height: 3),
+                          Text(
+                            booking.courtName,
+                            style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '₹${booking.amount.toInt()}',
+                          style: TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w900,
+                            color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        if (booking.customerPhone.isNotEmpty)
+                          InkWell(
+                            onTap: () {
+                              ToastUtils.showSuccess(context, "Contacting ${booking.customerName}: ${booking.customerPhone}");
+                            },
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.call_rounded, size: 10, color: Color(0xFF475569)),
+                                  SizedBox(width: 3),
+                                  Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // 3. Stadium Match Pass Perforation Line with Cut-outs
+              Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 14,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.horizontal(right: Radius.circular(7)),
+                    ),
+                  ),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const dashWidth = 4.0;
+                        const dashSpace = 4.0;
+                        final dashCount = (constraints.constrainWidth() / (dashWidth + dashSpace)).floor();
+                        return Flex(
+                          direction: Axis.horizontal,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: List.generate(
+                            dashCount,
+                            (_) => const SizedBox(
+                              width: dashWidth,
+                              height: 1.2,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(color: Color(0xFFE2E8F0)),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Container(
+                    width: 7,
+                    height: 14,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.horizontal(left: Radius.circular(7)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // 4. Operational Action
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                child: isCompleted
+                    ? Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF16A34A)),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Match Completed & Closed',
+                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '₹${booking.amount.toInt()} Settled',
+                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                            ),
+                          ],
+                        ),
+                      )
+                    : isCancelled
+                        ? Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFFDC2626)),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Slot Cancelled & Released',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFDC2626)),
+                                ),
+                              ],
+                            ),
+                          )
+                        : SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF154D36),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                elevation: 0,
+                              ),
+                              icon: const Icon(Icons.visibility_outlined, size: 15),
+                              label: const Text(
+                                'View Details',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                              onPressed: () => _openBookingDetailsSheet(context, booking),
+                            ),
+                          ),
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   void _openBookingDetailsSheet(BuildContext context, TurfBookingHistoryItem booking) {
