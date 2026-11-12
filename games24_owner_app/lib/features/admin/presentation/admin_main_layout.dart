@@ -31,65 +31,74 @@ class AdminMainLayout extends StatelessWidget {
         extendBody: true,
         body: child,
         bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.cardDark : Colors.white,
-            border: Border(
-              top: BorderSide(
-                color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
-                width: 1,
-              ),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, -3),
-              ),
-            ],
-          ),
+          color: isDark ? AppColors.backgroundDark : Colors.white,
           child: SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: currentIndex == 0 ? 12 : 10,
-                    child: _buildNavItem(
-                      index: 0,
-                      icon: Icons.dashboard_rounded,
-                      label: 'Dashboard',
-                      isSelected: currentIndex == 0,
-                    ),
+              padding: const EdgeInsets.fromLTRB(14, 4, 14, 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.cardDark : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                    width: 1.2,
                   ),
-                  Expanded(
-                    flex: currentIndex == 1 ? 12 : 10,
-                    child: _buildNavItem(
-                      index: 1,
-                      icon: Icons.edit_calendar_rounded,
-                      label: 'Slots',
-                      isSelected: currentIndex == 1,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 18,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 6),
                     ),
-                  ),
-                  Expanded(
-                    flex: currentIndex == 2 ? 12 : 10,
-                    child: _buildNavItem(
-                      index: 2,
-                      icon: Icons.emoji_events_rounded,
-                      label: 'Tournaments',
-                      isSelected: currentIndex == 2,
+                    BoxShadow(
+                      color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  Expanded(
-                    flex: currentIndex == 3 ? 12 : 10,
-                    child: _buildNavItem(
-                      index: 3,
-                      icon: Icons.person_rounded,
-                      label: 'Profile',
-                      isSelected: currentIndex == 3,
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: currentIndex == 0 ? 12 : 10,
+                      child: _buildNavItem(
+                        index: 0,
+                        icon: Icons.dashboard_rounded,
+                        label: 'Dashboard',
+                        isSelected: currentIndex == 0,
+                      ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      flex: currentIndex == 1 ? 12 : 10,
+                      child: _buildNavItem(
+                        index: 1,
+                        icon: Icons.edit_calendar_rounded,
+                        label: 'Slots',
+                        isSelected: currentIndex == 1,
+                      ),
+                    ),
+                    Expanded(
+                      flex: currentIndex == 2 ? 12 : 10,
+                      child: _buildNavItem(
+                        index: 2,
+                        icon: Icons.emoji_events_rounded,
+                        label: 'Tournaments',
+                        isSelected: currentIndex == 2,
+                      ),
+                    ),
+                    Expanded(
+                      flex: currentIndex == 3 ? 12 : 10,
+                      child: _buildNavItem(
+                        index: 3,
+                        icon: Icons.person_rounded,
+                        label: 'Profile',
+                        isSelected: currentIndex == 3,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
