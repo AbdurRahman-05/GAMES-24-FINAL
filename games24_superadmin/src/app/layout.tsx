@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Games24 Super Admin | Venue Registrations & Verified Partners",
-  description: "Centralized super administration portal for verifying turf registrations, managing KYC, and auditing venue owners.",
+  title: "Games24 Control Center | Super Admin & Live Oversight",
+  description: "Render-inspired developer and operations portal for Games24 venue approvals, real-time match tracking, and financial reconciliation.",
 };
 
 export default function RootLayout({
@@ -23,8 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`h-full bg-slate-50 antialiased ${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-full flex flex-col text-slate-900 bg-slate-50 font-sans">{children}</body>
+    <html lang="en" className={`dark h-full bg-[#090D16] antialiased ${geistSans.variable} ${geistMono.variable}`}>
+      <body className="min-h-full flex flex-col bg-[#090D16] text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
+        {children}
+      </body>
     </html>
   );
 }
