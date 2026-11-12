@@ -1456,11 +1456,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _openBookingDetailsSheet(context, booking),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             // Header Row: Sport Tag, Booking ID & Status Pill (Responsive Wrap to prevent overflow)
             Wrap(
               spacing: 6,
@@ -1709,67 +1714,361 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 ),
               )
             else
-              Row(
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                        elevation: 0,
-                      ),
-                      icon: const Icon(Icons.check_circle_outline_rounded, size: 14),
-                      label: const FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Gate Check-in',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                        ),
-                      ),
-                      onPressed: () => _performQuickGateCheckIn(booking.customerName),
-                    ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF154D36),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    elevation: 0,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 5,
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF334155),
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                      ),
-                      icon: const Icon(Icons.published_with_changes_rounded, size: 14),
-                      label: const FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Alter / Shift Slot',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                        ),
-                      ),
-                      onPressed: () => _openAlterModal(
-                        context,
-                        bookingId: booking.id,
-                        playerName: booking.customerName,
-                        time: booking.effectiveTimeSlot,
-                        courtName: booking.courtName,
-                      ),
-                    ),
+                  icon: const Icon(Icons.visibility_outlined, size: 15),
+                  label: const Text(
+                    'View Details',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                   ),
-                ],
+                  onPressed: () => _openBookingDetailsSheet(context, booking),
+                ),
               ),
           ],
         ),
       ),
+    ),
+  ),
+);
+  }
+
+  void _openBookingDetailsSheet(BuildContext context, TurfBookingHistoryItem booking) {
+    final now = DateTime.now();
+    final isCompleted = booking.isCompleted(now);
+    final isCancelled = booking.status.toLowerCase() == 'cancelled';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => SafeArea(
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.88,
+          ),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top handle
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(9),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.confirmation_number_rounded,
+                              color: Color(0xFF154D36),
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  booking.id,
+                                  style: const TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 1),
+                                Text(
+                                  '${booking.sport} • ${booking.courtName}',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF64748B),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Details Card
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildModalDetailRow(
+                        'Customer Name',
+                        booking.customerName,
+                        Icons.person_rounded,
+                      ),
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Phone Number',
+                        booking.customerPhone.isNotEmpty ? booking.customerPhone : 'Not Provided',
+                        Icons.phone_rounded,
+                        trailing: booking.customerPhone.isNotEmpty
+                            ? InkWell(
+                                onTap: () => ToastUtils.showSuccess(
+                                  context,
+                                  'Calling ${booking.customerName}: ${booking.customerPhone}',
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.call_rounded, size: 10.5, color: Color(0xFF154D36)),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Call',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF154D36),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Date',
+                        booking.effectiveDate.isNotEmpty ? booking.effectiveDate : (booking.date.isNotEmpty ? booking.date : 'Today'),
+                        Icons.calendar_today_rounded,
+                      ),
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Time Slot',
+                        booking.effectiveTimeSlot,
+                        Icons.access_time_rounded,
+                      ),
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Court / Venue',
+                        booking.courtName,
+                        Icons.stadium_rounded,
+                      ),
+                      if (booking.teamName != null && booking.teamName!.isNotEmpty) ...[
+                        const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                        _buildModalDetailRow(
+                          'Team / Match',
+                          booking.teamName!,
+                          Icons.sports_soccer_rounded,
+                        ),
+                      ],
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Payment Mode',
+                        booking.paymentMethod,
+                        Icons.payment_rounded,
+                      ),
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Amount',
+                        '₹${booking.amount.toInt()}',
+                        Icons.currency_rupee_rounded,
+                        valueColor: const Color(0xFF154D36),
+                      ),
+                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
+                      _buildModalDetailRow(
+                        'Status',
+                        booking.status,
+                        Icons.verified_rounded,
+                        valueColor: isCancelled
+                            ? const Color(0xFFDC2626)
+                            : (isCompleted ? const Color(0xFF475569) : const Color(0xFF16A34A)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Operational Action Buttons
+                if (!isCancelled && !isCompleted) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF154D36),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Gate Check-in (Open Scanner)',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        context.push('/admin/qr-scanner');
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF334155),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.published_with_changes_rounded, size: 16),
+                      label: const Text(
+                        'Alter / Shift Slot',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _openAlterModal(
+                          context,
+                          bookingId: booking.id,
+                          playerName: booking.customerName,
+                          time: booking.effectiveTimeSlot,
+                          courtName: booking.courtName,
+                        );
+                      },
+                    ),
+                  ),
+                ] else ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF154D36),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                      label: const Text(
+                        'Open Gate Scanner',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        context.push('/admin/qr-scanner');
+                      },
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalDetailRow(
+    String label,
+    String value,
+    IconData icon, {
+    Widget? trailing,
+    Color? valueColor,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: const Color(0xFF64748B)),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: trailing ??
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: valueColor ?? const Color(0xFF0F172A),
+                ),
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+              ),
+        ),
+      ],
     );
   }
 
