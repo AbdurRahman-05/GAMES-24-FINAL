@@ -257,7 +257,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         ],
       ),
       actions: [
-        // Fast Gate QR Scanner Shortcut
+        // Fast Gate QR Scanner Shortcut (positioned at top right)
         IconButton(
           onPressed: () => context.push('/admin/qr-scanner'),
           tooltip: 'Fast Gate QR Scanner',
@@ -271,21 +271,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF154D36), size: 18),
           ),
         ),
-        // Logout Shortcut
-        IconButton(
-          onPressed: () => _handleLogout(context),
-          tooltip: 'Log Out',
-          icon: Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.red.shade200),
-            ),
-            child: Icon(Icons.logout_rounded, color: Colors.red.shade700, size: 18),
-          ),
-        ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 6),
       ],
     );
   }
