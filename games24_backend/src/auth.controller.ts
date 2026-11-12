@@ -150,5 +150,59 @@ export class AuthController {
   async createTeamMatchChallenge(@Body() body: any) {
     return this.authService.createTeamMatchChallenge(body);
   }
+
+  // LEADERBOARD & RANKINGS
+  @Get('leaderboard')
+  async getLeaderboard(
+    @Query('scope') scope?: string,
+    @Query('sport') sport?: string,
+    @Query('role') role?: string,
+    @Query('city') city?: string,
+    @Query('state') state?: string,
+    @Query('phone') phone?: string,
+    @Query('playerId') playerId?: string,
+  ) {
+    return this.authService.getLeaderboard({
+      scope,
+      sport,
+      role,
+      city,
+      state,
+      phone,
+      playerId,
+    });
+  }
+
+  // FRIENDS & CONNECTIONS
+  @Post('friends/request')
+  async sendFriendRequest(@Body() body: any) {
+    return this.authService.sendFriendRequest(body);
+  }
+
+  @Post('friends/respond')
+  async respondFriendRequest(
+    @Body() body: { requestId: string; action: 'accept' | 'decline'; responderPhone?: string; responderPlayerId?: string },
+  ) {
+    return this.authService.respondFriendRequest(body);
+  }
+
+  @Get('friends')
+  async getPlayerFriends(@Query('identifier') identifier: string) {
+    return this.authService.getPlayerFriends(identifier || '');
+  }
+
+  // PLAYER PUBLIC PROFILE & HEAD-TO-HEAD
+  @Get('player/:identifier')
+  async getPlayerPublicProfile(
+    @Param('identifier') identifier: string,
+    @Query('caller') caller?: string,
+  ) {
+    return this.authService.getPlayerPublicProfile(identifier, caller);
+  }
+
+  @Patch('player/profile')
+  async updatePlayerProfile(@Body() body: any) {
+    return this.authService.updatePlayerProfile(body);
+  }
 }
 

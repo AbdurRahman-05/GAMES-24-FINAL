@@ -27,8 +27,13 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   String _fullName = 'Loading...';
   String _mobileNumber = '';
-  String _preferredSport = 'Football';
-  String _playerId = 'PLY-1001';
+  String _preferredSport = 'Cricket';
+  String _playerId = 'PLY-0001';
+  String _city = 'Chennai';
+  String _state = 'Tamil Nadu';
+  String _role = 'All-Rounder';
+  String _rank = '#1';
+  String _points = '3,580';
 
   @override
   void initState() {
@@ -41,13 +46,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     final rawPhone = prefs.getString('mobileNumber') ?? '';
     final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
-    final fallbackId = 'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '1001'}';
+    final fallbackId = 'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '0001'}';
 
     setState(() {
       _fullName = prefs.getString('fullName') ?? 'Active Player';
       _mobileNumber = rawPhone;
-      _preferredSport = prefs.getString('preferredSport') ?? 'Football';
+      _preferredSport = prefs.getString('preferredSport') ?? 'Cricket';
       _playerId = prefs.getString('playerId') ?? fallbackId;
+      _city = prefs.getString('userCity') ?? 'Chennai';
+      _state = prefs.getString('userState') ?? 'Tamil Nadu';
+      _role = prefs.getString('userRole') ?? 'All-Rounder';
     });
 
     if (_mobileNumber.isNotEmpty) {
@@ -75,6 +83,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } catch (e) {
         debugPrint("Error refreshing player profile from backend: $e");
       }
+
+      // Also fetch rank and points from leaderboard
+      try {
+        final lbRes = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/leaderboard?city=$_city&phone=$_mobileNumber&playerId=$_playerId')).timeout(const Duration(seconds: 4));
+        if (lbRes.statusCode == 200) {
+          final lbData = jsonDecode(lbRes.body);
+          if (mounted && lbData['currentUserRank'] != null) {
+            setState(() {
+              _rank = '#${lbData['currentUserRank']['rank'] ?? 1}';
+              _points = '${lbData['currentUserRank']['points'] ?? '3,580'}';
+              if (lbData['currentUserRank']['role'] != null) {
+                _role = lbData['currentUserRank']['role'];
+              }
+            });
+          }
+        }
+      } catch (_) {}
     }
   }
 
@@ -168,8 +193,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildMenuItem(
               context: context,
               icon: Icons.leaderboard_outlined,
-              title: 'Leaderboard',
-              subtitle: 'City rankings & tournament standings',
+              title: 'Leaderboard & Standings',
+              subtitle: '$_rank in $_city • Friends, City, State & Sport rankings',
               onTap: () {
                 Navigator.push(
                   context,
@@ -357,6 +382,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: const Icon(Icons.copy_rounded, size: 12, color: Color(0xFF166534)),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, color: Color(0xFF166534), size: 13),
+                    const SizedBox(width: 2),
+                    Expanded(
+                      child: Text(
+                        '$_city, $_state • $_preferredSport $_role',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF374151),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF0F6D38), Color(0xFF166534)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0F6D38).withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.emoji_events_rounded, color: Colors.amberAccent, size: 14),
+                        const SizedBox(width: 5),
+                        Text(
+                          '$_rank in $_city • $_points PTS',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(Icons.chevron_right, color: Colors.white, size: 14),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),

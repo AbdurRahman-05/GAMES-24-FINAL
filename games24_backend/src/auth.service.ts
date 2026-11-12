@@ -1307,6 +1307,1114 @@ export class AuthService {
     return { success: true, message: 'Team match scheduled successfully!', challenge: newChallenge };
   }
 
+  // ==========================================
+  // FRIENDS & LEADERBOARD SYSTEM
+  // ==========================================
+
+  private getFriendsFilePath(): string {
+    const dir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    return path.join(dir, 'friends.json');
+  }
+
+  private readFriendRequests(): any[] {
+    try {
+      const file = this.getFriendsFilePath();
+      if (fs.existsSync(file)) {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+      }
+    } catch {
+      // ignore
+    }
+    // Seed initial friendships: Abdur & mafaz are friends, Vignesh has pending request to Abdur
+    const seed = [
+      {
+        id: 'FR-SEED-1',
+        fromPlayerId: 'PLY-0002',
+        fromName: 'mafaz',
+        fromPhone: '+918124817806',
+        toPlayerId: 'PLY-0001',
+        toName: 'Abdur',
+        toPhone: '+919087786231',
+        status: 'accepted',
+        createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+        resolvedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      },
+      {
+        id: 'FR-SEED-2',
+        fromPlayerId: 'PLY-0003',
+        fromName: 'Vignesh',
+        fromPhone: '+917010396731',
+        toPlayerId: 'PLY-0001',
+        toName: 'Abdur',
+        toPhone: '+919087786231',
+        status: 'pending',
+        createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+    ];
+    this.writeFriendRequests(seed);
+    return seed;
+  }
+
+  private writeFriendRequests(requests: any[]) {
+    try {
+      const file = this.getFriendsFilePath();
+      fs.writeFileSync(file, JSON.stringify(requests, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Failed to write friends', e);
+    }
+  }
+
+  private getProfilesFilePath(): string {
+    const dir = path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    return path.join(dir, 'player_profiles.json');
+  }
+
+  private readPlayerProfiles(): any[] {
+    try {
+      const file = this.getProfilesFilePath();
+      if (fs.existsSync(file)) {
+        return JSON.parse(fs.readFileSync(file, 'utf8'));
+      }
+    } catch {
+      // ignore
+    }
+    const seed = this.getDefaultPlayerProfiles();
+    this.writePlayerProfiles(seed);
+    return seed;
+  }
+
+  private writePlayerProfiles(profiles: any[]) {
+    try {
+      const file = this.getProfilesFilePath();
+      fs.writeFileSync(file, JSON.stringify(profiles, null, 2), 'utf8');
+    } catch (e) {
+      console.error('Failed to write player profiles', e);
+    }
+  }
+
+  private getDefaultPlayerProfiles(): any[] {
+    return [
+      {
+        playerId: 'PLY-0001',
+        phone: '+919087786231',
+        fullName: 'Abdur',
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'All-Rounder',
+        matchesPlayed: 18,
+        wins: 15,
+        losses: 3,
+        runs: 460,
+        wickets: 18,
+        battingAvg: 46.0,
+        strikeRate: 158.4,
+        bowlingEcon: 6.8,
+        fifties: 3,
+        hundreds: 0,
+        goals: 8,
+        assists: 5,
+        cleanSheets: 2,
+        mvpCount: 6,
+        fairPlayRating: 5.0,
+        points: 3580,
+        badge: 'Universal Elite',
+        form: '96%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-0002',
+        phone: '+918124817806',
+        fullName: 'mafaz',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'Batter',
+        matchesPlayed: 15,
+        wins: 11,
+        losses: 4,
+        runs: 490,
+        wickets: 2,
+        battingAvg: 49.0,
+        strikeRate: 165.2,
+        bowlingEcon: 8.5,
+        fifties: 4,
+        hundreds: 1,
+        goals: 4,
+        assists: 2,
+        cleanSheets: 0,
+        mvpCount: 4,
+        fairPlayRating: 4.9,
+        points: 3240,
+        badge: 'Turf Master',
+        form: '88%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-0003',
+        phone: '+917010396731',
+        fullName: 'Vignesh',
+        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'Bowler',
+        matchesPlayed: 14,
+        wins: 10,
+        losses: 4,
+        runs: 95,
+        wickets: 26,
+        battingAvg: 15.8,
+        strikeRate: 110.0,
+        bowlingEcon: 5.9,
+        fifties: 0,
+        hundreds: 0,
+        goals: 0,
+        assists: 1,
+        cleanSheets: 0,
+        mvpCount: 3,
+        fairPlayRating: 4.9,
+        points: 3110,
+        badge: 'Wicket Machine',
+        form: '85%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1014',
+        phone: '+919876543201',
+        fullName: 'Karthik Raman',
+        avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'Bowler',
+        matchesPlayed: 16,
+        wins: 12,
+        losses: 4,
+        runs: 80,
+        wickets: 28,
+        battingAvg: 13.3,
+        strikeRate: 105.0,
+        bowlingEcon: 5.4,
+        fifties: 0,
+        hundreds: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 4,
+        fairPlayRating: 4.8,
+        points: 3150,
+        badge: 'Death Overs Ace',
+        form: '86%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1022',
+        phone: '+919876543202',
+        fullName: 'Sanjay Verma',
+        avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Football',
+        role: 'Midfielder',
+        matchesPlayed: 14,
+        wins: 10,
+        losses: 4,
+        runs: 0,
+        wickets: 0,
+        goals: 9,
+        assists: 14,
+        cleanSheets: 3,
+        mvpCount: 3,
+        fairPlayRating: 4.9,
+        points: 2850,
+        badge: 'Playmaker',
+        form: '82%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1031',
+        phone: '+919876543203',
+        fullName: 'Praveen Kumar',
+        avatarUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150',
+        city: 'Coimbatore',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'All-Rounder',
+        matchesPlayed: 13,
+        wins: 9,
+        losses: 4,
+        runs: 280,
+        wickets: 15,
+        battingAvg: 35.0,
+        strikeRate: 142.0,
+        bowlingEcon: 6.9,
+        fifties: 2,
+        hundreds: 0,
+        goals: 2,
+        assists: 1,
+        cleanSheets: 0,
+        mvpCount: 2,
+        fairPlayRating: 4.8,
+        points: 2680,
+        badge: 'Clutch Striker',
+        form: '78%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1045',
+        phone: '+919876543204',
+        fullName: 'Rohan Sharma',
+        avatarUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        sport: 'Cricket',
+        role: 'Batter',
+        matchesPlayed: 17,
+        wins: 14,
+        losses: 3,
+        runs: 560,
+        wickets: 1,
+        battingAvg: 56.0,
+        strikeRate: 172.5,
+        bowlingEcon: 9.0,
+        fifties: 5,
+        hundreds: 1,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 5,
+        fairPlayRating: 4.9,
+        points: 3450,
+        badge: 'Century King',
+        form: '92%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1052',
+        phone: '+919876543205',
+        fullName: 'Deepak Gowda',
+        avatarUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        sport: 'Football',
+        role: 'Forward / Striker',
+        matchesPlayed: 16,
+        wins: 12,
+        losses: 4,
+        goals: 21,
+        assists: 6,
+        cleanSheets: 1,
+        mvpCount: 4,
+        fairPlayRating: 4.7,
+        points: 3120,
+        badge: 'Golden Boot',
+        form: '84%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1067',
+        phone: '+919876543206',
+        fullName: 'Ananya Deshmukh',
+        avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        sport: 'Badminton',
+        role: 'Singles Specialist',
+        matchesPlayed: 18,
+        wins: 16,
+        losses: 2,
+        runs: 0,
+        wickets: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 6,
+        fairPlayRating: 5.0,
+        points: 3310,
+        badge: 'Court Queen',
+        form: '94%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1078',
+        phone: '+919876543207',
+        fullName: 'Vikram Sethi',
+        avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        city: 'Delhi NCR',
+        state: 'Delhi',
+        sport: 'Football',
+        role: 'Forward / Striker',
+        matchesPlayed: 18,
+        wins: 15,
+        losses: 3,
+        goals: 24,
+        assists: 8,
+        cleanSheets: 0,
+        mvpCount: 6,
+        fairPlayRating: 4.9,
+        points: 3420,
+        badge: 'Apex Predator',
+        form: '94%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1089',
+        phone: '+919876543208',
+        fullName: 'Sameer Khan',
+        avatarUrl: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150',
+        city: 'Delhi NCR',
+        state: 'Delhi',
+        sport: 'Cricket',
+        role: 'All-Rounder',
+        matchesPlayed: 15,
+        wins: 11,
+        losses: 4,
+        runs: 340,
+        wickets: 16,
+        battingAvg: 37.7,
+        strikeRate: 148.0,
+        bowlingEcon: 6.7,
+        fifties: 2,
+        hundreds: 0,
+        goals: 1,
+        assists: 2,
+        cleanSheets: 0,
+        mvpCount: 3,
+        fairPlayRating: 4.8,
+        points: 2980,
+        badge: 'Impact Player',
+        form: '82%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1095',
+        phone: '+919876543209',
+        fullName: 'Rahul Dravid S.',
+        avatarUrl: 'https://images.unsplash.com/photo-1463453091185-61582044d556?w=150',
+        city: 'Hyderabad',
+        state: 'Telangana',
+        sport: 'Cricket',
+        role: 'Wicket-Keeper',
+        matchesPlayed: 14,
+        wins: 10,
+        losses: 4,
+        runs: 380,
+        wickets: 0,
+        battingAvg: 42.2,
+        strikeRate: 135.0,
+        catches: 18,
+        stumpings: 6,
+        fifties: 3,
+        hundreds: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 3,
+        fairPlayRating: 5.0,
+        points: 2840,
+        badge: 'Safe Hands',
+        form: '80%',
+        isVerified: true,
+      },
+      {
+        playerId: 'PLY-1102',
+        phone: '+919876543210',
+        fullName: 'Syed Ibrahim',
+        avatarUrl: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150',
+        city: 'Hyderabad',
+        state: 'Telangana',
+        sport: 'Football',
+        role: 'Goalkeeper',
+        matchesPlayed: 14,
+        wins: 9,
+        losses: 5,
+        goals: 0,
+        assists: 1,
+        cleanSheets: 7,
+        saves: 45,
+        mvpCount: 3,
+        fairPlayRating: 4.9,
+        points: 2640,
+        badge: 'The Wall',
+        form: '76%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1115',
+        phone: '+919876543211',
+        fullName: 'Gautam Menon',
+        avatarUrl: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'Wicket-Keeper',
+        matchesPlayed: 12,
+        wins: 8,
+        losses: 4,
+        runs: 270,
+        wickets: 0,
+        battingAvg: 33.7,
+        strikeRate: 128.0,
+        catches: 14,
+        stumpings: 4,
+        fifties: 2,
+        hundreds: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 2,
+        fairPlayRating: 4.8,
+        points: 2520,
+        badge: 'Gloveman',
+        form: '74%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1123',
+        phone: '+919876543212',
+        fullName: 'Aditya Rao',
+        avatarUrl: 'https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?w=150',
+        city: 'Bangalore',
+        state: 'Karnataka',
+        sport: 'Badminton',
+        role: 'Doubles Specialist',
+        matchesPlayed: 15,
+        wins: 11,
+        losses: 4,
+        runs: 0,
+        wickets: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 3,
+        fairPlayRating: 4.8,
+        points: 2740,
+        badge: 'Smash Specialist',
+        form: '81%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1134',
+        phone: '+919876543213',
+        fullName: 'Kishore Raj',
+        avatarUrl: 'https://images.unsplash.com/photo-1531891437562-4301cf35b7e4?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Football',
+        role: 'Defender',
+        matchesPlayed: 13,
+        wins: 9,
+        losses: 4,
+        goals: 2,
+        assists: 4,
+        cleanSheets: 6,
+        mvpCount: 2,
+        fairPlayRating: 4.9,
+        points: 2610,
+        badge: 'Stopper',
+        form: '75%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1145',
+        phone: '+919876543214',
+        fullName: 'Naveen Balaji',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        city: 'Madurai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'Bowler',
+        matchesPlayed: 12,
+        wins: 8,
+        losses: 4,
+        runs: 60,
+        wickets: 21,
+        battingAvg: 12.0,
+        strikeRate: 98.0,
+        bowlingEcon: 6.2,
+        fifties: 0,
+        hundreds: 0,
+        goals: 0,
+        assists: 0,
+        cleanSheets: 0,
+        mvpCount: 2,
+        fairPlayRating: 4.7,
+        points: 2430,
+        badge: 'Spinner',
+        form: '72%',
+        isVerified: false,
+      },
+      {
+        playerId: 'PLY-1156',
+        phone: '+919876543215',
+        fullName: 'Ashwin Nathan',
+        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+        city: 'Chennai',
+        state: 'Tamil Nadu',
+        sport: 'Cricket',
+        role: 'All-Rounder',
+        matchesPlayed: 15,
+        wins: 11,
+        losses: 4,
+        runs: 320,
+        wickets: 15,
+        battingAvg: 35.5,
+        strikeRate: 152.0,
+        bowlingEcon: 6.5,
+        fifties: 2,
+        hundreds: 0,
+        goals: 2,
+        assists: 3,
+        cleanSheets: 0,
+        mvpCount: 3,
+        fairPlayRating: 4.9,
+        points: 2940,
+        badge: 'Dual Threat',
+        form: '83%',
+        isVerified: true,
+      },
+    ];
+  }
+
+  private normalizePhone(phone?: string): string {
+    if (!phone) return '';
+    const clean = phone.replace(/\D/g, '');
+    return clean.length >= 10 ? clean.slice(-10) : clean;
+  }
+
+  private areFriends(
+    caller: { phone?: string; playerId?: string },
+    target: { phone?: string; playerId?: string },
+    requests: any[]
+  ): boolean {
+    const cPhone = this.normalizePhone(caller.phone);
+    const cId = caller.playerId?.toUpperCase();
+    const tPhone = this.normalizePhone(target.phone);
+    const tId = target.playerId?.toUpperCase();
+
+    return requests.some((req) => {
+      if (req.status !== 'accepted') return false;
+      const fPhone = this.normalizePhone(req.fromPhone);
+      const toPhone = this.normalizePhone(req.toPhone);
+      const fId = req.fromPlayerId?.toUpperCase();
+      const toId = req.toPlayerId?.toUpperCase();
+
+      const fromMatchesCaller = (cId && fId === cId) || (cPhone && fPhone === cPhone);
+      const toMatchesTarget = (tId && toId === tId) || (tPhone && toPhone === tPhone);
+      if (fromMatchesCaller && toMatchesTarget) return true;
+
+      const fromMatchesTarget = (tId && fId === tId) || (tPhone && fPhone === tPhone);
+      const toMatchesCaller = (cId && toId === cId) || (cPhone && toPhone === cPhone);
+      return fromMatchesTarget && toMatchesCaller;
+    });
+  }
+
+  private getFriendshipDetails(
+    caller: { phone?: string; playerId?: string },
+    target: { phone?: string; playerId?: string },
+    requests: any[]
+  ): { status: 'none' | 'pending_sent' | 'pending_received' | 'accepted'; requestId?: string } {
+    const cPhone = this.normalizePhone(caller.phone);
+    const cId = caller.playerId?.toUpperCase();
+    const tPhone = this.normalizePhone(target.phone);
+    const tId = target.playerId?.toUpperCase();
+
+    if ((cId && tId && cId === tId) || (cPhone && tPhone && cPhone === tPhone)) {
+      return { status: 'none' };
+    }
+
+    for (const req of requests) {
+      const fPhone = this.normalizePhone(req.fromPhone);
+      const toPhone = this.normalizePhone(req.toPhone);
+      const fId = req.fromPlayerId?.toUpperCase();
+      const toId = req.toPlayerId?.toUpperCase();
+
+      const callerIsFrom = (cId && fId === cId) || (cPhone && fPhone === cPhone);
+      const targetIsTo = (tId && toId === tId) || (tPhone && toPhone === tPhone);
+      if (callerIsFrom && targetIsTo) {
+        if (req.status === 'accepted') return { status: 'accepted', requestId: req.id };
+        if (req.status === 'pending') return { status: 'pending_sent', requestId: req.id };
+      }
+
+      const targetIsFrom = (tId && fId === tId) || (tPhone && fPhone === tPhone);
+      const callerIsTo = (cId && toId === cId) || (cPhone && toPhone === cPhone);
+      if (targetIsFrom && callerIsTo) {
+        if (req.status === 'accepted') return { status: 'accepted', requestId: req.id };
+        if (req.status === 'pending') return { status: 'pending_received', requestId: req.id };
+      }
+    }
+
+    return { status: 'none' };
+  }
+
+  async getLeaderboard(params: {
+    scope?: string;
+    sport?: string;
+    role?: string;
+    city?: string;
+    state?: string;
+    phone?: string;
+    playerId?: string;
+  }) {
+    const friendRequests = this.readFriendRequests();
+    const allProfiles = this.readPlayerProfiles();
+
+    // Reconcile Prisma users with profiles:
+    const prismaUsers = await this.prisma.user.findMany();
+    for (const u of prismaUsers) {
+      const uPhoneLast10 = this.normalizePhone(u.mobileNumber);
+      const uPlayerId = `PLY-${u.id.toString().padStart(4, '0')}`;
+      const existing = allProfiles.find(
+        (p) =>
+          this.normalizePhone(p.phone) === uPhoneLast10 ||
+          p.playerId.toUpperCase() === uPlayerId.toUpperCase()
+      );
+      if (!existing) {
+        allProfiles.push({
+          playerId: uPlayerId,
+          phone: u.mobileNumber,
+          fullName: u.fullName || 'Active Player',
+          avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150`,
+          city: 'Chennai',
+          state: 'Tamil Nadu',
+          sport: u.preferredSport || 'Cricket',
+          role: u.preferredSport === 'Cricket' ? 'All-Rounder' : 'Forward / Striker',
+          matchesPlayed: 10,
+          wins: 7,
+          losses: 3,
+          runs: 210,
+          wickets: 8,
+          battingAvg: 30.0,
+          strikeRate: 140.0,
+          bowlingEcon: 7.2,
+          fifties: 1,
+          hundreds: 0,
+          goals: 5,
+          assists: 3,
+          cleanSheets: 1,
+          mvpCount: 2,
+          fairPlayRating: 5.0,
+          points: 2500,
+          badge: 'Rising Star',
+          form: '78%',
+          isVerified: true,
+        });
+      }
+    }
+
+    // Determine current user
+    const callerPhone = this.normalizePhone(params.phone);
+    const callerPlayerId = params.playerId?.toUpperCase();
+    const currentUserProfile = allProfiles.find(
+      (p) =>
+        (callerPlayerId && p.playerId.toUpperCase() === callerPlayerId) ||
+        (callerPhone && this.normalizePhone(p.phone) === callerPhone)
+    ) || allProfiles[0];
+
+    const currentCity = params.city || currentUserProfile.city || 'Chennai';
+    const currentState = params.state || currentUserProfile.state || 'Tamil Nadu';
+
+    // Filter by Scope
+    const scope = (params.scope || 'global').toLowerCase();
+    let scopedList = allProfiles;
+
+    if (scope === 'friends') {
+      scopedList = allProfiles.filter((p) => {
+        const isSelf =
+          (callerPlayerId && p.playerId.toUpperCase() === callerPlayerId) ||
+          (callerPhone && this.normalizePhone(p.phone) === callerPhone);
+        if (isSelf) return true;
+        return this.areFriends(
+          { phone: callerPhone, playerId: callerPlayerId },
+          { phone: p.phone, playerId: p.playerId },
+          friendRequests
+        );
+      });
+    } else if (scope === 'city') {
+      scopedList = allProfiles.filter(
+        (p) => p.city.toLowerCase() === currentCity.toLowerCase()
+      );
+    } else if (scope === 'state') {
+      scopedList = allProfiles.filter(
+        (p) => p.state.toLowerCase() === currentState.toLowerCase()
+      );
+    }
+
+    // Filter by Sport
+    const sportFilter = params.sport || 'All Sports';
+    if (sportFilter && sportFilter !== 'All Sports' && sportFilter !== 'All') {
+      scopedList = scopedList.filter(
+        (p) => p.sport.toLowerCase() === sportFilter.toLowerCase()
+      );
+    }
+
+    // Filter by Role
+    const roleFilter = params.role || 'All Roles';
+    if (roleFilter && roleFilter !== 'All Roles' && roleFilter !== 'All') {
+      scopedList = scopedList.filter(
+        (p) => p.role.toLowerCase() === roleFilter.toLowerCase()
+      );
+    }
+
+    // Sort descending by points
+    scopedList.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+    // Map into rich leaderboard items
+    let userRankIndex = -1;
+    const leaderboard = scopedList.map((player, idx) => {
+      const rank = idx + 1;
+      const isYou =
+        (callerPlayerId && player.playerId.toUpperCase() === callerPlayerId) ||
+        (callerPhone && this.normalizePhone(player.phone) === callerPhone);
+      if (isYou) userRankIndex = idx;
+
+      const friendship = this.getFriendshipDetails(
+        { phone: callerPhone, playerId: callerPlayerId },
+        { phone: player.phone, playerId: player.playerId },
+        friendRequests
+      );
+
+      // Rank change heuristic for excitement
+      let change = '-';
+      let isNegative = false;
+      if (rank === 1) {
+        change = '-';
+      } else if (rank % 3 === 0) {
+        change = '+ 2';
+      } else if (rank % 4 === 0) {
+        change = '- 1';
+        isNegative = true;
+      } else if (rank % 2 === 0) {
+        change = '+ 1';
+      }
+
+      const winRate =
+        player.matchesPlayed > 0
+          ? `${Math.round((player.wins / player.matchesPlayed) * 100)}% W`
+          : '100% W';
+
+      return {
+        rank,
+        change,
+        isChangeNegative: isNegative,
+        playerId: player.playerId,
+        name: player.fullName,
+        phone: player.phone,
+        city: player.city,
+        state: player.state,
+        location: `${player.city}, ${player.state}`,
+        sport: player.sport,
+        role: player.role,
+        points: player.points.toLocaleString(),
+        pointsNumeric: player.points,
+        wins: `${player.wins} Wins`,
+        matchesPlayed: player.matchesPlayed,
+        winRate,
+        imageUrl: player.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        badge: player.badge,
+        isVerified: player.isVerified,
+        isYou,
+        friendshipStatus: friendship.status, // 'none' | 'pending_sent' | 'pending_received' | 'accepted'
+        friendRequestId: friendship.requestId,
+        statsSummary:
+          player.sport === 'Cricket'
+            ? `${player.runs || 0} Runs • ${player.wickets || 0} Wkts`
+            : player.sport === 'Football'
+            ? `${player.goals || 0} Goals • ${player.assists || 0} Ast`
+            : `${player.wins} W • ${player.form || '80%'} Form`,
+      };
+    });
+
+    // Compute current user rank data
+    const myPlayer = leaderboard.find((p) => p.isYou) || {
+      rank: userRankIndex >= 0 ? userRankIndex + 1 : leaderboard.length + 1,
+      pointsNumeric: currentUserProfile.points,
+      points: currentUserProfile.points.toLocaleString(),
+      name: currentUserProfile.fullName,
+      role: currentUserProfile.role,
+      location: `${currentCity}, ${currentState}`,
+    };
+
+    let pointsToNext = 0;
+    let targetPlayerName = '';
+    if (myPlayer.rank > 1 && myPlayer.rank - 2 < leaderboard.length) {
+      const playerAhead = leaderboard[myPlayer.rank - 2];
+      if (playerAhead) {
+        pointsToNext = Math.max(0, playerAhead.pointsNumeric - myPlayer.pointsNumeric);
+        targetPlayerName = playerAhead.name;
+      }
+    }
+
+    return {
+      success: true,
+      season: {
+        name: 'Season 4 Final Lap',
+        daysLeft: 12,
+        reward: 'Top 3 earn ₹25,000 Vouchers + Golden Jersey',
+        universalPlayersCount: 4820,
+      },
+      activeFilters: {
+        scope,
+        currentCity,
+        currentState,
+        sport: sportFilter,
+        role: roleFilter,
+      },
+      currentUserRank: {
+        rank: myPlayer.rank,
+        points: myPlayer.points,
+        pointsNumeric: myPlayer.pointsNumeric,
+        role: currentUserProfile.role,
+        pointsToNext,
+        targetPlayerName,
+        totalContenders: leaderboard.length,
+      },
+      leaderboard,
+    };
+  }
+
+  async sendFriendRequest(body: {
+    fromPhone: string;
+    fromPlayerId?: string;
+    fromName?: string;
+    toPlayerId: string;
+    toPhone?: string;
+    toName?: string;
+  }) {
+    if (!body.toPlayerId) {
+      throw new BadRequestException('Target player ID is required');
+    }
+
+    const requests = this.readFriendRequests();
+    const cPhone = this.normalizePhone(body.fromPhone);
+    const cId = body.fromPlayerId?.toUpperCase();
+    const tId = body.toPlayerId.toUpperCase();
+    const tPhone = this.normalizePhone(body.toPhone);
+
+    // Cannot friend yourself
+    if (cId === tId || (cPhone && tPhone && cPhone === tPhone)) {
+      throw new BadRequestException('You cannot send a friend request to yourself');
+    }
+
+    // Check existing
+    const existing = requests.find((r) => {
+      const fId = r.fromPlayerId?.toUpperCase();
+      const toId = r.toPlayerId?.toUpperCase();
+      const fPhone = this.normalizePhone(r.fromPhone);
+      const toP = this.normalizePhone(r.toPhone);
+
+      const forward = (fId === cId || (cPhone && fPhone === cPhone)) && (toId === tId || (tPhone && toP === tPhone));
+      const reverse = (fId === tId || (tPhone && fPhone === tPhone)) && (toId === cId || (cPhone && toP === cPhone));
+      return forward || reverse;
+    });
+
+    if (existing) {
+      if (existing.status === 'accepted') {
+        return { success: true, message: 'You are already friends!', request: existing };
+      }
+      if (existing.status === 'pending') {
+        return { success: true, message: 'Friend request already pending', request: existing };
+      }
+    }
+
+    const newRequest = {
+      id: `FR-${Date.now()}`,
+      fromPlayerId: body.fromPlayerId || 'PLY-0001',
+      fromName: body.fromName || 'Active Player',
+      fromPhone: body.fromPhone,
+      toPlayerId: body.toPlayerId,
+      toName: body.toName || 'Challenger',
+      toPhone: body.toPhone || '',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    requests.unshift(newRequest);
+    this.writeFriendRequests(requests);
+
+    return {
+      success: true,
+      message: `Friend request sent to ${newRequest.toName}!`,
+      request: newRequest,
+    };
+  }
+
+  async respondFriendRequest(body: {
+    requestId: string;
+    action: 'accept' | 'decline';
+    responderPhone?: string;
+    responderPlayerId?: string;
+  }) {
+    const requests = this.readFriendRequests();
+    const index = requests.findIndex((r) => r.id === body.requestId);
+    if (index === -1) {
+      throw new BadRequestException('Friend request not found');
+    }
+
+    const req = requests[index];
+    req.status = body.action === 'accept' ? 'accepted' : 'declined';
+    req.resolvedAt = new Date().toISOString();
+
+    this.writeFriendRequests(requests);
+
+    return {
+      success: true,
+      message: body.action === 'accept' ? 'Friend request accepted! You are now friends.' : 'Friend request declined.',
+      request: req,
+    };
+  }
+
+  async getPlayerFriends(identifier: string) {
+    if (!identifier) return { friends: [], incomingRequests: [], outgoingRequests: [] };
+
+    const clean = this.normalizePhone(identifier);
+    const idUpper = identifier.toUpperCase();
+    const friendRequests = this.readFriendRequests();
+    const allProfiles = this.readPlayerProfiles();
+
+    const incoming: any[] = [];
+    const outgoing: any[] = [];
+    const friendSet = new Set<string>();
+
+    for (const req of friendRequests) {
+      const fPhone = this.normalizePhone(req.fromPhone);
+      const toPhone = this.normalizePhone(req.toPhone);
+      const fId = req.fromPlayerId?.toUpperCase();
+      const toId = req.toPlayerId?.toUpperCase();
+
+      const isSender = (fId && fId === idUpper) || (clean && fPhone === clean);
+      const isReceiver = (toId && toId === idUpper) || (clean && toPhone === clean);
+
+      if (req.status === 'accepted') {
+        if (isSender) friendSet.add(req.toPlayerId);
+        if (isReceiver) friendSet.add(req.fromPlayerId);
+      } else if (req.status === 'pending') {
+        if (isReceiver) incoming.push(req);
+        if (isSender) outgoing.push(req);
+      }
+    }
+
+    const friendsList = allProfiles.filter((p) => friendSet.has(p.playerId));
+
+    return {
+      success: true,
+      friendsCount: friendsList.length,
+      friends: friendsList,
+      incomingRequests: incoming,
+      outgoingRequests: outgoing,
+    };
+  }
+
+  async getPlayerPublicProfile(targetIdentifier: string, callerIdentifier?: string) {
+    const allProfiles = this.readPlayerProfiles();
+    const targetClean = this.normalizePhone(targetIdentifier);
+    const targetUpper = targetIdentifier.toUpperCase();
+
+    const player = allProfiles.find(
+      (p) =>
+        p.playerId.toUpperCase() === targetUpper ||
+        this.normalizePhone(p.phone) === targetClean
+    );
+
+    if (!player) {
+      throw new BadRequestException('Player not found');
+    }
+
+    const friendRequests = this.readFriendRequests();
+    const callerClean = callerIdentifier ? this.normalizePhone(callerIdentifier) : '';
+    const callerUpper = callerIdentifier ? callerIdentifier.toUpperCase() : '';
+
+    const friendship = this.getFriendshipDetails(
+      { phone: callerClean, playerId: callerUpper },
+      { phone: player.phone, playerId: player.playerId },
+      friendRequests
+    );
+
+    // Caller's stats for head-to-head comparison
+    const callerProfile = allProfiles.find(
+      (p) =>
+        (callerUpper && p.playerId.toUpperCase() === callerUpper) ||
+        (callerClean && this.normalizePhone(p.phone) === callerClean)
+    );
+
+    return {
+      success: true,
+      player: {
+        ...player,
+        location: `${player.city}, ${player.state}`,
+        winRate:
+          player.matchesPlayed > 0
+            ? `${Math.round((player.wins / player.matchesPlayed) * 100)}%`
+            : '100%',
+        friendshipStatus: friendship.status,
+        friendRequestId: friendship.requestId,
+      },
+      headToHead: callerProfile
+        ? {
+            caller: {
+              name: callerProfile.fullName,
+              playerId: callerProfile.playerId,
+              points: callerProfile.points,
+              wins: callerProfile.wins,
+              matches: callerProfile.matchesPlayed,
+              sport: callerProfile.sport,
+              role: callerProfile.role,
+            },
+            target: {
+              name: player.fullName,
+              playerId: player.playerId,
+              points: player.points,
+              wins: player.wins,
+              matches: player.matchesPlayed,
+              sport: player.sport,
+              role: player.role,
+            },
+          }
+        : null,
+    };
+  }
+
+  async updatePlayerProfile(body: {
+    phone?: string;
+    playerId?: string;
+    city?: string;
+    state?: string;
+    preferredSport?: string;
+    role?: string;
+  }) {
+    const allProfiles = this.readPlayerProfiles();
+    const clean = this.normalizePhone(body.phone);
+    const idUpper = body.playerId?.toUpperCase();
+
+    const index = allProfiles.findIndex(
+      (p) =>
+        (idUpper && p.playerId.toUpperCase() === idUpper) ||
+        (clean && this.normalizePhone(p.phone) === clean)
+    );
+
+    if (index === -1) {
+      throw new BadRequestException('Profile not found');
+    }
+
+    if (body.city) allProfiles[index].city = body.city;
+    if (body.state) allProfiles[index].state = body.state;
+    if (body.preferredSport) allProfiles[index].sport = body.preferredSport;
+    if (body.role) allProfiles[index].role = body.role;
+
+    this.writePlayerProfiles(allProfiles);
+
+    return {
+      success: true,
+      message: 'Profile updated successfully',
+      profile: allProfiles[index],
+    };
+  }
+
   async updateVerifiedAdminMetrics(id: number, metrics: any) {
     let admin = await this.prisma.verifiedAdmin.findUnique({
       where: { id },

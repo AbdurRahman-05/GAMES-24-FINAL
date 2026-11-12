@@ -1,0 +1,25 @@
+[
+  {
+    "id": "FR-SEED-1",
+    "fromPlayerId": "PLY-0002",
+    "fromName": "mafaz",
+    "fromPhone": "+918124817806",
+    "toPlayerId": "PLY-0001",
+    "toName": "Abdur",
+    "toPhone": "+919087786231",
+    "status": "accepted",
+    "createdAt": "2026-11-09T08:47:27.121Z",
+    "resolvedAt": "2026-11-10T08:47:27.122Z"
+  },
+  {
+    "id": "FR-SEED-2",
+    "fromPlayerId": "PLY-0003",
+    "fromName": "Vignesh",
+    "fromPhone": "+917010396731",
+    "toPlayerId": "PLY-0001",
+    "toName": "Abdur",
+    "toPhone": "+919087786231",
+    "status": "pending",
+    "createdAt": "2026-11-12T04:47:27.122Z"
+  }
+]
