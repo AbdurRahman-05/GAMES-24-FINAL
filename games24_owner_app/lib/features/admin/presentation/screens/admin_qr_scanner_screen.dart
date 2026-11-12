@@ -527,6 +527,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       appBar: AppBar(
         backgroundColor: const Color(0xFF0C2B1E),
         elevation: 0,
+        titleSpacing: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
           onPressed: () {
@@ -537,33 +538,22 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             }
           },
         ),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Gate Entry QR Scanner',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            Text(
-              'Realtime Player Pass Verification',
-              style: TextStyle(
-                color: Color(0xFF86EFAC),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+        title: const Text(
+          'Gate Entry QR Scanner',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+          ),
         ),
         actions: [
           IconButton(
+            visualDensity: VisualDensity.compact,
             tooltip: 'Toggle Flashlight',
             icon: Icon(
               _isTorchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
               color: _isTorchOn ? const Color(0xFFFBBF24) : Colors.white70,
+              size: 20,
             ),
             onPressed: () {
               _scannerController.toggleTorch();
@@ -571,10 +561,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             },
           ),
           IconButton(
+            visualDensity: VisualDensity.compact,
             tooltip: 'Switch Camera',
-            icon: const Icon(Icons.flip_camera_ios_rounded, color: Colors.white),
+            icon: const Icon(Icons.flip_camera_ios_rounded, color: Colors.white, size: 20),
             onPressed: () => _scannerController.switchCamera(),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: SingleChildScrollView(
@@ -779,8 +771,8 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
                     hintText: 'Enter Pass ID (e.g. G24-BK-0001)',
-                    hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    hintStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
                     border: OutlineInputBorder(
@@ -799,7 +791,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF154D36),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () {
@@ -1341,14 +1333,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Quick Check-In (Recent Bookings)',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+            const Expanded(
+              child: Text(
+                'Quick Check-In (Recent Bookings)',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            const SizedBox(width: 8),
             Text(
               '${bookings.length} Available',
               style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
