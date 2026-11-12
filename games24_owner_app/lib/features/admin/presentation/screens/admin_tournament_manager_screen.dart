@@ -241,6 +241,7 @@ class _AdminTournamentManagerScreenState
   void _showRegisteredTeamsDialog(TournamentModel t) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
@@ -577,6 +578,7 @@ class _AdminTournamentManagerScreenState
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -693,6 +695,7 @@ class _AdminTournamentManagerScreenState
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(

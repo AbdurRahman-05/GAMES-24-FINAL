@@ -1576,6 +1576,7 @@ class _AdminSlotManagerScreenState
   ) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -1766,6 +1767,7 @@ class _AdminSlotManagerScreenState
   void _showOfferActions(String slot, String? currentOffer) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -1936,6 +1938,7 @@ class _AdminSlotManagerScreenState
   void _showCustomOfferConfiguratorSheet(String slot) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -2285,6 +2288,7 @@ class _AdminSlotManagerScreenState
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
