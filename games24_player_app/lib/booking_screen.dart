@@ -1649,24 +1649,62 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget _buildBottomButton() {
     final courtFee = _calculateCourtFee();
     final total = courtFee; // Only the cost of the hours! No added fees or taxes
+    final hasSlots = _selectedTimeSlots.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
+        border: const Border(
+          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
+        child: Row(
+          children: [
+            Expanded(
+              flex: 4,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasSlots ? '₹$total' : '₹${widget.dayRate.toInt()}/hr',
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0F172A),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    hasSlots
+                        ? '${_selectedTimeSlots.length} slot(s) • ${_selectedCourt ?? "Court"}'
+                        : 'Select court & slot',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: hasSlots ? const Color(0xFF16A34A) : const Color(0xFF64748B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 6,
+              child: SizedBox(
+                height: 48,
+                child: ElevatedButton(
             onPressed: _isBookingInProgress
                 ? null
                 : () async {
@@ -1879,10 +1917,10 @@ class _BookingScreenState extends State<BookingScreen> {
                     }
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF166534),
+              backgroundColor: const Color(0xFF154D36),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               elevation: 0,
             ),
@@ -1895,30 +1933,24 @@ class _BookingScreenState extends State<BookingScreen> {
                       strokeWidth: 2,
                     ),
                   )
-                : Row(
+                : const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Confirm Booking',
+                      Text(
+                        'Confirm Slot',
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      if (_selectedTimeSlots.isNotEmpty) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '- ₹$total',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
+                      SizedBox(width: 6),
+                      Icon(Icons.arrow_forward_rounded, size: 16),
                     ],
                   ),
           ),
+        ),
+      ),
+          ],
         ),
       ),
     );

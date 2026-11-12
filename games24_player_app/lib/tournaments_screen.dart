@@ -106,51 +106,74 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
   }
 
   Widget _buildEmptyState() {
+    String title = 'No tournaments yet';
+    String subtitle = 'Check out upcoming tournaments to participate!';
+    if (_selectedTabIndex == 0) {
+      title = 'No Live Tournaments Running';
+      subtitle = 'Check the Upcoming tab to find and register for new tournaments.';
+    } else if (_selectedTabIndex == 1) {
+      title = 'No Upcoming Tournaments';
+      subtitle = 'New tournaments will appear here soon. Create one to get started!';
+    } else if (_selectedTabIndex == 2) {
+      title = 'No Registered Tournaments';
+      subtitle = 'You have not joined any tournaments yet. Join one or create your own!';
+    }
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40.0),
+        padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.emoji_events_outlined,
-              size: 64,
-              color: Colors.grey.shade400,
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: const Icon(
+                Icons.emoji_events_rounded,
+                size: 48,
+                color: Color(0xFF154D36),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
-              'No tournaments yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade700,
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+                letterSpacing: -0.3,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Check out upcoming tournaments to participate!',
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF64748B),
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 24),
             if (_selectedTabIndex == 2)
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () => setState(() => _selectedTabIndex = 1),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F6D38),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  backgroundColor: const Color(0xFF154D36),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
                 ),
-                child: const Text(
-                  'Explore Tournaments',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+                icon: const Icon(Icons.explore_outlined, size: 18),
+                label: const Text(
+                  'Explore Upcoming Tournaments',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
                 ),
               ),
           ],
