@@ -263,7 +263,11 @@ class BookingManager {
       if (bId == strId || bCode == strId) {
         b['status'] = 'Completed';
         b['isActive'] = false;
-        b['openMatchStatus'] = 'COMPLETED';
+        if (b['isOpenMatch'] == true) {
+          b['openMatchStatus'] = 'COMPLETED';
+        } else {
+          b['openMatchStatus'] = null;
+        }
         current[i] = b;
         found = true;
         break;

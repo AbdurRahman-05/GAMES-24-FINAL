@@ -444,6 +444,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         booking['bookingId']?.toString() ??
         (bookingId != null ? 'G24-BK-${bookingId.toString().padLeft(4, '0')}' : 'G24-BK-0001');
 
+    final bool isOpenChallenge = booking['isOpenMatch'] == true || booking['is_open_match'] == true;
+    final String? teamName = booking['teamName']?.toString();
+    final String? opponentName = booking['opponentName']?.toString();
+
     Color badgeBg;
     String badgeText;
     if (isCancelled) {
@@ -540,6 +544,53 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isOpenChallenge
+                            ? const Color(0xFFBE123C)
+                            : const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isOpenChallenge
+                                ? Icons.sports_mma_rounded
+                                : Icons.lock_outline_rounded,
+                            color: Colors.white,
+                            size: 11,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            isOpenChallenge
+                                ? '⚔️ Open Challenge'
+                                : '🔒 Private Booking',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
@@ -657,6 +708,53 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isOpenChallenge
+                        ? const Color(0xFFFFF1F2)
+                        : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isOpenChallenge
+                          ? const Color(0xFFFECDD3)
+                          : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isOpenChallenge
+                            ? Icons.sports_mma_rounded
+                            : Icons.lock_outline_rounded,
+                        size: 14,
+                        color: isOpenChallenge
+                            ? const Color(0xFFBE123C)
+                            : const Color(0xFF475569),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          isOpenChallenge
+                              ? (teamName != null && teamName.isNotEmpty
+                                  ? '⚔️ Open Challenge: $teamName vs ${opponentName?.isNotEmpty == true ? opponentName : 'Waiting for Opponent ⏳'}'
+                                  : '⚔️ Open Challenge Match (Public Challenge)')
+                              : '🔒 Private Booking • Friendly / Practice Match',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: isOpenChallenge
+                                ? const Color(0xFF9F1239)
+                                : const Color(0xFF475569),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (!isCancelled && bookingId != null) ...[
                   const SizedBox(height: 16),
                   const Divider(height: 1, color: Color(0xFFF3F4F6)),
@@ -704,9 +802,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                     timeSlot: timeSlot,
                                     initialTab: isCompleted ? 3 : 0,
                                     isOpenMatch: booking['isOpenMatch'] == true ||
-                                        booking['is_open_match'] == true ||
-                                        (booking['openMatchStatus'] != null &&
-                                            booking['openMatchStatus'].toString().isNotEmpty),
+                                        booking['is_open_match'] == true,
                                   ),
                                 ),
                               );
@@ -720,11 +816,17 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               size: 16,
                             ),
                             label: Text(
-                              isCompleted
-                                  ? 'Match Details 📋'
-                                  : (isStarted
-                                      ? 'Scorecard 🏆'
-                                      : 'Squad 🛡️'),
+                              isOpenChallenge
+                                  ? (isCompleted
+                                      ? 'Challenge Match 📋'
+                                      : (isStarted
+                                          ? 'Scorecard 🏆'
+                                          : 'Challenge Squad ⚔️'))
+                                  : (isCompleted
+                                      ? 'Match Details 📋'
+                                      : (isStarted
+                                          ? 'Scorecard 🏆'
+                                          : 'Team Lineup 🛡️')),
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.bold,

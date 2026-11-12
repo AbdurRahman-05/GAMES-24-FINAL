@@ -2214,7 +2214,7 @@ export class TurfService {
       where: { id: bookingId },
       data: {
         status: 'Completed',
-        openMatchStatus: 'COMPLETED',
+        openMatchStatus: booking.isOpenMatch ? 'COMPLETED' : null,
       },
     });
 

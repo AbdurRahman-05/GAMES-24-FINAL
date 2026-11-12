@@ -144,7 +144,7 @@ model TurfBooking {
   status          String        @default("Confirmed") // Confirmed, Cancelled, On Hold
   isHold          Boolean       @default(false)
   isOpenMatch     Boolean       @default(false)
-  openMatchStatus String?       @default("WAITING_FOR_OPPONENT") // WAITING_FOR_OPPONENT, OPPONENT_JOINED, COMPLETED
+  openMatchStatus String?       // WAITING_FOR_OPPONENT, OPPONENT_JOINED, COMPLETED
   teamName        String?
   teamSize        String?       @default("7v7")
   opponentName    String?

@@ -1583,36 +1583,69 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                   ],
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (isLiveNow) ...[
-                        Container(
-                          width: 5,
-                          height: 5,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF16A34A),
-                            shape: BoxShape.circle,
-                          ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (booking.isOpenMatch) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFECDD3)),
                         ),
-                        const SizedBox(width: 4),
-                      ],
-                      Text(
-                        badgeLabel,
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          color: badgeTextColor,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFBE123C)),
+                            const SizedBox(width: 3),
+                            Text(
+                              booking.teamName != null && booking.teamName!.isNotEmpty
+                                  ? '⚔️ ${booking.teamName}'
+                                  : '⚔️ Open Challenge',
+                              style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFBE123C),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(width: 6),
                     ],
-                  ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: badgeBg,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isLiveNow) ...[
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF16A34A),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            badgeLabel,
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              color: badgeTextColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

@@ -270,6 +270,9 @@ class TurfBookingHistoryItem {
   final double amount;
   final String paymentMethod;
   final String status; // 'Confirmed', 'Completed', 'Cancelled'
+  final bool isOpenMatch;
+  final String? teamName;
+  final String? openMatchStatus;
 
   const TurfBookingHistoryItem({
     required this.id,
@@ -283,6 +286,9 @@ class TurfBookingHistoryItem {
     required this.amount,
     required this.paymentMethod,
     required this.status,
+    this.isOpenMatch = false,
+    this.teamName,
+    this.openMatchStatus,
   });
 
   String get effectiveDate {
@@ -1147,6 +1153,9 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           amount: amt,
           paymentMethod: b['paymentMethod']?.toString() ?? 'UPI (GPay)',
           status: b['status']?.toString() ?? 'Confirmed',
+          isOpenMatch: b['isOpenMatch'] == true,
+          teamName: b['teamName']?.toString(),
+          openMatchStatus: b['openMatchStatus']?.toString(),
         );
       }).toList();
     }

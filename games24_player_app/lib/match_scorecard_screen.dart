@@ -533,11 +533,9 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     final bList = BookingManager().bookingsNotifier.value;
     for (final b in bList) {
       final bId = (b['id'] ?? b['bookingId'] ?? b['booking_id'])?.toString();
-      if (bId == widget.bookingId) {
-        if (b['isOpenMatch'] == true ||
-            b['is_open_match'] == true ||
-            (b['openMatchStatus'] != null &&
-                b['openMatchStatus'].toString().isNotEmpty)) {
+      final bCode = b['bookingCode']?.toString();
+      if (bId == widget.bookingId || bCode == widget.bookingId) {
+        if (b['isOpenMatch'] == true || b['is_open_match'] == true) {
           isOpen = true;
           if (b['teamName'] != null && b['teamName'].toString().isNotEmpty) {
             _teamAName = b['teamName'].toString();
@@ -549,27 +547,33 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
           if (b['teamSize'] != null && b['teamSize'].toString().isNotEmpty) {
             _selectedTeamSize = b['teamSize'].toString();
           }
+        } else {
+          // Explicitly NOT an open match!
+          isOpen = false;
         }
         break;
       }
     }
 
-    final challenges = ChallengeManager().challengesNotifier.value;
-    for (final c in challenges) {
-      final idMatch = c.id == widget.bookingId;
-      final turfMatch =
-          c.turfName.trim().toLowerCase() ==
-          widget.turfName.trim().toLowerCase();
-      final timeMatch =
-          c.time.contains(widget.timeSlot) || widget.timeSlot.contains(c.time);
-      if (idMatch || (turfMatch && (timeMatch || c.date == widget.date))) {
-        _linkedChallenge = c;
-        isOpen = true;
-        _selectedTeamSize = c.teamSize.isNotEmpty ? c.teamSize : '7v7';
-        if (c.challengerName.isNotEmpty) {
-          _teamAName = c.challengerName;
+    // Only search/link an Open Challenge if this booking is actually an Open Challenge
+    if (isOpen) {
+      final challenges = ChallengeManager().challengesNotifier.value;
+      for (final c in challenges) {
+        final idMatch = c.id == widget.bookingId || c.id == 'ch_${widget.bookingId}';
+        final turfMatch =
+            c.turfName.trim().toLowerCase() ==
+            widget.turfName.trim().toLowerCase();
+        final dateMatch = c.date == widget.date || c.date == 'Today';
+        final timeMatch =
+            c.time.contains(widget.timeSlot) || widget.timeSlot.contains(c.time);
+        if (idMatch || (turfMatch && dateMatch && timeMatch)) {
+          _linkedChallenge = c;
+          _selectedTeamSize = c.teamSize.isNotEmpty ? c.teamSize : '7v7';
+          if (c.challengerName.isNotEmpty) {
+            _teamAName = c.challengerName;
+          }
+          break;
         }
-        break;
       }
     }
 

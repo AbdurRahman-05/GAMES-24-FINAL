@@ -1047,6 +1047,25 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 6),
+                          if (match['isOpenMatch'] == true) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFF1F2),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: const Color(0xFFFECDD3)),
+                              ),
+                              child: const Text(
+                                '⚔️ Open Match',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFBE123C),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
@@ -1310,6 +1329,49 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
+                                if (booking['isOpenMatch'] == true || booking['is_open_match'] == true) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF1F2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFFFECDD3)),
+                                    ),
+                                    child: const Text(
+                                      '⚔️ Open Match',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFFBE123C),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                ] else ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    ),
+                                    child: const Text(
+                                      '🔒 Private',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Color(0xFF475569),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -1386,9 +1448,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 timeSlot: timeSlot,
                                 initialTab: isCompleted ? 3 : 0,
                                 isOpenMatch: booking['isOpenMatch'] == true ||
-                                    booking['is_open_match'] == true ||
-                                    (booking['openMatchStatus'] != null &&
-                                        booking['openMatchStatus'].toString().isNotEmpty),
+                                    booking['is_open_match'] == true,
                               ),
                             ),
                           );
@@ -1402,11 +1462,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           size: 16,
                         ),
                         label: Text(
-                          isCompleted
-                              ? 'Match Details & Result 📋'
-                              : (isStarted
-                                  ? 'Scorecard & Toss 🏆'
-                                  : 'Squad & Pre-Match 🛡️'),
+                          (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
+                              ? (isCompleted
+                                  ? 'Challenge Details 📋'
+                                  : (isStarted
+                                      ? 'Scorecard & Toss 🏆'
+                                      : 'Challenge Squad ⚔️'))
+                              : (isCompleted
+                                  ? 'Match Details & Result 📋'
+                                  : (isStarted
+                                      ? 'Scorecard & Toss 🏆'
+                                      : 'Team Lineup 🛡️')),
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                         style: ElevatedButton.styleFrom(
