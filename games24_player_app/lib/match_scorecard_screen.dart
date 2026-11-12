@@ -1234,6 +1234,8 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     if (_isMatchCompleted) return;
     _ensureActivePlayers();
 
+    bool isOverComplete = false;
+
     setState(() {
       if (_currentCricketInning == 1) {
         _cricketRunsA += runs;
@@ -1266,14 +1268,26 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       final activeBalls = _currentCricketInning == 1
           ? _cricketBallsA
           : _cricketBallsB;
-      if (activeBalls % 6 == 0) {
+      if (activeBalls > 0 && activeBalls % 6 == 0) {
         _swapStrike();
-        _promptNewBowler();
+        isOverComplete = true;
       }
     });
 
     _checkCricketInningsProgress();
     _saveCurrentLiveState();
+
+    if (isOverComplete && !_isMatchCompleted) {
+      final maxBalls = _selectedOvers * 6;
+      final maxWickets = _playersPerSide > 1 ? _playersPerSide - 1 : 10;
+      final target = _cricketTarget ?? (_cricketRunsA + 1);
+      final isStillActive = _currentCricketInning == 1
+          ? (_cricketBallsA < maxBalls && _cricketWicketsA < maxWickets)
+          : (_cricketBallsB < maxBalls && _cricketWicketsB < maxWickets && _cricketRunsB < target);
+      if (isStillActive) {
+        _showOverFinishedDialog();
+      }
+    }
   }
 
   void _addCricketWicket() {
@@ -1282,6 +1296,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
 
     final dismissed = _striker;
     final bowlerRef = _currentBowler;
+    bool isOverComplete = false;
 
     setState(() {
       if (_currentCricketInning == 1) {
@@ -1309,15 +1324,34 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
       final activeBalls = _currentCricketInning == 1
           ? _cricketBallsA
           : _cricketBallsB;
-      if (activeBalls % 6 == 0) {
+      if (activeBalls > 0 && activeBalls % 6 == 0) {
         _swapStrike();
-        _promptNewBowler();
+        isOverComplete = true;
       }
     });
 
-    _promptFielderAndNextBatter(dismissed);
     _checkCricketInningsProgress();
     _saveCurrentLiveState();
+
+    if (!_isMatchCompleted) {
+      final maxBalls = _selectedOvers * 6;
+      final maxWickets = _playersPerSide > 1 ? _playersPerSide - 1 : 10;
+      final target = _cricketTarget ?? (_cricketRunsA + 1);
+      final isStillActive = _currentCricketInning == 1
+          ? (_cricketBallsA < maxBalls && _cricketWicketsA < maxWickets)
+          : (_cricketBallsB < maxBalls && _cricketWicketsB < maxWickets && _cricketRunsB < target);
+
+      if (isStillActive) {
+        _showWicketNextBatterDialog(
+          dismissed: dismissed,
+          onBatterSelected: () {
+            if (isOverComplete && !_isMatchCompleted) {
+              _showOverFinishedDialog();
+            }
+          },
+        );
+      }
+    }
   }
 
   void _addCricketExtra(String type) {
@@ -1338,32 +1372,343 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     _saveCurrentLiveState();
   }
 
-  void _promptNewBowler() {
+  void _showOverFinishedDialog() {
+    if (!mounted || _isMatchCompleted) return;
+
     final squad = _currentBowlingSquad;
-    if (squad.length <= 1) return;
+    final overNum = _currentCricketInning == 1
+        ? (_cricketBallsA ~/ 6)
+        : (_cricketBallsB ~/ 6);
+    final prevBowler = _currentBowler;
 
-    final candidates = squad.where((p) => p != _currentBowler).toList();
-    if (candidates.isEmpty) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Over completed! Next bowler: ${candidates.first.name} ($_currentBowlingTeam)',
-        ),
-        backgroundColor: const Color(0xFF166534),
-        duration: const Duration(seconds: 3),
-        action: SnackBarAction(
-          label: 'Change',
-          textColor: Colors.amberAccent,
-          onPressed: () {
-            _showSelectBowlerDialog(squad);
-          },
-        ),
-      ),
+    final candidates = List<PlayerItem>.from(squad);
+    PlayerItem? selectedBowler = candidates.firstWhere(
+      (p) => p != prevBowler,
+      orElse: () => candidates.isNotEmpty
+          ? candidates.first
+          : PlayerItem(id: 'b_${DateTime.now().millisecondsSinceEpoch}', name: 'Bowler 1', phone: ''),
     );
-    setState(() {
-      _currentBowler = candidates.first;
-    });
+
+    final customBowlerController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                ),
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE5F5EB),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.sports_cricket,
+                                  color: Color(0xFF0F6D38),
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Over $overNum Finished! 🎯',
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${_currentCricketInning == 1 ? _cricketRunsA : _cricketRunsB}/${_currentCricketInning == 1 ? _cricketWicketsA : _cricketWicketsB} • Strike to ${_striker?.name ?? "Striker"}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFFDE68A)),
+                            ),
+                            child: Text(
+                              'End of Over $overNum',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF92400E),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.history_rounded, size: 16, color: Color(0xFF0F6D38)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                prevBowler != null
+                                    ? 'Previous Bowler: ${prevBowler.name} (${_getStat(prevBowler).wickets}/${_getStat(prevBowler).runsConceded} in ${_getStat(prevBowler).oversBowled} ov)'
+                                    : 'Previous Bowler: Completed Over',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      Text(
+                        'Select Next Bowler for Over ${overNum + 1} ($_currentBowlingTeam):',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      if (candidates.isNotEmpty)
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: candidates.length,
+                          separatorBuilder: (_, index) => const SizedBox(height: 6),
+                          itemBuilder: (context, idx) {
+                            final p = candidates[idx];
+                            final st = _getStat(p);
+                            final isJustBowled = p == prevBowler;
+                            final isSelected = p == selectedBowler;
+
+                            return InkWell(
+                              onTap: () {
+                                setSheetState(() => selectedBowler = p);
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFFE5F5EB) : Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xFF0F6D38)
+                                        : const Color(0xFFE2E8F0),
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 14,
+                                      backgroundColor: isSelected
+                                          ? const Color(0xFF0F6D38)
+                                          : const Color(0xFF94A3B8),
+                                      child: Text(
+                                        p.avatarInitials,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                p.name,
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              if (isJustBowled) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFF1F5F9),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: const Text(
+                                                    'Just Bowled',
+                                                    style: TextStyle(fontSize: 9, color: Color(0xFF64748B)),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          Text(
+                                            st.ballsBowled > 0
+                                                ? '${st.wickets}/${st.runsConceded} (${st.oversBowled} ov) • Econ: ${st.economy}'
+                                                : '${p.role} • Yet to bowl',
+                                            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      const Icon(Icons.check_circle_rounded, color: Color(0xFF0F6D38), size: 18),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: customBowlerController,
+                              decoration: InputDecoration(
+                                hintText: 'Or enter custom bowler name',
+                                hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                                prefixIcon: const Icon(Icons.person_add_alt, size: 16, color: Color(0xFF0F6D38)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF1F5F9),
+                              foregroundColor: const Color(0xFF0F6D38),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            ),
+                            onPressed: () {
+                              final text = customBowlerController.text.trim();
+                              if (text.isNotEmpty) {
+                                final customBowler = PlayerItem(
+                                  id: 'cb_${DateTime.now().millisecondsSinceEpoch}',
+                                  name: text,
+                                  phone: '',
+                                  role: 'Bowler',
+                                );
+                                setSheetState(() {
+                                  candidates.add(customBowler);
+                                  selectedBowler = customBowler;
+                                  customBowlerController.clear();
+                                });
+                              }
+                            },
+                            child: const Text('Add', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F6D38),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            if (selectedBowler != null) {
+                              setState(() {
+                                _currentBowler = selectedBowler;
+                              });
+                              _saveCurrentLiveState();
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '🎯 Over ${overNum + 1}: ${selectedBowler!.name} is now bowling for $_currentBowlingTeam!',
+                                  ),
+                                  backgroundColor: const Color(0xFF0F6D38),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.sports_cricket, size: 18),
+                          label: Text(
+                            'Start Over ${overNum + 1} with ${selectedBowler?.name ?? "Bowler"} 🎯',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _showSelectBowlerDialog(
@@ -1530,113 +1875,423 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
     );
   }
 
-  void _promptFielderAndNextBatter(PlayerItem? dismissed) {
+  void _showWicketNextBatterDialog({
+    PlayerItem? dismissed,
+    VoidCallback? onBatterSelected,
+  }) {
+    if (!mounted || _isMatchCompleted) return;
+
+    final squad = _currentBattingSquad;
     final fielders = _currentBowlingSquad;
-    final remainingBatters = _currentBattingSquad
-        .where((p) => p != dismissed && !_getStat(p).isOut)
-        .toList();
+    final currentStriker = _striker;
+    final currentNonStriker = _nonStriker;
+
+    PlayerItem dismissedPlayer = dismissed ?? currentStriker ?? (squad.isNotEmpty ? squad.first : PlayerItem(id: 'p1', name: 'Striker', phone: ''));
+    bool isStrikerOut = dismissedPlayer == currentStriker;
+
+    String dismissalType = 'Caught';
+    PlayerItem? creditedFielder;
+
+    final remainingBatters = squad.where((p) {
+      if (p == currentStriker || p == currentNonStriker) return false;
+      return !_getStat(p).isOut;
+    }).toList();
+
+    PlayerItem? selectedNextBatter = remainingBatters.isNotEmpty ? remainingBatters.first : null;
+    final customBatterController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.sports_cricket, color: Colors.red),
-                const SizedBox(width: 8),
-                Text(
-                  '🔴 Wicket! ${dismissed?.name ?? "Batter"} is Out',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.88,
+                ),
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFEE2E2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.sports_cricket,
+                                  color: Color(0xFFDC2626),
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    '🔴 Wicket Down! Change Batter',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Score: ${_currentCricketInning == 1 ? _cricketRunsA : _cricketRunsB}/${_currentCricketInning == 1 ? _cricketWicketsA : _cricketWicketsB} (${_formatOvers(_currentCricketInning == 1 ? _cricketBallsA : _cricketBallsB)} ov)',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFFECACA)),
+                            ),
+                            child: Text(
+                              'Wicket #${_currentCricketInning == 1 ? _cricketWicketsA : _cricketWicketsB}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFDC2626),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Who is Out?',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          if (currentStriker != null)
+                            Expanded(
+                              child: ChoiceChip(
+                                label: Text('${currentStriker.name} (Striker 🏏)'),
+                                selected: isStrikerOut,
+                                selectedColor: const Color(0xFFFEE2E2),
+                                labelStyle: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: isStrikerOut ? FontWeight.bold : FontWeight.normal,
+                                  color: isStrikerOut ? const Color(0xFFDC2626) : Colors.black87,
+                                ),
+                                onSelected: (val) {
+                                  if (val) {
+                                    setSheetState(() {
+                                      isStrikerOut = true;
+                                      dismissedPlayer = currentStriker;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          const SizedBox(width: 8),
+                          if (currentNonStriker != null)
+                            Expanded(
+                              child: ChoiceChip(
+                                label: Text('${currentNonStriker.name} (Non-Striker 🏃)'),
+                                selected: !isStrikerOut,
+                                selectedColor: const Color(0xFFFEE2E2),
+                                labelStyle: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: !isStrikerOut ? FontWeight.bold : FontWeight.normal,
+                                  color: !isStrikerOut ? const Color(0xFFDC2626) : Colors.black87,
+                                ),
+                                onSelected: (val) {
+                                  if (val) {
+                                    setSheetState(() {
+                                      isStrikerOut = false;
+                                      dismissedPlayer = currentNonStriker;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      const Text(
+                        'Dismissal Mode',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: ['Caught', 'Bowled', 'LBW', 'Run Out', 'Stumped', 'Hit Wicket'].map((mode) {
+                          final isSelected = dismissalType == mode;
+                          return ChoiceChip(
+                            label: Text(mode),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFFE5F5EB),
+                            labelStyle: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? const Color(0xFF0F6D38) : Colors.black87,
+                            ),
+                            onSelected: (val) {
+                              if (val) setSheetState(() => dismissalType = mode);
+                            },
+                          );
+                        }).toList(),
+                      ),
+
+                      if ((dismissalType == 'Caught' || dismissalType == 'Run Out' || dismissalType == 'Stumped') && fielders.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        const Text(
+                          'Credit Fielder (Catch / Assist):',
+                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                        ),
+                        const SizedBox(height: 4),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: fielders.map((f) {
+                              final isSelected = creditedFielder == f;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6.0),
+                                child: ActionChip(
+                                  avatar: Icon(Icons.back_hand, size: 12, color: isSelected ? Colors.white : Colors.black54),
+                                  label: Text(f.name, style: TextStyle(fontSize: 11, color: isSelected ? Colors.white : Colors.black87)),
+                                  backgroundColor: isSelected ? const Color(0xFF0F6D38) : const Color(0xFFF1F5F9),
+                                  onPressed: () {
+                                    setSheetState(() => creditedFielder = f);
+                                  },
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+
+                      const Text(
+                        'Select Next Batter to the Crease:',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 8),
+
+                      if (remainingBatters.isNotEmpty)
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: remainingBatters.length,
+                          separatorBuilder: (_, index) => const SizedBox(height: 6),
+                          itemBuilder: (context, idx) {
+                            final b = remainingBatters[idx];
+                            final isSelected = b == selectedNextBatter;
+
+                            return InkWell(
+                              onTap: () {
+                                setSheetState(() => selectedNextBatter = b);
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? const Color(0xFFE5F5EB) : Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isSelected ? const Color(0xFF0F6D38) : const Color(0xFFE2E8F0),
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 14,
+                                      backgroundColor: isSelected ? const Color(0xFF0F6D38) : const Color(0xFF94A3B8),
+                                      child: Text(
+                                        b.avatarInitials,
+                                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            b.name,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${b.role} • Ready to bat',
+                                            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      const Icon(Icons.check_circle_rounded, color: Color(0xFF0F6D38), size: 18),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: const Text(
+                            'No bench batters left in squad list. Add a new incoming batter below:',
+                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          ),
+                        ),
+
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: customBatterController,
+                              decoration: InputDecoration(
+                                hintText: 'Enter new batter name (e.g. Batter ${squad.length + 1})',
+                                hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                                prefixIcon: const Icon(Icons.person_add_alt, size: 16, color: Color(0xFF0F6D38)),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF1F5F9),
+                              foregroundColor: const Color(0xFF0F6D38),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            ),
+                            onPressed: () {
+                              final text = customBatterController.text.trim();
+                              if (text.isNotEmpty) {
+                                final customBatter = PlayerItem(
+                                  id: 'cbatter_${DateTime.now().millisecondsSinceEpoch}',
+                                  name: text,
+                                  phone: '',
+                                  role: 'Batter',
+                                );
+                                setSheetState(() {
+                                  remainingBatters.add(customBatter);
+                                  selectedNextBatter = customBatter;
+                                  customBatterController.clear();
+                                });
+                              }
+                            },
+                            child: const Text('Add', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F6D38),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 0,
+                          ),
+                          onPressed: () {
+                            if (creditedFielder != null) {
+                              _getStat(creditedFielder!).catches += 1;
+                            }
+
+                            final dismissedStat = _getStat(dismissedPlayer);
+                            dismissedStat.isOut = true;
+
+                            setState(() {
+                              if (selectedNextBatter != null) {
+                                if (isStrikerOut) {
+                                  _striker = selectedNextBatter;
+                                } else {
+                                  _nonStriker = selectedNextBatter;
+                                }
+                              }
+                            });
+
+                            _saveCurrentLiveState();
+                            Navigator.pop(ctx);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '🏏 ${dismissedPlayer.name} Out ($dismissalType)! ${selectedNextBatter?.name ?? "New Batter"} has taken the crease.',
+                                ),
+                                backgroundColor: const Color(0xFF0F6D38),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+
+                            if (onBatterSelected != null) {
+                              onBatterSelected();
+                            }
+                          },
+                          icon: const Icon(Icons.sports_cricket, size: 18),
+                          label: Text(
+                            'Send ${selectedNextBatter?.name ?? "Next Batter"} to Crease 🏏',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (fielders.isNotEmpty) ...[
-              const Text(
-                'Fielding credit (Catch / Run-Out):',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
               ),
-              const SizedBox(height: 6),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: fielders.map((f) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: ActionChip(
-                        avatar: const Icon(Icons.back_hand, size: 14),
-                        label: Text(f.name),
-                        onPressed: () {
-                          _getStat(f).catches += 1;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Catch / fielding credited to ${f.name} (+10 pts)!',
-                              ),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-            const Text(
-              'Next Batter to Crease:',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            if (remainingBatters.isNotEmpty)
-              Wrap(
-                spacing: 8,
-                children: remainingBatters.map((b) {
-                  return ChoiceChip(
-                    label: Text(b.name),
-                    selected: _striker == b,
-                    selectedColor: const Color(0xFF166534),
-                    labelStyle: TextStyle(
-                      color: _striker == b ? Colors.white : Colors.black87,
-                    ),
-                    onSelected: (_) {
-                      setState(() => _striker = b);
-                      _saveCurrentLiveState();
-                      Navigator.pop(ctx);
-                    },
-                  );
-                }).toList(),
-              )
-            else
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text(
-                  'All available batters have batted.',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-            const SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Continue'),
-              ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
