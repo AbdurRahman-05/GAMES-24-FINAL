@@ -1540,12 +1540,16 @@ class _TurfOwnerProfileScreenState
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Partner Passport & Hub',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
+          const FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Partner Passport & Hub',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           Text(
@@ -1562,17 +1566,26 @@ class _TurfOwnerProfileScreenState
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF86EFAC)),
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+          icon: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF86EFAC), size: 20),
           tooltip: 'Open Gate QR Scanner',
           onPressed: () => context.push('/admin/qr-scanner'),
         ),
         IconButton(
-          icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+          icon: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
           tooltip: 'Edit Profile Details',
           onPressed: () => _showEditProfileDialog(profile),
         ),
         IconButton(
-          icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+          visualDensity: VisualDensity.compact,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+          icon: const Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
           tooltip: 'Logout to Login Screen',
           onPressed: () async {
             final prefs = await SharedPreferences.getInstance();
@@ -2080,7 +2093,7 @@ class _TurfOwnerProfileScreenState
           ),
         ),
 
-        // Testing state pills for easy demonstration
+        // Testing state pills for easy demonstration (responsive horizontal scroll)
         Container(
           margin: const EdgeInsets.only(bottom: 14),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -2089,16 +2102,20 @@ class _TurfOwnerProfileScreenState
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
-          child: Row(
-            children: [
-              const Text('Demo Test: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
-              const SizedBox(width: 4),
-              _buildDemoPill(profile, '30d Active', 30),
-              const SizedBox(width: 6),
-              _buildDemoPill(profile, '2d Ending', 2),
-              const SizedBox(width: 6),
-              _buildDemoPill(profile, '0d Blocked', 0),
-            ],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: [
+                const Text('Demo Test: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                const SizedBox(width: 4),
+                _buildDemoPill(profile, '30d Active', 30),
+                const SizedBox(width: 6),
+                _buildDemoPill(profile, '2d Ending', 2),
+                const SizedBox(width: 6),
+                _buildDemoPill(profile, '0d Blocked', 0),
+              ],
+            ),
           ),
         ),
 
@@ -2110,16 +2127,22 @@ class _TurfOwnerProfileScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Subscription Payment History',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ],
+                  Expanded(
+                    child: Row(
+                      children: const [
+                        Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Subscription History',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
@@ -2200,16 +2223,22 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF16A34A)),
-                    const SizedBox(width: 6),
-                    Text(
-                      item.id,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF111827)),
-                    ),
-                  ],
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF16A34A)),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          item.id,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF111827)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
@@ -2227,14 +2256,25 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Date: ${item.date}', style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563))),
-                    const SizedBox(height: 2),
-                    Text('Valid: ${item.validPeriod}', style: const TextStyle(fontSize: 10.5, color: Colors.grey)),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Date: ${item.date}',
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563)),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Valid: ${item.validPeriod}',
+                        style: const TextStyle(fontSize: 10.5, color: Colors.grey),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -2251,10 +2291,14 @@ class _TurfOwnerProfileScreenState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Receipt: #${item.receiptNumber}',
-                  style: const TextStyle(fontSize: 10.5, color: Color(0xFF6B7280), fontFamily: 'monospace'),
+                Flexible(
+                  child: Text(
+                    'Receipt: #${item.receiptNumber}',
+                    style: const TextStyle(fontSize: 10.5, color: Color(0xFF6B7280), fontFamily: 'monospace'),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 6),
                 InkWell(
                   onTap: () => _showReceiptDetailsDialog(item),
                   child: const Text(
