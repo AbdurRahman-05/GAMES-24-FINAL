@@ -1676,7 +1676,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    hasSlots ? '₹$total' : '₹${widget.dayRate.toInt()}/hr',
+                    hasSlots ? '₹$total' : (widget.price.startsWith('₹') ? widget.price : '₹${widget.price}/hr'),
                     style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w900,
