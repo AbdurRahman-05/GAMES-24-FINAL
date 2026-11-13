@@ -124,6 +124,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     final bookings = _getFilteredBookings(profile);
     final nowFormatted = DateFormat('EEEE, d MMM yyyy').format(DateTime.now());
+    final spotlightBanner = _buildMatchSpotlightBanner(context, profile);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -151,7 +152,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               _buildPerformanceBentoSection(profile),
               const SizedBox(height: 20),
 
-              // 3. Customer Bookings Stream & Filter Header
+              // 3. Live Matchday Spotlight (if active or upcoming match)
+              ?spotlightBanner,
+
+              // 4. Customer Bookings Stream & Filter Header
               _buildBookingsStreamSection(context, profile, bookings),
             ],
           ),
@@ -527,7 +531,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   // --- 2. OPERATING STATUS & DATE BAR ---
   Widget _buildVenueHeaderPulseBar(TurfProfileState profile, String formattedDate) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -540,66 +543,87 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(7.5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF475569)),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  formattedDate,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                    letterSpacing: -0.2,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              // Tactical Left Accent Ribbon
+              Container(
+                width: 4,
+                color: const Color(0xFF154D36),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF154D36)),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              formattedDate,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              'Hours: ${profile.weekdayOpeningTime} – ${profile.weekdayClosingTime} • Floodlights Active',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                color: Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDF4),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF16A34A), size: 8),
+                            SizedBox(width: 4),
+                            Text(
+                              'Courts Open',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF15803D),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  'Operating: ${profile.weekdayOpeningTime} – ${profile.weekdayClosingTime}',
-                  style: const TextStyle(
-                    fontSize: 10.5,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFBBF7D0)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF16A34A), size: 8),
-                SizedBox(width: 4),
-                Text(
-                  'Open Today',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF15803D),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -802,7 +826,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  // --- 4. FINANCIAL & OPERATIONAL OVERVIEW ---
+  // --- 4. FINANCIAL & OPERATIONAL OVERVIEW (STADIUM BOX OFFICE) ---
   Widget _buildPerformanceBentoSection(TurfProfileState profile) {
     final now = DateTime.now();
     final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -892,28 +916,47 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Header (clean, no duplicate "Live Synced" pill)
-        const Text(
-          'Business Overview',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
-            letterSpacing: -0.3,
-          ),
+        // Section Header (clean, authoritative)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Turf Command Centre',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+                letterSpacing: -0.3,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Live Overview',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF154D36),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 10),
 
-        // Hero Metric Card: Monthly Revenue GMV (Deep Forest Emerald, NO overflow on any screen)
+        // Hero Metric Card: Monthly Revenue GMV (Stadium Box Office Pass)
         Container(
-          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
-              colors: [Color(0xFF071F15), Color(0xFF0C2B1E), Color(0xFF154D36)],
+              colors: [Color(0xFF072115), Color(0xFF0C2E1F), Color(0xFF154D36)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: const Color(0xFF34D399).withValues(alpha: 0.25),
               width: 1.2,
@@ -926,93 +969,132 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
             ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 15),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                // Subtle Athletic Pitch Markings Watermark
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _TurfPitchMarkingsPainter(),
                   ),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Monthly Revenue (GMV)',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFE2E8F0),
-                        letterSpacing: -0.2,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 15),
+                          ),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'MONTHLY REVENUE (GMV)',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFCBD5E1),
+                                letterSpacing: 0.4,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                            ),
+                            child: Text(
+                              DateFormat('MMM yyyy').format(now),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      DateFormat('MMM yyyy').format(now),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFFCBD5E1),
+                      const SizedBox(height: 12),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          dynamicMonthRev > 0
+                              ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
+                              : '₹0',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: -0.8,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${activeMonthList.length} total bookings • ₹1,100 / hr avg rate',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: LinearProgressIndicator(
+                          value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
+                          minHeight: 5.5,
+                          backgroundColor: Colors.white.withValues(alpha: 0.15),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${((dynamicMonthRev / 50000.0).clamp(0.0, 1.0) * 100).toInt()}% of Monthly Target Met',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                          Text(
+                            'Target ₹50k 🎯',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  dynamicMonthRev > 0
-                      ? '₹${NumberFormat('#,##,###').format(dynamicMonthRev.toInt())}'
-                      : '₹0',
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: -0.8,
-                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${activeMonthList.length} total bookings this month (${cancelledList.length} cancelled)',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.75),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(5),
-                child: LinearProgressIndicator(
-                  value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
-                  minHeight: 5,
-                  backgroundColor: Colors.white.withValues(alpha: 0.15),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 12),
 
-        // 2 High-Utility Human-Designed Operational Cards (Clean, high contrast, zero repetitive content)
+        // 2 High-Utility Human-Designed Operational Cards (Themed Sports Pods)
         Row(
           children: [
-            // 1. Today's Revenue & Collections
+            // 1. Today's Revenue & Collections Pod
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(14),
@@ -1022,7 +1104,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.025),
+                      color: const Color(0xFF154D36).withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -1036,10 +1118,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFDCFCE7),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF154D36), Color(0xFF22C55E)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF15803D), size: 15),
+                          child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 14),
                         ),
                         const SizedBox(width: 7),
                         const Expanded(
@@ -1063,30 +1149,44 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       child: Text(
                         '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 21,
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF0F172A),
                           letterSpacing: -0.5,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$dynamicTodayPaid Online • $dynamicTodayCash Cash',
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF15803D),
+                    const SizedBox(height: 6),
+                    // Micro Collections Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFDCFCE7)),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 10),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$dynamicTodayPaid Online • $dynamicTodayCash Cash',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF15803D),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
             const SizedBox(width: 12),
-            // 2. Court Availability & Occupancy
+            // 2. Court Availability & Radar Pod
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(14),
@@ -1096,7 +1196,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.025),
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.04),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -1110,15 +1210,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE0F2FE),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0369A1), Color(0xFF0284C7)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.stadium_rounded, color: Color(0xFF0284C7), size: 15),
+                          child: const Icon(Icons.stadium_rounded, color: Colors.white, size: 14),
                         ),
                         const SizedBox(width: 7),
                         const Expanded(
                           child: Text(
-                            "Court Slots",
+                            "Court Radar",
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
@@ -1137,23 +1241,37 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       child: Text(
                         '$dynamicRemainingSlots Free',
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 21,
                           fontWeight: FontWeight.w900,
                           color: Color(0xFF0F172A),
                           letterSpacing: -0.5,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$dynamicBookedSlotsCount Booked • $totalDailySlots Total',
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0369A1),
+                    const SizedBox(height: 6),
+                    // Micro Capacity Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F9FF),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFE0F2FE)),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.pie_chart_rounded, color: Color(0xFF0284C7), size: 10),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$dynamicBookedSlotsCount / $totalDailySlots Booked',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0369A1),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -1213,6 +1331,216 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  // --- 5. BROADCAST MATCHDAY SPOTLIGHT ---
+  Widget? _buildMatchSpotlightBanner(BuildContext context, TurfProfileState profile) {
+    if (_selectedFilter != 'Upcoming' && _selectedFilter != 'All' && _selectedFilter != 'Live Now') {
+      return null;
+    }
+
+    final now = DateTime.now();
+    final allList = _getAllBookingsSource(profile);
+    final liveMatches = allList.where((b) => !b.isCancelled && b.isLiveNow(now)).toList();
+    final upcomingMatches = allList.where((b) => !b.isCancelled && b.isUpcoming(now)).toList();
+
+    final spotlight = liveMatches.isNotEmpty
+        ? liveMatches.first
+        : (upcomingMatches.isNotEmpty ? upcomingMatches.first : null);
+
+    if (spotlight == null) return null;
+
+    final isLive = spotlight.isLiveNow(now);
+    final sportColor = _getSportColor(spotlight.sport);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isLive ? const Color(0xFF16A34A) : const Color(0xFF154D36).withValues(alpha: 0.2),
+          width: isLive ? 1.5 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLive
+                ? const Color(0xFF16A34A).withValues(alpha: 0.12)
+                : const Color(0xFF154D36).withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Broadcast Banner Ribbon
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: isLive
+                      ? [const Color(0xFF0F3825), const Color(0xFF16A34A)]
+                      : [const Color(0xFF0F2E22), const Color(0xFF154D36)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: isLive ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isLive ? 'LIVE MATCH IN PROGRESS' : 'NEXT UP ON COURT',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      spotlight.effectiveTimeSlot,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Spotlight Match Body
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: sportColor.withValues(alpha: 0.12),
+                        child: Text(
+                          spotlight.customerName.isNotEmpty ? spotlight.customerName[0].toUpperCase() : 'P',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: sportColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              spotlight.customerName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Text(_getSportEmoji(spotlight.sport), style: const TextStyle(fontSize: 12)),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    '${spotlight.sport} • ${spotlight.courtName}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Color(0xFF64748B),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '₹${spotlight.amount.toInt()}',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF154D36),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            spotlight.paymentMethod.toUpperCase().contains('CASH') ? 'Pay at Venue' : 'Paid Online',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: spotlight.paymentMethod.toUpperCase().contains('CASH')
+                                  ? const Color(0xFFB45309)
+                                  : const Color(0xFF15803D),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 38,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF154D36),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 0,
+                      ),
+                      icon: const Icon(Icons.bolt_rounded, size: 16),
+                      label: const Text(
+                        'View Match Pass & Check-In',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () => _openBookingDetailsSheet(context, spotlight),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1464,6 +1792,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final isLiveNow = booking.isLiveNow(now);
     final isCancelled = booking.status.toLowerCase() == 'cancelled';
     final isUpi = booking.paymentMethod.toUpperCase().contains('UPI') || booking.paymentMethod.toUpperCase().contains('GPAY');
+    final sportColor = _getSportColor(booking.sport);
 
     // Dynamic Pill Badge Styling
     Color badgeBg;
@@ -1532,7 +1861,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                            color: sportColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -1542,10 +1871,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 booking.sport,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF154D36),
+                                  color: sportColor,
                                 ),
                               ),
                             ],
@@ -1643,13 +1972,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   children: [
                     CircleAvatar(
                       radius: 19,
-                      backgroundColor: isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFDCFCE7),
+                      backgroundColor: isCompleted ? const Color(0xFFE2E8F0) : sportColor.withValues(alpha: 0.12),
                       child: Text(
                         booking.customerName.isNotEmpty ? booking.customerName[0].toUpperCase() : 'P',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
+                          color: isCompleted ? const Color(0xFF475569) : sportColor,
                         ),
                       ),
                     ),
@@ -1829,9 +2158,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 elevation: 0,
                               ),
-                              icon: const Icon(Icons.visibility_outlined, size: 15),
+                              icon: const Icon(Icons.confirmation_number_outlined, size: 15),
                               label: const Text(
-                                'View Details',
+                                'View Match Pass & Actions',
                                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                               onPressed: () => _openBookingDetailsSheet(context, booking),
@@ -2248,6 +2577,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return '🏆';
   }
 
+  Color _getSportColor(String sport) {
+    final lower = sport.toLowerCase();
+    if (lower.contains('cricket')) return const Color(0xFFD97706); // Warm Amber
+    if (lower.contains('foot') || lower.contains('soccer')) return const Color(0xFF15803D); // Grass Emerald
+    if (lower.contains('badminton')) return const Color(0xFF4338CA); // Court Indigo
+    if (lower.contains('pickle')) return const Color(0xFF0284C7); // Cyan
+    if (lower.contains('tennis')) return const Color(0xFF65A30D); // Tennis Lime
+    if (lower.contains('basket')) return const Color(0xFFEA580C); // Warm Orange
+    return const Color(0xFF154D36);
+  }
+
   // --- 8. BLOCKED ACCESS SCAFFOLD ---
   Widget _buildBlockedAccessScaffold(BuildContext context, TurfProfileState profile) {
     return Scaffold(
@@ -2635,4 +2975,57 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       context.go('/login');
     }
   }
+}
+
+/// Custom tactical pitch markings painter creating an authentic floodlit turf geometry
+class _TurfPitchMarkingsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.045)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    // Pitch perimeter line
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(8, 8, size.width - 16, size.height - 16),
+      const Radius.circular(14),
+    );
+    canvas.drawRRect(rrect, paint);
+
+    // Halfway line
+    final midX = size.width / 2;
+    canvas.drawLine(Offset(midX, 8), Offset(midX, size.height - 8), paint);
+
+    // Center circle
+    final center = Offset(midX, size.height / 2);
+    canvas.drawCircle(center, 28, paint);
+
+    // Center spot
+    final spotPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, 2.5, spotPaint);
+
+    // Left penalty area box
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(8, (size.height - 48) / 2, 28, 48),
+        const Radius.circular(4),
+      ),
+      paint,
+    );
+
+    // Right penalty area box
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.width - 36, (size.height - 48) / 2, 28, 48),
+        const Radius.circular(4),
+      ),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
