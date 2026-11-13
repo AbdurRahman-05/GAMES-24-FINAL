@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:games24_player_app/create_public_tournament_screen.dart';
 import 'package:games24_player_app/create_private_tournament_screen.dart';
 

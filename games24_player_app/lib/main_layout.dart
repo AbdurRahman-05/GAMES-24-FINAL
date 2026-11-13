@@ -53,13 +53,16 @@ class _MainLayoutState extends State<MainLayout> {
               onPressed: () {
                 showCreateTournamentDialog(context);
               },
-              backgroundColor: const Color(0xFF166534), // Dark green
-              icon: const Icon(Icons.add, color: Colors.white, size: 20),
+              backgroundColor: const Color(0xFF154D36), // Botanical Emerald
+              elevation: 2,
+              icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
               label: const Text(
                 'Create Tournament',
                 style: TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13.5,
+                  letterSpacing: -0.2,
                 ),
               ),
             )
@@ -71,6 +74,7 @@ class _MainLayoutState extends State<MainLayout> {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
+      scrolledUnderElevation: 0,
       title: ValueListenableBuilder<String>(
         valueListenable: LocationManager().locationNotifier,
         builder: (context, loc, _) {
@@ -80,10 +84,10 @@ class _MainLayoutState extends State<MainLayout> {
                 'GAMES24',
                 style: TextStyle(
                   fontFamily: 'Delight',
-                  color: Color(0xFF166534), // Dark Green
-                  fontSize: 22,
+                  color: Color(0xFF154D36),
+                  fontSize: 21,
                   fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.8,
                 ),
               ),
               const SizedBox(width: 8),
@@ -91,7 +95,7 @@ class _MainLayoutState extends State<MainLayout> {
                 child: GestureDetector(
                   onTap: () => LocationManager.showLocationPicker(context),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF0FDF4),
                       borderRadius: BorderRadius.circular(16),
@@ -100,20 +104,20 @@ class _MainLayoutState extends State<MainLayout> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.location_on, size: 13, color: Color(0xFF166534)),
+                        const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF154D36)),
                         const SizedBox(width: 3),
                         Flexible(
                           child: Text(
                             loc,
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF166534),
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF154D36),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFF166534)),
+                        const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFF154D36)),
                       ],
                     ),
                   ),
@@ -200,7 +204,7 @@ class _MainLayoutState extends State<MainLayout> {
                     width: pillWidth,
                     height: 36, // Match the height of the icon container
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F6D38).withValues(alpha: 0.1),
+                      color: const Color(0xFF154D36).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
@@ -276,8 +280,8 @@ class _MainLayoutState extends State<MainLayout> {
                   key: ValueKey<bool>(isSelected),
                   size: 24,
                   color: isSelected
-                      ? const Color(0xFF0F6D38)
-                      : const Color(0xFF6B7280),
+                      ? const Color(0xFF154D36)
+                      : const Color(0xFF64748B),
                 ),
               ),
             ),
@@ -285,11 +289,11 @@ class _MainLayoutState extends State<MainLayout> {
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 300),
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                 color: isSelected
-                    ? const Color(0xFF0F6D38)
-                    : const Color(0xFF6B7280),
+                    ? const Color(0xFF154D36)
+                    : const Color(0xFF64748B),
               ),
               child: Text(label),
             ),

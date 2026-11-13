@@ -1,4 +1,4 @@
-import 'main_layout.dart';
+﻿import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'booking_manager.dart';
 import 'team_manager.dart';
@@ -40,7 +40,7 @@ class BadgesScreen extends StatelessWidget {
         title: 'First Kickoff',
         description: 'Book your very first turf slot on Games24',
         icon: Icons.sports_soccer_rounded,
-        color: const Color(0xFF166534),
+        color: const Color(0xFF154D36),
         isUnlocked: hasBooking,
         progressText: hasBooking ? 'Unlocked' : '0/1 Bookings',
         points: 100,
@@ -189,7 +189,7 @@ class BadgesScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF166534),
+                          color: const Color(0xFF154D36),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -284,7 +284,7 @@ class BadgesScreen extends StatelessWidget {
                               ),
                               if (badge.isUnlocked) ...[
                                 const SizedBox(width: 4),
-                                const Icon(Icons.check_circle, color: Color(0xFF166534), size: 14),
+                                const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 14),
                               ],
                             ],
                           ),
@@ -312,7 +312,7 @@ class BadgesScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: badge.isUnlocked ? const Color(0xFF166534) : const Color(0xFF94A3B8),
+                            color: badge.isUnlocked ? const Color(0xFF154D36) : const Color(0xFF94A3B8),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -327,7 +327,7 @@ class BadgesScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w600,
-                              color: badge.isUnlocked ? const Color(0xFF166534) : const Color(0xFF64748B),
+                              color: badge.isUnlocked ? const Color(0xFF154D36) : const Color(0xFF64748B),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

@@ -268,14 +268,14 @@ class BookingQrPassModal extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.verified_rounded, color: Color(0xFF16A34A), size: 15),
+                    Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 16),
                     SizedBox(width: 6),
                     Text(
-                      'ENTRY VERIFIED & CHECKED IN ✅',
+                      'ENTRY VERIFIED & CHECKED IN',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -293,10 +293,10 @@ class BookingQrPassModal extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.access_time_rounded, color: Color(0xFFB45309), size: 15),
+                    const Icon(Icons.schedule_rounded, color: Color(0xFFB45309), size: 15),
                     const SizedBox(width: 6),
                     Text(
-                      'CHECK-IN OPENS AT $opensAtStr (20m BEFORE) ⏳',
+                      'CHECK-IN OPENS AT $opensAtStr (20 MIN BEFORE)',
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w900,
@@ -318,14 +318,14 @@ class BookingQrPassModal extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF16A34A), size: 15),
+                    Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF16A34A), size: 16),
                     SizedBox(width: 6),
                     Text(
-                      'GATE CHECK-IN OPEN NOW 🟢',
+                      'GATE CHECK-IN OPEN NOW',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -355,7 +355,7 @@ class BookingQrPassModal extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF0C2B1E), Color(0xFF166534)],
+                        colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -369,9 +369,10 @@ class BookingQrPassModal extends StatelessWidget {
                             color: Colors.white.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: Text(
-                            isCricket ? '🏏' : '⚽',
-                            style: const TextStyle(fontSize: 20),
+                          child: Icon(
+                            isCricket ? Icons.sports_cricket_rounded : Icons.sports_soccer_rounded,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -447,7 +448,7 @@ class BookingQrPassModal extends StatelessWidget {
                             backgroundColor: Colors.white,
                             eyeStyle: const QrEyeStyle(
                               eyeShape: QrEyeShape.square,
-                              color: Color(0xFF166534),
+                              color: Color(0xFF154D36),
                             ),
                             dataModuleStyle: const QrDataModuleStyle(
                               dataModuleShape: QrDataModuleShape.square,
@@ -460,14 +461,14 @@ class BookingQrPassModal extends StatelessWidget {
                           const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF166534)),
+                              Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF154D36)),
                               SizedBox(width: 6),
                               Text(
-                                'Pass verified at gate. Enjoy your game! 🏆',
+                                'Pass verified at gate. Enjoy your game!',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF166534),
+                                  color: Color(0xFF154D36),
                                 ),
                               ),
                             ],
@@ -501,14 +502,14 @@ class BookingQrPassModal extends StatelessWidget {
                           const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFF166534)),
+                              Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFF154D36)),
                               SizedBox(width: 5),
                               Text(
                                 'Present this QR at turf gate for check-in',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF166534),
+                                  color: Color(0xFF154D36),
                                 ),
                               ),
                             ],
@@ -567,7 +568,7 @@ class BookingQrPassModal extends StatelessWidget {
               height: 48,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF166534),
+                  backgroundColor: const Color(0xFF154D36),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
@@ -601,7 +602,7 @@ class BookingQrPassModal extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w800,
-            color: isSuccess ? const Color(0xFF166534) : const Color(0xFF0F172A),
+            color: isSuccess ? const Color(0xFF154D36) : const Color(0xFF0F172A),
           ),
         ),
       ],

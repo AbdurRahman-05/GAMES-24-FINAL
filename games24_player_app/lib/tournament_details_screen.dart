@@ -109,7 +109,7 @@ class TournamentDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF0F6D38),
+                color: const Color(0xFF154D36),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
@@ -163,7 +163,7 @@ class TournamentDetailsScreen extends StatelessWidget {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    '📍 Venue Details Launching Soon (TBA)\nExact arena and court schedule will be announced closer to kickoff.',
+                    'Venue Details Launching Soon (TBA)\nExact arena and court schedule will be announced closer to kickoff.',
                     style: TextStyle(color: Color(0xFF92400E), fontSize: 12, fontWeight: FontWeight.w600, height: 1.3),
                   ),
                 ),
@@ -233,11 +233,11 @@ class TournamentDetailsScreen extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Icon(Icons.confirmation_number_rounded, color: Color(0xFF166534), size: 18),
+              Icon(Icons.confirmation_number_rounded, color: Color(0xFF154D36), size: 18),
               SizedBox(width: 8),
               Text(
-                'External Ticket / Registration Pass 🎟️',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFF166534)),
+                'External Ticket / Registration Pass',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFF154D36)),
               ),
             ],
           ),
@@ -259,12 +259,12 @@ class TournamentDetailsScreen extends StatelessWidget {
                 Expanded(
                   child: Text(
                     tournament.externalTicketUrl ?? '',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF166534)),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF154D36)),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.copy_rounded, size: 16, color: Color(0xFF166534)),
+                  icon: const Icon(Icons.copy_rounded, size: 16, color: Color(0xFF154D36)),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   onPressed: () {
@@ -288,7 +288,7 @@ class TournamentDetailsScreen extends StatelessWidget {
   Widget _financeItem(String label, String value, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF0F6D38), size: 28),
+        Icon(icon, color: const Color(0xFF154D36), size: 28),
         const SizedBox(height: 8),
         Text(
           label,
@@ -336,7 +336,7 @@ class TournamentDetailsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, color: Color(0xFF0F6D38), size: 16),
+          const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -355,7 +355,7 @@ class TournamentDetailsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, color: Color(0xFF0F6D38), size: 16),
+          const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: RichText(
@@ -403,7 +403,7 @@ class TournamentDetailsScreen extends StatelessWidget {
           CircularProgressIndicator(
             value: tournament.registeredTeams / tournament.maxTeams,
             backgroundColor: Colors.white,
-            color: const Color(0xFF0F6D38),
+            color: const Color(0xFF154D36),
           ),
         ],
       ),
@@ -463,7 +463,7 @@ class TournamentDetailsScreen extends StatelessWidget {
                     );
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F6D38),
+              backgroundColor: const Color(0xFF154D36),
               disabledBackgroundColor: Colors.grey,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -499,7 +499,7 @@ class TournamentDetailsScreen extends StatelessWidget {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F6D38),
+              backgroundColor: const Color(0xFF154D36),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(

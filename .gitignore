@@ -27,3 +27,9 @@ Thumbs.db
 # Scratch temporary files
 *.py
 **/scratch*.py
+
+# Impeccable & Agent local tooling
+.agent/
+.impeccable/
+DESIGN.md
+PRODUCT.md

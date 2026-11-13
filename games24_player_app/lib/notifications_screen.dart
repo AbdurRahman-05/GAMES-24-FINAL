@@ -54,11 +54,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     list.add(
       NotificationItem(
         id: 'notif_welcome',
-        title: 'Welcome to Games24! 🎉',
-        message: 'Hello $name, explore nearby turfs, book instant slots, and join competitive challenges!',
+        title: 'Welcome to Games24',
+        message: 'Hello $name, explore nearby turfs, book instant slots, and join competitive challenges.',
         time: 'Just now',
-        icon: Icons.celebration_rounded,
-        color: const Color(0xFF166534),
+        icon: Icons.sports_handball_rounded,
+        color: const Color(0xFF154D36),
         isRead: false,
       ),
     );
@@ -68,7 +68,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       list.add(
         NotificationItem(
           id: 'notif_b_${b['id']}',
-          title: 'Booking Confirmed ✅',
+          title: 'Booking Confirmed',
           message: 'Your slot at ${b['courtName'] ?? 'Turf'} on ${b['date']} (${b['timeSlot']}) is locked in.',
           time: 'Active',
           icon: Icons.confirmation_number_rounded,
@@ -83,7 +83,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       list.add(
         NotificationItem(
           id: 'notif_c_${c.id}',
-          title: 'Open Challenge Alert ⚽',
+          title: 'Open Challenge Alert',
           message: '${c.challengerName} is seeking opponents for ${c.sport} at ${c.turfName}.',
           time: c.time,
           icon: Icons.flag_rounded,
@@ -151,7 +151,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF166534)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF154D36)))
           : _notifications.isEmpty
               ? Center(
                   child: Padding(

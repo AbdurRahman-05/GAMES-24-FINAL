@@ -56,7 +56,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     const SizedBox(height: 24),
                     Expanded(
                       child: RefreshIndicator(
-                        color: const Color(0xFF166534),
+                        color: const Color(0xFF154D36),
                         onRefresh: () => BookingManager().fetchBookings(),
                         child: SingleChildScrollView(
                           physics: const AlwaysScrollableScrollPhysics(),
@@ -239,7 +239,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0F6D38) : Colors.transparent,
+          color: isSelected ? const Color(0xFF154D36) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
@@ -266,7 +266,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFF166534),
+                color: Color(0xFF154D36),
                 shape: BoxShape.circle,
               ),
             ),
@@ -293,7 +293,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF166534),
+              color: Color(0xFF154D36),
             ),
           ),
         ),
@@ -375,7 +375,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 color: Color(0xFFF3F5F1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 48, color: const Color(0xFF166534)),
+              child: Icon(icon, size: 48, color: const Color(0xFF154D36)),
             ),
             const SizedBox(height: 20),
             Text(
@@ -400,7 +400,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF166534),
+                  backgroundColor: const Color(0xFF154D36),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -462,7 +462,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       badgeBg = const Color(0xFF4B5563);
       badgeText = 'Completed • #$formalBookingCode';
     } else {
-      badgeBg = const Color(0xFF166534);
+      badgeBg = const Color(0xFF154D36);
       badgeText = 'Confirmed • #$formalBookingCode';
     }
 
@@ -497,11 +497,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     imgUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
-                      color: const Color(0xFF166534).withValues(alpha: 0.15),
+                      color: const Color(0xFF154D36).withValues(alpha: 0.15),
                       child: const Center(
                         child: Icon(
                           Icons.sports_soccer,
-                          color: Color(0xFF166534),
+                          color: Color(0xFF154D36),
                           size: 48,
                         ),
                       ),
@@ -589,13 +589,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           const SizedBox(width: 4),
                           Text(
                             isOpenChallenge
-                                ? '⚔️ Open Challenge'
-                                : '🔒 Private Booking',
+                                ? 'OPEN CHALLENGE'
+                                : 'PRIVATE BOOKING',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: 0.3,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ],
@@ -708,7 +708,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                   ],
@@ -743,9 +743,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         child: Text(
                           isOpenChallenge
                               ? (teamName != null && teamName.isNotEmpty
-                                  ? '⚔️ Open Challenge: $teamName vs ${opponentName?.isNotEmpty == true ? opponentName : 'Waiting for Opponent ⏳'}'
-                                  : '⚔️ Open Challenge Match (Public Challenge)')
-                              : '🔒 Private Booking • Friendly / Practice Match',
+                                  ? 'Open Challenge: $teamName vs ${opponentName?.isNotEmpty == true ? opponentName : 'Waiting for Opponent'}'
+                                  : 'Open Challenge Match (Public Challenge)')
+                              : 'Private Booking • Friendly / Practice Match',
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,
@@ -856,7 +856,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF166534),
+                                  color: const Color(0xFF154D36),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
@@ -935,14 +935,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                   },
                                   icon: const Icon(Icons.flash_on_rounded, size: 16),
                                   label: Text(
-                                    'Play Match #${results.length + 1} ⚡ (~${remainingSlotMins}m left)',
+                                    'Play Match #${results.length + 1} (~${remainingSlotMins}m left)',
                                     style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF0F6D38),
-                                    side: const BorderSide(color: Color(0xFF0F6D38)),
+                                    foregroundColor: const Color(0xFF154D36),
+                                    side: const BorderSide(color: Color(0xFF154D36)),
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                   ),
@@ -965,7 +965,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                   },
                                   icon: const Icon(Icons.emoji_events_outlined, size: 15),
                                   label: Text(
-                                    'View Match #${results.length} 🏆',
+                                    'View Match #${results.length}',
                                     style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                                   ),
                                 ),
@@ -981,21 +981,21 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           if (isLive) {
                             btnColor = const Color(0xFFDC2626);
                             btnIcon = Icons.play_circle_fill_rounded;
-                            btnText = 'Continue Live Match 🔴 (${liveState.liveScoreSummary})';
+                            btnText = 'Continue Live Match (${liveState.liveScoreSummary})';
                             targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
                           } else if (isSlotFinished) {
-                            btnColor = const Color(0xFF0F6D38);
+                            btnColor = const Color(0xFF154D36);
                             btnIcon = Icons.emoji_events_rounded;
                             btnText = results.length > 1
-                                ? 'View Match Summaries (${results.length}) 🏆'
-                                : 'View Scorecard 🏆';
+                                ? 'Match Summaries (${results.length})'
+                                : 'View Scorecard';
                             targetTab = 3;
                           } else {
-                            btnColor = const Color(0xFF166534);
+                            btnColor = const Color(0xFF154D36);
                             btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
                             btnText = isOpenChallenge
-                                ? (isStarted ? 'Start Match ⚔️' : 'Challenge Squad ⚔️')
-                                : (isStarted ? 'Start Scorecard 🏏' : 'Team Lineup 🛡️');
+                                ? (isStarted ? 'Start Match' : 'Challenge Squad')
+                                : (isStarted ? 'Start Scorecard' : 'Team Lineup');
                             targetTab = 0;
                           }
 
@@ -1057,7 +1057,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           onPressed: () => BookingQrPassModal.show(context, booking),
                           icon: const Icon(Icons.qr_code_2_rounded, size: 16, color: Color(0xFF4ADE80)),
                           label: const Text(
-                            'Entry Pass 🎟️',
+                            'Entry Pass',
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.bold,
@@ -1208,7 +1208,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF166534),
+                        color: const Color(0xFF154D36),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -1312,7 +1312,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       child: const Icon(
                         Icons.calendar_today_outlined,
                         size: 20,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1354,7 +1354,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       child: const Icon(
                         Icons.location_on_outlined,
                         size: 20,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1392,7 +1392,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         Icon(
                           Icons.account_balance_wallet_outlined,
                           size: 16,
-                          color: Color(0xFF166534),
+                          color: Color(0xFF154D36),
                         ),
                         SizedBox(width: 8),
                         Text(
@@ -1427,7 +1427,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F6D38),
+                      backgroundColor: const Color(0xFF154D36),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
@@ -1447,13 +1447,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           icon: const Icon(
                             Icons.near_me_outlined,
                             size: 16,
-                            color: Color(0xFF0F6D38),
+                            color: Color(0xFF154D36),
                           ),
                           label: const Text(
                             'Get Directions',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF0F6D38),
+                              color: Color(0xFF154D36),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1563,7 +1563,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF166534),
+                        color: const Color(0xFF154D36),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -1667,7 +1667,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       child: const Icon(
                         Icons.access_time_outlined,
                         size: 20,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1709,7 +1709,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       child: const Icon(
                         Icons.location_on_outlined,
                         size: 20,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -1747,7 +1747,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         Icon(
                           Icons.check_circle_outline,
                           size: 16,
-                          color: Color(0xFF166534),
+                          color: Color(0xFF154D36),
                         ),
                         SizedBox(width: 8),
                         Text(
@@ -1787,7 +1787,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F6D38),
+                            backgroundColor: const Color(0xFF154D36),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -1806,13 +1806,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           icon: const Icon(
                             Icons.tune,
                             size: 18,
-                            color: Color(0xFF0F6D38),
+                            color: Color(0xFF154D36),
                           ),
                           label: const Text(
                             'Manage',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF0F6D38),
+                              color: Color(0xFF154D36),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1864,10 +1864,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F6D38),
+                    color: Color(0xFF154D36),
                   ),
                 ),
-                Icon(Icons.chevron_right, size: 16, color: Color(0xFF0F6D38)),
+                Icon(Icons.chevron_right, size: 16, color: Color(0xFF154D36)),
               ],
             ),
           ],
@@ -1930,14 +1930,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                   'Receipt',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Color(0xFF166534),
+                                    color: Color(0xFF154D36),
                                   ),
                                 ),
                                 const Text(
                                   'Sent',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Color(0xFF166534),
+                                    color: Color(0xFF154D36),
                                   ),
                                 ),
                               ],
@@ -1998,7 +1998,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     Icon(
                       Icons.calendar_today_outlined,
                       size: 14,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     SizedBox(width: 8),
                     Expanded(
@@ -2029,7 +2029,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F6D38),
+                          backgroundColor: const Color(0xFF154D36),
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -2097,7 +2097,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: const BoxDecoration(
-              color: Color(0xFF0F6D38),
+              color: Color(0xFF154D36),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -2139,7 +2139,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF0F6D38),
+                color: Color(0xFF154D36),
               ),
             ),
           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocationManager {
@@ -163,7 +163,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                   ),
                   child: const Icon(
                     Icons.location_on_rounded,
-                    color: Color(0xFF166534),
+                    color: Color(0xFF154D36),
                     size: 20,
                   ),
                 ),
@@ -206,7 +206,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 controller: _searchCtrl,
                 onChanged: (v) => setState(() => _query = v),
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF166534), size: 20),
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFF154D36), size: 20),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear, size: 16),
@@ -242,7 +242,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 ),
                 child: Row(
                   children: const [
-                    Icon(Icons.my_location_rounded, color: Color(0xFF166534), size: 18),
+                    Icon(Icons.my_location_rounded, color: Color(0xFF154D36), size: 18),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -250,11 +250,11 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF166534),
+                          color: Color(0xFF154D36),
                         ),
                       ),
                     ),
-                    Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF166534)),
+                    Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF154D36)),
                   ],
                 ),
               ),
@@ -286,7 +286,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF166534) : const Color(0xFFF3F4F6),
+                        color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF3F4F6),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -300,7 +300,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? const Color(0xFF166534) : const Color(0xFF1F2937),
+                        color: isSelected ? const Color(0xFF154D36) : const Color(0xFF1F2937),
                       ),
                     ),
                     subtitle: Text(
@@ -308,7 +308,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                       style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFF166534), size: 20)
+                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFF154D36), size: 20)
                         : const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 18),
                     onTap: () {
                       LocationManager().setLocation(area);

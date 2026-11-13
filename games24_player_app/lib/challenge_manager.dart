@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,7 +111,7 @@ class Challenge {
     challengerColor: Color(
       json['challengerColor'] is int
           ? json['challengerColor'] as int
-          : (int.tryParse(json['challengerColor']?.toString() ?? '') ?? 0xFF166534),
+          : (int.tryParse(json['challengerColor']?.toString() ?? '') ?? 0xFF154D36),
     ),
     creatorPhone: json['creatorPhone']?.toString() ?? '',
     teamSize: json['teamSize']?.toString() ?? '7v7',

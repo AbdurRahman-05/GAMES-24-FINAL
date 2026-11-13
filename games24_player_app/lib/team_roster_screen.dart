@@ -178,7 +178,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F6D38),
+                          color: const Color(0xFF154D36),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -214,7 +214,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                           const Icon(
                             Icons.verified,
                             size: 16,
-                            color: Color(0xFF0F6D38),
+                            color: Color(0xFF154D36),
                           ),
                         ],
                       ),
@@ -246,7 +246,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                                 const Icon(
                                   Icons.circle,
                                   size: 6,
-                                  color: Color(0xFF166534),
+                                  color: Color(0xFF154D36),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -254,7 +254,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF166534),
+                                    color: Color(0xFF154D36),
                                   ),
                                 ),
                               ],
@@ -303,7 +303,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF166534),
+                                color: Color(0xFF154D36),
                               ),
                             ),
                             const SizedBox(width: 2),
@@ -312,7 +312,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF166534),
+                                color: Color(0xFF154D36),
                               ),
                             ),
                           ],
@@ -371,7 +371,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.key, size: 20, color: Color(0xFF0F6D38)),
+                  const Icon(Icons.key, size: 20, color: Color(0xFF154D36)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -410,7 +410,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                     ),
                     child: Row(
                       children: const [
-                        Icon(Icons.copy, size: 14, color: Color(0xFF0F6D38)),
+                        Icon(Icons.copy, size: 14, color: Color(0xFF154D36)),
                         SizedBox(width: 4),
                         Text(
                           'Copy',
@@ -506,7 +506,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               child: const Icon(
                 Icons.auto_awesome_mosaic_outlined,
                 size: 20,
-                color: Color(0xFF0F6D38),
+                color: Color(0xFF154D36),
               ),
             ),
             const SizedBox(width: 12),
@@ -542,7 +542,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F6D38),
+                  color: Color(0xFF154D36),
                 ),
               ),
             ),
@@ -574,7 +574,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
             content: Text(
               'Added ${newMembers.length} contact(s) to ${widget.team?.name ?? "squad"}!',
             ),
-            backgroundColor: const Color(0xFF0F6D38),
+            backgroundColor: const Color(0xFF154D36),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -616,7 +616,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF166534),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                   ),
@@ -631,7 +631,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F6D38),
+                    color: const Color(0xFF154D36),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -670,7 +670,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   const Icon(
                     Icons.contact_phone_outlined,
                     size: 36,
-                    color: Color(0xFF0F6D38),
+                    color: Color(0xFF154D36),
                   ),
                   const SizedBox(height: 10),
                   const Text(
@@ -693,7 +693,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                     icon: const Icon(Icons.contacts, size: 16),
                     label: const Text('Access Mobile Contacts'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F6D38),
+                      backgroundColor: const Color(0xFF154D36),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -783,14 +783,14 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                 onTap: _openContactsPicker,
                 child: Row(
                   children: const [
-                    Icon(Icons.add, size: 14, color: Color(0xFF0F6D38)),
+                    Icon(Icons.add, size: 14, color: Color(0xFF154D36)),
                     SizedBox(width: 2),
                     Text(
                       'Import More',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F6D38),
+                        color: Color(0xFF154D36),
                       ),
                     ),
                   ],
@@ -819,7 +819,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
         : (player.name.isNotEmpty ? player.name[0].toUpperCase() : 'P');
 
     final colors = [
-      const Color(0xFF0F6D38),
+      const Color(0xFF154D36),
       const Color(0xFF1E40AF),
       const Color(0xFF9333EA),
       const Color(0xFFD97706),
@@ -907,7 +907,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF166534),
+                          color: Color(0xFF154D36),
                         ),
                       ),
                     ],
@@ -978,7 +978,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                     const Icon(
                       Icons.phone_android,
                       size: 12,
-                      color: Color(0xFF0F6D38),
+                      color: Color(0xFF154D36),
                     ),
                     const SizedBox(width: 2),
                     Flexible(
@@ -986,7 +986,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                         player.phone.isNotEmpty ? player.phone : 'Mobile Contact',
                         style: const TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF166534),
+                          color: Color(0xFF154D36),
                           fontWeight: FontWeight.w500,
                         ),
                         overflow: TextOverflow.ellipsis,
@@ -1009,7 +1009,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                             ? 'Calling ${player.name} (${player.phone})...'
                             : 'Calling ${player.name}...',
                       ),
-                      backgroundColor: const Color(0xFF0F6D38),
+                      backgroundColor: const Color(0xFF154D36),
                       duration: const Duration(seconds: 2),
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -1024,7 +1024,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   child: const Icon(
                     Icons.phone_outlined,
                     size: 16,
-                    color: Color(0xFF0F6D38),
+                    color: Color(0xFF154D36),
                   ),
                 ),
               ),
@@ -1065,7 +1065,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F6D38),
+              backgroundColor: const Color(0xFF154D36),
               foregroundColor: Colors.white,
               elevation: 4,
               shadowColor: Colors.black.withValues(alpha: 0.2),
@@ -1084,7 +1084,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
             icon: const Icon(
               Icons.sports_kabaddi,
               size: 18,
-              color: Color(0xFF0F6D38),
+              color: Color(0xFF154D36),
             ), // closely resembling crossed swords
             label: const Text(
               'Challenge Other Squads',

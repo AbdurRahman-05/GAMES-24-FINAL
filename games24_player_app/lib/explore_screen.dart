@@ -107,7 +107,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   icon: const Icon(
                     Icons.refresh,
                     size: 20,
-                    color: Color(0xFF0F6D38),
+                    color: Color(0xFF154D36),
                   ),
                   tooltip: 'Refresh Turfs',
                   onPressed: () {
@@ -134,7 +134,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 40),
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFF0F6D38)),
+          child: CircularProgressIndicator(color: Color(0xFF154D36)),
         ),
       );
     }
@@ -386,7 +386,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.tune, color: Color(0xFF0F6D38), size: 16),
+            child: const Icon(Icons.tune, color: Color(0xFF154D36), size: 16),
           ),
         ],
       ),
@@ -430,7 +430,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0F6D38) : const Color(0xFFF3F5F1),
+          color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF3F5F1),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
@@ -561,7 +561,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: isAvailable
-                        ? const Color(0xFF0F6D38)
+                        ? const Color(0xFF154D36)
                         : const Color(0xFFDC2626),
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -651,7 +651,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             Text(
                               price,
                               style: const TextStyle(
-                                color: Color(0xFF0F6D38),
+                                color: Color(0xFF154D36),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -695,7 +695,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               Icon(
                                 _getSportIcon(sport),
                                 size: 13,
-                                color: const Color(0xFF166534),
+                                color: const Color(0xFF154D36),
                               ),
                               const SizedBox(width: 5),
                               Text(
@@ -739,7 +739,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F6D38),
+                      backgroundColor: const Color(0xFF154D36),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(

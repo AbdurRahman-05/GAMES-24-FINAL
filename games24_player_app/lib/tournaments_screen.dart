@@ -60,7 +60,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
           backgroundColor: Colors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF166534)),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF154D36)),
             onPressed: () => Navigator.maybePop(context),
           ),
           title: const Text(
@@ -207,7 +207,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
         child: Container(
           margin: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF0F6D38) : Colors.transparent,
+            color: isSelected ? const Color(0xFF154D36) : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           alignment: Alignment.center,
@@ -276,8 +276,16 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F9F3),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0x0A0F172A),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -325,7 +333,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F6D38),
+                          color: const Color(0xFF154D36),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Text(
@@ -376,7 +384,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         tournament.isVenueTBA
-                            ? '📍 Venue Details Launching Soon (TBA)'
+                            ? 'Venue Details Launching Soon (TBA)'
                             : '${tournament.venue}, ${tournament.location}',
                         style: const TextStyle(
                           color: Colors.white70,
@@ -432,21 +440,22 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: Row(
                       children: [
                         Container(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF0FDF4),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
                             Icons.emoji_events_outlined,
-                            color: Color(0xFF0F6D38),
+                            color: Color(0xFF154D36),
                             size: 24,
                           ),
                         ),
@@ -465,7 +474,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                             Text(
                               tournament.prizePool,
                               style: const TextStyle(
-                                color: Color(0xFF0F6D38),
+                                color: Color(0xFF154D36),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -512,7 +521,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0F6D38),
+                        backgroundColor: const Color(0xFF154D36),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(

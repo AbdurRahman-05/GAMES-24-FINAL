@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/utils/toast_utils.dart';
 import 'login_screen.dart';
@@ -67,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF166534),
+              backgroundColor: const Color(0xFF154D36),
             ),
             child: const Text('Close', style: TextStyle(color: Colors.white)),
           ),
@@ -118,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     leading: const Icon(
                       Icons.person_outline,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Full Name',
@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     leading: const Icon(
                       Icons.phone_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Mobile Number',
@@ -160,7 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     leading: const Icon(
                       Icons.sports_soccer_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Preferred Sport',
@@ -193,10 +193,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   SwitchListTile(
-                    activeThumbColor: const Color(0xFF166534),
+                    activeThumbColor: const Color(0xFF154D36),
                     secondary: const Icon(
                       Icons.notifications_active_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Push Notifications',
@@ -218,10 +218,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(height: 1, indent: 56),
                   SwitchListTile(
-                    activeThumbColor: const Color(0xFF166534),
+                    activeThumbColor: const Color(0xFF154D36),
                     secondary: const Icon(
                       Icons.alarm_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Match Reminders',
@@ -243,10 +243,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(height: 1, indent: 56),
                   SwitchListTile(
-                    activeThumbColor: const Color(0xFF166534),
+                    activeThumbColor: const Color(0xFF154D36),
                     secondary: const Icon(
                       Icons.flag_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Open Challenge Alerts',
@@ -284,7 +284,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     leading: const Icon(
                       Icons.privacy_tip_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Privacy Policy',
@@ -306,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     leading: const Icon(
                       Icons.description_outlined,
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                     ),
                     title: const Text(
                       'Terms of Service',
@@ -326,7 +326,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const Divider(height: 1, indent: 56),
                   const ListTile(
-                    leading: Icon(Icons.info_outline, color: Color(0xFF166534)),
+                    leading: Icon(Icons.info_outline, color: Color(0xFF154D36)),
                     title: Text(
                       'App Version',
                       style: TextStyle(

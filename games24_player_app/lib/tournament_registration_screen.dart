@@ -89,7 +89,7 @@ class _TournamentRegistrationScreenState
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F6D38),
+                backgroundColor: const Color(0xFF154D36),
               ),
               child: const Text(
                 'Confirm',
@@ -162,7 +162,7 @@ class _TournamentRegistrationScreenState
           child: ElevatedButton(
             onPressed: _submitRegistration,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F6D38),
+              backgroundColor: const Color(0xFF154D36),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(

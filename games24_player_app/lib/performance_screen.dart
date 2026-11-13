@@ -1,4 +1,4 @@
-import 'main_layout.dart';
+﻿import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'booking_manager.dart';
@@ -79,14 +79,14 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF166534), Color(0xFF15803D)],
+                  colors: [Color(0xFF154D36), Color(0xFF15803D)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF166534).withValues(alpha: 0.25),
+                    color: const Color(0xFF154D36).withValues(alpha: 0.25),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -141,7 +141,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                             ),
                             const SizedBox(width: 8),
                             const Text(
-                              '★ 5.0 Rating',
+                              'â˜… 5.0 Rating',
                               style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -162,7 +162,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                     title: 'Total Matches',
                     value: '$totalMatches',
                     icon: Icons.sports_soccer_outlined,
-                    color: const Color(0xFF166534),
+                    color: const Color(0xFF154D36),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -221,7 +221,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                       ),
                       Text(
                         totalMatches > 0 ? '$totalMatches matches' : 'No matches',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF154D36), fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -255,7 +255,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
               ),
               child: Column(
                 children: [
-                  _buildSportProgress('Football', _preferredSport == 'Football' ? 0.8 : 0.3, const Color(0xFF166534)),
+                  _buildSportProgress('Football', _preferredSport == 'Football' ? 0.8 : 0.3, const Color(0xFF154D36)),
                   const SizedBox(height: 12),
                   _buildSportProgress('Box Cricket', _preferredSport == 'Cricket' ? 0.8 : 0.2, const Color(0xFF0284C7)),
                   const SizedBox(height: 12),
@@ -312,7 +312,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                           color: const Color(0xFFF0FDF4),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.sports_soccer, color: Color(0xFF166534), size: 20),
+                        child: const Icon(Icons.sports_soccer, color: Color(0xFF154D36), size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -325,7 +325,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              "${b['date'] ?? 'Recent'} • ${b['timeSlot'] ?? ''}",
+                              "${b['date'] ?? 'Recent'} â€¢ ${b['timeSlot'] ?? ''}",
                               style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
                             ),
                           ],
@@ -339,7 +339,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                         ),
                         child: const Text(
                           'Played',
-                          style: TextStyle(color: Color(0xFF166534), fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Color(0xFF154D36), fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -421,7 +421,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
           child: Container(
             height: 80 * heightFactor,
             decoration: BoxDecoration(
-              color: heightFactor > 0 ? const Color(0xFF166534) : Colors.transparent,
+              color: heightFactor > 0 ? const Color(0xFF154D36) : Colors.transparent,
               borderRadius: BorderRadius.circular(7),
             ),
           ),

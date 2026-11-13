@@ -1,4 +1,4 @@
-import 'main_layout.dart';
+﻿import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/utils/toast_utils.dart';
@@ -47,7 +47,7 @@ class _SupportScreenState extends State<SupportScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Row(
             children: [
-              Icon(Icons.check_circle, color: Color(0xFF166534)),
+              Icon(Icons.check_circle, color: Color(0xFF154D36)),
               SizedBox(width: 8),
               Text('Message Sent!'),
             ],
@@ -59,7 +59,7 @@ class _SupportScreenState extends State<SupportScreen> {
           actions: [
             ElevatedButton(
               onPressed: () => Navigator.pop(ctx),
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF166534)),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF154D36)),
               child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -114,7 +114,7 @@ class _SupportScreenState extends State<SupportScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF166534),
+                      color: Color(0xFF154D36),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.support_agent_rounded, color: Colors.white, size: 28),
@@ -135,7 +135,7 @@ class _SupportScreenState extends State<SupportScreen> {
                         SizedBox(height: 4),
                         Text(
                           'Have an issue with a booking, payment, or turf? We are here to help!',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF166534), height: 1.3),
+                          style: TextStyle(fontSize: 12, color: Color(0xFF154D36), height: 1.3),
                         ),
                       ],
                     ),
@@ -154,7 +154,7 @@ class _SupportScreenState extends State<SupportScreen> {
                     icon: Icons.phone_in_talk_rounded,
                     title: 'Helpline',
                     subtitle: '+91 98765 43210',
-                    color: const Color(0xFF166534),
+                    color: const Color(0xFF154D36),
                     onTap: () => _copyToClipboard('+919876543210', 'Helpline Number'),
                   ),
                 ),
@@ -270,7 +270,7 @@ class _SupportScreenState extends State<SupportScreen> {
                     child: ElevatedButton(
                       onPressed: _isSending ? null : _submitMessage,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF166534),
+                        backgroundColor: const Color(0xFF154D36),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
