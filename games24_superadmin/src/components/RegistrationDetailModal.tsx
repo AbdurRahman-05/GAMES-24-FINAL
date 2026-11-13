@@ -287,6 +287,49 @@ export default function RegistrationDetailModal({
             </div>
           </div>
 
+          {/* Sports & Amenities */}
+          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> Sports Available & Facilities
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <span className="text-xs text-slate-400">Configured Sports</span>
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  {registration.sports && registration.sports.length > 0 ? (
+                    registration.sports.map((sp, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        {sp}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-slate-500">Cricket, Football (Default Turf Ground)</span>
+                  )}
+                </div>
+              </div>
+
+              {registration.amenities && registration.amenities.length > 0 && (
+                <div>
+                  <span className="text-xs text-slate-400">Amenities & Facilities</span>
+                  <div className="flex flex-wrap gap-2 mt-1.5">
+                    {registration.amenities.map((amenity, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#182033] text-indigo-300 border border-[#28354F]"
+                      >
+                        ✓ {amenity}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Venue Photos Gallery */}
           {registration.photoUrls && registration.photoUrls.length > 0 && (
             <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">

@@ -369,52 +369,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                 ),
               ),
-              const SizedBox(height: 32),
-
-              // OR Divider
-              Row(
-                children: [
-                  const Expanded(child: Divider(color: Color(0xFFE5E7EB))),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      'OR CONTINUE WITH',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF9CA3AF),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  const Expanded(child: Divider(color: Color(0xFFE5E7EB))),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Social Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSocialButton(
-                      'Google',
-                      'assets/images/google_icon.png', // We'll just use flutter icon if asset not available, let's use built in or text, wait, better use something that works.
-                      Icons.g_mobiledata, // Fallback
-                      Colors.blue,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildSocialButton(
-                      'Apple',
-                      'assets/images/apple_icon.png',
-                      Icons.apple, // Fallback
-                      Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               // Log In
               Row(
@@ -679,43 +634,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 color: isSelected
                     ? Colors.green.shade600
                     : const Color(0xFF4B5563),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton(
-    String label,
-    String imagePath,
-    IconData fallbackIcon,
-    Color iconColor,
-  ) {
-    return SizedBox(
-      height: 48,
-      child: OutlinedButton(
-        onPressed: () {},
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: const BorderSide(color: Color(0xFFE5E7EB)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Assuming image assets are not present, use Icon as fallback
-            Icon(fallbackIcon, size: 24, color: iconColor),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF374151),
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

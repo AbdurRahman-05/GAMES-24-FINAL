@@ -49,6 +49,9 @@ model AdminUser {
   bankAccount        String?
   ifscCode           String?
   upiId              String?
+  isBranch           Boolean  @default(false)
+  parentTurfId       Int?
+  alternativePhone   String?
   status             String   @default("PENDING_APPROVAL")
   cancelReason       String?
   createdAt          DateTime @default(now())
@@ -79,6 +82,9 @@ model VerifiedAdmin {
   bankAccount        String?
   ifscCode           String?
   upiId              String?
+  isBranch           Boolean         @default(false)
+  parentTurfId       Int?
+  alternativePhone   String?
   status             String          @default("VERIFIED") // VERIFIED, HOLD, CANCELLED
   isBookingHold      Boolean         @default(false)
   dayRate            Float           @default(1000.0)

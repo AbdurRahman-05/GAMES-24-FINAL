@@ -235,7 +235,14 @@ class BookingManager {
 
       final uri = Uri.parse(
           '${ApiConfig.baseUrl}/turfs/user-bookings?phone=${Uri.encodeComponent(phone)}&name=${Uri.encodeComponent(name)}');
-      final res = await http.get(uri).timeout(const Duration(seconds: 5));
+      http.Response res;
+      try {
+        res = await http.get(uri).timeout(const Duration(seconds: 15));
+      } catch (_) {
+        // Cold start retry once
+        await Future.delayed(const Duration(milliseconds: 1000));
+        res = await http.get(uri).timeout(const Duration(seconds: 15));
+      }
 
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
@@ -261,7 +268,7 @@ class BookingManager {
   Future<bool> cancelBooking(int bookingId) async {
     try {
       final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$bookingId/cancel');
-      final res = await http.post(uri).timeout(const Duration(seconds: 5));
+      final res = await http.post(uri).timeout(const Duration(seconds: 15));
       if (res.statusCode == 200 || res.statusCode == 201) {
         await fetchBookings();
         return true;
@@ -315,7 +322,7 @@ class BookingManager {
     if (intId != null) {
       try {
         final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$intId/complete');
-        await http.post(uri).timeout(const Duration(seconds: 4));
+        await http.post(uri).timeout(const Duration(seconds: 15));
       } catch (_) {}
     }
   }
@@ -351,7 +358,7 @@ class BookingManager {
             'opponentName': opponentName,
             'opponentPhone': opponentPhone,
           }),
-        ).timeout(const Duration(seconds: 5));
+        ).timeout(const Duration(seconds: 15));
         return res.statusCode == 200 || res.statusCode == 201;
       } catch (e) {
         debugPrint('Error updating booking opponent: $e');
@@ -383,7 +390,7 @@ class BookingManager {
     if (intId != null) {
       try {
         final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$intId/convert-to-private');
-        final res = await http.post(uri).timeout(const Duration(seconds: 5));
+        final res = await http.post(uri).timeout(const Duration(seconds: 15));
         return res.statusCode == 200 || res.statusCode == 201;
       } catch (e) {
         debugPrint('Error converting booking to private: $e');

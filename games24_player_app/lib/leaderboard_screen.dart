@@ -111,7 +111,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
 
     try {
-      final res = await http.get(uri).timeout(const Duration(seconds: 4));
+      http.Response res;
+      try {
+        res = await http.get(uri).timeout(const Duration(seconds: 15));
+      } catch (_) {
+        await Future.delayed(const Duration(milliseconds: 1000));
+        res = await http.get(uri).timeout(const Duration(seconds: 15));
+      }
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (mounted) {
@@ -319,7 +325,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Future<void> _fetchFriendsAndRequests() async {
     try {
-      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/friends?identifier=$_myPhone')).timeout(const Duration(seconds: 4));
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/friends?identifier=$_myPhone')).timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (mounted) {
@@ -666,12 +672,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        _season['name'] ?? 'Season 4 Final Lap',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: Colors.white,
+                      Flexible(
+                        child: Text(
+                          _season['name'] ?? 'Season 4 Final Lap',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1115,11 +1125,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(
-                            _myName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          Flexible(
+                            child: Text(
+                              _myName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -1417,9 +1431,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           style: const TextStyle(color: Color(0xFF154D36), fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
                         ),
                       ],
-                      Text(
-                        location,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                      Flexible(
+                        child: Text(
+                          location,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(width: 4),
                       Text('•', style: TextStyle(color: Colors.grey[400], fontSize: 11)),
@@ -1437,6 +1455,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             fontSize: 9.5,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -2222,37 +2242,40 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     final loc = locations[idx];
                     final isCurrent = loc['city'] == _currentCity && loc['state'] == _currentState;
 
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.location_city,
-                        color: isCurrent ? const Color(0xFF154D36) : Colors.grey,
-                      ),
-                      title: Text(
-                        loc['city']!,
-                        style: TextStyle(
-                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                          color: isCurrent ? const Color(0xFF154D36) : Colors.black87,
+                    return Material(
+                      color: Colors.transparent,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Icon(
+                          Icons.location_city,
+                          color: isCurrent ? const Color(0xFF154D36) : Colors.grey,
                         ),
+                        title: Text(
+                          loc['city']!,
+                          style: TextStyle(
+                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                            color: isCurrent ? const Color(0xFF154D36) : Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(loc['state']!, style: const TextStyle(fontSize: 11)),
+                        trailing: isCurrent
+                            ? const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 20)
+                            : null,
+                        onTap: () async {
+                          final nav = Navigator.of(context);
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('userCity', loc['city']!);
+                          await prefs.setString('userState', loc['state']!);
+                          if (mounted) {
+                            setState(() {
+                              _currentCity = loc['city']!;
+                              _currentState = loc['state']!;
+                            });
+                            nav.pop();
+                            _fetchLeaderboard();
+                          }
+                        },
                       ),
-                      subtitle: Text(loc['state']!, style: const TextStyle(fontSize: 11)),
-                      trailing: isCurrent
-                          ? const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 20)
-                          : null,
-                      onTap: () async {
-                        final nav = Navigator.of(context);
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('userCity', loc['city']!);
-                        await prefs.setString('userState', loc['state']!);
-                        if (mounted) {
-                          setState(() {
-                            _currentCity = loc['city']!;
-                            _currentState = loc['state']!;
-                          });
-                          nav.pop();
-                          _fetchLeaderboard();
-                        }
-                      },
                     );
                   },
                 ),

@@ -9,35 +9,23 @@ function getAdminCourts(adminId: number, venueName: string, sportsList: any[], c
   if (Array.isArray(courtsJson) && courtsJson.length > 0) {
     return courtsJson;
   }
-  const courts: any[] = [];
-  let courtIndex = 1;
-  const sports = (sportsList && sportsList.length > 0) ? sportsList : DEFAULT_TURF_SPORTS;
-  for (const s of sports) {
-    const numCourts = s.courtsAvailable || 2;
-    for (let i = 1; i <= numCourts; i++) {
-      let surface = 'Artificial Grass';
-      if (s.name.toLowerCase().includes('cricket')) surface = 'Astro Turf';
-      else if (s.name.toLowerCase().includes('football')) surface = 'FIFA Pro Turf';
-      else if (s.name.toLowerCase().includes('badminton')) surface = 'Synthetic Mat';
-      else if (s.name.toLowerCase().includes('pickle')) surface = 'Hard Court';
-
-      courts.push({
-        id: `CRT-${adminId}-${courtIndex++}`,
-        name: `${s.name} Court ${i}`,
-        sport: s.name,
-        surface,
-        hourlyRate: s.hourlyRate || 1000.0,
-        timings: '06:00 AM - 11:00 PM',
-        description: `Premium ${s.name} playing court at ${venueName}. Equipped with floodlights and spectator seating.`,
-        amenities: ['Floodlights', 'Changing Room', 'Locker', 'First Aid'],
-        imageUrls: [],
-      });
+  const primarySport = (sportsList && sportsList.length > 0) ? sportsList[0] : { name: 'Football', hourlyRate: 1000.0 };
+  return [
+    {
+      id: `CRT-${adminId}-1`,
+      name: venueName,
+      sport: primarySport.name,
+      surface: 'Synthetic Turf',
+      hourlyRate: primarySport.hourlyRate || 1000.0,
+      timings: '06:00 AM - 11:00 PM',
+      description: `${venueName} Main Ground`,
+      amenities: ['Floodlights', 'Changing Room', 'Parking', 'First Aid'],
+      imageUrls: [],
     }
-  }
-  return courts;
+  ];
 }
 
-function getAdminSports(adminId: number) {
+export function getAdminSports(adminId: number) {
   try {
     const filePath = path.resolve(process.cwd(), 'turf_sports_data.json');
     if (fs.existsSync(filePath)) {
@@ -50,7 +38,7 @@ function getAdminSports(adminId: number) {
   return DEFAULT_TURF_SPORTS;
 }
 
-function saveAdminSports(adminId: number, sports: any[]) {
+export function saveAdminSports(adminId: number, sports: any[]) {
   try {
     const filePath = path.resolve(process.cwd(), 'turf_sports_data.json');
     let data: Record<number, any> = {};
@@ -388,6 +376,18 @@ export class AuthService {
         status: 'PENDING_APPROVAL',
       },
     });
+
+    if (body.sports && Array.isArray(body.sports) && body.sports.length > 0) {
+      const sportsList = body.sports.map((sp: string) => ({
+        name: String(sp),
+        hourlyRate: 1000.0,
+        weekdayRate: 1000.0,
+        weekendRate: 1200.0,
+        nightRate: 1200.0,
+        courtsAvailable: 1,
+      }));
+      saveAdminSports(Number(adminId), sportsList);
+    }
 
     return { 
       message: 'Admin KYC and venue details submitted successfully', 
@@ -955,6 +955,8 @@ export class AuthService {
       venueName,
       neighborhoodArea,
       streetAddress,
+      alternativePhone,
+      alternativeNumber,
       dayRate,
       nightRate,
       weekdayRate,
@@ -962,10 +964,26 @@ export class AuthService {
     } = body;
 
     if (!ownerPhone || !venueName) {
-      throw new BadRequestException('Owner phone and venue name are required');
+      throw new BadRequestException('Owner primary phone and branch venue name are required');
     }
 
     const cleanPhone = String(ownerPhone).trim().replace(/\D/g, '');
+    const altRaw = alternativePhone || alternativeNumber;
+    if (!altRaw) {
+      throw new BadRequestException('Alternative mobile number is mandatory for adding a new branch location');
+    }
+
+    const cleanAltPhone = String(altRaw).trim().replace(/\D/g, '');
+    if (cleanAltPhone.length < 10) {
+      throw new BadRequestException('Alternative mobile number must be a valid 10-digit phone number');
+    }
+
+    const primaryLast10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+    const altLast10 = cleanAltPhone.length >= 10 ? cleanAltPhone.slice(-10) : cleanAltPhone;
+    if (primaryLast10 === altLast10) {
+      throw new BadRequestException('Alternative mobile number must be different from primary registered mobile number');
+    }
+
     const existingAdmin = await this.prisma.verifiedAdmin.findFirst({
       where: {
         OR: [{ ownerPhone: cleanPhone }, { ownerPhone: { contains: cleanPhone } }],
@@ -980,44 +998,27 @@ export class AuthService {
     const newAdminUser = await this.prisma.adminUser.create({
       data: {
         trackingCode,
-        venueName,
+        venueName: venueName.trim(),
         ownerName: existingAdmin.ownerName,
         ownerPhone: cleanPhone,
         ownerEmail: existingAdmin.ownerEmail,
-        streetAddress: streetAddress || existingAdmin.streetAddress,
-        neighborhoodArea: neighborhoodArea || existingAdmin.neighborhoodArea,
+        streetAddress: (streetAddress || existingAdmin.streetAddress).trim(),
+        neighborhoodArea: (neighborhoodArea || existingAdmin.neighborhoodArea).trim(),
         isMobileVerified: true,
         isEmailVerified: true,
-        status: 'APPROVED',
+        isBranch: true,
+        parentTurfId: existingAdmin.id,
+        alternativePhone: cleanAltPhone,
+        status: 'PENDING_APPROVAL',
       },
-    });
-
-    const newBranch = await this.prisma.verifiedAdmin.create({
-      data: {
-        adminUserId: newAdminUser.id,
-        trackingCode,
-        venueName,
-        ownerName: existingAdmin.ownerName,
-        ownerPhone: cleanPhone,
-        ownerEmail: existingAdmin.ownerEmail,
-        streetAddress: streetAddress || existingAdmin.streetAddress,
-        neighborhoodArea: neighborhoodArea || existingAdmin.neighborhoodArea,
-        dayRate: Number(dayRate) || existingAdmin.dayRate || 1000.0,
-        nightRate: Number(nightRate) || existingAdmin.nightRate || 1400.0,
-        weekdayRate: Number(weekdayRate) || existingAdmin.weekdayRate || 1200.0,
-        weekendRate: Number(weekendRate) || existingAdmin.weekendRate || 1600.0,
-        status: 'VERIFIED',
-      },
-    });
-
-    await this.prisma.adminDashboard.create({
-      data: { verifiedAdminId: newBranch.id },
     });
 
     return {
       success: true,
-      message: `New branch "${venueName}" created successfully!`,
-      branch: newBranch,
+      message: `New branch application for "${venueName}" submitted successfully! It has been forwarded to Super Admin for verification.`,
+      trackingCode,
+      isPendingApproval: true,
+      branchApplication: newAdminUser,
     };
   }
 
@@ -2509,12 +2510,16 @@ export class AuthService {
       });
     }
     if (!admin) {
-      admin = await this.prisma.verifiedAdmin.findFirst({
-        orderBy: { id: 'asc' },
-      });
-    }
-    if (!admin) {
       throw new BadRequestException(`Verified admin with ID ${id} not found`);
+    }
+
+    // Security check: if phone is provided, ensure it matches turf owner's registered phone
+    if (profileData.adminPhone || profileData.ownerPhoneCheck) {
+      const callerPhone = String(profileData.adminPhone || profileData.ownerPhoneCheck).replace(/\D/g, '');
+      const cleanOwnerPhone = String(admin.ownerPhone).replace(/\D/g, '');
+      if (callerPhone.length >= 10 && cleanOwnerPhone.length >= 10 && !cleanOwnerPhone.endsWith(callerPhone.slice(-10))) {
+        throw new BadRequestException('Security Alert: You do not have permission to modify another turf owner\'s profile!');
+      }
     }
 
     const verifiedAdminId = admin.id;

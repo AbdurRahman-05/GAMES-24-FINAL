@@ -139,10 +139,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Live Operating Status & Quick Date Bar
-              _buildVenueHeaderPulseBar(profile, nowFormatted),
-              const SizedBox(height: 14),
-
               if (profile.isSubscriptionEndingSoon) ...[
                 _buildSubscriptionCard(context, profile),
                 const SizedBox(height: 14),
@@ -354,15 +350,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   final isCurrent = b.id == profile.verifiedAdminId;
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
+                    child: Material(
                       color: isCurrent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
-                        width: isCurrent ? 1.5 : 1.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
+                          width: isCurrent ? 1.5 : 1.0,
+                        ),
                       ),
-                    ),
-                    child: ListTile(
+                      child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                       leading: Container(
                         padding: const EdgeInsets.all(10),
@@ -414,31 +412,62 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               },
                               child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
                             ),
+                      ),
                     ),
                   );
                 }),
                 const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _showAddBranchDialog(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF154D36), width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    icon: const Icon(Icons.add_location_alt_rounded, color: Color(0xFF154D36), size: 18),
-                    label: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '+ Register New Branch Location',
-                        style: TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.w700),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _showAddCourtSamePlaceDialog(context, profile);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          icon: const Icon(Icons.sports_soccer_rounded, color: Color(0xFF154D36), size: 16),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '+ Add Court (Same Place)',
+                              style: TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.w700, fontSize: 11.5),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SizedBox(
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _showAddBranchDialog(context, profile);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF154D36),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          icon: const Icon(Icons.add_location_alt_rounded, color: Colors.white, size: 16),
+                          label: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '+ New Branch (Location)',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
               ],
@@ -449,34 +478,183 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  void _showAddBranchDialog(BuildContext context) {
+  void _showAddCourtSamePlaceDialog(BuildContext context, TurfProfileState profile) {
+    final nextNum = profile.courts.length + 1;
+    final nameCtrl = TextEditingController(text: '${profile.venueName} - Pitch $nextNum');
+    final Set<String> selectedSports = {'Cricket', 'Football'};
+    final rateCtrl = TextEditingController(text: '1200');
+    final surfaceCtrl = TextEditingController(text: 'Synthetic Grass Turf');
+
+    final sportsOptions = ['Cricket', 'Football', 'Pickle ball', 'Badminton', 'Tennis', 'Volleyball'];
+
+    showDialog(
+      context: context,
+      builder: (dlgCtx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Text('Add Court / Pitch to ${profile.venueName}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add additional courts or pitches in the same venue ground.',
+                  style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Court / Pitch Name *',
+                    hintText: 'e.g. Box Arena, Pitch B, Court 2',
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Supported Sports (Multi-Select) *',
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Football & Cricket can share the same ground. Badminton & Pickleball require separate court types.',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: sportsOptions.map((sport) {
+                    final isChecked = selectedSports.contains(sport);
+                    return FilterChip(
+                      label: Text(sport),
+                      selected: isChecked,
+                      selectedColor: const Color(0xFF154D36),
+                      checkmarkColor: Colors.white,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isChecked ? Colors.white : const Color(0xFF334155),
+                      ),
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      onSelected: (selected) {
+                        setDlgState(() {
+                          if (selected) {
+                            selectedSports.add(sport);
+                          } else {
+                            if (selectedSports.length > 1) {
+                              selectedSports.remove(sport);
+                            }
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: surfaceCtrl,
+                  decoration: const InputDecoration(labelText: 'Surface Type', hintText: 'e.g. Synthetic Grass, Astro Turf, Hard Court'),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: rateCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Hourly Rate (₹) *', hintText: '1200'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dlgCtx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF154D36),
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                final cName = nameCtrl.text.trim();
+                if (cName.isEmpty) {
+                  ToastUtils.showError(context, 'Please enter a court name');
+                  return;
+                }
+                if (selectedSports.isEmpty) {
+                  ToastUtils.showError(context, 'Please select at least one sport');
+                  return;
+                }
+                Navigator.pop(dlgCtx);
+                final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
+                final sportsList = selectedSports.toList();
+                final newCourt = TurfCourtVenueItem(
+                  id: 'CRT-${profile.turfId}-${DateTime.now().millisecondsSinceEpoch % 100000}',
+                  name: cName,
+                  sport: sportsList.join(' • '),
+                  sports: sportsList,
+                  surface: surfaceCtrl.text.trim().isNotEmpty ? surfaceCtrl.text.trim() : 'Turf Surface',
+                  hourlyRate: rate,
+                  timings: '06:00 AM - 11:00 PM',
+                  description: 'Court at ${profile.venueName}',
+                );
+                ref.read(turfProfileProvider.notifier).addCourtVenue(newCourt);
+                if (context.mounted) {
+                  ToastUtils.showSuccess(context, 'Court "$cName" (${sportsList.join(", ")}) added to ${profile.venueName}!');
+                }
+              },
+              child: const Text('Add Court'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddBranchDialog(BuildContext context, TurfProfileState profile) {
     final nameCtrl = TextEditingController();
     final areaCtrl = TextEditingController();
     final addressCtrl = TextEditingController();
+    final altPhoneCtrl = TextEditingController();
     final rateCtrl = TextEditingController(text: '1200');
 
     showDialog(
       context: context,
       builder: (dlgCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Add New Turf Branch', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+        title: const Text('Register New Branch Location', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text(
+                'Primary Owner Phone: ${profile.ownerPhone}',
+                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF154D36)),
+              ),
+              const SizedBox(height: 10),
               TextField(
                 controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'Branch Venue Name *', hintText: 'e.g. Champions Turf - Anna Nagar'),
+                decoration: const InputDecoration(labelText: 'New Branch Name *', hintText: 'e.g. Vicky Turf - Branch 2'),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: areaCtrl,
-                decoration: const InputDecoration(labelText: 'Neighborhood / Area *', hintText: 'e.g. Anna Nagar'),
+                decoration: const InputDecoration(labelText: 'Branch Neighborhood / Area *', hintText: 'e.g. KK Nagar'),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: addressCtrl,
-                decoration: const InputDecoration(labelText: 'Street Address', hintText: 'e.g. 12, Main Road'),
+                decoration: const InputDecoration(labelText: 'Branch Street Address *', hintText: 'e.g. 45, Main Avenue'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: altPhoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: 'Alternative Mobile Number * (Mandatory)',
+                  hintText: '10-digit number for this branch',
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -500,28 +678,46 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             onPressed: () async {
               final vName = nameCtrl.text.trim();
               final vArea = areaCtrl.text.trim();
+              final altPhone = altPhoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
+
               if (vName.isEmpty || vArea.isEmpty) {
                 ToastUtils.showError(context, 'Please enter branch name and area');
                 return;
               }
+
+              if (altPhone.length < 10) {
+                ToastUtils.showError(context, 'Alternative mobile number is mandatory (10 digits)');
+                return;
+              }
+
+              final primaryDigits = profile.ownerPhone.replaceAll(RegExp(r'\D'), '');
+              if (primaryDigits.isNotEmpty && primaryDigits.endsWith(altPhone.length >= 10 ? altPhone.substring(altPhone.length - 10) : altPhone)) {
+                ToastUtils.showError(context, 'Alternative number must be different from primary number');
+                return;
+              }
+
               Navigator.pop(dlgCtx);
               final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
               final ok = await ref.read(turfProfileProvider.notifier).addNewBranch(
                 venueName: vName,
                 neighborhoodArea: vArea,
                 streetAddress: addressCtrl.text.trim().isNotEmpty ? addressCtrl.text.trim() : vArea,
+                alternativePhone: altPhone,
                 dayRate: rate,
                 nightRate: rate + 200,
               );
               if (context.mounted) {
                 if (ok) {
-                  ToastUtils.showSuccess(context, 'New branch "$vName" added and verified! 🎉');
+                  ToastUtils.showSuccess(
+                    context,
+                    'Branch "$vName" application submitted! Super Admin will verify and activate your branch.',
+                  );
                 } else {
-                  ToastUtils.showError(context, 'Failed to add branch. Please try again.');
+                  ToastUtils.showError(context, 'Failed to submit branch application. Please try again.');
                 }
               }
             },
-            child: const Text('Create Branch'),
+            child: const Text('Submit Application'),
           ),
         ],
       ),

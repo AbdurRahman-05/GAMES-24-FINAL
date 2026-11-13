@@ -265,7 +265,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             'qrPayload': cleanInput,
             'turfId': targetAdminId,
           }),
-        ).timeout(const Duration(seconds: 6));
+        ).timeout(const Duration(seconds: 15));
       } catch (e) {
         // Fallback to global /turfs/check-in
         res = await http.post(
@@ -279,7 +279,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             'qrPayload': cleanInput,
             'turfId': targetAdminId,
           }),
-        ).timeout(const Duration(seconds: 6));
+        ).timeout(const Duration(seconds: 15));
       }
 
       final data = jsonDecode(res.body);
@@ -1159,7 +1159,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       );
     }
 
-    // Default: ENTRY GRANTED (First Time Scan)
+    final bool isReEntry = booking['isReEntry'] == true;
+    final int? slotIndex = booking['slotIndex'] != null ? int.tryParse(booking['slotIndex'].toString()) : null;
+    final int? totalSlots = booking['totalSlots'] != null ? int.tryParse(booking['totalSlots'].toString()) : null;
+
+    // Default: ENTRY GRANTED (First Time Scan or Split Session Re-Entry)
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -1185,16 +1189,20 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   color: Color(0xFF16A34A),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_rounded, color: Colors.white, size: 24),
+                child: Icon(
+                  isReEntry ? Icons.replay_rounded : Icons.check_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'ENTRY GRANTED ✅',
-                      style: TextStyle(
+                    Text(
+                      isReEntry ? 'RE-ENTRY GRANTED ✅' : 'ENTRY GRANTED ✅',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
                         color: Color(0xFF15803D),
@@ -1202,7 +1210,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       ),
                     ),
                     Text(
-                      'Verified at gate ($checkedInAt) • Valid Pass',
+                      isReEntry
+                          ? 'Slot ${slotIndex ?? 2} of ${totalSlots ?? 2} Verified ($checkedInAt) • Returning Player'
+                          : 'Verified at gate ($checkedInAt) • Valid Pass',
                       style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534), fontWeight: FontWeight.w600),
                     ),
                   ],
@@ -1225,6 +1235,29 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               ),
             ],
           ),
+          if (isReEntry) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFDCFCE7),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF86EFAC)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.sync_rounded, size: 16, color: Color(0xFF15803D)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Multi-slot pass: Session ${slotIndex ?? 2} of ${totalSlots ?? 2} checked in successfully.',
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           const Divider(height: 1, color: Color(0xFFBBF7D0)),
           const SizedBox(height: 14),

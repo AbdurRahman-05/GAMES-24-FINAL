@@ -1,8 +1,28 @@
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'splash_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Guard against harmless Flutter Web Hot Restart engine view disposal race condition
+  FlutterError.onError = (FlutterErrorDetails details) {
+    final str = details.exceptionAsString();
+    if (str.contains('EngineFlutterView') || str.contains('!isDisposed')) {
+      return;
+    }
+    FlutterError.presentError(details);
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    final str = error.toString();
+    if (str.contains('EngineFlutterView') || str.contains('!isDisposed')) {
+      return true; // Marked as handled so hot restart doesn't freeze or crash the browser view
+    }
+    return false;
+  };
+
   runApp(const MyApp());
 }
 

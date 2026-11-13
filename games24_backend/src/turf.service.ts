@@ -12,10 +12,8 @@ export interface TurfSportConfig {
 }
 
 export const DEFAULT_TURF_SPORTS: TurfSportConfig[] = [
-  { name: 'Cricket', hourlyRate: 1000.0, weekdayRate: 1000.0, weekendRate: 1200.0, nightRate: 1200.0, courtsAvailable: 2 },
-  { name: 'Football', hourlyRate: 1400.0, weekdayRate: 1400.0, weekendRate: 1600.0, nightRate: 1600.0, courtsAvailable: 2 },
-  { name: 'Pickle ball', hourlyRate: 800.0, weekdayRate: 800.0, weekendRate: 1000.0, nightRate: 1000.0, courtsAvailable: 2 },
-  { name: 'Badminton', hourlyRate: 450.0, weekdayRate: 450.0, weekendRate: 550.0, nightRate: 500.0, courtsAvailable: 4 },
+  { name: 'Cricket', hourlyRate: 1000.0, weekdayRate: 1000.0, weekendRate: 1200.0, nightRate: 1200.0, courtsAvailable: 1 },
+  { name: 'Football', hourlyRate: 1000.0, weekdayRate: 1000.0, weekendRate: 1200.0, nightRate: 1200.0, courtsAvailable: 1 },
 ];
 
 function normalizePhotoList(urls: any): string[] {
@@ -35,32 +33,21 @@ export function getCourtsForTurf(turfId: number, venueName: string, sports: Turf
   if (Array.isArray(courtsJson) && courtsJson.length > 0) {
     return courtsJson;
   }
-  const courts: any[] = [];
-  let courtIndex = 1;
-  const sportsList = (sports && sports.length > 0) ? sports : DEFAULT_TURF_SPORTS;
-  for (const s of sportsList) {
-    const numCourts = s.courtsAvailable || 2;
-    for (let i = 1; i <= numCourts; i++) {
-      let surface = 'Artificial Turf';
-      if (s.name.toLowerCase().includes('cricket')) surface = 'Astro Turf';
-      else if (s.name.toLowerCase().includes('football')) surface = 'FIFA Certified Grass';
-      else if (s.name.toLowerCase().includes('badminton')) surface = 'Synthetic Mat';
-      else if (s.name.toLowerCase().includes('pickle')) surface = 'Hard Court';
-
-      courts.push({
-        id: `CRT-${turfId}-${courtIndex++}`,
-        name: `${s.name} Court ${i}`,
-        sport: s.name,
-        surface,
-        hourlyRate: s.hourlyRate || 1000.0,
-        timings: '06:00 AM - 11:00 PM',
-        description: `Premium ${s.name} court at ${venueName}. Equipped with floodlights and spectators gallery.`,
-        amenities: ['Floodlights', 'Changing Room', 'Locker', 'First Aid'],
-        imageUrls: [],
-      });
+  // When owner has not created multiple courts, this turf has exactly 1 real playing ground
+  const primarySport = (sports && sports.length > 0) ? sports[0] : { name: 'Football', hourlyRate: 1000.0 };
+  return [
+    {
+      id: `CRT-${turfId}-1`,
+      name: venueName,
+      sport: primarySport.name,
+      surface: 'Synthetic Turf',
+      hourlyRate: primarySport.hourlyRate || 1000.0,
+      timings: '06:00 AM - 11:00 PM',
+      description: `${venueName} Main Ground`,
+      amenities: ['Floodlights', 'Changing Room', 'Parking', 'First Aid'],
+      imageUrls: [],
     }
-  }
-  return courts;
+  ];
 }
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
@@ -681,27 +668,31 @@ export class TurfService {
 
     const verifiedAdminId = turf.id;
 
-    // Check if slot has an active offer to calculate accurate offer price
-    const activeOffer = await this.prisma.slotOffer.findUnique({
-      where: {
-        verifiedAdminId_date_timeSlot: {
-          verifiedAdminId,
-          date,
-          timeSlot: rawSlots[0],
-        },
-      },
-    });
+    // Security hardening: Calculate authentic server-side price based on owner's court/sport rates and active slot offers.
+    // Hackers cannot tamper with amount in the client request.
+    let expectedTotalAmount = 0;
+    const sportConfig = this.getSportsForTurf(verifiedAdminId).find(s => s.name.toLowerCase() === (sport || 'Football').toLowerCase());
+    const baseSlotRate = sportConfig?.hourlyRate || turf.dayRate || 1000.0;
 
-    let bookingAmount = Number(amount);
-    if (!bookingAmount || isNaN(bookingAmount)) {
-      if (activeOffer?.offerPrice) {
-        bookingAmount = activeOffer.offerPrice * rawSlots.length;
+    for (const s of rawSlots) {
+      const slotOffer = await this.prisma.slotOffer.findUnique({
+        where: {
+          verifiedAdminId_date_timeSlot: {
+            verifiedAdminId,
+            date,
+            timeSlot: s,
+          },
+        },
+      });
+      if (slotOffer?.offerPrice && slotOffer.offerPrice > 0) {
+        expectedTotalAmount += slotOffer.offerPrice;
       } else {
-        const sportConfig = this.getSportsForTurf(verifiedAdminId).find(s => s.name.toLowerCase() === (sport || 'Football').toLowerCase());
-        const ratePerSlot = sportConfig?.hourlyRate || turf.dayRate || 1000.0;
-        bookingAmount = ratePerSlot * rawSlots.length;
+        expectedTotalAmount += baseSlotRate;
       }
     }
+
+    // Enforce authentic server-verified amount
+    const bookingAmount = expectedTotalAmount > 0 ? expectedTotalAmount : (Number(amount) || 1000.0);
 
     let booking: any;
     try {
@@ -1692,6 +1683,16 @@ export class TurfService {
         };
       }
 
+      // Security check: if scanning owner provided their turf ID and the pass belongs elsewhere
+      if (verifiedAdminId && !isNaN(verifiedAdminId) && globalBooking.verifiedAdminId !== verifiedAdminId) {
+        const bookedVenue = globalBooking.verifiedAdmin?.venueName || 'another venue';
+        return {
+          success: false,
+          valid: false,
+          message: `Cross-venue check-in denied: This pass is for "${bookedVenue}", not this venue!`,
+        };
+      }
+
       booking = globalBooking;
       verifiedAdminId = globalBooking.verifiedAdminId;
     }
@@ -1742,9 +1743,77 @@ export class TurfService {
       }
     };
 
-    // 1. Single-Use Verification Check: Pass can only be verified ONCE!
+    // 1. Single-Use Verification & Multi-Slot Split Session Re-Entry Check
+    const now = new Date();
+    const subSlots = (booking.timeSlot || '')
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+
     const alreadyChecked = booking.status?.toLowerCase() === 'checked in';
     if (alreadyChecked) {
+      // Check if this is a multi-slot booking where a later slot is currently active for re-entry
+      if (subSlots.length > 1) {
+        let activeReEntryIndex = -1;
+        let activeReEntryWindow: any = null;
+
+        for (let i = 1; i < subSlots.length; i++) {
+          const sw = this.parseBookingWindow(booking.date, subSlots[i]);
+          if (sw && now >= sw.checkInOpensAt && now <= sw.checkInClosesAt) {
+            const lastUpdated = booking.updatedAt ? new Date(booking.updatedAt) : new Date(0);
+            if (lastUpdated < sw.checkInOpensAt) {
+              activeReEntryIndex = i;
+              activeReEntryWindow = sw;
+              break;
+            }
+          }
+        }
+
+        if (activeReEntryIndex > 0 && activeReEntryWindow) {
+          const updated = await this.prisma.turfBooking.update({
+            where: { id: booking.id },
+            data: {
+              updatedAt: new Date(),
+              bookingCode: formalCode,
+            },
+          });
+
+          const verifiedAtStr = formatTimestamp(new Date());
+
+          return {
+            success: true,
+            valid: true,
+            isReEntry: true,
+            slotIndex: activeReEntryIndex + 1,
+            totalSlots: subSlots.length,
+            reEntrySlot: subSlots[activeReEntryIndex],
+            alreadyCheckedIn: false,
+            notYetOpen: false,
+            checkedInAt: verifiedAtStr,
+            startTime: activeReEntryWindow.startStr,
+            endTime: activeReEntryWindow.endStr,
+            slotTime: subSlots[activeReEntryIndex],
+            date: booking.date,
+            booking: {
+              ...updated,
+              bookingCode: formalCode,
+              bookingId: formalCode,
+              turfName: venueName,
+              courtName: venueName,
+              checkedInAt: verifiedAtStr,
+              startTime: activeReEntryWindow.startStr,
+              endTime: activeReEntryWindow.endStr,
+              slotTime: booking.timeSlot,
+              date: booking.date,
+              isReEntry: true,
+              slotIndex: activeReEntryIndex + 1,
+              totalSlots: subSlots.length,
+            },
+            message: `Re-entry verified for Slot ${activeReEntryIndex + 1} (${subSlots[activeReEntryIndex]})! Welcome back 🎉`,
+          };
+        }
+      }
+
       const checkedInTimeStr = booking.updatedAt
         ? formatTimestamp(new Date(booking.updatedAt))
         : 'Earlier today';
@@ -1776,7 +1845,6 @@ export class TurfService {
     }
 
     // 2. Timing Window Check: QR scan ONLY verifies 10-20 minutes before slot start
-    const now = new Date();
 
     if (window) {
       if (now < window.checkInOpensAt) {

@@ -60,7 +60,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (_mobileNumber.isNotEmpty) {
       try {
-        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=$_mobileNumber')).timeout(const Duration(seconds: 4));
+        final profileUri = Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(_mobileNumber)}');
+        http.Response res;
+        try {
+          res = await http.get(profileUri).timeout(const Duration(seconds: 15));
+        } catch (_) {
+          // Cold start wake up retry once
+          await Future.delayed(const Duration(milliseconds: 1000));
+          res = await http.get(profileUri).timeout(const Duration(seconds: 15));
+        }
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           if (mounted) {
@@ -81,12 +89,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
         }
       } catch (e) {
-        debugPrint("Error refreshing player profile from backend: $e");
+        debugPrint("Notice: player profile loaded from cache ($e)");
       }
 
       // Also fetch rank and points from leaderboard
       try {
-        final lbRes = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/leaderboard?city=$_city&phone=$_mobileNumber&playerId=$_playerId')).timeout(const Duration(seconds: 4));
+        final lbUri = Uri.parse('${ApiConfig.baseUrl}/auth/leaderboard?city=${Uri.encodeComponent(_city)}&phone=${Uri.encodeComponent(_mobileNumber)}&playerId=${Uri.encodeComponent(_playerId)}');
+        http.Response lbRes;
+        try {
+          lbRes = await http.get(lbUri).timeout(const Duration(seconds: 15));
+        } catch (_) {
+          // Cold start wake up retry once
+          await Future.delayed(const Duration(milliseconds: 1000));
+          lbRes = await http.get(lbUri).timeout(const Duration(seconds: 15));
+        }
         if (lbRes.statusCode == 200) {
           final lbData = jsonDecode(lbRes.body);
           if (mounted && lbData['currentUserRank'] != null) {
@@ -194,7 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context: context,
               icon: Icons.leaderboard_outlined,
               title: 'Leaderboard & Standings',
-              subtitle: '$_rank in $_city â€¢ Friends, City, State & Sport rankings',
+              subtitle: '$_rank in $_city • Friends, City, State & Sport rankings',
               onTap: () {
                 Navigator.push(
                   context,
@@ -399,7 +415,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 2),
                     Expanded(
                       child: Text(
-                        '$_city, $_state â€¢ $_preferredSport $_role',
+                        '$_city, $_state • $_preferredSport $_role',
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
@@ -443,7 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ConstrainedBox(
                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.42),
                           child: Text(
-                            '$_rank in $_city â€¢ $_points PTS',
+                            '$_rank in $_city • $_points PTS',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,

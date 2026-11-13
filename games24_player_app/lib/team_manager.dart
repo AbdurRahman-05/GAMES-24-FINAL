@@ -166,7 +166,7 @@ class TeamManager {
       if (phone.isNotEmpty) {
         final res = await http
             .get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(phone)}'))
-            .timeout(const Duration(seconds: 4));
+            .timeout(const Duration(seconds: 15));
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           if (data['teams'] is List && (data['teams'] as List).isNotEmpty) {
@@ -198,7 +198,7 @@ class TeamManager {
           uri,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'phone': phone, 'teams': teamList}),
-        ).timeout(const Duration(seconds: 4));
+        ).timeout(const Duration(seconds: 15));
       }
     } catch (e) {
       debugPrint("Error saving teams: $e");
@@ -316,7 +316,7 @@ class TeamManager {
     final phone = (prefs.getString('mobileNumber') ?? '').trim();
     if (phone.isNotEmpty) {
       try {
-        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(phone)}')).timeout(const Duration(seconds: 4));
+        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(phone)}')).timeout(const Duration(seconds: 15));
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
           if (data['playerId'] != null && data['playerId'].toString().isNotEmpty) {
@@ -339,7 +339,7 @@ class TeamManager {
     try {
       final res = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/auth/players/search?q=${Uri.encodeComponent(query.trim())}'),
-      ).timeout(const Duration(seconds: 4));
+      ).timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final List data = jsonDecode(res.body);
         return data.cast<Map<String, dynamic>>();
@@ -382,7 +382,7 @@ class TeamManager {
           'targetName': targetName ?? 'Player',
           'role': role,
         }),
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 15));
 
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {
@@ -399,7 +399,7 @@ class TeamManager {
 
       final res = await http.get(
         Uri.parse('${ApiConfig.baseUrl}/auth/team-invitations?identifier=${Uri.encodeComponent(myPlayerId)}'),
-      ).timeout(const Duration(seconds: 4));
+      ).timeout(const Duration(seconds: 15));
 
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
@@ -409,7 +409,7 @@ class TeamManager {
         // Fallback check by phone
         final res2 = await http.get(
           Uri.parse('${ApiConfig.baseUrl}/auth/team-invitations?identifier=${Uri.encodeComponent(phone)}'),
-        ).timeout(const Duration(seconds: 4));
+        ).timeout(const Duration(seconds: 15));
         if (res2.statusCode == 200) {
           final List list2 = jsonDecode(res2.body);
           return list2.map((item) => TeamInvitation.fromJson(Map<String, dynamic>.from(item))).toList();
@@ -437,7 +437,7 @@ class TeamManager {
             'name': myName,
           },
         }),
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 15));
 
       if (accept && invitation != null) {
         final joinedTeam = PlayerTeam(
@@ -490,7 +490,7 @@ class TeamManager {
           'date': date ?? DateTime.now().toIso8601String().substring(0, 10),
           'timeSlot': timeSlot ?? '07:00 PM - 08:00 PM',
         }),
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 15));
 
       return res.statusCode == 200 || res.statusCode == 201;
     } catch (e) {

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocationManager {
@@ -281,40 +281,43 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                   final area = filtered[index];
                   final isSelected = current.toLowerCase() == area.toLowerCase();
 
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF3F4F6),
-                        shape: BoxShape.circle,
+                  return Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF3F4F6),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          area == 'All Madurai' ? Icons.map_rounded : Icons.location_on_outlined,
+                          size: 16,
+                          color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                        ),
                       ),
-                      child: Icon(
-                        area == 'All Madurai' ? Icons.map_rounded : Icons.location_on_outlined,
-                        size: 16,
-                        color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                      title: Text(
+                        area,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected ? const Color(0xFF154D36) : const Color(0xFF1F2937),
+                        ),
                       ),
-                    ),
-                    title: Text(
-                      area,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? const Color(0xFF154D36) : const Color(0xFF1F2937),
+                      subtitle: Text(
+                        area == 'All Madurai' ? 'Shows all venues across city' : 'Madurai, Tamil Nadu',
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
                       ),
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle_rounded, color: Color(0xFF154D36), size: 20)
+                          : const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 18),
+                      onTap: () {
+                        LocationManager().setLocation(area);
+                        Navigator.pop(context);
+                        widget.onSelected?.call();
+                      },
                     ),
-                    subtitle: Text(
-                      area == 'All Madurai' ? 'Shows all venues across city' : 'Madurai, Tamil Nadu',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
-                    ),
-                    trailing: isSelected
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFF154D36), size: 20)
-                        : const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 18),
-                    onTap: () {
-                      LocationManager().setLocation(area);
-                      Navigator.pop(context);
-                      widget.onSelected?.call();
-                    },
                   );
                 },
               ),

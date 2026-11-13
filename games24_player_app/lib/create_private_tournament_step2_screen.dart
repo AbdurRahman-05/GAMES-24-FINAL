@@ -1,6 +1,7 @@
-﻿import 'main_layout.dart';
+import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'tournament_form_data.dart';
 import 'tournament_manager.dart';
 
@@ -42,7 +43,13 @@ class _CreatePrivateTournamentStep2ScreenState
     setState(() => _isPublishing = true);
     HapticFeedback.heavyImpact();
 
-    final backendPayload = widget.formData.toBackendJson();
+    final prefs = await SharedPreferences.getInstance();
+    final userPhone = (prefs.getString('mobileNumber') ?? '').trim();
+    final userName = (prefs.getString('fullName') ?? prefs.getString('userName') ?? 'Private Organizer').trim();
+    final backendPayload = widget.formData.toBackendJson(
+      organizerName: userName.isNotEmpty ? userName : 'Private Organizer',
+      organizerPhone: userPhone.isNotEmpty ? userPhone : '9876543210',
+    );
     final success = await TournamentManager().createTournamentInBackend(backendPayload);
 
     if (!success) {

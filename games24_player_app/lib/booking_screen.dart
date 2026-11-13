@@ -21,7 +21,9 @@ class BookingScreen extends StatefulWidget {
   final String? openingTime;
   final String? closingTime;
   final List<dynamic>? sportsList;
+  final List<dynamic>? courts;
   final Map<String, dynamic>? turf;
+  final String? initialSport;
 
   const BookingScreen({
     super.key,
@@ -32,11 +34,13 @@ class BookingScreen extends StatefulWidget {
     required this.location,
     required this.sports,
     this.sportsList,
+    this.courts,
     this.photoUrls,
     this.amenities,
     this.openingTime,
     this.closingTime,
     this.turf,
+    this.initialSport,
   });
 
   @override
@@ -48,6 +52,7 @@ class _BookingScreenState extends State<BookingScreen> {
   int _selectedDateIndex = 0;
   String _selectedSport = 'Football';
   String? _selectedCourt;
+  List<dynamic> _turfCourts = [];
   final Set<String> _selectedTimeSlots = {};
   bool _isOpenForChallenge = false;
   final TextEditingController _teamNameController = TextEditingController();
@@ -75,47 +80,130 @@ class _BookingScreenState extends State<BookingScreen> {
       };
     });
 
-    if (widget.sports.isNotEmpty) {
-      _selectedSport = widget.sports.first;
+    final rawCourts = (widget.courts != null && widget.courts!.isNotEmpty)
+        ? widget.courts!
+        : (widget.turf != null && widget.turf!['courts'] is List && (widget.turf!['courts'] as List).isNotEmpty)
+            ? widget.turf!['courts'] as List
+            : [];
+    _turfCourts = _filterRealCourts(rawCourts);
+
+    final sports = _availableSports;
+    if (widget.initialSport != null &&
+        widget.initialSport!.isNotEmpty &&
+        widget.initialSport!.toLowerCase() != 'all') {
+      final match = sports.firstWhere(
+        (s) => s.toLowerCase().trim() == widget.initialSport!.toLowerCase().trim(),
+        orElse: () => '',
+      );
+      if (match.isNotEmpty) {
+        _selectedSport = match;
+      } else if (sports.isNotEmpty) {
+        _selectedSport = sports.first;
+      } else {
+        _selectedSport = widget.initialSport!;
+      }
+    } else if (sports.isNotEmpty) {
+      _selectedSport = sports.first;
     }
     final initialCourts = _getAvailableCourtsForSport(_selectedSport);
     if (initialCourts.isNotEmpty) {
       _selectedCourt = initialCourts.first;
+    } else {
+      _selectedCourt = widget.turfName;
     }
 
     _loadSlots();
   }
 
+  bool get _hasSpecialSports {
+    return _availableSports.any((s) {
+      final sLower = s.toLowerCase().trim();
+      return !sLower.contains('cricket') && !sLower.contains('football');
+    });
+  }
+
+  List<dynamic> _filterRealCourts(List<dynamic> rawCourts) {
+    return rawCourts.where((c) {
+      if (c is! Map) return false;
+      final name = c['name']?.toString().trim() ?? '';
+      final isMockPattern = RegExp(
+        r'^(Cricket|Football|Pickle ball|Badminton)\s+Court\s+\d+$',
+        caseSensitive: false,
+      ).hasMatch(name);
+      return !isMockPattern;
+    }).toList();
+  }
+
+  List<String> get _availableSports {
+    final raw = widget.sports.isNotEmpty ? widget.sports : ['Cricket', 'Football'];
+
+    final realCourts = _filterRealCourts(_turfCourts);
+    if (realCourts.isNotEmpty) {
+      final Set<String> supported = {};
+      for (final c in realCourts) {
+        if (c is Map) {
+          if (c['sports'] is List) {
+            for (final s in c['sports']) {
+              if (s.toString().trim().isNotEmpty) supported.add(s.toString().trim());
+            }
+          }
+          if (c['sport'] != null) {
+            for (final s in c['sport'].toString().split(RegExp(r'[•,]'))) {
+              if (s.trim().isNotEmpty) supported.add(s.trim());
+            }
+          }
+        }
+      }
+      final filtered = raw.where((s) => supported.any((sup) => sup.toLowerCase() == s.toLowerCase())).toList();
+      if (filtered.isNotEmpty) return filtered;
+    }
+
+    final List<String> result = [];
+    for (final s in raw) {
+      final sLower = s.toLowerCase();
+      if (sLower.contains('cricket') || sLower.contains('football')) {
+        result.add(s);
+      } else {
+        final hasExplicit = widget.sportsList != null && widget.sportsList!.any((m) {
+          if (m is Map) {
+            final name = m['name']?.toString().toLowerCase().trim() ?? '';
+            return name == sLower.trim();
+          }
+          return false;
+        });
+        if (hasExplicit) {
+          result.add(s);
+        }
+      }
+    }
+    return result.isNotEmpty ? result : ['Cricket', 'Football'];
+  }
+
   List<String> _getAvailableCourtsForSport(String sport) {
-    if (widget.turf != null && widget.turf!['courts'] is List && (widget.turf!['courts'] as List).isNotEmpty) {
-      final courts = (widget.turf!['courts'] as List)
-          .where((c) => c is Map && (c['sport']?.toString().toLowerCase() == sport.toLowerCase()))
-          .map((c) => c['name']?.toString() ?? '')
+    final realCourts = _filterRealCourts(_turfCourts);
+    if (realCourts.isNotEmpty) {
+      final matchedCourts = realCourts.where((c) {
+        if (c is! Map) return false;
+        if (c['sports'] is List) {
+          final sportsList = (c['sports'] as List).map((s) => s.toString().toLowerCase().trim()).toList();
+          if (sportsList.contains(sport.toLowerCase().trim())) return true;
+        }
+        final cSport = c['sport']?.toString().toLowerCase().trim() ?? '';
+        if (cSport.contains(sport.toLowerCase().trim())) return true;
+        return false;
+      }).map((c) => (c as Map)['name']?.toString() ?? '').where((name) => name.isNotEmpty).toList();
+
+      if (matchedCourts.isNotEmpty) return matchedCourts;
+
+      final allRealNames = realCourts
+          .map((c) => (c as Map)['name']?.toString() ?? '')
           .where((name) => name.isNotEmpty)
           .toList();
-      if (courts.isNotEmpty) return courts;
+      if (allRealNames.isNotEmpty) return allRealNames;
     }
-    final sLower = sport.toLowerCase();
-    if (sLower.contains('cricket')) {
-      return [
-        '${widget.turfName} - Pitch 1 (Box Arena)',
-        '${widget.turfName} - Pitch 2 (Astro Pitch)',
-      ];
-    } else if (sLower.contains('football')) {
-      return [
-        '${widget.turfName} - Court 1 (Main 7v7 Arena)',
-        '${widget.turfName} - Court 2 (Fast 5v5 Turf)',
-      ];
-    } else if (sLower.contains('badminton')) {
-      return [
-        '${widget.turfName} - Court 1 (Synthetic Mat)',
-        '${widget.turfName} - Court 2 (Wooden Floor)',
-      ];
-    }
-    return [
-      '${widget.turfName} - Main Court 1',
-      '${widget.turfName} - Arena Court 2',
-    ];
+
+    // Single venue ground by default (no multiple courts)
+    return [widget.turfName];
   }
 
   Future<int?> _getEffectiveTurfId() async {
@@ -123,7 +211,7 @@ class _BookingScreenState extends State<BookingScreen> {
     try {
       final res = await http
           .get(Uri.parse('${ApiConfig.baseUrl}/turfs'))
-          .timeout(const Duration(seconds: 4));
+          .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
         final match = list.firstWhere(
@@ -138,6 +226,9 @@ class _BookingScreenState extends State<BookingScreen> {
           _resolvedTurfId = match['id'] is int
               ? match['id']
               : int.tryParse(match['id'].toString());
+          if (_turfCourts.isEmpty && match['courts'] is List && (match['courts'] as List).isNotEmpty) {
+            _turfCourts = _filterRealCourts(match['courts'] as List);
+          }
         }
       }
     } catch (e) {
@@ -154,17 +245,24 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   double _getSportHourlyRate(String sportName) {
+    final sLower = sportName.toLowerCase().trim();
+    final turfBaseRate = double.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1000.0;
+
+    // For standard turf ground sports (Cricket & Football), the price is identical (unified turf rate)
+    if (sLower.contains('cricket') || sLower.contains('football')) {
+      return turfBaseRate;
+    }
+
     if (widget.sportsList != null) {
       for (final s in widget.sportsList!) {
         if (s is Map &&
-            s['name']?.toString().toLowerCase().trim() ==
-                sportName.toLowerCase().trim()) {
+            s['name']?.toString().toLowerCase().trim() == sLower) {
           final rate = double.tryParse(s['hourlyRate']?.toString() ?? '');
           if (rate != null && rate > 0) return rate;
         }
       }
     }
-    return double.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1000.0;
+    return turfBaseRate;
   }
 
   Future<void> _loadSlots() async {
@@ -188,7 +286,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/slots?date=$targetDate&sport=$encodedSport',
               ),
             )
-            .timeout(const Duration(seconds: 5));
+            .timeout(const Duration(seconds: 15));
         if (!mounted) return;
         if (res.statusCode == 200) {
           final json = jsonDecode(res.body);
@@ -325,8 +423,10 @@ class _BookingScreenState extends State<BookingScreen> {
             _buildFacilities(),
             const SizedBox(height: 20),
             _buildDateSelector(),
-            const SizedBox(height: 20),
-            _buildSportSelector(),
+            if (_hasSpecialSports) ...[
+              const SizedBox(height: 20),
+              _buildSportSelector(),
+            ],
             const SizedBox(height: 16),
             _buildCourtSelector(),
             const SizedBox(height: 20),
@@ -667,6 +767,44 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _buildSportSelector() {
+    if (!_hasSpecialSports) return const SizedBox.shrink();
+    final sports = _availableSports;
+    if (sports.isEmpty) return const SizedBox.shrink();
+    if (sports.length == 1) {
+      final sport = sports.first;
+      final rate = _getSportHourlyRate(sport).toInt();
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF154D36).withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.sports_soccer_rounded, size: 14, color: Color(0xFF154D36)),
+                  const SizedBox(width: 6),
+                  Text(
+                    '$sport • ₹$rate/hr',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF154D36),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -687,10 +825,10 @@ class _BookingScreenState extends State<BookingScreen> {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
-            itemCount: widget.sports.length,
+            itemCount: sports.length,
             separatorBuilder: (context, index) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
-              final sport = widget.sports[index];
+              final sport = sports[index];
               final isSelected = _selectedSport == sport;
               final sLower = sport.toLowerCase();
               IconData iconData = Icons.sports_soccer;
@@ -764,7 +902,8 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Widget _buildCourtSelector() {
     final courts = _getAvailableCourtsForSport(_selectedSport);
-    if (courts.isEmpty) return const SizedBox.shrink();
+    // If the venue has only 1 court (owner did not create extra courts), hide court selector completely!
+    if (courts.length <= 1) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -905,49 +1044,36 @@ class _BookingScreenState extends State<BookingScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Available Slots',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF111827),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      '1-Hour Intervals',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF6B7280),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+            children: const [
+              Text(
+                'Available Slots',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF111827),
                 ),
               ),
-              const SizedBox(width: 8),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildLegendItem('Available', const Color(0xFFE5F5EB)),
-                  const SizedBox(width: 5),
-                  _buildLegendItem('Selected', const Color(0xFF154D36)),
-                  const SizedBox(width: 5),
-                  _buildLegendItem('Booked', const Color(0xFFDC2626)),
-                  if (isToday && _showPassedSlots) ...[
-                    const SizedBox(width: 5),
-                    _buildLegendItem('Passed', const Color(0xFF9CA3AF)),
-                  ],
-                ],
+              Text(
+                '1-Hour Intervals',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _buildLegendItem('Available', const Color(0xFFE5F5EB)),
+              _buildLegendItem('Selected', const Color(0xFF154D36)),
+              _buildLegendItem('Booked', const Color(0xFFDC2626)),
+              if (isToday && _showPassedSlots)
+                _buildLegendItem('Passed', const Color(0xFF9CA3AF)),
             ],
           ),
           if (isToday && passedSlotsCount > 0) ...[
@@ -1670,24 +1796,28 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Row(
           children: [
             Expanded(
-              flex: 4,
+              flex: 5,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    hasSlots ? '₹$total' : (widget.price.startsWith('₹') ? widget.price : '₹${widget.price}/hr'),
-                    style: const TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF0F172A),
-                      letterSpacing: -0.5,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      hasSlots ? '₹$total' : '₹0',
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF0F172A),
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                   Text(
                     hasSlots
                         ? '${_selectedTimeSlots.length} slot(s) • ${_selectedCourt ?? "Court"}'
-                        : 'Select court & slot',
+                        : 'Select a slot to proceed',
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
@@ -1701,7 +1831,7 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              flex: 6,
+              flex: 5,
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
@@ -1933,18 +2063,18 @@ class _BookingScreenState extends State<BookingScreen> {
                       strokeWidth: 2,
                     ),
                   )
-                : const Row(
+                : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Confirm Slot',
-                        style: TextStyle(
+                        hasSlots ? 'Confirm Slot' : 'Select Slot',
+                        style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(width: 6),
-                      Icon(Icons.arrow_forward_rounded, size: 16),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.arrow_forward_rounded, size: 16),
                     ],
                   ),
           ),

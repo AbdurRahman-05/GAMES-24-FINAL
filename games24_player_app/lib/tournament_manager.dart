@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'api_config.dart';
 
 enum TournamentStatus { ongoing, upcoming, completed, cancelled }
@@ -32,6 +33,8 @@ class Tournament {
   final bool isVenueTBA;
   final String? externalTicketUrl;
   final int courtsCount;
+  final String? organizerPhone;
+  final String? organizerName;
 
   Tournament({
     required this.id,
@@ -59,6 +62,8 @@ class Tournament {
     this.isVenueTBA = false,
     this.externalTicketUrl,
     this.courtsCount = 2,
+    this.organizerPhone,
+    this.organizerName,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -119,6 +124,8 @@ class Tournament {
       isVenueTBA: json['isVenueTBA'] == true || (json['venue']?.toString().contains('TBA') ?? false),
       externalTicketUrl: json['externalTicketUrl']?.toString(),
       courtsCount: (json['courtsCount'] is num) ? (json['courtsCount'] as num).toInt() : 2,
+      organizerPhone: json['organizerPhone']?.toString(),
+      organizerName: json['organizerName']?.toString(),
     );
   }
 
@@ -144,6 +151,8 @@ class Tournament {
     List<Map<String, dynamic>>? registeredUsers,
     bool? isPrivate,
     String? accessCode,
+    String? organizerPhone,
+    String? organizerName,
   }) {
     return Tournament(
       id: id ?? this.id,
@@ -167,6 +176,8 @@ class Tournament {
       registeredUsers: registeredUsers ?? this.registeredUsers,
       isPrivate: isPrivate ?? this.isPrivate,
       accessCode: accessCode ?? this.accessCode,
+      organizerPhone: organizerPhone ?? this.organizerPhone,
+      organizerName: organizerName ?? this.organizerName,
     );
   }
 }
@@ -175,6 +186,7 @@ class TournamentManager extends ChangeNotifier {
   static final TournamentManager _instance = TournamentManager._internal();
   factory TournamentManager() => _instance;
   TournamentManager._internal() {
+    _initUserData();
     fetchTournaments();
   }
 
@@ -182,21 +194,92 @@ class TournamentManager extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  String _currentUserPhone = '';
+  Set<String> _myCreatedTournamentIds = {};
+  Set<String> _myRegisteredTournamentIds = {};
+
+  Future<void> _initUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      _currentUserPhone = (prefs.getString('mobileNumber') ?? '').trim();
+      final createdList = prefs.getStringList('my_created_tournament_ids') ?? [];
+      final registeredList = prefs.getStringList('my_registered_tournament_ids') ?? [];
+      _myCreatedTournamentIds = createdList.toSet();
+      _myRegisteredTournamentIds = registeredList.toSet();
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  void updateCurrentUserPhone(String phone) {
+    _currentUserPhone = phone.trim();
+    notifyListeners();
+  }
+
   List<Tournament> get allTournaments => _tournaments;
   List<Tournament> get ongoingTournaments =>
       _tournaments.where((t) => t.status == TournamentStatus.ongoing).toList();
   List<Tournament> get upcomingTournaments =>
       _tournaments.where((t) => t.status == TournamentStatus.upcoming).toList();
-  List<Tournament> get myTournaments =>
-      _tournaments.where((t) => t.registeredUsers.isNotEmpty).toList();
+
+  List<Tournament> get myTournaments {
+    final cleanPhone = _currentUserPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final last10 = cleanPhone.length >= 10
+        ? cleanPhone.substring(cleanPhone.length - 10)
+        : cleanPhone;
+
+    return _tournaments.where((t) {
+      // 1. Locally recorded created or registered tournament IDs
+      if (_myCreatedTournamentIds.contains(t.id) ||
+          _myRegisteredTournamentIds.contains(t.id)) {
+        return true;
+      }
+
+      // If user phone is not known yet, do not falsely display other users' tournaments
+      if (last10.isEmpty) return false;
+
+      // 2. Created by current user (organizerPhone match)
+      if (t.organizerPhone != null && t.organizerPhone!.trim().isNotEmpty) {
+        final orgClean = t.organizerPhone!.replaceAll(RegExp(r'[^0-9]'), '');
+        final orgLast10 = orgClean.length >= 10
+            ? orgClean.substring(orgClean.length - 10)
+            : orgClean;
+        if (orgLast10.isNotEmpty && orgLast10 == last10) {
+          return true;
+        }
+      }
+
+      // 3. Registered / Joined by current user (team contact phone match)
+      for (final u in t.registeredUsers) {
+        final contact = (u['contact'] ?? u['phone'] ?? u['mobileNumber'] ?? '')
+            .toString()
+            .replaceAll(RegExp(r'[^0-9]'), '');
+        final contactLast10 = contact.length >= 10
+            ? contact.substring(contact.length - 10)
+            : contact;
+        if (contactLast10.isNotEmpty && contactLast10 == last10) {
+          return true;
+        }
+      }
+
+      return false;
+    }).toList();
+  }
 
   Future<void> fetchTournaments({String? sport}) async {
     _isLoading = true;
+    await _initUserData();
     try {
       final url = (sport != null && sport.isNotEmpty && sport != 'All Sports')
           ? '${ApiConfig.baseUrl}/turfs/tournaments?sport=${Uri.encodeComponent(sport)}'
           : '${ApiConfig.baseUrl}/turfs/tournaments';
-      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 5));
+      http.Response res;
+      try {
+        res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 18));
+      } catch (_) {
+        // Cold start retry once
+        await Future.delayed(const Duration(milliseconds: 1000));
+        res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 18));
+      }
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
         _tournaments = list.map((item) => Tournament.fromJson(Map<String, dynamic>.from(item))).toList();
@@ -211,6 +294,10 @@ class TournamentManager extends ChangeNotifier {
 
   void addTournament(Tournament tournament) {
     _tournaments.insert(0, tournament);
+    _myCreatedTournamentIds.add(tournament.id);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setStringList('my_created_tournament_ids', _myCreatedTournamentIds.toList());
+    }).catchError((_) {});
     notifyListeners();
   }
 
@@ -222,6 +309,15 @@ class TournamentManager extends ChangeNotifier {
         body: jsonEncode(data),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
+        try {
+          final resJson = jsonDecode(res.body);
+          final createdId = (resJson['tournament']?['id'] ?? resJson['id'])?.toString();
+          if (createdId != null && createdId.isNotEmpty) {
+            _myCreatedTournamentIds.add(createdId);
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setStringList('my_created_tournament_ids', _myCreatedTournamentIds.toList());
+          }
+        } catch (_) {}
         await fetchTournaments();
         return true;
       }
@@ -253,6 +349,13 @@ class TournamentManager extends ChangeNotifier {
           registeredTeams: tournament.registeredTeams + 1,
           registeredUsers: updatedUsers,
         );
+
+        _myRegisteredTournamentIds.add(tournamentId);
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setStringList('my_registered_tournament_ids', _myRegisteredTournamentIds.toList());
+        } catch (_) {}
+
         notifyListeners();
 
         // Sync with backend database

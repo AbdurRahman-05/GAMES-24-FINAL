@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -14,6 +15,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
+import { getEffectiveBackendUrl, setEffectiveBackendUrl, DEFAULT_LIVE_BACKEND_URL } from '@/lib/api';
 
 interface NavbarProps {
   waitingCount?: number;
@@ -29,6 +31,19 @@ export default function Navbar({
 }: NavbarProps) {
   const pathname = usePathname();
   const isMainPage = pathname === '/';
+  const [backendUrl, setBackendUrl] = useState<string>('https://games-24-final.onrender.com');
+
+  useEffect(() => {
+    setBackendUrl(getEffectiveBackendUrl());
+  }, []);
+
+  const handleToggleBackend = () => {
+    const isLive = backendUrl.includes('onrender');
+    const target = isLive ? 'http://localhost:3000' : DEFAULT_LIVE_BACKEND_URL;
+    setEffectiveBackendUrl(target);
+    setBackendUrl(target);
+    window.location.reload();
+  };
 
   const handleNavClick = (sectionKey: string) => {
     if (onSelectSection && isMainPage) {
@@ -50,19 +65,30 @@ export default function Navbar({
       <div className="border-b border-[#171E2E] bg-[#080B13] px-4 sm:px-6 lg:px-8 py-1.5 text-[11px] text-slate-400">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono text-[10px] font-semibold uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
-              PROD
+            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-mono text-[10px] font-semibold uppercase tracking-wider ${
+              backendUrl.includes('onrender')
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${backendUrl.includes('onrender') ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+              {backendUrl.includes('onrender') ? 'LIVE CLOUD' : 'LOCAL'}
             </span>
             <span className="text-slate-600">/</span>
-            <span className="text-slate-300 font-medium">games24-backend.onrender.com</span>
+            <button
+              onClick={handleToggleBackend}
+              title="Click to toggle between Live Render Cloud and Localhost backend"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#161D2F] hover:bg-[#1E273E] text-slate-300 hover:text-white border border-[#28354F] transition-all cursor-pointer font-mono text-[11px]"
+            >
+              <span>{backendUrl.replace(/^https?:\/\//, '')}</span>
+              <span className="text-[9px] text-indigo-400 bg-indigo-500/15 px-1 py-0.5 rounded ml-0.5">switch</span>
+            </button>
             <span className="hidden sm:inline-block text-slate-600">•</span>
             <span className="hidden sm:inline-flex items-center gap-1.5 text-emerald-400 font-medium">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              Operational
+              Connected
             </span>
           </div>
 

@@ -540,19 +540,34 @@ class BookingQrPassModal extends StatelessWidget {
                     child: Column(
                       children: [
                         _buildDetailRow('Passholder', customerName, Icons.person_rounded),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         _buildDetailRow('Date', dateStr, Icons.calendar_today_rounded),
-                        const SizedBox(height: 8),
-                        _buildDetailRow('Slot Duration', timeSlot, Icons.access_time_rounded),
+                        const SizedBox(height: 4),
+                        if (timeSlot.contains(',')) ...[
+                          _buildDetailRow(
+                            'Total Booked',
+                            '${timeSlot.split(',').length} Slots Selected',
+                            Icons.layers_rounded,
+                          ),
+                          ...timeSlot.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList().asMap().entries.map((entry) {
+                            return _buildDetailRow(
+                              'Slot ${entry.key + 1}',
+                              entry.value,
+                              Icons.access_time_rounded,
+                            );
+                          }),
+                        ] else ...[
+                          _buildDetailRow('Slot Duration', timeSlot, Icons.access_time_rounded),
+                        ],
                         if (window != null && window['startStr'] != null) ...[
-                          const SizedBox(height: 8),
-                          _buildDetailRow('Start Time', window['startStr'].toString(), Icons.play_circle_outline_rounded),
+                          const SizedBox(height: 4),
+                          _buildDetailRow('First Match Start', window['startStr'].toString(), Icons.play_circle_outline_rounded),
                         ],
                         if (window != null && window['endStr'] != null) ...[
-                          const SizedBox(height: 8),
-                          _buildDetailRow('End Time', window['endStr'].toString(), Icons.stop_circle_outlined),
+                          const SizedBox(height: 4),
+                          _buildDetailRow('Session Ends', window['endStr'].toString(), Icons.stop_circle_outlined),
                         ],
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                         _buildDetailRow('Payment Mode', '₹$amount • Paid Online ($paymentMethod)', Icons.verified_rounded, isSuccess: true),
                       ],
                     ),
@@ -587,25 +602,34 @@ class BookingQrPassModal extends StatelessWidget {
   }
 
   Widget _buildDetailRow(String label, String value, IconData icon, {bool isSuccess = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 14, color: isSuccess ? const Color(0xFF16A34A) : const Color(0xFF64748B)),
-            const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
-          ],
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: isSuccess ? const Color(0xFF154D36) : const Color(0xFF0F172A),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: isSuccess ? const Color(0xFF16A34A) : const Color(0xFF64748B)),
+              const SizedBox(width: 6),
+              Text(label, style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: isSuccess ? const Color(0xFF154D36) : const Color(0xFF0F172A),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -408,6 +408,7 @@ class _TurfOwnerRegistrationScreenState
   bool _isEmailVerified = false;
 
   // Step 3 Facilities & Venue Photos State
+  final Set<String> _selectedSports = {'Cricket', 'Football'};
   bool _hasWater = false;
   bool _hasParking = false;
   bool _hasToilet = false;
@@ -849,6 +850,7 @@ class _TurfOwnerRegistrationScreenState
               'isEmailVerified': _isEmailVerified,
               'photosCount': _photosUploadedCount,
               'photoUrls': _venuePhotoUrls,
+              'sports': _selectedSports.toList(),
               'amenities': amenitiesList,
               'gstin': _gstinController.text.trim(),
               'panNumber': _panController.text.trim(),
@@ -1499,6 +1501,80 @@ class _TurfOwnerRegistrationScreenState
               ),
             );
           }),
+        ),
+        const SizedBox(height: 20),
+
+        // Sports Available at Venue (Standard turf ground includes Cricket & Football at equal base rate)
+        Text('Sports Available at Venue', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(
+          'Cricket and Football are standard turf sports played on the same ground at the same base rate. Select additional sports only if you have separate dedicated courts.',
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            'Cricket',
+            'Football',
+            'Pickle ball',
+            'Badminton',
+            'Tennis',
+            'Basketball',
+            'Volleyball',
+          ].map((sport) {
+            final isSelected = _selectedSports.contains(sport);
+            final isStandardTurf = sport == 'Cricket' || sport == 'Football';
+            return FilterChip(
+              avatar: Icon(
+                sport == 'Cricket'
+                    ? Icons.sports_cricket
+                    : sport == 'Football'
+                        ? Icons.sports_soccer
+                        : sport == 'Badminton' || sport == 'Tennis'
+                            ? Icons.sports_tennis
+                            : sport == 'Pickle ball'
+                                ? Icons.sports_tennis_rounded
+                                : sport == 'Basketball'
+                                    ? Icons.sports_basketball
+                                    : Icons.sports_volleyball,
+                size: 16,
+                color: isSelected ? Colors.white : AppColors.primary,
+              ),
+              label: Text(
+                isStandardTurf ? '$sport (Turf Ground)' : sport,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFF1F2937),
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: AppColors.primary,
+              checkmarkColor: Colors.white,
+              backgroundColor: const Color(0xFFF3F4F6),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: isSelected ? AppColors.primary : const Color(0xFFE5E7EB),
+                ),
+              ),
+              onSelected: (selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedSports.add(sport);
+                  } else {
+                    if (_selectedSports.length > 1) {
+                      _selectedSports.remove(sport);
+                    } else {
+                      ToastUtils.showError(context, 'At least one sport must be selected');
+                    }
+                  }
+                });
+              },
+            );
+          }).toList(),
         ),
         const SizedBox(height: 20),
 

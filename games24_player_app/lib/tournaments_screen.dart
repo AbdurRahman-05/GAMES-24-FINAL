@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:games24_player_app/tournament_manager.dart';
 import 'package:games24_player_app/tournament_details_screen.dart';
+import 'package:games24_player_app/create_tournament_dialog.dart';
 
 class TournamentsScreen extends StatefulWidget {
   final bool isStandalone;
@@ -73,6 +74,22 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
           ),
         ),
         body: content,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            showCreateTournamentDialog(context);
+          },
+          backgroundColor: const Color(0xFF154D36),
+          elevation: 2,
+          icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+          label: const Text(
+            'Create Tournament',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ),
       );
     }
 
@@ -160,9 +177,9 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            if (_selectedTabIndex == 2)
+            if (_selectedTabIndex == 1)
               ElevatedButton.icon(
-                onPressed: () => setState(() => _selectedTabIndex = 1),
+                onPressed: () => showCreateTournamentDialog(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF154D36),
                   foregroundColor: Colors.white,
@@ -170,11 +187,48 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
-                icon: const Icon(Icons.explore_outlined, size: 18),
+                icon: const Icon(Icons.add_rounded, size: 18),
                 label: const Text(
-                  'Explore Upcoming Tournaments',
+                  'Create Tournament',
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
                 ),
+              ),
+            if (_selectedTabIndex == 2)
+              Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() => _selectedTabIndex = 1),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF154D36),
+                      side: const BorderSide(color: Color(0xFF154D36)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.explore_outlined, size: 18),
+                    label: const Text(
+                      'Browse Upcoming',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () => showCreateTournamentDialog(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF154D36),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text(
+                      'Create Tournament',
+                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    ),
+                  ),
+                ],
               ),
           ],
         ),
@@ -203,7 +257,12 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
     final isSelected = _selectedTabIndex == index;
     return Expanded(
       child: GestureDetector(
-        onTap: () => setState(() => _selectedTabIndex = index),
+        onTap: () {
+          setState(() => _selectedTabIndex = index);
+          if (index == 2) {
+            TournamentManager().fetchTournaments();
+          }
+        },
         child: Container(
           margin: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -364,12 +423,41 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                           ),
                         ),
                       ),
+                      if (_selectedTabIndex == 2) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD97706),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.how_to_reg_rounded, color: Colors.white, size: 12),
+                              SizedBox(width: 4),
+                              Text(
+                                'Registered Team',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 Positioned(
                   bottom: 16,
                   left: 16,
+                  right: 130,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -380,6 +468,8 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(

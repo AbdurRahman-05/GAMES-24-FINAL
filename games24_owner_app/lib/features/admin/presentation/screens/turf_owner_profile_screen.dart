@@ -651,12 +651,17 @@ class _TurfOwnerProfileScreenState
   }
 
   void _showAddVenueCourtDialog(TurfProfileState profile) {
-    final courtNameCtrl = TextEditingController();
-    final surfaceCtrl = TextEditingController();
-    final rateCtrl = TextEditingController();
-    String selectedSport = profile.sports.isNotEmpty ? profile.sports.first.name : 'Football';
-    String dropdownValue = selectedSport;
-    String customSportValue = '';
+    final nextNum = profile.courts.length + 1;
+    final courtNameCtrl = TextEditingController(text: '${profile.venueName} - Court $nextNum');
+    final surfaceCtrl = TextEditingController(text: 'Synthetic Turf');
+    final rateCtrl = TextEditingController(text: '1200');
+    final Set<String> selectedSports = {'Cricket', 'Football'};
+    final availableSports = ['Cricket', 'Football', 'Pickle ball', 'Badminton', 'Tennis', 'Volleyball'];
+    for (final s in profile.sports) {
+      if (!availableSports.contains(s.name)) {
+        availableSports.add(s.name);
+      }
+    }
 
     showDialog(
       context: context,
@@ -683,42 +688,47 @@ class _TurfOwnerProfileScreenState
               children: [
                 AppTextField(
                   label: 'Court / Pitch Name',
-                  hint: 'e.g. Court 3 Pickleball, Arena B 5v5',
+                  hint: 'e.g. Box Arena, Pitch 2, Main Ground',
                   controller: courtNameCtrl,
                 ),
                 const SizedBox(height: 12),
-                const Text('Sport Type:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                const SizedBox(height: 6),
-                DropdownButtonFormField<String>(
-                  initialValue: dropdownValue,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
-                  items: [
-                    ...profile.sports.map((s) => DropdownMenuItem(value: s.name, child: Text(s.name))),
-                    const DropdownMenuItem(value: 'Others', child: Text('Others (Type your own)')),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      setDialogState(() {
-                        dropdownValue = val;
-                        if (val != 'Others') selectedSport = val;
-                      });
-                    }
-                  },
+                const Text('Supported Sports (Multi-Select):', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 4),
+                const Text(
+                  'Cricket and Football can share the same ground. Badminton and Pickleball require dedicated courts.',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
                 ),
-                if (dropdownValue == 'Others') ...[
-                  const SizedBox(height: 12),
-                  AppTextField(
-                    label: 'Custom Sport Name',
-                    controller: TextEditingController(text: customSportValue), 
-                    onChanged: (val) {
-                      customSportValue = val;
-                      selectedSport = val;
-                    },
-                  ),
-                ],
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: availableSports.map((sport) {
+                    final isChecked = selectedSports.contains(sport);
+                    return FilterChip(
+                      label: Text(sport),
+                      selected: isChecked,
+                      selectedColor: AppColors.primary,
+                      checkmarkColor: Colors.white,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isChecked ? Colors.white : const Color(0xFF334155),
+                      ),
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      onSelected: (selected) {
+                        setDialogState(() {
+                          if (selected) {
+                            selectedSports.add(sport);
+                          } else {
+                            if (selectedSports.length > 1) {
+                              selectedSports.remove(sport);
+                            }
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
                 const SizedBox(height: 12),
                 AppTextField(
                   label: 'Surface Specification',
@@ -746,16 +756,18 @@ class _TurfOwnerProfileScreenState
                 foregroundColor: Colors.white,
               ),
               onPressed: () {
+                final sportsList = selectedSports.toList();
                 final courtName = courtNameCtrl.text.trim().isEmpty
-                    ? 'New Court ($selectedSport)'
+                    ? 'Court $nextNum (${sportsList.join(" • ")})'
                     : courtNameCtrl.text.trim();
                 final hourlyRate = double.tryParse(rateCtrl.text) ?? 1000.0;
 
                 final newCourt = TurfCourtVenueItem(
                   id: 'CR-${DateTime.now().millisecondsSinceEpoch}',
                   name: courtName,
-                  sport: selectedSport,
-                  surface: surfaceCtrl.text.trim(),
+                  sport: sportsList.join(' • '),
+                  sports: sportsList,
+                  surface: surfaceCtrl.text.trim().isNotEmpty ? surfaceCtrl.text.trim() : 'Synthetic Turf',
                   hourlyRate: hourlyRate,
                   timings: profile.weekdayOpeningTime == '24 Hours'
                       ? '24 Hours Open'
@@ -1109,10 +1121,12 @@ class _TurfOwnerProfileScreenState
                             final courtName = courtNameCtrl.text.trim().isEmpty ? court.name : courtNameCtrl.text.trim();
                             final hourlyRate = double.tryParse(rateCtrl.text) ?? court.hourlyRate;
 
+                            final sportsList = courtSports.entries.where((e) => e.value).map((e) => e.key).toList();
                             final updatedCourt = TurfCourtVenueItem(
                               id: court.id,
                               name: courtName,
-                              sport: courtSports.entries.where((e) => e.value).map((e) => e.key).join(', '),
+                              sport: sportsList.join(' • '),
+                              sports: sportsList,
                               surface: surfaceCtrl.text.trim().isEmpty ? court.surface : surfaceCtrl.text.trim(),
                               hourlyRate: hourlyRate,
                               timings: profile.weekdayOpeningTime == '24 Hours'

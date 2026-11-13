@@ -69,7 +69,7 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
       if (targetVenue.isNotEmpty) queryParts.add('venue=${Uri.encodeComponent(targetVenue)}');
 
       final url = '${ApiConfig.baseUrl}/turfs/tournaments?${queryParts.join('&')}';
-      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 4));
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final dynamic decoded = jsonDecode(res.body);
         if (decoded is List) {

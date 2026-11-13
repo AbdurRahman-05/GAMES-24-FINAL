@@ -403,6 +403,7 @@ class TurfCourtVenueItem {
   final String id;
   final String name;
   final String sport;
+  final List<String> sports;
   final String surface;
   final double hourlyRate;
   final String timings;
@@ -414,6 +415,7 @@ class TurfCourtVenueItem {
     required this.id,
     required this.name,
     required this.sport,
+    this.sports = const [],
     required this.surface,
     required this.hourlyRate,
     required this.timings,
@@ -421,6 +423,45 @@ class TurfCourtVenueItem {
     this.amenities = const [],
     this.imageUrls = const [],
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'sport': sport,
+    'sports': sports.isNotEmpty ? sports : (sport.isNotEmpty ? sport.split(RegExp(r'\s*[•,]\s*')).where((s) => s.isNotEmpty).toList() : ['Cricket', 'Football']),
+    'surface': surface,
+    'hourlyRate': hourlyRate,
+    'timings': timings,
+    'description': description,
+    'amenities': amenities,
+    'imageUrls': imageUrls,
+  };
+
+  factory TurfCourtVenueItem.fromJson(Map<String, dynamic> json) {
+    final rawSports = json['sports'];
+    List<String> sportsList = [];
+    if (rawSports is List) {
+      sportsList = rawSports.map((e) => e.toString().trim()).where((s) => s.isNotEmpty).toList();
+    } else if (json['sport'] != null) {
+      sportsList = json['sport'].toString().split(RegExp(r'\s*[•,]\s*')).where((s) => s.isNotEmpty).toList();
+    }
+    final primarySport = sportsList.isNotEmpty ? sportsList.join(' • ') : (json['sport']?.toString() ?? 'Cricket • Football');
+
+    return TurfCourtVenueItem(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      sport: primarySport,
+      sports: sportsList.isNotEmpty ? sportsList : ['Cricket', 'Football'],
+      surface: json['surface']?.toString() ?? 'Synthetic Turf',
+      hourlyRate: (json['hourlyRate'] is num)
+          ? (json['hourlyRate'] as num).toDouble()
+          : (double.tryParse(json['hourlyRate']?.toString() ?? '') ?? 1000.0),
+      timings: json['timings']?.toString() ?? '06:00 AM - 11:00 PM',
+      description: json['description']?.toString() ?? '',
+      amenities: (json['amenities'] is List) ? (json['amenities'] as List).map((e) => e.toString()).toList() : const [],
+      imageUrls: (json['imageUrls'] is List) ? (json['imageUrls'] as List).map((e) => e.toString()).toList() : const [],
+    );
+  }
 }
 
 class TurfSportItem {
@@ -686,35 +727,17 @@ class TurfProfileState {
     this.panDocUrl,
     this.gstDocUrl,
     this.sports = const [
-      TurfSportItem(name: 'Cricket', hourlyRate: 1000.0, courtsAvailable: 2),
-      TurfSportItem(name: 'Football', hourlyRate: 1400.0, courtsAvailable: 2),
-      TurfSportItem(name: 'Pickle ball', hourlyRate: 800.0, courtsAvailable: 2),
-      TurfSportItem(name: 'Badminton', hourlyRate: 450.0, courtsAvailable: 4),
+      TurfSportItem(name: 'Cricket', hourlyRate: 1000.0, courtsAvailable: 1),
+      TurfSportItem(name: 'Football', hourlyRate: 1400.0, courtsAvailable: 1),
     ],
     this.courts = const [
       TurfCourtVenueItem(
         id: 'CR-01',
-        name: 'Main Turf Arena A (7v7)',
+        name: 'Main Ground',
         sport: 'Football',
-        surface: 'FIFA Quality 50mm Synthetic Turf',
-        hourlyRate: 1400.0,
-        timings: 'Wkday 06:00 AM - 11:00 PM | Wkend 05:00 AM - 11:30 PM',
-      ),
-      TurfCourtVenueItem(
-        id: 'CR-02',
-        name: 'Box Cricket Arena B',
-        sport: 'Box Cricket',
-        surface: 'High-Density Turf with Net Enclosure',
-        hourlyRate: 1000.0,
-        timings: 'Wkday 06:00 AM - 11:00 PM | Wkend 05:00 AM - 11:30 PM',
-      ),
-      TurfCourtVenueItem(
-        id: 'CR-03',
-        name: 'Indoor Wooden Court 1',
-        sport: 'Badminton',
-        surface: 'Teakwood Synthetic Mat Court',
-        hourlyRate: 450.0,
-        timings: '06:00 AM - 10:00 PM (All Days)',
+        surface: 'Synthetic Turf',
+        hourlyRate: 1200.0,
+        timings: '06:00 AM - 11:00 PM',
       ),
     ],
     this.bookingHistory = const [],
@@ -977,6 +1000,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     required String venueName,
     required String neighborhoodArea,
     required String streetAddress,
+    required String alternativePhone,
     double? dayRate,
     double? nightRate,
   }) async {
@@ -989,6 +1013,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           'venueName': venueName,
           'neighborhoodArea': neighborhoodArea,
           'streetAddress': streetAddress,
+          'alternativePhone': alternativePhone,
           'dayRate': dayRate ?? 1000.0,
           'nightRate': nightRate ?? 1400.0,
         }),
@@ -1053,6 +1078,9 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     final aadhaarDocUrl = data['aadhaarDocUrl']?.toString();
     final panDocUrl = data['panDocUrl']?.toString();
     final gstDocUrl = data['gstDocUrl']?.toString();
+    final dayRate = double.tryParse(data['dayRate']?.toString() ?? '') ??
+        double.tryParse(data['weekdayRate']?.toString() ?? '') ??
+        state.dayRate;
 
     // Parse real dynamic sports configured for this turf if provided
     List<TurfSportItem> parsedSports = [];
@@ -1083,45 +1111,30 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     if (data['courts'] is List && (data['courts'] as List).isNotEmpty) {
       courts = (data['courts'] as List).map((c) {
         if (c is Map) {
-          final amenList = (c['amenities'] is List)
-              ? (c['amenities'] as List).map((e) => e.toString()).toList()
-              : amenities;
-          return TurfCourtVenueItem(
-            id: c['id']?.toString() ?? 'CR-01',
-            name: c['name']?.toString() ?? '$venueName Court',
-            sport: c['sport']?.toString() ?? 'Football',
-            surface: c['surface']?.toString() ?? 'FIFA Quality Synthetic Turf',
-            hourlyRate: (c['hourlyRate'] is num)
-                ? (c['hourlyRate'] as num).toDouble()
-                : (double.tryParse(c['hourlyRate']?.toString() ?? '') ?? 1000.0),
-            timings: c['timings']?.toString() ?? '06:00 AM - 11:00 PM',
-            amenities: amenList,
-            imageUrls: photoUrls,
-          );
+          final cName = c['name']?.toString() ?? '';
+          final isMockPattern = RegExp(
+            r'^(Cricket|Football|Pickle ball|Badminton)\s+Court\s+\d+$',
+            caseSensitive: false,
+          ).hasMatch(cName.trim());
+          if (isMockPattern) return null;
+
+          return TurfCourtVenueItem.fromJson(Map<String, dynamic>.from(c));
         }
         return null;
       }).whereType<TurfCourtVenueItem>().toList();
     }
 
     if (courts.isEmpty) {
+      final availableSportNames = parsedSports.isNotEmpty ? parsedSports.map((s) => s.name).toList() : ['Cricket', 'Football'];
       courts = [
         TurfCourtVenueItem(
           id: 'CR-01',
-          name: '$venueName - Main Turf Arena A (7v7)',
-          sport: 'Football',
-          surface: 'FIFA Quality 50mm Synthetic Turf',
-          hourlyRate: 1400.0,
-          timings: 'Wkday 06:00 AM - 11:00 PM | Wkend 05:00 AM - 11:30 PM',
-          amenities: amenities,
-          imageUrls: photoUrls,
-        ),
-        TurfCourtVenueItem(
-          id: 'CR-02',
-          name: '$venueName - Box Cricket Arena B',
-          sport: 'Box Cricket',
-          surface: 'High-Density Turf with Net Enclosure',
-          hourlyRate: 1000.0,
-          timings: 'Wkday 06:00 AM - 11:00 PM | Wkend 05:00 AM - 11:30 PM',
+          name: '$venueName - Main Ground',
+          sport: availableSportNames.join(' • '),
+          sports: availableSportNames,
+          surface: 'Synthetic Turf',
+          hourlyRate: dayRate > 0 ? dayRate : 1200.0,
+          timings: '06:00 AM - 11:00 PM',
           amenities: amenities,
           imageUrls: photoUrls,
         ),
@@ -1466,22 +1479,13 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     try {
       final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/$tId/courts');
       final payload = jsonEncode({
-        'courts': courts.map((c) => {
-          'id': c.id,
-          'name': c.name,
-          'sport': c.sport,
-          'surface': c.surface,
-          'hourlyRate': c.hourlyRate,
-          'timings': c.timings,
-          'description': c.description,
-          'amenities': c.amenities,
-        }).toList(),
+        'courts': courts.map((c) => c.toJson()).toList(),
       });
       await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: payload,
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 15));
     } catch (e) {
       debugPrint('Error syncing courts to backend: $e');
     }

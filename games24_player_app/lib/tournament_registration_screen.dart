@@ -1,5 +1,6 @@
 import 'main_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:games24_player_app/tournament_manager.dart';
 
 class TournamentRegistrationScreen extends StatefulWidget {
@@ -20,6 +21,26 @@ class _TournamentRegistrationScreenState
   final _contactCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _playersCountCtrl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPrefills();
+  }
+
+  Future<void> _loadUserPrefills() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
+      final name = (prefs.getString('fullName') ?? prefs.getString('userName') ?? '').trim();
+      final email = (prefs.getString('email') ?? '').trim();
+      if (mounted) {
+        if (phone.isNotEmpty && _contactCtrl.text.isEmpty) _contactCtrl.text = phone;
+        if (name.isNotEmpty && _captainNameCtrl.text.isEmpty) _captainNameCtrl.text = name;
+        if (email.isNotEmpty && _emailCtrl.text.isEmpty) _emailCtrl.text = email;
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {

@@ -1,4 +1,4 @@
-﻿import 'main_layout.dart';
+import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'booking_manager.dart';
@@ -141,7 +141,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                             ),
                             const SizedBox(width: 8),
                             const Text(
-                              'â˜… 5.0 Rating',
+                              '★ 5.0 Rating',
                               style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
                             ),
                           ],
@@ -325,7 +325,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              "${b['date'] ?? 'Recent'} â€¢ ${b['timeSlot'] ?? ''}",
+                              "${b['date'] ?? 'Recent'} • ${b['timeSlot'] ?? ''}",
                               style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
                             ),
                           ],

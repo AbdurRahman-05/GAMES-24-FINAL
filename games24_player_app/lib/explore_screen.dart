@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:games24_player_app/booking_screen.dart';
 import 'package:games24_player_app/location_manager.dart';
+import 'package:games24_player_app/core/widgets/turf_card_carousel.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -185,10 +186,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ? (turf['photoUrls'] as List).map((e) => e.toString()).toList()
             : [turf['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
 
-        final List<String> sportsList = (turf['sports'] is List)
+        final List<String> sportsList = (turf['sports'] is List && (turf['sports'] as List).isNotEmpty)
             ? (turf['sports'] as List).map((e) => e.toString()).toList()
-            : (turf['sports']?.toString().split(' • ') ??
-                  ['Cricket', 'Football', 'Pickle ball', 'Badminton']);
+            : ['Cricket', 'Football'];
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -210,6 +210,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
             isAvailable: true,
             sports: sportsList,
             sportsList: turf['sportsList'],
+            courts: (turf['courts'] is List) ? (turf['courts'] as List) : null,
+            turf: turf,
           ),
         );
       }).toList(),
@@ -267,7 +269,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           .map((e) => e.toString())
                           .toList()
                     : (option['sports']?.toString().split(' • ') ??
-                          ['Cricket', 'Football', 'Pickle ball', 'Badminton']);
+                          ['Cricket', 'Football']);
 
                 Navigator.push(
                   context,
@@ -287,6 +289,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       location: option['location'] ?? 'Madurai',
                       sports: sports,
                       sportsList: option['sportsList'],
+                      courts: (option['courts'] is List) ? (option['courts'] as List) : null,
+                      turf: option,
+                      initialSport: (_selectedSport != 'All Sports') ? _selectedSport : 'Football',
                     ),
                   ),
                 );
@@ -472,6 +477,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
     required bool isAvailable,
     required List<String> sports,
     List<dynamic>? sportsList,
+    List<dynamic>? courts,
+    Map<String, dynamic>? turf,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -489,106 +496,115 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Area
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                child: Image.network(
-                  imageUrl,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    height: 160,
-                    color: Colors.grey.shade200,
-                    child: const Center(
-                      child: Icon(
-                        Icons.sports_soccer,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
+          // Image Area with Multi-Photo Carousel
+          TurfCardCarousel(
+            photoUrls: photoUrls,
+            fallbackImageUrl: imageUrl,
+            height: 160,
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(16),
+            ),
+            topTrailing: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.orange, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    rating,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '($reviews)',
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
-              // Rating Badge
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.orange, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '($reviews)',
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            ),
+            bottomLeading: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
               ),
-              // Availability Badge
-              Positioned(
-                bottom: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+              decoration: BoxDecoration(
+                color: isAvailable
+                    ? const Color(0xFF154D36)
+                    : const Color(0xFFDC2626),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
-                  decoration: BoxDecoration(
-                    color: isAvailable
-                        ? const Color(0xFF154D36)
-                        : const Color(0xFFDC2626),
-                    borderRadius: BorderRadius.circular(16),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        availabilityText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 6),
+                  Text(
+                    availabilityText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingScreen(
+                    turfId: turfId,
+                    turfName: name,
+                    imageUrl: imageUrl,
+                    photoUrls: photoUrls,
+                    amenities: amenities,
+                    openingTime: openingTime,
+                    closingTime: closingTime,
+                    price: price,
+                    location: location,
+                    sports: sports,
+                    sportsList: sportsList,
+                    courts: courts,
+                    turf: turf,
+                    initialSport: (_selectedSport != 'All Sports') ? _selectedSport : 'Football',
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
           // Content Area
           Padding(
@@ -734,6 +750,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             location: location,
                             sports: sports,
                             sportsList: sportsList,
+                            courts: courts,
+                            turf: turf,
+                            initialSport: (_selectedSport != 'All Sports') ? _selectedSport : 'Football',
                           ),
                         ),
                       );

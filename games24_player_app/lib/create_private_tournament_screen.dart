@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:convert';
 import 'main_layout.dart';
 import 'dart:math';
@@ -81,7 +81,7 @@ class _CreatePrivateTournamentScreenState
   Future<void> _fetchLiveTurfs() async {
     setState(() => _isLoadingVenues = true);
     try {
-      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs')).timeout(const Duration(seconds: 4));
+      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs')).timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
         if (mounted && list.isNotEmpty) {
@@ -821,41 +821,44 @@ class _CreatePrivateTournamentScreenState
                 child: Column(
                   children: [
                     // Decide Venue Later (TBA) Switch Card
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: _isVenueTBA ? const Color(0xFFFEF3C7) : const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _isVenueTBA ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
-                          width: _isVenueTBA ? 1.5 : 1,
+                    Material(
+                      color: _isVenueTBA ? const Color(0xFFFEF3C7) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _isVenueTBA ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                            width: _isVenueTBA ? 1.5 : 1,
+                          ),
                         ),
-                      ),
-                      child: SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        activeThumbColor: const Color(0xFFD97706),
-                        title: const Text(
-                          'Decide Venue Later 📍 (TBA)',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        child: SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          activeThumbColor: const Color(0xFFD97706),
+                          title: const Text(
+                            'Decide Venue Later 📍 (TBA)',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          subtitle: const Text(
+                            'Venue shows as "Launching Soon". Perfect if awaiting turf confirmation.',
+                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                          ),
+                          value: _isVenueTBA,
+                          onChanged: (val) {
+                            setState(() {
+                              _isVenueTBA = val;
+                              if (val) {
+                                _selectedVenue = 'Venue To Be Announced (TBA)';
+                                _selectedLocation = '$_selectedCity (Exact Arena TBA)';
+                                _selectedVenueCourts = 0;
+                              } else {
+                                _selectedVenue = '';
+                                _selectedLocation = '';
+                              }
+                            });
+                          },
                         ),
-                        subtitle: const Text(
-                          'Venue shows as "Launching Soon". Perfect if awaiting turf confirmation.',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-                        ),
-                        value: _isVenueTBA,
-                        onChanged: (val) {
-                          setState(() {
-                            _isVenueTBA = val;
-                            if (val) {
-                              _selectedVenue = 'Venue To Be Announced (TBA)';
-                              _selectedLocation = '$_selectedCity (Exact Arena TBA)';
-                              _selectedVenueCourts = 0;
-                            } else {
-                              _selectedVenue = '';
-                              _selectedLocation = '';
-                            }
-                          });
-                        },
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -946,30 +949,33 @@ class _CreatePrivateTournamentScreenState
                       final val = _rulesMap[rule] ?? false;
                       final isCustom = !_isDefaultRule(rule);
 
-                      return CheckboxListTile(
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                        activeColor: const Color(0xFFD97706),
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(rule, style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
-                            ),
-                            if (isCustom)
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                onPressed: () {
-                                  setState(() => _rulesMap.remove(rule));
-                                },
+                      return Material(
+                        color: Colors.transparent,
+                        child: CheckboxListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: const Color(0xFFD97706),
+                          title: Row(
+                            children: [
+                              Expanded(
+                                child: Text(rule, style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
                               ),
-                          ],
+                              if (isCustom)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  onPressed: () {
+                                    setState(() => _rulesMap.remove(rule));
+                                  },
+                                ),
+                            ],
+                          ),
+                          value: val,
+                          onChanged: (checked) {
+                            setState(() => _rulesMap[rule] = checked ?? false);
+                          },
                         ),
-                        value: val,
-                        onChanged: (checked) {
-                          setState(() => _rulesMap[rule] = checked ?? false);
-                        },
                       );
                     }),
                     const SizedBox(height: 10),

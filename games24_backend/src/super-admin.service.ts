@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from './prisma.service.js';
+import { getAdminSports, saveAdminSports } from './auth.service.js';
 
 @Injectable()
 export class SuperAdminService {
@@ -55,7 +56,7 @@ export class SuperAdminService {
       ];
     }
 
-    const [items, totalCount, stats] = await Promise.all([
+    const [rawItems, totalCount, stats] = await Promise.all([
       this.prisma.adminUser.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -65,6 +66,15 @@ export class SuperAdminService {
       this.prisma.adminUser.count({ where }),
       this.getStats(),
     ]);
+
+    const items = rawItems.map((item) => {
+      const sportsList = getAdminSports(item.id);
+      return {
+        ...item,
+        sports: sportsList.map((s: any) => s.name),
+        sportsList,
+      };
+    });
 
     return {
       items,
@@ -90,8 +100,12 @@ export class SuperAdminService {
       where: { adminUserId: id },
     });
 
+    const sportsList = getAdminSports(admin.id);
+
     return {
       ...admin,
+      sports: sportsList.map((s: any) => s.name),
+      sportsList,
       verifiedRecord,
     };
   }
@@ -138,6 +152,9 @@ export class SuperAdminService {
         bankAccount: admin.bankAccount,
         ifscCode: admin.ifscCode,
         upiId: admin.upiId,
+        isBranch: admin.isBranch ?? false,
+        parentTurfId: admin.parentTurfId,
+        alternativePhone: admin.alternativePhone,
         status: 'VERIFIED',
         verifiedAt: new Date(),
         verifiedBy: body?.verifiedBy || 'Super Admin',
@@ -165,6 +182,9 @@ export class SuperAdminService {
         bankAccount: admin.bankAccount,
         ifscCode: admin.ifscCode,
         upiId: admin.upiId,
+        isBranch: admin.isBranch ?? false,
+        parentTurfId: admin.parentTurfId,
+        alternativePhone: admin.alternativePhone,
         status: 'VERIFIED',
         verifiedAt: new Date(),
         verifiedBy: body?.verifiedBy || 'Super Admin',
@@ -177,6 +197,14 @@ export class SuperAdminService {
       create: { verifiedAdminId: verifiedAdmin.id },
       update: {},
     });
+
+    // 4. Synchronize sports configuration from registration to verifiedAdmin
+    try {
+      const registeredSports = getAdminSports(admin.id);
+      saveAdminSports(verifiedAdmin.id, registeredSports);
+    } catch (e) {
+      console.error('Error syncing sports to verified admin:', e);
+    }
 
     return {
       success: true,

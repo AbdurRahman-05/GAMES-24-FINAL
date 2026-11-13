@@ -1,4 +1,92 @@
-export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://games-24-final.onrender.com';
+export const DEFAULT_LIVE_BACKEND_URL = 'https://games-24-final.onrender.com';
+
+export function getEffectiveBackendUrl(): string {
+  if (typeof window !== 'undefined') {
+    const override = localStorage.getItem('g24_superadmin_backend_url');
+    if (override && override.trim()) return override.trim().replace(/\/+$/, '');
+  }
+  return (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LIVE_BACKEND_URL).trim().replace(/\/+$/, '');
+}
+
+export function setEffectiveBackendUrl(url: string | null) {
+  if (typeof window !== 'undefined') {
+    if (url && url.trim()) {
+      localStorage.setItem('g24_superadmin_backend_url', url.trim().replace(/\/+$/, ''));
+    } else {
+      localStorage.removeItem('g24_superadmin_backend_url');
+    }
+  }
+}
+
+export const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LIVE_BACKEND_URL).trim().replace(/\/+$/, '');
+export const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET || 'g24_super_admin_secret_2026';
+export const adminHeaders = (extra: Record<string, string> = {}) => ({
+  'x-admin-key': ADMIN_SECRET,
+  ...extra,
+});
+
+export async function safeAdminFetch(
+  pathWithQuery: string,
+  options: RequestInit = {},
+  allowFallback = true
+): Promise<Response> {
+  const base = getEffectiveBackendUrl();
+  const cleanPath = pathWithQuery.startsWith('/') ? pathWithQuery : `/${pathWithQuery}`;
+  const primaryUrl = `${base}${cleanPath}`;
+
+  // Configure timeout (25 seconds for Render cold-starts)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+  const mergedHeaders: Record<string, string> = {
+    'x-admin-key': ADMIN_SECRET,
+    ...adminHeaders(),
+    ...((options.headers as Record<string, string>) || {}),
+  };
+
+  try {
+    const res = await fetch(primaryUrl, {
+      ...options,
+      headers: mergedHeaders,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    // If server responded with 502/503 during cold-start or waking, retry once after short pause
+    if ((res.status === 502 || res.status === 503) && allowFallback) {
+      await new Promise((r) => setTimeout(r, 1200));
+      return safeAdminFetch(pathWithQuery, options, false);
+    }
+
+    return res;
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+
+    // If localhost failed (not running / connection refused) and allowFallback is true,
+    // automatically fallback to live Render cloud!
+    if (allowFallback && base !== DEFAULT_LIVE_BACKEND_URL) {
+      console.warn(`[SuperAdmin] Primary backend ${base} unreachable (${err?.message || err}). Auto-falling back to live Render cloud...`);
+      const fallbackUrl = `${DEFAULT_LIVE_BACKEND_URL}${cleanPath}`;
+      const fallbackController = new AbortController();
+      const fbTimeoutId = setTimeout(() => fallbackController.abort(), 25000);
+
+      try {
+        const fbRes = await fetch(fallbackUrl, {
+          ...options,
+          headers: mergedHeaders,
+          signal: fallbackController.signal,
+        });
+        clearTimeout(fbTimeoutId);
+        return fbRes;
+      } catch (fbErr: any) {
+        clearTimeout(fbTimeoutId);
+        throw new Error(`Failed to reach live backend (${DEFAULT_LIVE_BACKEND_URL}): ${fbErr?.message || fbErr}`);
+      }
+    }
+
+    throw err;
+  }
+}
 
 export interface AdminRegistration {
   id: number;
@@ -14,6 +102,8 @@ export interface AdminRegistration {
   photosCount: number;
   photoUrls: string[];
   amenities: string[];
+  sports?: string[];
+  sportsList?: any[];
   gstin: string | null;
   panNumber: string | null;
   aadhaarNumber: string | null;
@@ -23,6 +113,9 @@ export interface AdminRegistration {
   bankAccount: string | null;
   ifscCode: string | null;
   upiId: string | null;
+  isBranch?: boolean;
+  parentTurfId?: number | null;
+  alternativePhone?: string | null;
   status: 'PENDING_APPROVAL' | 'VERIFIED' | 'CANCELLED';
   cancelReason: string | null;
   createdAt: string;
@@ -45,6 +138,8 @@ export interface VerifiedAdmin {
   photosCount: number;
   photoUrls: string[];
   amenities: string[];
+  sports?: string[];
+  sportsList?: any[];
   gstin: string | null;
   panNumber: string | null;
   aadhaarNumber: string | null;
@@ -208,13 +303,13 @@ export interface TournamentItem {
 }
 
 export async function getStats(): Promise<SystemStats> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/stats`, { cache: 'no-store' });
+  const res = await safeAdminFetch('/super-admin/stats', { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch stats');
   return res.json();
 }
 
 export async function getDashboardOverview(): Promise<DashboardOverview> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/overview`, { cache: 'no-store' });
+  const res = await safeAdminFetch('/super-admin/overview', { cache: 'no-store' });
   if (!res.ok) throw new Error('Failed to fetch overview analytics');
   return res.json();
 }
@@ -235,7 +330,7 @@ export async function getRegistrations(params: {
   if (params.page) query.append('page', String(params.page));
   if (params.limit) query.append('limit', String(params.limit));
 
-  const res = await fetch(`${BACKEND_URL}/super-admin/registrations?${query.toString()}`, {
+  const res = await safeAdminFetch(`/super-admin/registrations?${query.toString()}`, {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch registrations');
@@ -243,7 +338,7 @@ export async function getRegistrations(params: {
 }
 
 export async function getRegistrationById(id: number): Promise<AdminRegistration> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/registrations/${id}`, { cache: 'no-store' });
+  const res = await safeAdminFetch(`/super-admin/registrations/${id}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to fetch registration #${id}`);
   return res.json();
 }
@@ -252,7 +347,7 @@ export async function verifyRegistration(
   id: number,
   body?: { verifiedBy?: string }
 ): Promise<{ success: boolean; message: string; verifiedAdmin: VerifiedAdmin }> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/registrations/${id}/verify`, {
+  const res = await safeAdminFetch(`/super-admin/registrations/${id}/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {}),
@@ -268,7 +363,7 @@ export async function cancelRegistration(
   id: number,
   body?: { reason?: string }
 ): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/registrations/${id}/cancel`, {
+  const res = await safeAdminFetch(`/super-admin/registrations/${id}/cancel`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {}),
@@ -293,7 +388,7 @@ export async function getVerifiedAdmins(params: {
   if (params.page) query.append('page', String(params.page));
   if (params.limit) query.append('limit', String(params.limit));
 
-  const res = await fetch(`${BACKEND_URL}/super-admin/verified-admins?${query.toString()}`, {
+  const res = await safeAdminFetch(`/super-admin/verified-admins?${query.toString()}`, {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch verified admins');
@@ -304,7 +399,7 @@ export async function toggleTurfBookingHold(
   turfId: number,
   hold?: boolean
 ): Promise<{ success: boolean; message: string; isBookingHold: boolean }> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/turfs/${turfId}/toggle-hold`, {
+  const res = await safeAdminFetch(`/super-admin/turfs/${turfId}/toggle-hold`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ hold }),
@@ -335,7 +430,7 @@ export async function getAllBookings(params: {
   if (params.page) query.append('page', String(params.page));
   if (params.limit) query.append('limit', String(params.limit));
 
-  const res = await fetch(`${BACKEND_URL}/super-admin/all-bookings?${query.toString()}`, {
+  const res = await safeAdminFetch(`/super-admin/all-bookings?${query.toString()}`, {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch bookings');
@@ -346,7 +441,7 @@ export async function toggleBookingHold(
   bookingId: number,
   isHold?: boolean
 ): Promise<{ success: boolean; message: string; booking: BookingItem }> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/bookings/${bookingId}/hold`, {
+  const res = await safeAdminFetch(`/super-admin/bookings/${bookingId}/hold`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isHold }),
@@ -359,7 +454,7 @@ export async function cancelBookingByAdmin(
   bookingId: number,
   reason?: string
 ): Promise<{ success: boolean; message: string }> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/bookings/${bookingId}/cancel`, {
+  const res = await safeAdminFetch(`/super-admin/bookings/${bookingId}/cancel`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason }),
@@ -376,7 +471,7 @@ export async function getAllTournaments(params: {
   if (params.status) query.append('status', params.status);
   if (params.search) query.append('search', params.search);
 
-  const res = await fetch(`${BACKEND_URL}/super-admin/all-tournaments?${query.toString()}`, {
+  const res = await safeAdminFetch(`/super-admin/all-tournaments?${query.toString()}`, {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch tournaments');
@@ -387,7 +482,7 @@ export async function toggleTournamentHold(
   tournamentId: number,
   isHold?: boolean
 ): Promise<{ success: boolean; message: string; tournament: TournamentItem }> {
-  const res = await fetch(`${BACKEND_URL}/super-admin/tournaments/${tournamentId}/toggle-hold`, {
+  const res = await safeAdminFetch(`/super-admin/tournaments/${tournamentId}/toggle-hold`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isHold }),
@@ -399,12 +494,12 @@ export async function toggleTournamentHold(
 export async function deleteVerifiedAdmin(
   turfId: number
 ): Promise<{ success: boolean; message: string }> {
-  let res = await fetch(`${BACKEND_URL}/super-admin/verified-admins/${turfId}`, {
+  let res = await safeAdminFetch(`/super-admin/verified-admins/${turfId}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
   });
   if (!res.ok) {
-    res = await fetch(`${BACKEND_URL}/super-admin/verified-admins/${turfId}/delete`, {
+    res = await safeAdminFetch(`/super-admin/verified-admins/${turfId}/delete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -419,12 +514,12 @@ export async function deleteVerifiedAdmin(
 export async function deleteTournament(
   tournamentId: number
 ): Promise<{ success: boolean; message: string }> {
-  let res = await fetch(`${BACKEND_URL}/super-admin/tournaments/${tournamentId}`, {
+  let res = await safeAdminFetch(`/super-admin/tournaments/${tournamentId}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
   });
   if (!res.ok) {
-    res = await fetch(`${BACKEND_URL}/super-admin/tournaments/${tournamentId}/delete`, {
+    res = await safeAdminFetch(`/super-admin/tournaments/${tournamentId}/delete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -432,6 +527,27 @@ export async function deleteTournament(
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || 'Failed to delete tournament');
+  }
+  return res.json();
+}
+
+export async function deploySuperAdminTournament(body: {
+  title: string;
+  sport: string;
+  venueName: string;
+  date: string;
+  entryFee?: number;
+  prizePool?: string;
+  maxTeams?: number;
+}): Promise<{ success: boolean; message: string; tournament: TournamentItem }> {
+  const res = await safeAdminFetch('/super-admin/tournaments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to deploy tournament');
   }
   return res.json();
 }

@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -286,7 +286,14 @@ class ChallengeManager {
       }
 
       final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/open-matches$query');
-      final res = await http.get(uri).timeout(const Duration(seconds: 8));
+      http.Response res;
+      try {
+        res = await http.get(uri).timeout(const Duration(seconds: 20));
+      } catch (_) {
+        // Cold start retry once
+        await Future.delayed(const Duration(milliseconds: 1000));
+        res = await http.get(uri).timeout(const Duration(seconds: 20));
+      }
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);

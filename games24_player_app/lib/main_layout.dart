@@ -91,35 +91,35 @@ class _MainLayoutState extends State<MainLayout> {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => LocationManager.showLocationPicker(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDF4),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFBBF7D0)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF154D36)),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            loc,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF154D36),
-                            ),
-                            overflow: TextOverflow.ellipsis,
+              GestureDetector(
+                onTap: () => LocationManager.showLocationPicker(context),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 160),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF154D36)),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          loc,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF154D36),
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFF154D36)),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFF154D36)),
+                    ],
                   ),
                 ),
               ),

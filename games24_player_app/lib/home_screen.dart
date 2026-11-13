@@ -12,7 +12,9 @@ import 'package:games24_player_app/booking_manager.dart';
 import 'package:games24_player_app/match_scorecard_screen.dart';
 import 'package:games24_player_app/match_score_manager.dart';
 import 'package:games24_player_app/match_schedule_screen.dart';
+import 'package:games24_player_app/booking_qr_pass_modal.dart';
 import 'package:games24_player_app/location_manager.dart';
+import 'package:games24_player_app/core/widgets/turf_card_carousel.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
@@ -75,14 +77,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
       List<String> sports = [];
       if (turf['sports'] is List) {
-        sports = (turf['sports'] as List).map((s) => s.toString().toLowerCase()).toList();
+        sports = (turf['sports'] as List).map((s) => s.toString().toLowerCase().trim()).toList();
       } else if (turf['sports'] != null) {
         sports = turf['sports']
             .toString()
             .toLowerCase()
             .split(RegExp(r'[,•|/]'))
             .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
             .toList();
+      }
+
+      // Check real courts for dedicated court sports
+      final rawCourts = (turf['courts'] is List) ? turf['courts'] as List : [];
+      for (final c in rawCourts) {
+        if (c is Map) {
+          final cName = c['name']?.toString().trim() ?? '';
+          final isMock = RegExp(r'^(Cricket|Football|Pickle ball|Badminton)\s+Court\s+\d+$', caseSensitive: false).hasMatch(cName);
+          if (isMock) continue;
+
+          if (c['sports'] is List) {
+            for (final cs in c['sports']) {
+              final str = cs.toString().toLowerCase().trim();
+              if (str.isNotEmpty && !sports.contains(str)) sports.add(str);
+            }
+          }
+          if (c['sport'] != null) {
+            for (final cs in c['sport'].toString().toLowerCase().split(RegExp(r'[,•|/]'))) {
+              final str = cs.trim();
+              if (str.isNotEmpty && !sports.contains(str)) sports.add(str);
+            }
+          }
+        }
+      }
+
+      // Every sports turf automatically supports Cricket & Football on the main pitch
+      if (!sports.any((s) => s.contains('cricket'))) {
+        sports.add('cricket');
+      }
+      if (!sports.any((s) => s.contains('football') || s.contains('soccer'))) {
+        sports.add('football');
       }
 
       // 1. Search Query filter
@@ -98,16 +132,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 2. Sport Filter (from Filter sheet or Category selection)
       if (_filterSport != 'All') {
-        final target = _filterSport.toLowerCase();
-        final matches = sports.any((s) {
-          final sLower = s.toLowerCase();
-          return sLower.contains(target) ||
-              target.contains(sLower) ||
-              (target == 'cricket' && sLower.contains('box cricket')) ||
-              (target == 'football' && sLower.contains('soccer')) ||
-              (target.contains('pickle') && sLower.contains('pickle'));
-        });
-        if (!matches) return false;
+        final target = _filterSport.toLowerCase().trim();
+        final isCricketTarget = target == 'cricket' || target.contains('cricket');
+        final isFootballTarget = target == 'football' || target.contains('football') || target.contains('soccer');
+
+        if (isCricketTarget) {
+          // All standard turfs support Cricket!
+          final matches = sports.any((s) => s.contains('cricket'));
+          if (!matches) return false;
+        } else if (isFootballTarget) {
+          // All standard turfs support Football!
+          final matches = sports.any((s) => s.contains('football') || s.contains('soccer'));
+          if (!matches) return false;
+        } else {
+          // Special sports like Pickle ball, Badminton, Tennis, Basketball, etc:
+          // Must have explicit court or configured sport for that venue!
+          final matches = sports.any((s) {
+            final sLower = s.toLowerCase();
+            return sLower.contains(target) ||
+                target.contains(sLower) ||
+                (target.contains('pickle') && sLower.contains('pickle'));
+          });
+          if (!matches) return false;
+        }
       }
 
       // 3. Price Filter
@@ -351,35 +398,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildCategories(),
-                  const SizedBox(height: 32),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _buildSectionHeader(
-                      'Upcoming Matches',
-                      'View Schedule',
-                      hasLiveBadge: activeBookings.any((b) => BookingManager.isMatchStarted(
-                        dateStr: (b['date'] ?? '').toString(),
-                        timeSlot: (b['timeSlot'] ?? '').toString(),
-                      )),
-                      onActionTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MatchScheduleScreen(),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildUpcomingMatches(activeBookings),
-
-                  // Red circled section: Only shown if the user has an active booking. If no active bookings, completely removed with no extra blank space.
+                  // Unified Active Bookings section: Only shown if the user has an active booking.
                   if (activeBookings.isNotEmpty) ...[
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: _buildSectionHeader(
                         'Your Active Bookings',
-                        'History',
+                        'View All',
+                        hasLiveBadge: activeBookings.any((b) => BookingManager.isMatchStarted(
+                          dateStr: (b['date'] ?? '').toString(),
+                          timeSlot: (b['timeSlot'] ?? '').toString(),
+                        )),
                         onActionTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -1361,7 +1391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1370,7 +1400,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               spacing: 6,
                               runSpacing: 4,
                               crossAxisAlignment: WrapCrossAlignment.center,
-                              alignment: WrapAlignment.spaceBetween,
                               children: [
                                 if (turfName.isNotEmpty)
                                   Text(
@@ -1382,50 +1411,43 @@ class _HomeScreenState extends State<HomeScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                Wrap(
-                                  spacing: 4,
-                                  runSpacing: 4,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    if (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2.5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFFF1F2),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: const Color(0xFFFECDD3)),
-                                        ),
-                                        child: const Text(
-                                          'OPEN MATCH',
-                                          style: TextStyle(
-                                            fontSize: 9.5,
-                                            color: Color(0xFFBE123C),
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 7,
-                                        vertical: 2.5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.shade100,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        status,
-                                        style: TextStyle(
-                                          fontSize: 9.5,
-                                          color: Colors.green.shade800,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                if (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFF1F2),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFFECDD3)),
+                                    ),
+                                    child: const Text(
+                                      'OPEN MATCH',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: Color(0xFFBE123C),
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 2.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade100,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    status,
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      color: Colors.green.shade800,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1464,102 +1486,152 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      // Prominent Top-Right View Details Arrow Icon Button
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyBookingsScreen(),
+                            ),
+                          ).then((_) => BookingManager().fetchBookings());
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0FDF4),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFDCFCE7), width: 1.2),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 13,
+                            color: Color(0xFF154D36),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   const Divider(height: 1, color: Color(0xFFF3F4F6)),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ValueListenableBuilder<int>(
-                        valueListenable: MatchScoreManager().liveStateNotifier,
-                        builder: (context, _, child) {
-                          final bId = (booking['id'] ?? 'BK-1').toString();
-                          final liveState = MatchScoreManager().getLiveStateSync(bId);
-                          final results = MatchScoreManager().getAllResultsForBooking(bId);
-                          final isLive = liveState != null && liveState.isLive;
-                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
-                            dateStr: dateStr,
-                            timeSlot: timeSlot,
-                          );
-                          final isSlotActive = remainingSlotMins > 0;
-                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
-                          final isSlotFinished = isCompleted || (!isSlotActive && results.isNotEmpty);
-
-                          Color btnColor;
-                          IconData btnIcon;
-                          String btnText;
-                          int targetTab;
-                          bool startNew = false;
-
-                          if (isLive) {
-                            btnColor = const Color(0xFFDC2626);
-                            btnIcon = Icons.play_circle_fill_rounded;
-                            btnText = 'Continue Live Match (${liveState.liveScoreSummary})';
-                            targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
-                          } else if (canPlayNext) {
-                            btnColor = const Color(0xFFDC2626);
-                            btnIcon = Icons.flash_on_rounded;
-                            btnText = 'Play Match #${results.length + 1} (~${remainingSlotMins}m left)';
-                            targetTab = 1;
-                            startNew = true;
-                          } else if (isSlotFinished) {
-                            btnColor = const Color(0xFF154D36);
-                            btnIcon = Icons.emoji_events_rounded;
-                            btnText = results.length > 1
-                                ? 'Match Summaries (${results.length})'
-                                : 'View Scorecard';
-                            targetTab = 3;
-                          } else {
-                            btnColor = const Color(0xFF154D36);
-                            btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
-                            btnText = (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
-                                ? (isStarted ? 'Scorecard & Toss' : 'Challenge Squad')
-                                : (isStarted ? 'Scorecard & Toss' : 'Team Lineup');
-                            targetTab = 0;
-                          }
-
-                          return ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MatchScorecardScreen(
-                                    bookingId: bId,
-                                    turfName: turfName,
-                                    sport: (booking['sport'] ?? 'Cricket').toString(),
-                                    date: dateStr,
-                                    timeSlot: timeSlot,
-                                    initialTab: targetTab,
-                                    startNewMatchImmediately: startNew,
-                                    isOpenMatch: booking['isOpenMatch'] == true ||
-                                        booking['is_open_match'] == true,
-                                  ),
-                                ),
-                              );
-                            },
-                            icon: Icon(btnIcon, size: 16),
-                            label: Text(
-                              btnText,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      // 1. Entry Pass Button (Opens Ticket QR Code)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => BookingQrPassModal.show(context, booking),
+                          icon: const Icon(
+                            Icons.qr_code_2_rounded,
+                            size: 17,
+                            color: Color(0xFF86EFAC),
+                          ),
+                          label: const Text(
+                            'Entry Pass',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
                             ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: btnColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              elevation: (isLive || canPlayNext) ? 2 : 0,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F2B1E),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       ),
-                      const Text(
-                        'View Booking →',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF154D36),
-                          fontWeight: FontWeight.w600,
+                      const SizedBox(width: 8),
+                      // 2. Lineup / Match / Scorecard Button
+                      Expanded(
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: MatchScoreManager().liveStateNotifier,
+                          builder: (context, _, child) {
+                            final bId = (booking['id'] ?? 'BK-1').toString();
+                            final liveState = MatchScoreManager().getLiveStateSync(bId);
+                            final results = MatchScoreManager().getAllResultsForBooking(bId);
+                            final isLive = liveState != null && liveState.isLive;
+                            final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                              dateStr: dateStr,
+                              timeSlot: timeSlot,
+                            );
+                            final isSlotActive = remainingSlotMins > 0;
+                            final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                            final isSlotFinished = isCompleted || (!isSlotActive && results.isNotEmpty);
+
+                            Color btnColor;
+                            IconData btnIcon;
+                            String btnText;
+                            int targetTab;
+                            bool startNew = false;
+
+                            if (isLive) {
+                              btnColor = const Color(0xFFDC2626);
+                              btnIcon = Icons.play_circle_fill_rounded;
+                              btnText = 'Live Match';
+                              targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
+                            } else if (canPlayNext) {
+                              btnColor = const Color(0xFFDC2626);
+                              btnIcon = Icons.flash_on_rounded;
+                              btnText = 'Next Match';
+                              targetTab = 1;
+                              startNew = true;
+                            } else if (isSlotFinished) {
+                              btnColor = const Color(0xFF154D36);
+                              btnIcon = Icons.emoji_events_rounded;
+                              btnText = 'Scorecard';
+                              targetTab = 3;
+                            } else {
+                              btnColor = const Color(0xFF154D36);
+                              btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
+                              btnText = (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
+                                  ? (isStarted ? 'Scorecard' : 'Squad')
+                                  : (isStarted ? 'Scorecard' : 'Team Lineup');
+                              targetTab = 0;
+                            }
+
+                            return ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MatchScorecardScreen(
+                                      bookingId: bId,
+                                      turfName: turfName,
+                                      sport: (booking['sport'] ?? 'Cricket').toString(),
+                                      date: dateStr,
+                                      timeSlot: timeSlot,
+                                      initialTab: targetTab,
+                                      startNewMatchImmediately: startNew,
+                                      isOpenMatch: booking['isOpenMatch'] == true ||
+                                          booking['is_open_match'] == true,
+                                    ),
+                                  ),
+                                );
+                              },
+                              icon: Icon(btnIcon, size: 16),
+                              label: Text(
+                                btnText,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: btnColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: (isLive || canPlayNext) ? 2 : 0,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -2260,9 +2332,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ? (turf['photoUrls'] as List).map((e) => e.toString()).toList()
             : [turf['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
 
-        final sportsStr = (turf['sports'] is List)
-            ? (turf['sports'] as List).join(' • ')
-            : (turf['sports']?.toString() ?? 'Cricket • Football • Pickle ball • Badminton');
+        final List<String> sportsFromTurf = (turf['sports'] is List && (turf['sports'] as List).isNotEmpty)
+            ? (turf['sports'] as List).map((e) => e.toString()).toList()
+            : ['Cricket', 'Football'];
+
+        final sportsStr = sportsFromTurf.join(' • ');
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -2282,6 +2356,8 @@ class _HomeScreenState extends State<HomeScreen> {
             reviews: turf['reviews']?.toString() ?? '128',
             sports: sportsStr,
             sportsList: (turf['sportsList'] is List) ? (turf['sportsList'] as List) : null,
+            courts: (turf['courts'] is List) ? (turf['courts'] as List) : null,
+            turf: turf,
             tags: tags,
           ),
         );
@@ -2303,6 +2379,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required String reviews,
     required String sports,
     List<dynamic>? sportsList,
+    List<dynamic>? courts,
+    Map<String, dynamic>? turf,
     required List<String> tags,
   }) {
     return Container(
@@ -2320,86 +2398,100 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Header
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: Image.network(
-                  imageUrl,
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    height: 180,
-                    color: Colors.grey.shade200,
-                    child: const Icon(
-                      Icons.sports_soccer,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
+          // Image Header with Multi-Photo Carousel
+          TurfCardCarousel(
+            photoUrls: photoUrls,
+            fallbackImageUrl: imageUrl,
+            height: 180,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            topTrailing: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
               ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        ' ($reviews)',
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-              Positioned(
-                bottom: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    sports,
+              child: Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    rating,
                     style: const TextStyle(
-                      fontSize: 12,
                       fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                   ),
+                  Text(
+                    ' ($reviews)',
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            bottomLeading: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                sports,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF154D36),
                 ),
               ),
-            ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingScreen(
+                    turfId: turfId,
+                    turfName: name,
+                    imageUrl: imageUrl,
+                    photoUrls: photoUrls,
+                    amenities: amenities,
+                    openingTime: openingTime,
+                    closingTime: closingTime,
+                    price: price,
+                    location: location,
+                    sports: sports.split(' • '),
+                    sportsList: sportsList,
+                    courts: courts,
+                    turf: turf,
+                    initialSport: (_filterSport != 'All') ? _filterSport : 'Football',
+                  ),
+                ),
+              );
+            },
           ),
 
           // Details
@@ -2518,6 +2610,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               location: location,
                               sports: sports.split(' • '),
                               sportsList: sportsList,
+                              courts: courts,
+                              turf: turf,
+                              initialSport: (_filterSport != 'All') ? _filterSport : 'Football',
                             ),
                           ),
                         );

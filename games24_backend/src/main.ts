@@ -13,7 +13,20 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key', 'Accept', 'Origin', 'X-Requested-With'],
+    credentials: true,
+  });
+
+  // Security: Payload size limits & Global Validation
+  app.use(function (req: any, res: any, next: any) {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
+  });
 
   app.useStaticAssets(uploadsDir, {
     prefix: '/uploads/',

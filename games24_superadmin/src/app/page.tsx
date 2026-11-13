@@ -20,6 +20,7 @@ import {
   toggleTournamentHold,
   deleteVerifiedAdmin,
   deleteTournament,
+  deploySuperAdminTournament,
   BACKEND_URL,
 } from '@/lib/api';
 import {
@@ -53,6 +54,7 @@ import {
   FileCheck2,
   CalendarDays,
   LayoutDashboard,
+  Image as ImageIcon,
   Layers,
   ChevronRight,
   Sparkles,
@@ -111,6 +113,12 @@ export default function SuperAdminDashboard() {
   const showToast = (text: string, type: 'success' | 'error' = 'success') => {
     setToastMessage({ text, type });
     setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const getFullFileUrl = (url: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
   };
 
   // Load Overview Data
@@ -324,20 +332,15 @@ export default function SuperAdminDashboard() {
       return;
     }
     try {
-      const res = await fetch(`${BACKEND_URL}/super-admin/tournaments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newTournTitle,
-          sport: newTournSport,
-          venueName: newTournVenue,
-          date: newTournDate,
-          entryFee: Number(newTournEntryFee) || 0,
-          prizePool: newTournPrize,
-          maxTeams: 16,
-        }),
+      await deploySuperAdminTournament({
+        title: newTournTitle,
+        sport: newTournSport,
+        venueName: newTournVenue,
+        date: newTournDate,
+        entryFee: Number(newTournEntryFee) || 0,
+        prizePool: newTournPrize,
+        maxTeams: 16,
       });
-      if (!res.ok) throw new Error('Failed to create tournament');
       showToast(`Tournament "${newTournTitle}" deployed successfully!`);
       setShowCreateTournModal(false);
       setNewTournTitle('');
@@ -889,6 +892,11 @@ export default function SuperAdminDashboard() {
                           {reg.trackingCode || `#REG-${reg.id}`}
                         </span>
                         <h3 className="text-sm font-bold text-white">{reg.venueName}</h3>
+                        {reg.isBranch && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                            🏢 New Branch Request
+                          </span>
+                        )}
                         {reg.status === 'PENDING_APPROVAL' && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
@@ -906,6 +914,12 @@ export default function SuperAdminDashboard() {
                         <span>Owner: <strong className="text-slate-300">{reg.ownerName}</strong></span>
                         <span className="text-slate-600">•</span>
                         <span className="font-mono">{reg.ownerPhone}</span>
+                        {reg.alternativePhone && (
+                          <>
+                            <span className="text-slate-600">•</span>
+                            <span className="font-mono text-cyan-400">Alt: {reg.alternativePhone}</span>
+                          </>
+                        )}
                         <span className="text-slate-600">•</span>
                         <span>{reg.neighborhoodArea}</span>
                       </p>
@@ -917,6 +931,39 @@ export default function SuperAdminDashboard() {
                         <span className="text-slate-600">•</span>
                         <span>UPI: {reg.upiId || '—'}</span>
                       </div>
+
+                      {/* Venue Photos Preview Strip */}
+                      {reg.photoUrls && reg.photoUrls.length > 0 && (
+                        <div className="flex items-center gap-2 mt-3 overflow-x-auto py-1">
+                          <span className="text-[10px] text-indigo-400 font-mono font-medium flex items-center gap-1 shrink-0">
+                            <ImageIcon className="w-3 h-3" /> {reg.photoUrls.length} Photos:
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {reg.photoUrls.slice(0, 4).map((photoUrl, pIdx) => (
+                              <button
+                                key={pIdx}
+                                type="button"
+                                onClick={() => setSelectedReg(reg)}
+                                className="w-14 h-10 rounded-md overflow-hidden border border-[#232C42] bg-[#161D2F] shrink-0 hover:border-indigo-500/60 transition-all group relative focus:outline-hidden"
+                                title={`View Photo ${pIdx + 1}`}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={getFullFileUrl(photoUrl)}
+                                  alt={`Venue photo ${pIdx + 1}`}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200"
+                                />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                              </button>
+                            ))}
+                            {reg.photoUrls.length > 4 && (
+                              <span className="text-[10px] text-slate-500 font-mono">
+                                +{reg.photoUrls.length - 4}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
