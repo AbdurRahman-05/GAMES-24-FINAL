@@ -139,6 +139,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 1. Live Operating Status & Quick Date Bar
+              _buildVenueHeaderPulseBar(profile, nowFormatted),
+              const SizedBox(height: 14),
+
               if (profile.isSubscriptionEndingSoon) ...[
                 _buildSubscriptionCard(context, profile),
                 const SizedBox(height: 14),
@@ -2470,107 +2474,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Details Card
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildModalDetailRow(
-                        'Customer Name',
-                        booking.customerName,
-                        Icons.person_rounded,
-                      ),
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Phone Number',
-                        booking.customerPhone.isNotEmpty ? booking.customerPhone : 'Not Provided',
-                        Icons.phone_rounded,
-                        trailing: booking.customerPhone.isNotEmpty
-                            ? InkWell(
-                                onTap: () => ToastUtils.showSuccess(
-                                  context,
-                                  'Calling ${booking.customerName}: ${booking.customerPhone}',
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF154D36).withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.call_rounded, size: 10.5, color: Color(0xFF154D36)),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Call',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w800,
-                                          color: Color(0xFF154D36),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Date',
-                        booking.effectiveDate.isNotEmpty ? booking.effectiveDate : (booking.date.isNotEmpty ? booking.date : 'Today'),
-                        Icons.calendar_today_rounded,
-                      ),
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Time Slot',
-                        booking.effectiveTimeSlot,
-                        Icons.access_time_rounded,
-                      ),
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Court / Venue',
-                        booking.courtName,
-                        Icons.stadium_rounded,
-                      ),
-                      if (booking.teamName != null && booking.teamName!.isNotEmpty) ...[
-                        const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                        _buildModalDetailRow(
-                          'Team / Match',
-                          booking.teamName!,
-                          Icons.sports_soccer_rounded,
-                        ),
-                      ],
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Payment Mode',
-                        booking.paymentMethod,
-                        Icons.payment_rounded,
-                      ),
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Amount',
-                        '₹${booking.amount.toInt()}',
-                        Icons.currency_rupee_rounded,
-                        valueColor: const Color(0xFF154D36),
-                      ),
-                      const Divider(height: 16, color: Color(0xFFE2E8F0)),
-                      _buildModalDetailRow(
-                        'Status',
-                        booking.status,
-                        Icons.verified_rounded,
-                        valueColor: isCancelled
-                            ? const Color(0xFFDC2626)
-                            : (isCompleted ? const Color(0xFF475569) : const Color(0xFF16A34A)),
-                      ),
-                    ],
-                  ),
+                // Matchday Ticket Pass Structure
+                _buildTicketDetailsBox(
+                  context,
+                  booking,
+                  isCompleted: isCompleted,
+                  isCancelled: isCancelled,
                 ),
                 const SizedBox(height: 20),
 
@@ -2659,46 +2568,630 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildModalDetailRow(
-    String label,
-    String value,
-    IconData icon, {
-    Widget? trailing,
-    Color? valueColor,
+  Widget _buildTicketDetailsBox(
+    BuildContext context,
+    TurfBookingHistoryItem booking, {
+    required bool isCompleted,
+    required bool isCancelled,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
+    final sportColor = _getSportColor(booking.sport);
+    final isCheckedIn = booking.status.toLowerCase().contains('check') ||
+        booking.status.toLowerCase() == 'checked in';
+    final isLiveNow = booking.isLiveNow(DateTime.now());
+
+    // Status Pill
+    Color statusBgColor;
+    Color statusTextColor;
+    String statusDisplay;
+    IconData statusIcon;
+
+    if (isCancelled) {
+      statusBgColor = const Color(0xFFFEE2E2);
+      statusTextColor = const Color(0xFFDC2626);
+      statusDisplay = 'CANCELLED';
+      statusIcon = Icons.cancel_outlined;
+    } else if (isCompleted) {
+      statusBgColor = const Color(0xFFF1F5F9);
+      statusTextColor = const Color(0xFF475569);
+      statusDisplay = 'COMPLETED ✓';
+      statusIcon = Icons.check_circle_outline_rounded;
+    } else if (isCheckedIn) {
+      statusBgColor = const Color(0xFFDCFCE7);
+      statusTextColor = const Color(0xFF15803D);
+      statusDisplay = 'CHECKED IN 🟢';
+      statusIcon = Icons.verified_rounded;
+    } else if (isLiveNow) {
+      statusBgColor = const Color(0xFFDCFCE7);
+      statusTextColor = const Color(0xFF15803D);
+      statusDisplay = 'LIVE NOW 🟢';
+      statusIcon = Icons.sensors_rounded;
+    } else {
+      statusBgColor = const Color(0xFFEFF6FF);
+      statusTextColor = const Color(0xFF1D4ED8);
+      statusDisplay = 'CONFIRMED ✓';
+      statusIcon = Icons.check_circle_rounded;
+    }
+
+    final dateStr = booking.effectiveDate.isNotEmpty
+        ? booking.effectiveDate
+        : (booking.date.isNotEmpty ? booking.date : 'Today');
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF154D36).withValues(alpha: 0.06),
+            blurRadius: 16,
+            spreadRadius: 1,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(19),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(icon, size: 14, color: const Color(0xFF64748B)),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 11.5,
-                color: Color(0xFF64748B),
-                fontWeight: FontWeight.w600,
+            // 1. TICKET HEADER STUB (Emerald Sports Pass Banner)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _getSportEmoji(booking.sport),
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'OFFICIAL MATCH PASS',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                            color: Color(0xFF86EFAC),
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          '${booking.sport} • ${booking.courtName}',
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFDE68A)),
+                    ),
+                    child: Text(
+                      booking.id,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF92400E),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 2. TICKET BODY: ATTENDEE & FIXTURE
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Customer & Contact Row
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: sportColor.withValues(alpha: 0.12),
+                        child: Text(
+                          booking.customerName.isNotEmpty
+                              ? booking.customerName[0].toUpperCase()
+                              : 'P',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: sportColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              booking.customerName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              booking.customerPhone.isNotEmpty
+                                  ? booking.customerPhone
+                                  : 'Contact not provided',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (booking.customerPhone.isNotEmpty)
+                        InkWell(
+                          onTap: () {
+                            ToastUtils.showSuccess(
+                              context,
+                              'Calling ${booking.customerName}: ${booking.customerPhone}',
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFBBF7D0)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.call_rounded,
+                                  size: 13,
+                                  color: Color(0xFF15803D),
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Call',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF15803D),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Prominent Fixture Card (Date & Time Ticket Stub)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      children: [
+                        // Date column
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(7),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.calendar_today_rounded,
+                                  size: 15,
+                                  color: Color(0xFF154D36),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'DATE',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      dateStr,
+                                      style: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF0F172A),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Vertical dividing line
+                        Container(
+                          width: 1,
+                          height: 32,
+                          color: const Color(0xFFCBD5E1),
+                          margin: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        // Time column
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(7),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.access_time_rounded,
+                                  size: 15,
+                                  color: Color(0xFF154D36),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'TIME SLOT',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                        color: Color(0xFF94A3B8),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      booking.effectiveTimeSlot,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF154D36),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Team / Open Match challenge pill if applicable
+                  if (booking.teamName != null && booking.teamName!.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF1F2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFECDD3)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.sports_mma_rounded,
+                            size: 14,
+                            color: Color(0xFFBE123C),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'TEAM MATCH: ',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFFBE123C),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              booking.teamName!,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF9F1239),
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // 3. AUTHENTIC TICKET PERFORATION LINE WITH SIDE NOTCHES
+            SizedBox(
+              height: 22,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Dashed tear line across the middle
+                  Positioned.fill(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Center(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            const dashWidth = 5.0;
+                            const dashSpace = 4.0;
+                            final dashCount = (constraints.constrainWidth() /
+                                    (dashWidth + dashSpace))
+                                .floor();
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(
+                                dashCount,
+                                (_) => const SizedBox(
+                                  width: dashWidth,
+                                  height: 1.5,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFCBD5E1),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Left semicircular punch notch
+                  Positioned(
+                    left: -1,
+                    child: Container(
+                      width: 12,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(11),
+                        ),
+                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+                      ),
+                    ),
+                  ),
+                  // Right semicircular punch notch
+                  Positioned(
+                    right: -1,
+                    child: Container(
+                      width: 12,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(11),
+                        ),
+                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 4. TICKET LOWER STUB: PAYMENT, AMOUNT & BARCODE
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+              color: const Color(0xFFFAFAFA),
+              child: Column(
+                children: [
+                  // Payment mode & Amount Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'PAYMENT MODE',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                booking.paymentMethod.toUpperCase().contains('CASH')
+                                    ? Icons.payments_rounded
+                                    : Icons.account_balance_wallet_rounded,
+                                size: 14,
+                                color: const Color(0xFF475569),
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                booking.paymentMethod,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF334155),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'TOTAL FARE',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '₹${booking.amount.toInt()}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF154D36),
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Status Pill & Verification Barcode
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusBgColor,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: statusTextColor.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(statusIcon, size: 13, color: statusTextColor),
+                            const SizedBox(width: 5),
+                            Text(
+                              statusDisplay,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: statusTextColor,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Decorative Optical Barcode Graphic
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _buildDecorativeBarcode(height: 18),
+                          const SizedBox(height: 2),
+                          Text(
+                            '* ${booking.id} *',
+                            style: const TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'monospace',
+                              letterSpacing: 1.5,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(width: 8),
-        Flexible(
-          child: trailing ??
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: valueColor ?? const Color(0xFF0F172A),
-                ),
-                textAlign: TextAlign.end,
-                overflow: TextOverflow.ellipsis,
-              ),
-        ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildDecorativeBarcode({double height = 18}) {
+    const barWidths = [
+      2.0, 1.0, 3.0, 1.5, 4.0, 1.0, 2.5, 1.5, 3.5, 1.0, 2.0, 4.0, 1.5, 2.5, 1.0, 3.0, 1.5, 2.0
+    ];
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: barWidths.map((w) {
+        return Container(
+          width: w,
+          height: height,
+          margin: const EdgeInsets.symmetric(horizontal: 1.0),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(0.5),
+          ),
+        );
+      }).toList(),
     );
   }
 
