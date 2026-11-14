@@ -1668,39 +1668,16 @@ class _TurfOwnerProfileScreenState
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          'GAMES24 VENUE LICENSE',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 0.8,
-                                            color: Colors.white.withValues(alpha: 0.95),
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                        decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(4),
-                                          border: Border.all(color: statusColor.withValues(alpha: 0.5)),
-                                        ),
-                                        child: Text(
-                                          isActive ? (isEndingSoon ? 'EXPIRING' : 'ACTIVE') : 'EXPIRED',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 0.4,
-                                            color: statusColor,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                  Text(
+                                    'GAMES24 VENUE LICENSE',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.8,
+                                      color: Colors.white.withValues(alpha: 0.95),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
