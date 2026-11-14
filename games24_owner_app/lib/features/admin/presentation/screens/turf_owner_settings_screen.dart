@@ -113,8 +113,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF154D36),
                   bgColor: const Color(0xFFDCFCE7),
                   title: 'Edit Venue & Owner Profile',
-                  subtitle:
-                      '${profile.ownerName.isNotEmpty ? profile.ownerName : 'Owner'} • ${profile.ownerPhone}',
                   onTap: () => _showEditProfileDialog(profile),
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -123,9 +121,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFFB45309),
                   bgColor: const Color(0xFFFEF3C7),
                   title: 'Operating Timings & Tariffs',
-                  subtitle: profile.openingTime == '24 Hours'
-                      ? 'Open 24 Hours • ₹${profile.dayRate.toInt()}/hr'
-                      : '${profile.openingTime} - ${profile.closingTime} • ₹${profile.dayRate.toInt()}/hr',
                   onTap: () => _showEditTimingsDialog(profile),
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -134,8 +129,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF334155),
                   bgColor: const Color(0xFFF1F5F9),
                   title: 'Turf Specifications & Amenities',
-                  subtitle:
-                      '${profile.facilities.length} amenities • Lighting, surface, pitch details',
                   onTap: _showEditTurfDialog,
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -144,8 +137,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF047857),
                   bgColor: const Color(0xFFECFDF5),
                   title: 'Monthly Revenue Target (Goal)',
-                  subtitle:
-                      'Target ${_formatTargetLabel(profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0)} • Tracked in Dashboard & Profile',
                   onTap: () => _showEditMonthlyTargetDialog(profile),
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -154,8 +145,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF0369A1),
                   bgColor: const Color(0xFFE0F2FE),
                   title: 'Add New Sport Offering',
-                  subtitle:
-                      '${profile.sports.length} sports listed • Set hourly tariffs',
                   onTap: _showAddSportDialog,
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -164,8 +153,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF6D28D9),
                   bgColor: const Color(0xFFEDE9FE),
                   title: 'Add Arena / Court',
-                  subtitle:
-                      '${profile.courts.length} arenas configured • Add new pitch or lane',
                   onTap: () => _showAddVenueCourtDialog(profile),
                   isLast: true,
                 ),
@@ -197,7 +184,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF15803D),
                   bgColor: const Color(0xFFDCFCE7),
                   title: 'Gate Pass QR Scanner',
-                  subtitle: 'Quick scanner to validate player booking vouchers',
                   onTap: () => context.push('/admin/qr-scanner'),
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -206,8 +192,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFFCA8A04),
                   bgColor: const Color(0xFFFEF9C3),
                   title: 'Games24 Platform License & Invoices',
-                  subtitle:
-                      'Renews: ${profile.subscriptionRenewDate} • ₹1,180/mo (GST included)',
                   onTap: () => _showSubscriptionPaymentBottomSheet(profile),
                   isLast: true,
                 ),
@@ -239,8 +223,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF0F766E),
                   bgColor: const Color(0xFFCCFBF1),
                   title: 'KYC & Tax Identity Records',
-                  subtitle:
-                      'Aadhaar, PAN, GSTIN & Bank Account • Verified',
                   onTap: () => _showKycDetailsBottomSheet(profile),
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
@@ -249,8 +231,6 @@ class _TurfOwnerSettingsScreenState
                   accentColor: const Color(0xFF1D4ED8),
                   bgColor: const Color(0xFFDBEAFE),
                   title: 'Booking History & Audit Archive',
-                  subtitle:
-                      '${profile.bookingHistory.length} total customer bookings logged',
                   onTap: () => _showBookingArchiveBottomSheet(profile),
                   isLast: true,
                 ),
@@ -298,10 +278,6 @@ class _TurfOwnerSettingsScreenState
                       color: Color(0xFF0F172A),
                     ),
                   ),
-                  subtitle: const Text(
-                    'Receive live alerts for new slots and payments',
-                    style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
-                  ),
                   value: _pushNotifications,
                   onChanged: (val) {
                     setState(() => _pushNotifications = val);
@@ -330,10 +306,6 @@ class _TurfOwnerSettingsScreenState
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF0F172A),
                     ),
-                  ),
-                  subtitle: const Text(
-                    'Play sound confirmation on gate barcode check-in',
-                    style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
                   ),
                   value: _audioCheckInAlerts,
                   onChanged: (val) {
@@ -485,7 +457,6 @@ class _TurfOwnerSettingsScreenState
     required Color accentColor,
     required Color bgColor,
     required String title,
-    required String subtitle,
     required VoidCallback onTap,
     bool isLast = false,
   }) {
@@ -509,29 +480,13 @@ class _TurfOwnerSettingsScreenState
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 1),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF64748B),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                ),
               ),
             ),
             const Icon(Icons.arrow_forward_ios_rounded,
