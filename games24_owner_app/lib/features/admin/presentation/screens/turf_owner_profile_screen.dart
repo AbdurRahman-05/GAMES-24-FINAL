@@ -3642,7 +3642,7 @@ class _TurfOwnerProfileScreenState
                               color: const Color(0xFF34D399).withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: const Text('🎯', style: TextStyle(fontSize: 15)),
+                            child: const Icon(Icons.track_changes_rounded, size: 16, color: Color(0xFF34D399)),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -3785,7 +3785,7 @@ class _TurfOwnerProfileScreenState
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Target ${_formatTargetLabel(target)} 🎯',
+                      'Target ${_formatTargetLabel(target)}',
                       style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF4ADE80)),
                     ),
                   ],
@@ -3811,7 +3811,7 @@ class _TurfOwnerProfileScreenState
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: const Row(
               children: [
-                Text('🎯', style: TextStyle(fontSize: 22)),
+                Icon(Icons.track_changes_rounded, color: AppColors.primary, size: 24),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -3919,7 +3919,7 @@ class _TurfOwnerProfileScreenState
                   Navigator.pop(ctx);
                   ToastUtils.showSuccess(
                     context,
-                    'Monthly target updated to ${_formatTargetLabel(val)}! 🎯',
+                    'Monthly target updated to ${_formatTargetLabel(val)}!',
                   );
                 },
                 child: const Text('Save Target'),

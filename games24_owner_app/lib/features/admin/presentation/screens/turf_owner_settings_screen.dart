@@ -2229,7 +2229,7 @@ class _TurfOwnerSettingsScreenState
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: const Row(
               children: [
-                Text('🎯', style: TextStyle(fontSize: 22)),
+                Icon(Icons.track_changes_rounded, color: AppColors.primary, size: 24),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -2337,7 +2337,7 @@ class _TurfOwnerSettingsScreenState
                   Navigator.pop(ctx);
                   ToastUtils.showSuccess(
                     context,
-                    'Monthly target updated to ${_formatTargetLabel(val)}! 🎯',
+                    'Monthly target updated to ${_formatTargetLabel(val)}!',
                   );
                 },
                 child: const Text('Save Target'),
