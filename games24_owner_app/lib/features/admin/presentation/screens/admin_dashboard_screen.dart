@@ -1222,14 +1222,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '$targetPct% of Monthly Target Met',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white.withValues(alpha: 0.7),
+                          Expanded(
+                            child: Text(
+                              '$targetPct% of Monthly Target Met',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 6),
                           InkWell(
                             onTap: () => _showEditMonthlyTargetDialog(profile),
                             borderRadius: BorderRadius.circular(6),

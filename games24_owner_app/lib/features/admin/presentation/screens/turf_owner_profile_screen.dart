@@ -988,14 +988,26 @@ class _TurfOwnerProfileScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          children: [
-            Icon(icon, color: AppColors.primary, size: 18),
-            const SizedBox(width: 8),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary)),
-          ],
+        Expanded(
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
-        ?trailing,
+        if (trailing != null) ...[
+          const SizedBox(width: 8),
+          trailing,
+        ],
       ],
     );
   }
@@ -1726,32 +1738,40 @@ class _TurfOwnerProfileScreenState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.av_timer_rounded,
-                                  size: 14,
-                                  color: statusColor,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  days > 0 ? '$days Days Remaining' : 'Expired 0 Days Left',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.av_timer_rounded,
+                                    size: 14,
+                                    color: statusColor,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      days > 0 ? '$days Days Left' : 'Expired',
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 6),
                             Flexible(
                               child: Text(
                                 'Renews: ${profile.subscriptionRenewDate}',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white.withValues(alpha: 0.6),
                                 ),
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -1793,9 +1813,9 @@ class _TurfOwnerProfileScreenState
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '₹1,180/mo total • Zero Player Fees',
+                              '₹1,180/mo • Zero Player Fees',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 9.5,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white.withValues(alpha: 0.5),
                               ),
@@ -1805,12 +1825,12 @@ class _TurfOwnerProfileScreenState
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       InkWell(
                         onTap: () => _showSubscriptionPaymentBottomSheet(profile),
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: isActive
@@ -1831,12 +1851,12 @@ class _TurfOwnerProfileScreenState
                             children: [
                               Icon(
                                 isActive ? Icons.receipt_long_rounded : Icons.bolt_rounded,
-                                size: 14,
+                                size: 13,
                                 color: Colors.white,
                               ),
-                              const SizedBox(width: 5),
+                              const SizedBox(width: 4),
                               Text(
-                                isActive ? 'License & Invoices' : 'Pay ₹1,180 & Go Live',
+                                isActive ? 'Invoices' : 'Pay ₹1,180',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
@@ -2124,12 +2144,15 @@ class _TurfOwnerProfileScreenState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Listing Plan Breakdown',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
+                            const Flexible(
+                              child: Text(
+                                'Listing Plan Breakdown',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Container(
@@ -2285,21 +2308,28 @@ class _TurfOwnerProfileScreenState
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.receipt_long_rounded,
-                              color: AppColors.primary, size: 18),
-                          SizedBox(width: 6),
-                          Text(
-                            'Subscription History & Invoices',
-                            style: TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A),
+                      const Expanded(
+                        child: Row(
+                          children: [
+                            Icon(Icons.receipt_long_rounded,
+                                color: AppColors.primary, size: 18),
+                            SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                'Subscription History & Invoices',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F172A),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
@@ -2588,35 +2618,46 @@ class _TurfOwnerProfileScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Text('Sports Supported', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-                    ),
-                    child: Text(
-                      '${profile.sports.length} Offered',
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+              Expanded(
+                child: Row(
+                  children: [
+                    const Flexible(
+                      child: Text(
+                        'Sports Supported',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        '${profile.sports.length} Offered',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 6),
               FilledButton.tonalIcon(
-                icon: const Icon(Icons.add_circle_outline_rounded, size: 15),
-                label: const Text('Add Sport', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                icon: const Icon(Icons.add_circle_outline_rounded, size: 14),
+                label: const Text('Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                   foregroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   visualDensity: VisualDensity.compact,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -2662,9 +2703,9 @@ class _TurfOwnerProfileScreenState
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F766E).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
@@ -2673,22 +2714,25 @@ class _TurfOwnerProfileScreenState
                       child: Text(
                         '${profile.courts.length} Active',
                         style: const TextStyle(
-                          fontSize: 10.5,
+                          fontSize: 10,
                           fontWeight: FontWeight.w800,
                           color: Color(0xFF0F766E),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 6),
               FilledButton.tonalIcon(
-                icon: const Icon(Icons.add_location_alt_outlined, size: 15),
-                label: const Text('Add Court', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                icon: const Icon(Icons.add_location_alt_outlined, size: 14),
+                label: const Text('Add', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF0F766E).withValues(alpha: 0.12),
                   foregroundColor: const Color(0xFF0F766E),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   visualDensity: VisualDensity.compact,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -2724,35 +2768,48 @@ class _TurfOwnerProfileScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  const Text('Amenities & Facilities', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
-                    ),
-                    child: Text(
-                      '${profile.facilities.length} Active',
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+              Expanded(
+                child: Row(
+                  children: [
+                    const Flexible(
+                      child: Text(
+                        'Amenities & Facilities',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        '${profile.facilities.length} Active',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              TextButton.icon(
-                icon: const Icon(Icons.tune_rounded, size: 15),
-                label: const Text('Manage', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                style: TextButton.styleFrom(
+              const SizedBox(width: 6),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.tune_rounded, size: 14),
+                label: const Text('Manage', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                   foregroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 onPressed: () => _showEditAmenitiesDialog(profile),
               ),
@@ -2893,6 +2950,8 @@ class _TurfOwnerProfileScreenState
                               color: Colors.grey.shade600,
                               fontWeight: FontWeight.w500,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -3098,34 +3157,42 @@ class _TurfOwnerProfileScreenState
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              court.sport.isNotEmpty ? court.sport : 'Multi-Sport',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF475569),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                court.sport.isNotEmpty ? court.sport : 'Multi-Sport',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF475569),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              court.surface.isNotEmpty ? court.surface : 'Synthetic Turf',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Text(
+                                court.surface.isNotEmpty ? court.surface : 'Synthetic Turf',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF64748B),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ),
@@ -3431,98 +3498,123 @@ class _TurfOwnerProfileScreenState
           onTap: () => _showEditMonthlyTargetDialog(profile),
           borderRadius: BorderRadius.circular(18),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF34D399).withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF34D399).withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Text('🎯', style: TextStyle(fontSize: 15)),
                           ),
-                          child: const Text('🎯', style: TextStyle(fontSize: 16)),
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'MONTHLY REVENUE TARGET',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.6,
-                                color: Color(0xFFCBD5E1),
-                              ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'MONTHLY TARGET',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                    color: Color(0xFFCBD5E1),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '$pct% Reached • ${remaining > 0 ? "₹${NumberFormat('#,##,###').format(remaining.toInt())} left" : "Goal Met! 🎉"}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: pct >= 100 ? const Color(0xFF4ADE80) : const Color(0xFF86EFAC),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '$pct% Reached • ${remaining > 0 ? "₹${NumberFormat('#,##,###').format(remaining.toInt())} left" : "Goal Achieved! 🎉"}',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: pct >= 100 ? const Color(0xFF4ADE80) : const Color(0xFF86EFAC),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                    FilledButton.tonalIcon(
-                      icon: const Icon(Icons.edit_rounded, size: 14),
-                      label: const Text('Set Target', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    const SizedBox(width: 6),
+                    FilledButton.tonal(
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF34D399).withValues(alpha: 0.18),
                         foregroundColor: const Color(0xFF4ADE80),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                         visualDensity: VisualDensity.compact,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: () => _showEditMonthlyTargetDialog(profile),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.edit_rounded, size: 13),
+                          SizedBox(width: 4),
+                          Text('Set', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          currentRev > 0 ? '₹${NumberFormat('#,##,###').format(currentRev.toInt())}' : '₹0',
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: -0.5,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              currentRev > 0 ? '₹${NumberFormat('#,##,###').format(currentRev.toInt())}' : '₹0',
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
                           ),
-                        ),
-                        const Text(
-                          'Current Month GMV',
-                          style: TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF94A3B8),
+                          const Text(
+                            'Current Month GMV',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF94A3B8),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
                             'Goal: ',
@@ -3531,7 +3623,7 @@ class _TurfOwnerProfileScreenState
                           Text(
                             '₹${NumberFormat('#,##,###').format(target.toInt())}',
                             style: const TextStyle(
-                              fontSize: 13,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                             ),
@@ -3555,10 +3647,15 @@ class _TurfOwnerProfileScreenState
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '${profile.monthTotalBookings} bookings recorded this month',
-                      style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.65), fontWeight: FontWeight.w500),
+                    Expanded(
+                      child: Text(
+                        '${profile.monthTotalBookings} bookings recorded this month',
+                        style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.65), fontWeight: FontWeight.w500),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
+                    const SizedBox(width: 6),
                     Text(
                       'Target ${_formatTargetLabel(target)} 🎯',
                       style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF4ADE80)),
