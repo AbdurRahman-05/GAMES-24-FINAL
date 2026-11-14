@@ -2009,34 +2009,34 @@ class _TurfOwnerProfileScreenState
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF166534).withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.workspace_premium_rounded,
-                            color: Color(0xFF166534), size: 20),
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF166534).withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.workspace_premium_rounded,
+                        color: Color(0xFF166534), size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Partner Subscription & Invoices',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        'Partner Subscription & Invoices',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                    ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
+                    visualDensity: VisualDensity.compact,
                     onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
