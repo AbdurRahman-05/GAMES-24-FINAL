@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -1402,12 +1403,16 @@ class _TurfOwnerProfileScreenState
                 ),
                 _buildHeaderDivider(),
                 Expanded(
-                  child: _buildBentoPod(
-                    icon: Icons.currency_rupee_rounded,
-                    label: 'GMV',
-                    value: profile.revenueBadge.replaceAll(' GMV', ''),
-                    subtitle: 'Month',
-                    color: const Color(0xFFFBBF24),
+                  child: InkWell(
+                    onTap: () => _showEditMonthlyTargetDialog(profile),
+                    borderRadius: BorderRadius.circular(10),
+                    child: _buildBentoPod(
+                      icon: Icons.currency_rupee_rounded,
+                      label: 'GMV',
+                      value: profile.revenueBadge.replaceAll(' GMV', ''),
+                      subtitle: 'Goal ${_formatTargetLabel(profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0)}',
+                      color: const Color(0xFFFBBF24),
+                    ),
                   ),
                 ),
                 _buildHeaderDivider(),
@@ -2290,6 +2295,10 @@ class _TurfOwnerProfileScreenState
       children: [
         // Monthly Platform Subscription Card
         _buildSubscriptionOverviewCard(profile),
+        const SizedBox(height: 16),
+
+        // Monthly Revenue Target & Business Goal Card
+        _buildMonthlyRevenueTargetCard(profile),
         const SizedBox(height: 16),
 
           // Timings & Pricing Summary Card
@@ -3332,6 +3341,329 @@ class _TurfOwnerProfileScreenState
     );
   }
 
+  Widget _buildMonthlyRevenueTargetCard(TurfProfileState profile) {
+    final target = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
+    final currentRev = profile.monthRevenue;
+    final progress = (target > 0 ? (currentRev / target) : 0.0).clamp(0.0, 1.0);
+    final pct = (progress * 100).toInt();
+    final remaining = (target - currentRev).clamp(0.0, double.infinity);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF041910), Color(0xFF0B2F20), Color(0xFF134530)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF34D399).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF059669).withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showEditMonthlyTargetDialog(profile),
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF34D399).withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Text('🎯', style: TextStyle(fontSize: 16)),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'MONTHLY REVENUE TARGET',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.6,
+                                color: Color(0xFFCBD5E1),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$pct% Reached • ${remaining > 0 ? "₹${NumberFormat('#,##,###').format(remaining.toInt())} left" : "Goal Achieved! 🎉"}',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: pct >= 100 ? const Color(0xFF4ADE80) : const Color(0xFF86EFAC),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    FilledButton.tonalIcon(
+                      icon: const Icon(Icons.edit_rounded, size: 14),
+                      label: const Text('Set Target', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF34D399).withValues(alpha: 0.18),
+                        foregroundColor: const Color(0xFF4ADE80),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onPressed: () => _showEditMonthlyTargetDialog(profile),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentRev > 0 ? '₹${NumberFormat('#,##,###').format(currentRev.toInt())}' : '₹0',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const Text(
+                          'Current Month GMV',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text(
+                            'Goal: ',
+                            style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            '₹${NumberFormat('#,##,###').format(target.toInt())}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: progress > 0 ? progress.clamp(0.05, 1.0) : 0.05,
+                    minHeight: 7,
+                    backgroundColor: Colors.white.withValues(alpha: 0.14),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${profile.monthTotalBookings} bookings recorded this month',
+                      style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.65), fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      'Target ${_formatTargetLabel(target)} 🎯',
+                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF4ADE80)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditMonthlyTargetDialog(TurfProfileState profile) {
+    final currentTarget = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
+    final controller = TextEditingController(text: currentTarget.toInt().toString());
+    final quickPresets = [25000, 50000, 75000, 100000, 150000, 200000];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Text('🎯', style: TextStyle(fontSize: 22)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Set Monthly Target',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Set your monthly revenue milestone to track your venue performance and occupancy goals.',
+                    style: TextStyle(fontSize: 12.5, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    decoration: InputDecoration(
+                      labelText: 'Monthly Revenue Target',
+                      prefixText: '₹ ',
+                      prefixStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary),
+                      helperText: 'E.g., 50000 for ₹50k, 100000 for ₹1 Lakh',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                    ),
+                    onChanged: (_) => setDialogState(() {}),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Quick Presets:',
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: quickPresets.map((preset) {
+                      final isSelected = controller.text.trim() == preset.toString();
+                      return InkWell(
+                        onTap: () {
+                          setDialogState(() {
+                            controller.text = preset.toString();
+                            controller.selection = TextSelection.fromPosition(
+                              TextPosition(offset: controller.text.length),
+                            );
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Text(
+                            _formatTargetLabel(preset.toDouble()),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: isSelected ? Colors.white : AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                ),
+                onPressed: () {
+                  final text = controller.text.trim().replaceAll(',', '').replaceAll('₹', '');
+                  final val = double.tryParse(text);
+                  if (val == null || val <= 0) {
+                    ToastUtils.showError(context, 'Please enter a valid target amount');
+                    return;
+                  }
+                  ref.read(turfProfileProvider.notifier).updateMonthlyRevenueTarget(val);
+                  Navigator.pop(ctx);
+                  ToastUtils.showSuccess(
+                    context,
+                    'Monthly target updated to ${_formatTargetLabel(val)}! 🎯',
+                  );
+                },
+                child: const Text('Save Target'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+}
+
+String _formatTargetLabel(double target) {
+  if (target >= 100000) {
+    final lakhs = target / 100000.0;
+    return lakhs == lakhs.roundToDouble()
+        ? '₹${lakhs.toInt()}L'
+        : '₹${lakhs.toStringAsFixed(1)}L';
+  } else if (target >= 1000) {
+    final k = target / 1000.0;
+    return k == k.roundToDouble()
+        ? '₹${k.toInt()}k'
+        : '₹${k.toStringAsFixed(1)}k';
+  }
+  return '₹${target.toInt()}';
 }
 
 class _SportTheme {

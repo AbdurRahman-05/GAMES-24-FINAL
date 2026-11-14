@@ -666,6 +666,7 @@ class TurfProfileState {
   final double monthRevenue;
   final int monthTotalBookings;
   final String revenueBadge;
+  final double monthlyRevenueTarget;
   final int freeSlotsCount;
   final int bookedSlotsCount;
   final int blockedSlotsCount;
@@ -757,6 +758,7 @@ class TurfProfileState {
     this.monthRevenue = 0.0,
     this.monthTotalBookings = 0,
     this.revenueBadge = '₹0 GMV',
+    this.monthlyRevenueTarget = 50000.0,
     this.freeSlotsCount = 0,
     this.bookedSlotsCount = 0,
     this.blockedSlotsCount = 0,
@@ -843,6 +845,7 @@ class TurfProfileState {
     double? monthRevenue,
     int? monthTotalBookings,
     String? revenueBadge,
+    double? monthlyRevenueTarget,
     int? freeSlotsCount,
     int? bookedSlotsCount,
     int? blockedSlotsCount,
@@ -905,6 +908,7 @@ class TurfProfileState {
       monthRevenue: monthRevenue ?? this.monthRevenue,
       monthTotalBookings: monthTotalBookings ?? this.monthTotalBookings,
       revenueBadge: revenueBadge ?? this.revenueBadge,
+      monthlyRevenueTarget: monthlyRevenueTarget ?? this.monthlyRevenueTarget,
       freeSlotsCount: freeSlotsCount ?? this.freeSlotsCount,
       bookedSlotsCount: bookedSlotsCount ?? this.bookedSlotsCount,
       blockedSlotsCount: blockedSlotsCount ?? this.blockedSlotsCount,
@@ -936,6 +940,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   Future<void> _loadFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final savedTarget = prefs.getDouble('owner_monthly_revenue_target');
+      if (savedTarget != null && savedTarget > 0) {
+        state = state.copyWith(monthlyRevenueTarget: savedTarget);
+      }
       final savedJson = prefs.getString('verified_admin_data');
       if (savedJson != null && savedJson.isNotEmpty) {
         final data = jsonDecode(savedJson);
@@ -1307,6 +1315,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
       monthTotalBookings: monthTotalBookings,
       revenueBadge: (dash['revenueBadge'] ?? data['revenueBadge'])?.toString() ?? '₹0 GMV',
+      monthlyRevenueTarget: double.tryParse((dash['monthlyRevenueTarget'] ?? data['monthlyRevenueTarget'])?.toString() ?? '') ?? state.monthlyRevenueTarget,
       freeSlotsCount: dynamicRemainingSlots,
       bookedSlotsCount: activeBookedSlotsCount,
       blockedSlotsCount: blockedSlotsCount,
@@ -1477,6 +1486,15 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     state = state.copyWith(facilities: newFacilities);
   }
 
+  void updateMonthlyRevenueTarget(double target) {
+    state = state.copyWith(monthlyRevenueTarget: target);
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setDouble('owner_monthly_revenue_target', target);
+    }).catchError((e) {
+      debugPrint("Error saving monthly target to prefs: $e");
+    });
+  }
+
   Future<void> _syncCourtsToBackend(List<TurfCourtVenueItem> courts) async {
     final tId = state.turfId;
     if (tId <= 0) return;
@@ -1557,6 +1575,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     double? monthRevenue,
     int? monthTotalBookings,
     String? revenueBadge,
+    double? monthlyRevenueTarget,
     int? freeSlotsCount,
     int? bookedSlotsCount,
     int? blockedSlotsCount,

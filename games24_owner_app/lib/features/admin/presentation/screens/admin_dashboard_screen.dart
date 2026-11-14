@@ -1054,6 +1054,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final dynamicMonthRev = profile.monthRevenue > 0
         ? profile.monthRevenue
         : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
+    final monthTarget = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
+    final targetPct = ((dynamicMonthRev / monthTarget).clamp(0.0, 1.0) * 100).toInt();
 
     final operatingSlots = AppConstants.generateTimeSlots(
       profile.openingTime.isNotEmpty ? profile.openingTime : '05:00 AM',
@@ -1210,7 +1212,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(5),
                         child: LinearProgressIndicator(
-                          value: dynamicMonthRev > 0 ? (dynamicMonthRev / 50000.0).clamp(0.05, 1.0) : 0.05,
+                          value: dynamicMonthRev > 0 ? (dynamicMonthRev / monthTarget).clamp(0.05, 1.0) : 0.05,
                           minHeight: 5.5,
                           backgroundColor: Colors.white.withValues(alpha: 0.15),
                           valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
@@ -1221,19 +1223,38 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${((dynamicMonthRev / 50000.0).clamp(0.0, 1.0) * 100).toInt()}% of Monthly Target Met',
+                            '$targetPct% of Monthly Target Met',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: Colors.white.withValues(alpha: 0.7),
                             ),
                           ),
-                          Text(
-                            'Target ₹50k 🎯',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white.withValues(alpha: 0.85),
+                          InkWell(
+                            onTap: () => _showEditMonthlyTargetDialog(profile),
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Target ${_formatTargetLabel(monthTarget)} 🎯',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.edit_rounded, size: 10, color: Color(0xFF4ADE80)),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -3682,6 +3703,154 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     if (context.mounted) {
       context.go('/login');
     }
+  }
+
+  void _showEditMonthlyTargetDialog(TurfProfileState profile) {
+    final currentTarget = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
+    final controller = TextEditingController(text: currentTarget.toInt().toString());
+    final quickPresets = [25000, 50000, 75000, 100000, 150000, 200000];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Text('🎯', style: TextStyle(fontSize: 22)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Set Monthly Target',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Set your monthly revenue milestone to track your venue performance and occupancy goals.',
+                    style: TextStyle(fontSize: 12.5, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    decoration: InputDecoration(
+                      labelText: 'Monthly Revenue Target',
+                      prefixText: '₹ ',
+                      prefixStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary),
+                      helperText: 'E.g., 50000 for ₹50k, 100000 for ₹1 Lakh',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                      ),
+                    ),
+                    onChanged: (_) => setDialogState(() {}),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Quick Presets:',
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: quickPresets.map((preset) {
+                      final isSelected = controller.text.trim() == preset.toString();
+                      return InkWell(
+                        onTap: () {
+                          setDialogState(() {
+                            controller.text = preset.toString();
+                            controller.selection = TextSelection.fromPosition(
+                              TextPosition(offset: controller.text.length),
+                            );
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Text(
+                            _formatTargetLabel(preset.toDouble()),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: isSelected ? Colors.white : AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                ),
+                onPressed: () {
+                  final text = controller.text.trim().replaceAll(',', '').replaceAll('₹', '');
+                  final val = double.tryParse(text);
+                  if (val == null || val <= 0) {
+                    ToastUtils.showError(context, 'Please enter a valid target amount');
+                    return;
+                  }
+                  ref.read(turfProfileProvider.notifier).updateMonthlyRevenueTarget(val);
+                  Navigator.pop(ctx);
+                  ToastUtils.showSuccess(
+                    context,
+                    'Monthly target updated to ${_formatTargetLabel(val)}! 🎯',
+                  );
+                },
+                child: const Text('Save Target'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  String _formatTargetLabel(double target) {
+    if (target >= 100000) {
+      final lakhs = target / 100000.0;
+      return lakhs == lakhs.roundToDouble()
+          ? '₹${lakhs.toInt()}L'
+          : '₹${lakhs.toStringAsFixed(1)}L';
+    } else if (target >= 1000) {
+      final k = target / 1000.0;
+      return k == k.roundToDouble()
+          ? '₹${k.toInt()}k'
+          : '₹${k.toStringAsFixed(1)}k';
+    }
+    return '₹${target.toInt()}';
   }
 }
 
