@@ -1519,338 +1519,281 @@ class _TurfOwnerProfileScreenState
         ? (isEndingSoon ? const Color(0xFFF59E0B) : const Color(0xFF10B981))
         : const Color(0xFFEF4444);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Executive Stadium License Pass
-        Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isActive
-                  ? [
-                      const Color(0xFF041910),
-                      const Color(0xFF0B2F20),
-                      const Color(0xFF134530),
-                    ]
-                  : [
-                      const Color(0xFF1E0A0A),
-                      const Color(0xFF321313),
-                      const Color(0xFF4A1818),
-                    ],
-            ),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: isActive
-                  ? (isEndingSoon ? const Color(0xFFFBBF24).withValues(alpha: 0.6) : const Color(0xFF34D399).withValues(alpha: 0.5))
-                  : const Color(0xFFF87171).withValues(alpha: 0.5),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (isActive ? const Color(0xFF059669) : Colors.red).withValues(alpha: 0.15),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isActive
+              ? [
+                  const Color(0xFF041910),
+                  const Color(0xFF0B2F20),
+                  const Color(0xFF134530),
+                ]
+              : [
+                  const Color(0xFF1E0A0A),
+                  const Color(0xFF321313),
+                  const Color(0xFF4A1818),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isActive
+              ? (isEndingSoon ? const Color(0xFFFBBF24).withValues(alpha: 0.6) : const Color(0xFF34D399).withValues(alpha: 0.5))
+              : const Color(0xFFF87171).withValues(alpha: 0.5),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isActive ? const Color(0xFF059669) : Colors.red).withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: Stack(
-              children: [
-                Positioned(
-                  right: -20,
-                  top: -20,
-                  child: Icon(
-                    isActive ? Icons.verified_rounded : Icons.shield_outlined,
-                    size: 140,
-                    color: Colors.white.withValues(alpha: 0.04),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Icon(
+                isActive ? Icons.verified_rounded : Icons.shield_outlined,
+                size: 140,
+                color: Colors.white.withValues(alpha: 0.04),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Row: Accredited Seal + Status Tag
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Header Row: Accredited Seal + Status Tag
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.15),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: statusColor.withValues(alpha: 0.4)),
-                                  ),
-                                  child: Icon(
-                                    isActive ? Icons.verified_user_rounded : Icons.gpp_bad_rounded,
-                                    color: statusColor,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: statusColor.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+                              ),
+                              child: Icon(
+                                isActive ? Icons.verified_user_rounded : Icons.gpp_bad_rounded,
+                                color: statusColor,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
                                     children: [
-                                      Row(
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              'GAMES24 VENUE LICENSE',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w900,
-                                                letterSpacing: 0.8,
-                                                color: Colors.white.withValues(alpha: 0.95),
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
+                                      Flexible(
+                                        child: Text(
+                                          'GAMES24 VENUE LICENSE',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.8,
+                                            color: Colors.white.withValues(alpha: 0.95),
                                           ),
-                                          const SizedBox(width: 6),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                            decoration: BoxDecoration(
-                                              color: statusColor.withValues(alpha: 0.2),
-                                              borderRadius: BorderRadius.circular(4),
-                                              border: Border.all(color: statusColor.withValues(alpha: 0.5)),
-                                            ),
-                                            child: Text(
-                                              isActive ? (isEndingSoon ? 'EXPIRING' : 'ACTIVE') : 'EXPIRED',
-                                              style: TextStyle(
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w900,
-                                                letterSpacing: 0.4,
-                                                color: statusColor,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        isActive
-                                            ? 'Verified Operator Accreditation • Live on Player App'
-                                            : 'Listing Paused • Arena hidden from players',
-                                        style: TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.white.withValues(alpha: 0.65),
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(color: statusColor.withValues(alpha: 0.5)),
+                                        ),
+                                        child: Text(
+                                          isActive ? (isEndingSoon ? 'EXPIRING' : 'ACTIVE') : 'EXPIRED',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.4,
+                                            color: statusColor,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Countdown & Progress Meter
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.av_timer_rounded,
-                                      size: 14,
-                                      color: statusColor,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      days > 0 ? '$days Days Remaining' : 'Expired 0 Days Left',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Flexible(
-                                  child: Text(
-                                    'Renews: ${profile.subscriptionRenewDate}',
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isActive
+                                        ? 'Verified Operator Accreditation • Live on Player App'
+                                        : 'Listing Paused • Arena hidden from players',
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white.withValues(alpha: 0.65),
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: LinearProgressIndicator(
-                                value: (days / 30.0).clamp(0.0, 1.0),
-                                minHeight: 6,
-                                backgroundColor: Colors.white.withValues(alpha: 0.12),
-                                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ],
+                  ),
 
-                      const SizedBox(height: 12),
+                  const SizedBox(height: 14),
 
-                      // Tariff & Action Button Row (Fixed overflow)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                  // Countdown & Progress Meter
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
                               children: [
-                                const Text(
-                                  '₹1,000 + 18% GST',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: -0.2,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                Icon(
+                                  Icons.av_timer_rounded,
+                                  size: 14,
+                                  color: statusColor,
                                 ),
+                                const SizedBox(width: 6),
                                 Text(
-                                  '₹1,180/mo total • Zero Player Fees',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white.withValues(alpha: 0.5),
+                                  days > 0 ? '$days Days Remaining' : 'Expired 0 Days Left',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          InkWell(
-                            onTap: () => _showSubscriptionPaymentDialog(profile),
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isActive
-                                      ? [const Color(0xFF10B981), const Color(0xFF059669)]
-                                      : [const Color(0xFFEF4444), const Color(0xFFB91C1C)],
+                            Flexible(
+                              child: Text(
+                                'Renews: ${profile.subscriptionRenewDate}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withValues(alpha: 0.6),
                                 ),
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (isActive ? const Color(0xFF059669) : Colors.red).withValues(alpha: 0.35),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    isActive ? Icons.receipt_long_rounded : Icons.bolt_rounded,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    isActive ? 'License Details' : 'Pay ₹1,180 & Go Live',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Subscription Payment History section
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: const [
-                        Icon(Icons.receipt_long_rounded, color: AppColors.primary, size: 18),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Subscription History',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-                            overflow: TextOverflow.ellipsis,
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: (days / 30.0).clamp(0.0, 1.0),
+                            minHeight: 6,
+                            backgroundColor: Colors.white.withValues(alpha: 0.12),
+                            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF166534).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${profile.subscriptionHistory.length} Paid',
-                      style: const TextStyle(color: Color(0xFF166534), fontSize: 10.5, fontWeight: FontWeight.bold),
-                    ),
+
+                  const SizedBox(height: 12),
+
+                  // Tariff & Action Button Row (Fixed overflow, opens bottom sheet)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '₹1,000 + 18% GST',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              '₹1,180/mo total • Zero Player Fees',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () => _showSubscriptionPaymentBottomSheet(profile),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isActive
+                                  ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                                  : [const Color(0xFFEF4444), const Color(0xFFB91C1C)],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: (isActive ? const Color(0xFF059669) : Colors.red).withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isActive ? Icons.receipt_long_rounded : Icons.bolt_rounded,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                isActive ? 'License & Invoices' : 'Pay ₹1,180 & Go Live',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const Divider(height: 20),
-              if (profile.subscriptionHistory.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Center(
-                    child: Text('No previous subscription payments recorded.', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  ),
-                )
-              else
-                ...profile.subscriptionHistory.map((item) => _buildSubscriptionHistoryTile(item)),
-            ],
-          ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -2036,106 +1979,304 @@ class _TurfOwnerProfileScreenState
     );
   }
 
-  void _showSubscriptionPaymentDialog(TurfProfileState profile) {
-    showDialog(
+  void _showSubscriptionPaymentBottomSheet(TurfProfileState profile) {
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF166534).withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFF166534), size: 22),
-            ),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text(
-                'Partner Subscription',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
           children: [
-            const Text(
-              'Zero fee for players — owners pay a monthly ₹1,000 + 18% GST (₹1,180) platform subscription to keep their venue discoverable.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-              child: Column(
-                children: const [
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Monthly Listing Fee', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
-                      Text('₹1,000.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF166534).withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.workspace_premium_rounded,
+                            color: Color(0xFF166534), size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Partner Subscription & Invoices',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
                     ],
                   ),
-                  SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('GST (18% Applicable)', style: TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
-                      Text('₹180.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                  Divider(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Total Amount Payable', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
-                      Text('₹1,180 / month', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF166534))),
-                    ],
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF166534),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                icon: const Icon(Icons.payment_rounded, size: 18),
-                label: Text(
-                  profile.isSubscriptionActive ? 'Renew Platform Plan (₹1,180)' : 'Pay ₹1,180 & Go Live ⚡',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  final success = await ref.read(turfProfileProvider.notifier).payPlatformSubscription();
-                  if (mounted) {
-                    if (success) {
-                      ToastUtils.showSuccess(
-                        context,
-                        'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Games24 Player App.',
-                      );
-                    } else {
-                      ToastUtils.showError(context, 'Payment failed. Please retry.');
-                    }
-                  }
-                },
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                children: [
+                  // 1. Subscription Plan Summary & Renewal Form (Responsive, no overflow)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Listing Plan Breakdown',
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: profile.isSubscriptionActive
+                                    ? const Color(0xFFDCFCE7)
+                                    : const Color(0xFFFEE2E2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                profile.isSubscriptionActive ? 'ACTIVE' : 'EXPIRED',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: profile.isSubscriptionActive
+                                      ? const Color(0xFF15803D)
+                                      : const Color(0xFFB91C1C),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Zero fee for players — owners pay a monthly ₹1,000 + 18% GST (₹1,180) platform subscription to keep their venue discoverable.',
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              color: Color(0xFF64748B),
+                              height: 1.4),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Tariff Breakdown Box (Responsive, no overflow)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: const [
+                                  Expanded(
+                                    child: Text(
+                                      'Monthly Listing Fee',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Color(0xFF475569)),
+                                    ),
+                                  ),
+                                  Text(
+                                    '₹1,000.00',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0F172A)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: const [
+                                  Expanded(
+                                    child: Text(
+                                      'GST (18% Applicable)',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Color(0xFF475569)),
+                                    ),
+                                  ),
+                                  Text(
+                                    '₹180.00',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF0F172A)),
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 16),
+                              Row(
+                                children: const [
+                                  Expanded(
+                                    child: Text(
+                                      'Total Amount Payable',
+                                      style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0F172A)),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    '₹1,180 / mo',
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        color: Color(0xFF166534)),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF166534),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 13),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                            ),
+                            icon: const Icon(Icons.payment_rounded, size: 18),
+                            label: Text(
+                              profile.isSubscriptionActive
+                                  ? 'Renew Platform Plan (₹1,180)'
+                                  : 'Pay ₹1,180 & Go Live ⚡',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            onPressed: () async {
+                              Navigator.pop(ctx);
+                              final success = await ref
+                                  .read(turfProfileProvider.notifier)
+                                  .payPlatformSubscription();
+                              if (mounted) {
+                                if (success) {
+                                  ToastUtils.showSuccess(
+                                    context,
+                                    'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Games24 Player App.',
+                                  );
+                                } else {
+                                  ToastUtils.showError(
+                                      context, 'Payment failed. Please retry.');
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 2. Subscription History & Invoices Section (From Under)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.receipt_long_rounded,
+                              color: AppColors.primary, size: 18),
+                          SizedBox(width: 6),
+                          Text(
+                            'Subscription History & Invoices',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDCFCE7),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${profile.subscriptionHistory.length} Paid',
+                          style: const TextStyle(
+                              color: Color(0xFF166534),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  if (profile.subscriptionHistory.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'No previous subscription payments recorded.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ),
+                    )
+                  else
+                    ...profile.subscriptionHistory
+                        .map((item) => _buildSubscriptionHistoryTile(item)),
+                ],
               ),
             ),
           ],
