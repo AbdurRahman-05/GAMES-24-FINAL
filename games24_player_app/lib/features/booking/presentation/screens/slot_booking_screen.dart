@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -63,7 +64,35 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
       orElse: () => MockVenuesRepository.venues.first,
     );
 
-    final double courtPrice = venue.pricePerHour;
+    final profile = ref.watch(turfProfileProvider);
+    final isWeekend = _selectedDate.weekday == DateTime.saturday || _selectedDate.weekday == DateTime.sunday;
+
+    // Calculate dynamic hourly rate and tariff badge based on selected date & slot time
+    double courtPrice = isWeekend ? profile.weekendRate : profile.weekdayRate;
+    String tariffBadge = isWeekend ? 'Weekend Standard Tariff' : 'Weekday Standard Tariff';
+
+    if (_selectedSlot != null && _selectedSlot!.isNotEmpty) {
+      final startMin = AppConstants.parseSlotStartMinutes(_selectedSlot!);
+      final isNight = (startMin >= 18 * 60) || (startMin < 6 * 60);
+
+      if (isWeekend) {
+        if (isNight) {
+          courtPrice = profile.nightRate > profile.weekendRate ? profile.nightRate : profile.weekendRate;
+          tariffBadge = 'Weekend Night Tariff (Floodlight)';
+        } else {
+          courtPrice = profile.weekendRate;
+          tariffBadge = 'Weekend Day Tariff';
+        }
+      } else {
+        if (isNight) {
+          courtPrice = profile.nightRate;
+          tariffBadge = 'Weekday Night Tariff (Floodlight)';
+        } else {
+          courtPrice = profile.dayRate < profile.weekdayRate ? profile.dayRate : profile.weekdayRate;
+          tariffBadge = 'Weekday Day Tariff';
+        }
+      }
+    }
     // Zero convenience fee and zero taxes for players - only cost of the hours!
     final double totalPrice = courtPrice;
 
@@ -163,7 +192,28 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
             const SizedBox(height: 24),
 
             // Time Slots Grid
-            Text('Available Slots', style: theme.textTheme.titleMedium),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Available Slots', style: theme.textTheme.titleMedium),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isWeekend ? const Color(0xFFFEF3C7) : const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: isWeekend ? const Color(0xFFFDE68A) : const Color(0xFFBBF7D0)),
+                  ),
+                  child: Text(
+                    isWeekend ? 'Weekend: ₹${profile.weekendRate.toInt()}/hr' : 'Weekday: ₹${profile.weekdayRate.toInt()}/hr',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                      color: isWeekend ? const Color(0xFFB45309) : const Color(0xFF15803D),
+                    ),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             Wrap(
               spacing: 10,
@@ -213,8 +263,18 @@ class _SlotBookingScreenState extends ConsumerState<SlotBookingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Slot Booking Fee'),
-                      Text('₹${courtPrice.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Slot Booking Fee', style: TextStyle(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text(
+                            tariffBadge,
+                            style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      Text('₹${courtPrice.toInt()}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 8),

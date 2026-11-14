@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../admin/providers/admin_providers.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/repositories/mock_venues.dart';
 
@@ -33,6 +34,7 @@ class _VenueDetailsScreenState extends ConsumerState<VenueDetailsScreen> {
 
     final favoriteIds = ref.watch(favoriteVenuesProvider);
     final isFavorite = favoriteIds.contains(venue.id);
+    final profile = ref.watch(turfProfileProvider);
 
     return Scaffold(
       body: Stack(
@@ -208,6 +210,144 @@ class _VenueDetailsScreenState extends ConsumerState<VenueDetailsScreen> {
                       ),
                       const SizedBox(height: 24),
 
+                      // Operating Timings & Tariffs
+                      Text('Operating Timings & Tariffs', style: theme.textTheme.titleMedium),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF10B981)),
+                                      SizedBox(width: 4),
+                                      Text('Weekdays', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF047857))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text('Mon - Fri', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    profile.weekdayOpeningTime == '24 Hours'
+                                        ? 'Open 24 Hours'
+                                        : '${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '₹${profile.weekdayRate.toInt()}/hr',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF047857)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.2)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.weekend_rounded, size: 14, color: Color(0xFFD97706)),
+                                      SizedBox(width: 4),
+                                      Text('Weekends', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFB45309))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text('Sat - Sun', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    profile.weekendOpeningTime == '24 Hours'
+                                        ? 'Open 24 Hours'
+                                        : '${profile.weekendOpeningTime} - ${profile.weekendClosingTime}',
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    '₹${profile.weekendRate.toInt()}/hr',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFB45309)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF3B82F6).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.2)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.wb_sunny_rounded, size: 15, color: Color(0xFF2563EB)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Day Slot (06 AM - 06 PM)', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                        Text('₹${profile.dayRate.toInt()}/hr', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1D4ED8))),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF8B5CF6).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.2)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.nightlight_round, size: 15, color: Color(0xFF7C3AED)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Night Slot (06 PM - 12 AM)', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600)),
+                                        Text('₹${profile.nightRate.toInt()}/hr', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6D28D9))),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // Google Maps Preview Card
                       Text('Location & Map', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 10),
@@ -289,15 +429,16 @@ class _VenueDetailsScreenState extends ConsumerState<VenueDetailsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Price per hour', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      const Text('Slot Tariffs', style: TextStyle(fontSize: 11, color: Colors.grey)),
                       Text(
-                        '₹${venue.pricePerHour.toInt()}',
+                        '₹${profile.weekdayRate.toInt()} - ₹${profile.weekendRate.toInt()}',
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                         ),
                       ),
+                      const Text('Day & Night Rates', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w500)),
                     ],
                   ),
                   const SizedBox(width: 20),

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 
 class AdminSlotState {
@@ -420,7 +421,35 @@ class TurfProfileState {
 
 class TurfProfileNotifier extends Notifier<TurfProfileState> {
   @override
-  TurfProfileState build() => const TurfProfileState();
+  TurfProfileState build() {
+    _loadFromStorage();
+    return const TurfProfileState();
+  }
+
+  Future<void> _loadFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final wkdayRate = prefs.getDouble('owner_weekday_rate');
+      final wkendRate = prefs.getDouble('owner_weekend_rate');
+      final dRate = prefs.getDouble('owner_day_rate');
+      final nRate = prefs.getDouble('owner_night_rate');
+      final wkdayOpen = prefs.getString('owner_weekday_open');
+      final wkdayClose = prefs.getString('owner_weekday_close');
+      final wkendOpen = prefs.getString('owner_weekend_open');
+      final wkendClose = prefs.getString('owner_weekend_close');
+
+      state = state.copyWith(
+        weekdayRate: wkdayRate ?? state.weekdayRate,
+        weekendRate: wkendRate ?? state.weekendRate,
+        dayRate: dRate ?? state.dayRate,
+        nightRate: nRate ?? state.nightRate,
+        weekdayOpeningTime: wkdayOpen ?? state.weekdayOpeningTime,
+        weekdayClosingTime: wkdayClose ?? state.weekdayClosingTime,
+        weekendOpeningTime: wkendOpen ?? state.weekendOpeningTime,
+        weekendClosingTime: wkendClose ?? state.weekendClosingTime,
+      );
+    } catch (_) {}
+  }
 
   void updateProfileDetails({
     required String ownerName,
@@ -453,6 +482,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     required String weekdayClosing,
     required String weekendOpening,
     required String weekendClosing,
+    double? weekdayRate,
+    double? weekendRate,
+    double? dayRate,
+    double? nightRate,
   }) {
     state = state.copyWith(
       weekdayOpeningTime: weekdayOpening,
@@ -461,7 +494,21 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       weekendClosingTime: weekendClosing,
       openingTime: weekdayOpening,
       closingTime: weekendClosing,
+      weekdayRate: weekdayRate ?? state.weekdayRate,
+      weekendRate: weekendRate ?? state.weekendRate,
+      dayRate: dayRate ?? state.dayRate,
+      nightRate: nightRate ?? state.nightRate,
     );
+    SharedPreferences.getInstance().then((prefs) {
+      if (weekdayRate != null) prefs.setDouble('owner_weekday_rate', weekdayRate);
+      if (weekendRate != null) prefs.setDouble('owner_weekend_rate', weekendRate);
+      if (dayRate != null) prefs.setDouble('owner_day_rate', dayRate);
+      if (nightRate != null) prefs.setDouble('owner_night_rate', nightRate);
+      prefs.setString('owner_weekday_open', weekdayOpening);
+      prefs.setString('owner_weekday_close', weekdayClosing);
+      prefs.setString('owner_weekend_open', weekendOpening);
+      prefs.setString('owner_weekend_close', weekendClosing);
+    }).catchError((_) {});
   }
 
   void addSport(TurfSportItem sport) {

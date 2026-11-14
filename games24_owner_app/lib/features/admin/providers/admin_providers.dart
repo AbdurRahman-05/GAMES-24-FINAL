@@ -966,6 +966,26 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           state = state.copyWith(sports: sports);
         }
       }
+      final savedWkdayRate = prefs.getDouble('owner_weekday_rate');
+      final savedWkendRate = prefs.getDouble('owner_weekend_rate');
+      final savedDayRate = prefs.getDouble('owner_day_rate');
+      final savedNightRate = prefs.getDouble('owner_night_rate');
+      final savedWkOpen = prefs.getString('owner_weekday_open');
+      final savedWkClose = prefs.getString('owner_weekday_close');
+      final savedWkendOpen = prefs.getString('owner_weekend_open');
+      final savedWkendClose = prefs.getString('owner_weekend_close');
+      if (savedWkdayRate != null || savedWkendRate != null || savedDayRate != null || savedNightRate != null || savedWkOpen != null) {
+        state = state.copyWith(
+          weekdayRate: savedWkdayRate ?? state.weekdayRate,
+          weekendRate: savedWkendRate ?? state.weekendRate,
+          dayRate: savedDayRate ?? state.dayRate,
+          nightRate: savedNightRate ?? state.nightRate,
+          weekdayOpeningTime: savedWkOpen ?? state.weekdayOpeningTime,
+          weekdayClosingTime: savedWkClose ?? state.weekdayClosingTime,
+          weekendOpeningTime: savedWkendOpen ?? state.weekendOpeningTime,
+          weekendClosingTime: savedWkendClose ?? state.weekendClosingTime,
+        );
+      }
       final phone = prefs.getString('owner_phone');
       final savedTurfId = prefs.getInt('selected_turf_id');
       if (phone != null && phone.isNotEmpty) {
@@ -1406,6 +1426,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     required String weekdayClosing,
     required String weekendOpening,
     required String weekendClosing,
+    double? weekdayRate,
+    double? weekendRate,
+    double? dayRate,
+    double? nightRate,
   }) {
     state = state.copyWith(
       weekdayOpeningTime: weekdayOpening,
@@ -1414,7 +1438,23 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       weekendClosingTime: weekendClosing,
       openingTime: weekdayOpening,
       closingTime: weekendClosing,
+      weekdayRate: weekdayRate ?? state.weekdayRate,
+      weekendRate: weekendRate ?? state.weekendRate,
+      dayRate: dayRate ?? state.dayRate,
+      nightRate: nightRate ?? state.nightRate,
     );
+    SharedPreferences.getInstance().then((prefs) {
+      if (weekdayRate != null) prefs.setDouble('owner_weekday_rate', weekdayRate);
+      if (weekendRate != null) prefs.setDouble('owner_weekend_rate', weekendRate);
+      if (dayRate != null) prefs.setDouble('owner_day_rate', dayRate);
+      if (nightRate != null) prefs.setDouble('owner_night_rate', nightRate);
+      prefs.setString('owner_weekday_open', weekdayOpening);
+      prefs.setString('owner_weekday_close', weekdayClosing);
+      prefs.setString('owner_weekend_open', weekendOpening);
+      prefs.setString('owner_weekend_close', weekendClosing);
+    }).catchError((e) {
+      debugPrint("Error saving timing rates: $e");
+    });
   }
 
   void addSport(TurfSportItem sport) {
