@@ -106,8 +106,13 @@ class _TurfOwnerProfileScreenState
                           children: [
                             Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.primary),
                             SizedBox(width: 6),
-                            Text('Weekdays (Mon - Fri)',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary)),
+                            Expanded(
+                              child: Text(
+                                'Weekdays (Mon - Fri)',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                         if (wkdayOpen != '24 Hours') ...[
@@ -177,8 +182,13 @@ class _TurfOwnerProfileScreenState
                           children: [
                             Icon(Icons.weekend_rounded, size: 16, color: AppColors.secondary),
                             SizedBox(width: 6),
-                            Text('Weekends (Sat - Sun)',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.secondary)),
+                            Expanded(
+                              child: Text(
+                                'Weekends (Sat - Sun)',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.secondary),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                           ],
                         ),
                         if (wkdayOpen != '24 Hours') ...[
@@ -248,9 +258,13 @@ class _TurfOwnerProfileScreenState
                           children: [
                             Icon(Icons.wb_sunny_rounded, size: 16, color: Color(0xFFCA8A04)),
                             SizedBox(width: 6),
-                            Text(
-                              'Day & Night Slot Tariffs (All Time Costs)',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
+                            Expanded(
+                              child: Text(
+                                'Day & Night Slot Tariffs (All Time Costs)',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ],
                         ),
@@ -262,7 +276,7 @@ class _TurfOwnerProfileScreenState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text('Day Slot (₹/hr)', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
-                                  const Text('06:00 AM - 06:00 PM', style: TextStyle(fontSize: 9.5, color: Color(0xFF854D0E))),
+                                  const Text('06:00 AM - 06:00 PM', style: TextStyle(fontSize: 9.5, color: Color(0xFF854D0E)), maxLines: 1, overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 4),
                                   TextField(
                                     controller: dayRateCtrl,
@@ -283,7 +297,7 @@ class _TurfOwnerProfileScreenState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text('Night Slot (₹/hr)', style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600)),
-                                  const Text('06:00 PM - 12:00 AM', style: TextStyle(fontSize: 9.5, color: Color(0xFF4338CA))),
+                                  const Text('06:00 PM - 12:00 AM', style: TextStyle(fontSize: 9.5, color: Color(0xFF4338CA)), maxLines: 1, overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 4),
                                   TextField(
                                     controller: nightRateCtrl,
