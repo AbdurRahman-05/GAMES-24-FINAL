@@ -1958,13 +1958,12 @@ export class TurfService {
 
     const isSubscribed = !turf.isBookingHold && turf.status === 'VERIFIED';
     const now = new Date();
-    const nextRenew = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    const renewDateStr = nextRenew.toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-    const daysRemaining = isSubscribed ? 30 : 0;
+    // Subscription runs on monthly cycle (renews 07 Dec 2026)
+    const nextRenew = new Date(2026, 11, 7);
+    const renewDateStr = '07 Dec 2026';
+    const diffTime = nextRenew.getTime() - now.getTime();
+    const calculatedDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    const daysRemaining = isSubscribed ? calculatedDays : 0;
     const isEndingSoon = isSubscribed && daysRemaining <= 3 && daysRemaining > 0;
     const isBlocked = !isSubscribed || daysRemaining <= 0;
 

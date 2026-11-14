@@ -1801,13 +1801,14 @@ class _TurfOwnerProfileScreenState
                                   const SizedBox(height: 2),
                                   Text(
                                     isActive
-                                        ? 'Verified Operator Accreditation • Live on Player App'
+                                        ? 'Verified Operator • Live on Player App'
                                         : 'Listing Paused • Arena hidden from players',
                                     style: TextStyle(
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.white.withValues(alpha: 0.65),
                                     ),
+                                    maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
@@ -1834,41 +1835,31 @@ class _TurfOwnerProfileScreenState
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.av_timer_rounded,
-                                    size: 14,
-                                    color: statusColor,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      days > 0 ? '$days Days Left' : 'Expired',
-                                      style: const TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w800,
-                                        color: Colors.white,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                'Renews: ${profile.subscriptionRenewDate}',
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withValues(alpha: 0.6),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.av_timer_rounded,
+                                  size: 14,
+                                  color: statusColor,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                const SizedBox(width: 6),
+                                Text(
+                                  days > 0 ? '$days Days Left' : 'Expired',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              'Renews: ${profile.subscriptionRenewDate}',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: 0.75),
                               ),
                             ),
                           ],

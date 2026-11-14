@@ -677,17 +677,69 @@ class TurfProfileState {
   final String cancelledBadge;
 
   // Monthly Platform Subscription Details (₹1,000 + 18% GST = ₹1,180)
-  final bool isSubscriptionActive;
-  final String subscriptionStatus;
+  final bool _isSubscriptionActive;
+  final String _subscriptionStatus;
   final double subscriptionBaseFee;
   final double subscriptionGstFee;
   final double subscriptionTotalFee;
+  final String subscriptionStartDate;
   final String subscriptionRenewDate;
   final bool isBookingHold;
-  final int subscriptionDaysRemaining;
+  final int _subscriptionDaysRemaining;
   final List<SubscriptionPaymentItem> subscriptionHistory;
 
   int get turfId => verifiedAdminId ?? adminUserId ?? 1;
+
+  DateTime? get subscriptionRenewDateTime {
+    try {
+      final clean = subscriptionRenewDate.trim();
+      if (clean.isEmpty) return null;
+      try {
+        return DateFormat('dd MMM yyyy').parse(clean);
+      } catch (_) {
+        return DateTime.tryParse(clean);
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DateTime? get subscriptionStartDateTime {
+    try {
+      final clean = subscriptionStartDate.trim();
+      if (clean.isEmpty) return null;
+      try {
+        return DateFormat('dd MMM yyyy').parse(clean);
+      } catch (_) {
+        return DateTime.tryParse(clean);
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
+  int get subscriptionDaysRemaining {
+    if (isBookingHold) return 0;
+    final renew = subscriptionRenewDateTime;
+    if (renew != null) {
+      final now = DateTime.now();
+      final nowDateOnly = DateTime(now.year, now.month, now.day);
+      final renewDateOnly = DateTime(renew.year, renew.month, renew.day);
+      final diff = renewDateOnly.difference(nowDateOnly).inDays;
+      return diff < 0 ? 0 : diff;
+    }
+    return _subscriptionDaysRemaining;
+  }
+
+  bool get isSubscriptionActive {
+    if (isBookingHold) return false;
+    if (subscriptionDaysRemaining <= 0) return false;
+    return _isSubscriptionActive;
+  }
+
+  String get subscriptionStatus {
+    return isSubscriptionActive ? 'ACTIVE' : 'EXPIRED';
+  }
 
   bool get isSubscriptionEndingSoon =>
       isSubscriptionActive && !isBookingHold && subscriptionDaysRemaining <= 3 && subscriptionDaysRemaining > 0;
@@ -767,14 +819,15 @@ class TurfProfileState {
     this.cancelledCount = 0,
     this.shiftedCount = 0,
     this.cancelledBadge = 'Tracked',
-    this.isSubscriptionActive = true,
-    this.subscriptionStatus = 'ACTIVE',
+    bool isSubscriptionActive = true,
+    String subscriptionStatus = 'ACTIVE',
     this.subscriptionBaseFee = 1000.0,
     this.subscriptionGstFee = 180.0,
     this.subscriptionTotalFee = 1180.0,
+    this.subscriptionStartDate = '07 Nov 2026',
     this.subscriptionRenewDate = '07 Dec 2026',
     this.isBookingHold = false,
-    this.subscriptionDaysRemaining = 30,
+    int subscriptionDaysRemaining = 30,
     this.subscriptionHistory = const [
       SubscriptionPaymentItem(
         id: 'SUB-2026-11',
@@ -799,7 +852,9 @@ class TurfProfileState {
         receiptNumber: 'RCP-SUB-72109',
       ),
     ],
-  });
+  })  : _isSubscriptionActive = isSubscriptionActive,
+        _subscriptionStatus = subscriptionStatus,
+        _subscriptionDaysRemaining = subscriptionDaysRemaining;
 
   TurfProfileState copyWith({
     String? ownerName,
@@ -859,6 +914,7 @@ class TurfProfileState {
     double? subscriptionBaseFee,
     double? subscriptionGstFee,
     double? subscriptionTotalFee,
+    String? subscriptionStartDate,
     String? subscriptionRenewDate,
     bool? isBookingHold,
     int? subscriptionDaysRemaining,
@@ -917,14 +973,15 @@ class TurfProfileState {
       cancelledCount: cancelledCount ?? this.cancelledCount,
       shiftedCount: shiftedCount ?? this.shiftedCount,
       cancelledBadge: cancelledBadge ?? this.cancelledBadge,
-      isSubscriptionActive: isSubscriptionActive ?? this.isSubscriptionActive,
-      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
+      isSubscriptionActive: isSubscriptionActive ?? _isSubscriptionActive,
+      subscriptionStatus: subscriptionStatus ?? _subscriptionStatus,
       subscriptionBaseFee: subscriptionBaseFee ?? this.subscriptionBaseFee,
       subscriptionGstFee: subscriptionGstFee ?? this.subscriptionGstFee,
       subscriptionTotalFee: subscriptionTotalFee ?? this.subscriptionTotalFee,
+      subscriptionStartDate: subscriptionStartDate ?? this.subscriptionStartDate,
       subscriptionRenewDate: subscriptionRenewDate ?? this.subscriptionRenewDate,
       isBookingHold: isBookingHold ?? this.isBookingHold,
-      subscriptionDaysRemaining: subscriptionDaysRemaining ?? this.subscriptionDaysRemaining,
+      subscriptionDaysRemaining: subscriptionDaysRemaining ?? _subscriptionDaysRemaining,
       subscriptionHistory: subscriptionHistory ?? this.subscriptionHistory,
     );
   }
@@ -949,8 +1006,17 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         final data = jsonDecode(savedJson);
         if (data is Map<String, dynamic>) {
           setFromVerifiedAdmin(data, saveToStorage: false);
-          return;
         }
+      }
+      final savedRenewDate = prefs.getString('owner_subscription_renew_date');
+      final savedStartDate = prefs.getString('owner_subscription_start_date');
+      final savedHold = prefs.getBool('owner_subscription_hold');
+      if (savedRenewDate != null && savedRenewDate.isNotEmpty) {
+        state = state.copyWith(
+          subscriptionRenewDate: savedRenewDate,
+          subscriptionStartDate: savedStartDate ?? state.subscriptionStartDate,
+          isBookingHold: savedHold ?? state.isBookingHold,
+        );
       }
       final savedHistory = prefs.getString('subscription_history');
       if (savedHistory != null && savedHistory.isNotEmpty) {
@@ -1666,12 +1732,20 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
 
   void setSubscriptionDays(int days) {
     final isBlocked = days <= 0;
+    final now = DateTime.now();
+    final newRenew = now.add(Duration(days: days));
+    final renewStr = DateFormat('dd MMM yyyy').format(newRenew);
     state = state.copyWith(
       subscriptionDaysRemaining: days,
+      subscriptionRenewDate: renewStr,
       isSubscriptionActive: !isBlocked,
       isBookingHold: isBlocked,
       subscriptionStatus: isBlocked ? 'EXPIRED' : 'ACTIVE',
     );
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('owner_subscription_renew_date', renewStr);
+      prefs.setBool('owner_subscription_hold', isBlocked);
+    }).catchError((_) {});
   }
 
   Future<bool> payPlatformSubscription({String paymentMethod = 'UPI (GPay)'}) async {
@@ -1690,15 +1764,22 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     }
 
     final now = DateTime.now();
-    final nextMonth = DateTime(now.year, now.month + 1, now.day);
-    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(now);
-    final renewStr = DateFormat('dd MMM yyyy').format(nextMonth);
-    final periodStr = '${DateFormat('dd MMM yyyy').format(now)} - $renewStr';
+    DateTime nextRenewal;
+    final currentRenew = state.subscriptionRenewDateTime;
+    if (state.isSubscriptionActive && currentRenew != null && currentRenew.isAfter(now)) {
+      nextRenewal = currentRenew.add(const Duration(days: 30));
+    } else {
+      nextRenewal = now.add(const Duration(days: 30));
+    }
+
+    final startStr = DateFormat('dd MMM yyyy').format(now);
+    final renewStr = DateFormat('dd MMM yyyy').format(nextRenewal);
+    final periodStr = '$startStr - $renewStr';
     final receiptNum = 'RCP-SUB-${now.millisecondsSinceEpoch % 100000}';
 
     final newPayment = SubscriptionPaymentItem(
       id: 'SUB-${now.year}-${now.month.toString().padLeft(2, '0')}',
-      date: dateStr,
+      date: DateFormat('dd MMM yyyy, hh:mm a').format(now),
       baseAmount: 1000.0,
       gstAmount: 180.0,
       totalAmount: 1180.0,
@@ -1709,18 +1790,25 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     );
 
     final updatedHistory = [newPayment, ...state.subscriptionHistory];
+    final nowDateOnly = DateTime(now.year, now.month, now.day);
+    final renewDateOnly = DateTime(nextRenewal.year, nextRenewal.month, nextRenewal.day);
+    final newDays = renewDateOnly.difference(nowDateOnly).inDays;
 
     state = state.copyWith(
       isSubscriptionActive: true,
       isBookingHold: false,
       subscriptionStatus: 'ACTIVE',
+      subscriptionStartDate: startStr,
       subscriptionRenewDate: renewStr,
-      subscriptionDaysRemaining: 30,
+      subscriptionDaysRemaining: newDays,
       subscriptionHistory: updatedHistory,
     );
 
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('owner_subscription_start_date', startStr);
+      await prefs.setString('owner_subscription_renew_date', renewStr);
+      await prefs.setBool('owner_subscription_hold', false);
       final savedJson = prefs.getString('verified_admin_data');
       if (savedJson != null && savedJson.isNotEmpty) {
         final map = jsonDecode(savedJson);
