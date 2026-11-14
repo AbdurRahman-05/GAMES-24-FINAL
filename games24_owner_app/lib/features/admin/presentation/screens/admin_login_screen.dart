@@ -153,12 +153,15 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
             children: [
               const SizedBox(height: 12),
 
-              // Official Games24 Brand Logo
+              // Official Games24 Brand Logo with Shared Element Hero Tag
               Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 80,
-                  fit: BoxFit.contain,
+                child: Hero(
+                  tag: 'gamez24_logo_emblem',
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    height: 80,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

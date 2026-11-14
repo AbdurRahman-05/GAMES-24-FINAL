@@ -52,7 +52,10 @@ class WelcomeScreen extends StatelessWidget {
                 },
                 child: Column(
                   children: [
-                    Image.asset('assets/images/logo.png', height: 180),
+                    Hero(
+                      tag: 'gamez24_logo_emblem',
+                      child: Image.asset('assets/images/logo.png', height: 180),
+                    ),
                     const SizedBox(height: 16),
                     const Text(
                       'Discover, book, and play turfs instantly',
