@@ -12,6 +12,7 @@
     "backend:dev": "cd games24_backend && npm run start:dev",
     "superadmin:dev": "cd games24_superadmin && npm run dev",
     "owner:chrome": "cd games24_owner_app && flutter run -d chrome",
-    "player:chrome": "cd games24_player_app && flutter run -d chrome"
+    "player:chrome": "cd games24_player_app && flutter run -d chrome",
+    "portfolio": "npx serve gamez24_portfolio"
   }
 }
