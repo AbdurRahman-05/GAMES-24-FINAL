@@ -1093,7 +1093,7 @@ class _TurfOwnerProfileScreenState
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildProAppBar(context, profile),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1102,7 +1102,7 @@ class _TurfOwnerProfileScreenState
 
             // 2. Full Venue Profile & Operations Hub Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
               child: _buildVenueOverviewContent(profile),
             ),
           ],
@@ -2728,6 +2728,7 @@ class _TurfOwnerProfileScreenState
               runSpacing: 8,
               children: profile.facilities.map((facility) => _buildAmenityBadge(facility)).toList(),
             ),
+          const SizedBox(height: 24),
         ],
       );
   }
