@@ -878,58 +878,62 @@ class _TurfOwnerSettingsScreenState
                                   color: AppColors.primary,
                                   fontSize: 13)),
                           const SizedBox(height: 10),
-                          Row(
+                          Column(
                             children: [
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue:
-                                      openOptions.contains(wkdayOpen)
-                                          ? wkdayOpen
-                                          : openOptions[1],
-                                  decoration: InputDecoration(
-                                    labelText: 'Opens at',
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  items: openOptions
-                                      .map((t) => DropdownMenuItem(
-                                          value: t, child: Text(t)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setDialogState(() => wkdayOpen = val);
-                                    }
-                                  },
+                              DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                initialValue:
+                                    openOptions.contains(wkdayOpen)
+                                        ? wkdayOpen
+                                        : openOptions[1],
+                                decoration: InputDecoration(
+                                  labelText: 'Opens at',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
                                 ),
+                                items: openOptions
+                                    .map((t) => DropdownMenuItem(
+                                        value: t,
+                                        child: Text(t,
+                                            style: const TextStyle(fontSize: 13),
+                                            overflow: TextOverflow.ellipsis)))
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setDialogState(() => wkdayOpen = val);
+                                  }
+                                },
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue:
-                                      closeOptions.contains(wkdayClose)
-                                          ? wkdayClose
-                                          : closeOptions[2],
-                                  decoration: InputDecoration(
-                                    labelText: 'Closes at',
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  items: closeOptions
-                                      .map((t) => DropdownMenuItem(
-                                          value: t, child: Text(t)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setDialogState(() => wkdayClose = val);
-                                    }
-                                  },
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                initialValue:
+                                    closeOptions.contains(wkdayClose)
+                                        ? wkdayClose
+                                        : closeOptions[2],
+                                decoration: InputDecoration(
+                                  labelText: 'Closes at',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
                                 ),
+                                items: closeOptions
+                                    .map((t) => DropdownMenuItem(
+                                        value: t,
+                                        child: Text(t,
+                                            style: const TextStyle(fontSize: 13),
+                                            overflow: TextOverflow.ellipsis)))
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setDialogState(() => wkdayClose = val);
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -954,58 +958,62 @@ class _TurfOwnerSettingsScreenState
                                   color: AppColors.secondary,
                                   fontSize: 13)),
                           const SizedBox(height: 10),
-                          Row(
+                          Column(
                             children: [
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue:
-                                      openOptions.contains(wkendOpen)
-                                          ? wkendOpen
-                                          : openOptions[0],
-                                  decoration: InputDecoration(
-                                    labelText: 'Opens at',
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  items: openOptions
-                                      .map((t) => DropdownMenuItem(
-                                          value: t, child: Text(t)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setDialogState(() => wkendOpen = val);
-                                    }
-                                  },
+                              DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                initialValue:
+                                    openOptions.contains(wkendOpen)
+                                        ? wkendOpen
+                                        : openOptions[0],
+                                decoration: InputDecoration(
+                                  labelText: 'Opens at',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
                                 ),
+                                items: openOptions
+                                    .map((t) => DropdownMenuItem(
+                                        value: t,
+                                        child: Text(t,
+                                            style: const TextStyle(fontSize: 13),
+                                            overflow: TextOverflow.ellipsis)))
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setDialogState(() => wkendOpen = val);
+                                  }
+                                },
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue:
-                                      closeOptions.contains(wkendClose)
-                                          ? wkendClose
-                                          : closeOptions[3],
-                                  decoration: InputDecoration(
-                                    labelText: 'Closes at',
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 8),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  items: closeOptions
-                                      .map((t) => DropdownMenuItem(
-                                          value: t, child: Text(t)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setDialogState(() => wkendClose = val);
-                                    }
-                                  },
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                initialValue:
+                                    closeOptions.contains(wkendClose)
+                                        ? wkendClose
+                                        : closeOptions[3],
+                                decoration: InputDecoration(
+                                  labelText: 'Closes at',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(10)),
                                 ),
+                                items: closeOptions
+                                    .map((t) => DropdownMenuItem(
+                                        value: t,
+                                        child: Text(t,
+                                            style: const TextStyle(fontSize: 13),
+                                            overflow: TextOverflow.ellipsis)))
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setDialogState(() => wkendClose = val);
+                                  }
+                                },
                               ),
                             ],
                           ),
@@ -2211,7 +2219,15 @@ class _TurfOwnerSettingsScreenState
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
-        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
