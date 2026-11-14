@@ -206,7 +206,50 @@ class _TurfOwnerSettingsScreenState
           ),
           const SizedBox(height: 20),
 
-          // 4. Section: Preferences
+          // 4. Section: Legal Compliance & Archives (Moved from Profile tab bar)
+          _buildSectionHeader('LEGAL COMPLIANCE & ARCHIVES'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildActionTile(
+                  icon: Icons.shield_rounded,
+                  accentColor: const Color(0xFF0F766E),
+                  bgColor: const Color(0xFFCCFBF1),
+                  title: 'KYC & Tax Identity Records',
+                  subtitle:
+                      'Aadhaar, PAN, GSTIN & Bank Account • Verified',
+                  onTap: () => _showKycDetailsBottomSheet(profile),
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildActionTile(
+                  icon: Icons.receipt_long_rounded,
+                  accentColor: const Color(0xFF1D4ED8),
+                  bgColor: const Color(0xFFDBEAFE),
+                  title: 'Booking History & Audit Archive',
+                  subtitle:
+                      '${profile.bookingHistory.length} total customer bookings logged',
+                  onTap: () => _showBookingArchiveBottomSheet(profile),
+                  isLast: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 5. Section: Preferences
           _buildSectionHeader('PREFERENCES & ALERTS'),
           const SizedBox(height: 8),
           Container(
@@ -1378,5 +1421,456 @@ class _TurfOwnerSettingsScreenState
         context.go('/login');
       }
     }
+  }
+
+  void _showKycDetailsBottomSheet(TurfProfileState profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.shield_rounded, color: Color(0xFF0F766E), size: 22),
+                      SizedBox(width: 8),
+                      Text(
+                        'KYC & Legal Tax Records',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.lock_rounded, color: AppColors.warning, size: 24),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '🔒 Verified Legal Identity Locked',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.warning,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Aadhaar, PAN Card, and GSTIN details were verified during partner registration and are locked for tax compliance. Contact Super Admin to request updates.',
+                                style: TextStyle(fontSize: 11, color: Colors.black87),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildKycDisplayCard(
+                    title: 'GSTIN Business Registration Number',
+                    value: profile.gstin.isNotEmpty ? profile.gstin : '33AAAAA0000A1Z5',
+                    icon: Icons.receipt_rounded,
+                    badge: 'Verified GSTIN',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildKycDisplayCard(
+                    title: 'Owner PAN Card Number',
+                    value: profile.pan.isNotEmpty ? profile.pan : 'ABCDE1234F',
+                    icon: Icons.badge_rounded,
+                    badge: 'PAN Verified',
+                  ),
+                  const SizedBox(height: 12),
+                  _buildKycDisplayCard(
+                    title: 'Owner Aadhaar Identity Number',
+                    value: profile.aadhaar.isNotEmpty ? profile.aadhaar : 'XXXX-XXXX-4589',
+                    icon: Icons.credit_card_rounded,
+                    badge: 'Aadhaar Verified',
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.account_balance_rounded, color: Color(0xFF154D36), size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Automated Payout Bank Account',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ),
+                            Icon(Icons.lock, size: 13, color: Colors.grey),
+                          ],
+                        ),
+                        const Divider(height: 20),
+                        _buildReadOnlyKycField('Bank Account Number', profile.bankAccount.isNotEmpty ? profile.bankAccount : '9876543210012'),
+                        const SizedBox(height: 10),
+                        _buildReadOnlyKycField('IFSC Code', profile.ifsc.isNotEmpty ? profile.ifsc : 'HDFC0001234'),
+                        const SizedBox(height: 10),
+                        _buildReadOnlyKycField('Payout UPI ID', profile.upiId.isNotEmpty ? profile.upiId : 'owner@okhdfcbank'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBookingArchiveBottomSheet(TurfProfileState profile) {
+    String localFilter = 'All';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          final filteredBookings = profile.bookingHistory.where((b) {
+            if (localFilter == 'All') return true;
+            return b.status.toLowerCase() == localFilter.toLowerCase();
+          }).toList();
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.receipt_long_rounded, color: Color(0xFF1D4ED8), size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Booking Archive (${profile.bookingHistory.length})',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: ['All', 'Confirmed', 'Checked-In', 'Completed', 'Cancelled'].map((status) {
+                        final isSelected = localFilter == status;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text(status),
+                            selected: isSelected,
+                            selectedColor: const Color(0xFF154D36),
+                            labelStyle: TextStyle(
+                              color: isSelected ? Colors.white : const Color(0xFF334155),
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                            backgroundColor: Colors.white,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setSheetState(() => localFilter = status);
+                              }
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: filteredBookings.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
+                              SizedBox(height: 8),
+                              Text('No bookings found for this filter.', style: TextStyle(color: Colors.grey)),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                          itemCount: filteredBookings.length,
+                          itemBuilder: (context, index) {
+                            final item = filteredBookings[index];
+                            Color statusColor = AppColors.success;
+                            if (item.status.toLowerCase().contains('confirmed')) statusColor = const Color(0xFF154D36);
+                            if (item.status.toLowerCase().contains('checked')) statusColor = const Color(0xFF0284C7);
+                            if (item.status.toLowerCase().contains('cancel')) statusColor = AppColors.error;
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.02),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        item.id,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: statusColor.withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          item.status.toUpperCase(),
+                                          style: TextStyle(
+                                            color: statusColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.person_rounded, size: 16, color: Color(0xFF154D36)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          '${item.customerName} (${item.customerPhone})',
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.sports_rounded, size: 15, color: Colors.grey),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          '${item.sport} • ${item.courtName}',
+                                          style: const TextStyle(fontSize: 11.5, color: Color(0xFF475569)),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.access_time_rounded, size: 15, color: Colors.grey),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          item.dateTimeSlot,
+                                          style: const TextStyle(fontSize: 11, color: Color(0xFF475569)),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      Text(
+                                        '₹${item.amount.toStringAsFixed(0)} (${item.paymentMethod})',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF154D36),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildKycDisplayCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required String badge,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(icon, color: const Color(0xFF0F766E), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.lock, size: 13, color: Colors.grey),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  value,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyKycField(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+        Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+      ],
+    );
   }
 }

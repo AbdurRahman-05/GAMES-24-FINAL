@@ -17,22 +17,7 @@ class TurfOwnerProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _TurfOwnerProfileScreenState
-    extends ConsumerState<TurfOwnerProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  String _bookingFilter = 'All';
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+    extends ConsumerState<TurfOwnerProfileScreen> {
 
   void _showEditTimingsDialog(TurfProfileState profile) {
     String wkdayOpen = profile.weekdayOpeningTime;
@@ -1106,26 +1091,21 @@ class _TurfOwnerProfileScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildProAppBar(context, profile),
-      body: Column(
-        children: [
-          // 1. Executive Partner Passport & Credentials Header
-          _buildExecutivePassportHeader(profile),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Executive Partner Passport & Credentials Header
+            _buildExecutivePassportHeader(profile),
 
-          // 2. Segmented Capsule Tab Bar
-          _buildSegmentedTabBar(profile),
-
-          // 4. Tab Views
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildVenueOverviewTab(profile),
-                _buildBookingHistoryTab(profile),
-                _buildKycDetailsTab(profile),
-              ],
+            // 2. Full Venue Profile & Operations Hub Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+              child: _buildVenueOverviewContent(profile),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1530,103 +1510,6 @@ class _TurfOwnerProfileScreenState
     );
   }
 
-  Widget _buildSegmentedTabBar(TurfProfileState profile) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE2E8F0),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        labelPadding: EdgeInsets.zero,
-        indicator: BoxDecoration(
-          color: const Color(0xFF154D36),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF154D36).withValues(alpha: 0.25),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF475569),
-        labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
-        unselectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-        dividerColor: Colors.transparent,
-        tabs: [
-          const Tab(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.storefront_rounded, size: 13),
-                    SizedBox(width: 4),
-                    Text(
-                      'Venue Hub',
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Tab(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.receipt_long_rounded, size: 13),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Bookings (${profile.bookingHistory.length})',
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const Tab(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.security_rounded, size: 13),
-                    SizedBox(width: 4),
-                    Text(
-                      'KYC Details',
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSubscriptionOverviewCard(TurfProfileState profile) {
     final isActive = profile.isSubscriptionActive;
     final isEndingSoon = profile.isSubscriptionEndingSoon;
@@ -1804,12 +1687,15 @@ class _TurfOwnerProfileScreenState
                                     ),
                                   ],
                                 ),
-                                Text(
-                                  'Renews: ${profile.subscriptionRenewDate}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white.withValues(alpha: 0.6),
+                                Flexible(
+                                  child: Text(
+                                    'Renews: ${profile.subscriptionRenewDate}',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -1830,37 +1716,44 @@ class _TurfOwnerProfileScreenState
 
                       const SizedBox(height: 12),
 
-                      // Tariff & Action Button Row
+                      // Tariff & Action Button Row (Fixed overflow)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                '₹1,000 + 18% GST',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: -0.2,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  '₹1,000 + 18% GST',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              Text(
-                                '₹1,180/mo total • Zero Player Fees',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white.withValues(alpha: 0.5),
+                                Text(
+                                  '₹1,180/mo total • Zero Player Fees',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           InkWell(
                             onTap: () => _showSubscriptionPaymentDialog(profile),
                             borderRadius: BorderRadius.circular(10),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: isActive
@@ -1881,14 +1774,14 @@ class _TurfOwnerProfileScreenState
                                 children: [
                                   Icon(
                                     isActive ? Icons.receipt_long_rounded : Icons.bolt_rounded,
-                                    size: 15,
+                                    size: 14,
                                     color: Colors.white,
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 5),
                                   Text(
                                     isActive ? 'License Details' : 'Pay ₹1,180 & Go Live',
                                     style: const TextStyle(
-                                      fontSize: 11.5,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w800,
                                       color: Colors.white,
                                     ),
@@ -1902,32 +1795,6 @@ class _TurfOwnerProfileScreenState
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-
-        // Testing state pills for easy demonstration (responsive horizontal scroll)
-        Container(
-          margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                const Text('Demo Test: ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
-                const SizedBox(width: 4),
-                _buildDemoPill(profile, '30d Active', 30),
-                const SizedBox(width: 6),
-                _buildDemoPill(profile, '2d Ending', 2),
-                const SizedBox(width: 6),
-                _buildDemoPill(profile, '0d Blocked', 0),
               ],
             ),
           ),
@@ -1984,41 +1851,6 @@ class _TurfOwnerProfileScreenState
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildDemoPill(TurfProfileState profile, String label, int days) {
-    final isSelected = (days == 30 && profile.subscriptionDaysRemaining > 3 && profile.isSubscriptionActive) ||
-        (days == 2 && profile.isSubscriptionEndingSoon) ||
-        (days == 0 && profile.isSubscriptionBlocked);
-
-    return InkWell(
-      onTap: () {
-        ref.read(turfProfileProvider.notifier).setSubscriptionDays(days);
-        if (days == 0) {
-          ToastUtils.showWarning(context, 'Set to 0 Days Expired: Owner access blocked & turf hidden from players.');
-        } else if (days == 2) {
-          ToastUtils.showWarning(context, 'Set to 2 Days Left: Warning banner will now show on Home page.');
-        } else {
-          ToastUtils.showSuccess(context, 'Set to 30 Days Active: Normal live status (home page banner hidden).');
-        }
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : const Color(0xFF4B5563),
-          ),
-        ),
-      ),
     );
   }
 
@@ -2311,15 +2143,13 @@ class _TurfOwnerProfileScreenState
       ),
     );
   }
-  Widget _buildVenueOverviewTab(TurfProfileState profile) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Monthly Platform Subscription Card
-          _buildSubscriptionOverviewCard(profile),
-          const SizedBox(height: 16),
+  Widget _buildVenueOverviewContent(TurfProfileState profile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Monthly Platform Subscription Card
+        _buildSubscriptionOverviewCard(profile),
+        const SizedBox(height: 16),
 
           // Timings & Pricing Summary Card
           AppCard(
@@ -2715,350 +2545,7 @@ class _TurfOwnerProfileScreenState
             }).toList(),
           ),
         ],
-      ),
-    );
+      );
   }
 
-  Widget _buildBookingHistoryTab(TurfProfileState profile) {
-    final filteredBookings = profile.bookingHistory.where((b) {
-      if (_bookingFilter == 'All') return true;
-      return b.status.toLowerCase() == _bookingFilter.toLowerCase();
-    }).toList();
-
-    return Column(
-      children: [
-        // Filter Chips
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: ['All', 'Confirmed', 'Completed', 'Cancelled'].map((status) {
-                final isSelected = _bookingFilter == status;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(status),
-                    selected: isSelected,
-                    selectedColor: AppColors.primary,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      fontSize: 12,
-                    ),
-                    onSelected: (selected) {
-                      if (selected) setState(() => _bookingFilter = status);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-
-        // Booking History List
-        Expanded(
-          child: filteredBookings.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
-                      SizedBox(height: 8),
-                      Text('No bookings found for this filter.', style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
-                  itemCount: filteredBookings.length,
-                  itemBuilder: (context, index) {
-                    final item = filteredBookings[index];
-                    Color statusColor = AppColors.success;
-                    if (item.status == 'Confirmed') statusColor = AppColors.primary;
-                    if (item.status == 'Cancelled') statusColor = AppColors.error;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: AppCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(item.id,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                        color: Colors.grey)),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    item.status.toUpperCase(),
-                                    style: TextStyle(
-                                      color: statusColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const Icon(Icons.person_rounded, size: 16, color: AppColors.primary),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    '${item.customerName} (${item.customerPhone})',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.sports_rounded, size: 15, color: Colors.grey),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    '${item.sport} • ${item.courtName}',
-                                    style: const TextStyle(fontSize: 11.5),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(Icons.access_time_rounded, size: 15, color: Colors.grey),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    item.dateTimeSlot,
-                                    style: const TextStyle(fontSize: 11),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '₹${item.amount.toStringAsFixed(0)} (${item.paymentMethod})',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                    fontSize: 11.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildKycDetailsTab(TurfProfileState profile) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Explicit Non-Editable Security Banner
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.lock_rounded, color: AppColors.warning, size: 24),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '🔒 KYC & Tax Identity Locked',
-                        style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.warning, fontSize: 13),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Aadhaar, PAN Card, and GSTIN details were verified during registration and are strictly locked for financial compliance. Contact Super Admin to request updates.',
-                        style: TextStyle(fontSize: 11, color: Colors.black87),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // GSTIN Business Number Card (LOCKED)
-          _buildLockedKycCard(
-            title: 'GSTIN Business Registration Number',
-            value: profile.gstin,
-            icon: Icons.receipt_rounded,
-            badge: 'Verified Business GST',
-          ),
-          const SizedBox(height: 12),
-
-          // PAN Card Number Card (LOCKED)
-          _buildLockedKycCard(
-            title: 'Owner PAN Card Number',
-            value: profile.pan,
-            icon: Icons.badge_rounded,
-            badge: 'PAN Verified',
-          ),
-          const SizedBox(height: 12),
-
-          // Aadhaar Card Number Card (LOCKED)
-          _buildLockedKycCard(
-            title: 'Owner Aadhaar Identity Number',
-            value: profile.aadhaar,
-            icon: Icons.credit_card_rounded,
-            badge: 'Aadhaar Verified',
-          ),
-          const SizedBox(height: 12),
-
-          // Payout Bank Account Details (LOCKED)
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.account_balance_rounded, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Automated Weekly Payout Bank Account',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                _buildReadOnlyField('Bank Account Number', profile.bankAccount),
-                const SizedBox(height: 8),
-                _buildReadOnlyField('IFSC Code', profile.ifsc),
-                const SizedBox(height: 8),
-                _buildReadOnlyField('Payout UPI ID', profile.upiId),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLockedKycCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required String badge,
-  }) {
-    return AppCard(
-      color: Colors.grey.withValues(alpha: 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    Icon(icon, color: AppColors.primary, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.lock, size: 13, color: Colors.grey),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.check_circle, size: 12, color: AppColors.success),
-                    const SizedBox(width: 4),
-                    Text(
-                      badge,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              letterSpacing: 1.2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReadOnlyField(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Row(
-          children: [
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            const SizedBox(width: 4),
-            const Icon(Icons.lock_outline, size: 12, color: Colors.grey),
-          ],
-        ),
-      ],
-    );
-  }
 }
