@@ -216,9 +216,11 @@ class _AdminSlotManagerScreenState
       final isPast = AppConstants.isSlotPast(slot, _selectedDate);
       final isBooked = bookedSet.contains(slot);
       final isBlocked = blockedSet.contains(slot);
+      final blockReason = adminSlotState.getBlockedReasonForDate(dateKey, slot);
+      final isAlreadyBooked = isBlocked && blockReason.toLowerCase().contains('booked');
       final hasOffer = offerMap.containsKey(slot);
 
-      if (isBooked) {
+      if (isBooked || isAlreadyBooked) {
         bookedCount++;
       } else if (isBlocked) {
         blockedCount++;
@@ -235,18 +237,20 @@ class _AdminSlotManagerScreenState
       final isPast = AppConstants.isSlotPast(slot, _selectedDate);
       final isBooked = bookedSet.contains(slot);
       final isBlocked = blockedSet.contains(slot);
+      final blockReason = adminSlotState.getBlockedReasonForDate(dateKey, slot);
+      final isAlreadyBooked = isBlocked && blockReason.toLowerCase().contains('booked');
       final hasOffer = offerMap.containsKey(slot);
 
       if (_selectedSlotFilter == 'Available') {
         return !isPast && !isBooked && !isBlocked;
       } else if (_selectedSlotFilter == 'Booked') {
-        return isBooked;
+        return isBooked || isAlreadyBooked;
       } else if (_selectedSlotFilter == 'Blocked') {
-        return isBlocked;
+        return isBlocked && !isAlreadyBooked;
       } else if (_selectedSlotFilter == 'Offers') {
-        return hasOffer && !isPast && !isBooked;
+        return hasOffer && !isPast && !isBooked && !isBlocked;
       } else if (_selectedSlotFilter == 'Passed') {
-        return isPast && !isBooked;
+        return isPast && !isBooked && !isAlreadyBooked;
       }
       return true; // 'All'
     }).toList();
@@ -1177,6 +1181,8 @@ class _AdminSlotManagerScreenState
     required Set<String> bookedSet,
     required Map<String, String> offerMap,
   }) {
+    final adminSlotState = ref.watch(adminSlotProvider);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final cardWidth = (constraints.maxWidth - 10) / 2;
@@ -1186,6 +1192,7 @@ class _AdminSlotManagerScreenState
           runSpacing: 10,
           children: filteredSlots.map((slot) {
             final isBlocked = blockedSet.contains(slot);
+            final blockReason = adminSlotState.getBlockedReasonForDate(dateKey, slot);
             final isBooked = bookedSet.contains(slot);
             final isPast = AppConstants.isSlotPast(slot, _selectedDate);
             final offerTag = offerMap[slot];
@@ -1200,6 +1207,7 @@ class _AdminSlotManagerScreenState
                 slot: slot,
                 dateKey: dateKey,
                 isBlocked: isBlocked,
+                blockReason: blockReason,
                 isBooked: isBooked,
                 isPast: isPast,
                 offerTag: offerTag,
@@ -1217,6 +1225,7 @@ class _AdminSlotManagerScreenState
     required String slot,
     required String dateKey,
     required bool isBlocked,
+    required String blockReason,
     required bool isBooked,
     required bool isPast,
     required String? offerTag,
@@ -1230,6 +1239,9 @@ class _AdminSlotManagerScreenState
     Color statusBadgeText;
     String statusTitle;
     IconData statusIcon;
+
+    final bool isAlreadyBooked =
+        isBlocked && blockReason.toLowerCase().contains('booked');
 
     if (isBooked) {
       if (isPast) {
@@ -1260,13 +1272,23 @@ class _AdminSlotManagerScreenState
       statusTitle = 'Time Passed';
       statusIcon = Icons.history_rounded;
     } else if (isBlocked) {
-      cardBg = const Color(0xFFFFFBEB);
-      borderColor = const Color(0xFFFDE68A);
-      titleColor = const Color(0xFF92400E);
-      statusBadgeBg = const Color(0xFFFEF3C7);
-      statusBadgeText = const Color(0xFFD97706);
-      statusTitle = 'Blocked / Maint.';
-      statusIcon = Icons.lock_clock_rounded;
+      if (isAlreadyBooked) {
+        cardBg = const Color(0xFFEFF6FF);
+        borderColor = const Color(0xFFBFDBFE);
+        titleColor = const Color(0xFF1E3A8A);
+        statusBadgeBg = const Color(0xFFDBEAFE);
+        statusBadgeText = const Color(0xFF1D4ED8);
+        statusTitle = 'Already Booked';
+        statusIcon = Icons.bookmark_added_rounded;
+      } else {
+        cardBg = const Color(0xFFFFFBEB);
+        borderColor = const Color(0xFFFDE68A);
+        titleColor = const Color(0xFF92400E);
+        statusBadgeBg = const Color(0xFFFEF3C7);
+        statusBadgeText = const Color(0xFFD97706);
+        statusTitle = 'Under Maintenance';
+        statusIcon = Icons.build_circle_rounded;
+      }
     } else if (offerTag != null && offerTag.isNotEmpty) {
       cardBg = const Color(0xFFF0FDF4);
       borderColor = const Color(0xFFBBF7D0);
@@ -1302,29 +1324,13 @@ class _AdminSlotManagerScreenState
                 "Slot $slot has already passed for today.",
               );
             }
-          : () async {
-              final profile = ref.read(turfProfileProvider);
-              final adminId =
-                  profile.verifiedAdminId ?? profile.adminUserId ?? 1;
-              final success = await ref
-                  .read(adminSlotProvider.notifier)
-                  .toggleBlockSlotRealtime(adminId, slot, dateKey);
-              if (context.mounted) {
-                if (success) {
-                  ToastUtils.showSuccess(
-                    context,
-                    isBlocked
-                        ? 'Slot $slot unblocked and ready for bookings!'
-                        : 'Slot $slot blocked for maintenance.',
-                  );
-                } else {
-                  ToastUtils.showError(
-                    context,
-                    "Cannot toggle slot $slot (already reserved).",
-                  );
-                }
-              }
-            },
+          : () => _showSlotStatusDialog(
+                context,
+                slot: slot,
+                dateKey: dateKey,
+                isBlocked: isBlocked,
+                currentReason: blockReason,
+              ),
       onLongPress: (isBooked || isPast)
           ? null
           : () => _showOfferActions(slot, offerTag),
@@ -1431,8 +1437,10 @@ class _AdminSlotManagerScreenState
                   : isPast
                   ? 'Expired time'
                   : isBlocked
-                  ? 'Tap to unblock'
-                  : 'Tap to block',
+                  ? (isAlreadyBooked
+                      ? 'Already Booked • Tap to edit'
+                      : 'Maintenance • Tap to edit')
+                  : 'Tap to manage',
               style: TextStyle(
                 fontSize: 9,
                 fontWeight: FontWeight.w500,
@@ -1442,6 +1450,350 @@ class _AdminSlotManagerScreenState
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSlotStatusDialog(
+    BuildContext context, {
+    required String slot,
+    required String dateKey,
+    required bool isBlocked,
+    required String currentReason,
+  }) {
+    String initialStatus = 'Available';
+    if (isBlocked) {
+      if (currentReason.toLowerCase().contains('booked')) {
+        initialStatus = 'Already Booked';
+      } else {
+        initialStatus = 'Under Maintenance';
+      }
+    } else {
+      initialStatus = 'Under Maintenance';
+    }
+
+    String selectedStatus = initialStatus;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              16,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.tune_rounded,
+                                  color: Color(0xFF154D36),
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Slot Status: $slot',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Date: ${DateFormat('dd MMM yyyy').format(_selectedDate)} • Set slot availability',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const SizedBox(height: 16),
+
+                _buildStatusSelectionTile(
+                  icon: Icons.build_circle_rounded,
+                  accentColor: const Color(0xFFD97706),
+                  bgColor: const Color(0xFFFEF3C7),
+                  title: 'Under Maintenance',
+                  subtitle: 'Grass repair, pitch rolling, floodlights or venue maintenance hold.',
+                  badgeText: 'Maintenance',
+                  isSelected: selectedStatus == 'Under Maintenance',
+                  onTap: () => setModalState(() => selectedStatus = 'Under Maintenance'),
+                ),
+                const SizedBox(height: 10),
+
+                _buildStatusSelectionTile(
+                  icon: Icons.bookmark_added_rounded,
+                  accentColor: const Color(0xFF1D4ED8),
+                  bgColor: const Color(0xFFDBEAFE),
+                  title: 'Already Booked',
+                  subtitle: 'Reserved via direct call, walk-in customer or manual cash booking.',
+                  badgeText: 'Booked Offline',
+                  isSelected: selectedStatus == 'Already Booked',
+                  onTap: () => setModalState(() => selectedStatus = 'Already Booked'),
+                ),
+                const SizedBox(height: 10),
+
+                _buildStatusSelectionTile(
+                  icon: Icons.check_circle_rounded,
+                  accentColor: const Color(0xFF15803D),
+                  bgColor: const Color(0xFFDCFCE7),
+                  title: 'Available',
+                  subtitle: 'Open for players to book online on the Gamez24 Player App.',
+                  badgeText: 'Open Slot',
+                  isSelected: selectedStatus == 'Available',
+                  onTap: () => setModalState(() => selectedStatus = 'Available'),
+                ),
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF64748B),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 3,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.check_rounded, size: 18),
+                        label: const Text(
+                          'Confirm Status',
+                          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF154D36),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          final profile = ref.read(turfProfileProvider);
+                          final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+
+                          final success = await ref
+                              .read(adminSlotProvider.notifier)
+                              .updateSlotStatusRealtime(
+                                adminId: adminId,
+                                slot: slot,
+                                dateKey: dateKey,
+                                statusType: selectedStatus,
+                              );
+
+                          if (context.mounted) {
+                            if (success) {
+                              if (selectedStatus == 'Under Maintenance') {
+                                ToastUtils.showSuccess(
+                                  context,
+                                  'Slot $slot marked as Under Maintenance.',
+                                );
+                              } else if (selectedStatus == 'Already Booked') {
+                                ToastUtils.showSuccess(
+                                  context,
+                                  'Slot $slot marked as Already Booked (Offline).',
+                                );
+                              } else {
+                                ToastUtils.showSuccess(
+                                  context,
+                                  'Slot $slot is now Available for player bookings.',
+                                );
+                              }
+                            } else {
+                              ToastUtils.showError(
+                                context,
+                                'Failed to update slot $slot status.',
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildStatusSelectionTile({
+    required IconData icon,
+    required Color accentColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+    required String badgeText,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected ? bgColor.withValues(alpha: 0.35) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+            width: isSelected ? 1.8 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: accentColor, size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w800,
+                            color: accentColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isSelected ? accentColor : Colors.transparent,
+                border: Border.all(
+                  color: isSelected ? accentColor : const Color(0xFFCBD5E1),
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? const Center(
+                      child: Icon(
+                        Icons.check,
+                        size: 13,
+                        color: Colors.white,
+                      ),
+                    )
+                  : null,
             ),
           ],
         ),

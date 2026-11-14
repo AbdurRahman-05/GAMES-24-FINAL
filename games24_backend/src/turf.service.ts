@@ -460,8 +460,10 @@ export class TurfService {
     }
 
     const blockedSlotSet = new Set<string>();
+    const blockedReasonMap = new Map<string, string>();
     for (const bl of blocked) {
       blockedSlotSet.add(bl.timeSlot);
+      blockedReasonMap.set(bl.timeSlot, bl.reason || 'Under Maintenance');
     }
 
     const offers = await this.prisma.slotOffer.findMany({
@@ -594,6 +596,8 @@ export class TurfService {
         slot,
         time: slot,
         status,
+        reason: isBlocked ? (blockedReasonMap.get(slot) || 'Under Maintenance') : null,
+        blockReason: isBlocked ? (blockedReasonMap.get(slot) || 'Under Maintenance') : null,
         isPast,
         originalPrice: price,
         price: finalPrice,
@@ -869,7 +873,7 @@ export class TurfService {
   }
 
   async toggleBlockSlot(id: number, body: any) {
-    const { date, timeSlot, reason } = body || {};
+    const { date, timeSlot, reason, action } = body || {};
 
     if (!date || !timeSlot) {
       throw new BadRequestException('Date and timeSlot are required to block/unblock a slot');
@@ -897,16 +901,19 @@ export class TurfService {
     });
 
     let isBlocked = false;
-    if (existing) {
-      await this.prisma.blockedSlot.deleteMany({
-        where: {
-          verifiedAdminId,
-          date: cleanDate,
-          timeSlot: existing.timeSlot,
-        },
-      });
+
+    if (action === 'unblock') {
+      if (existing) {
+        await this.prisma.blockedSlot.deleteMany({
+          where: {
+            verifiedAdminId,
+            date: cleanDate,
+            timeSlot: existing.timeSlot,
+          },
+        });
+      }
       isBlocked = false;
-    } else {
+    } else if (action === 'block') {
       // Cannot block a slot that is already booked by a customer
       const booked = await this.prisma.turfBooking.findFirst({
         where: {
@@ -938,13 +945,63 @@ export class TurfService {
           verifiedAdminId,
           date: cleanDate,
           timeSlot: cleanTimeSlot,
-          reason: reason || 'Blocked by Turf Owner',
+          reason: reason || 'Under Maintenance',
         },
         update: {
-          reason: reason || 'Blocked by Turf Owner',
+          reason: reason || 'Under Maintenance',
         },
       });
       isBlocked = true;
+    } else {
+      // Default toggle behavior
+      if (existing) {
+        await this.prisma.blockedSlot.deleteMany({
+          where: {
+            verifiedAdminId,
+            date: cleanDate,
+            timeSlot: existing.timeSlot,
+          },
+        });
+        isBlocked = false;
+      } else {
+        const booked = await this.prisma.turfBooking.findFirst({
+          where: {
+            verifiedAdminId,
+            date: cleanDate,
+            timeSlot: {
+              equals: cleanTimeSlot,
+              mode: 'insensitive',
+            },
+            status: { not: 'Cancelled' },
+          },
+        });
+
+        if (booked) {
+          throw new BadRequestException(
+            `Cannot block slot "${cleanTimeSlot}" because it is already booked by customer ${booked.customerName}.`,
+          );
+        }
+
+        await this.prisma.blockedSlot.upsert({
+          where: {
+            verifiedAdminId_date_timeSlot: {
+              verifiedAdminId,
+              date: cleanDate,
+              timeSlot: cleanTimeSlot,
+            },
+          },
+          create: {
+            verifiedAdminId,
+            date: cleanDate,
+            timeSlot: cleanTimeSlot,
+            reason: reason || 'Under Maintenance',
+          },
+          update: {
+            reason: reason || 'Under Maintenance',
+          },
+        });
+        isBlocked = true;
+      }
     }
 
     const blockedCount = await this.prisma.blockedSlot.count({

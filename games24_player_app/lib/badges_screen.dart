@@ -1,4 +1,4 @@
-﻿import 'main_layout.dart';
+import 'main_layout.dart';
 import 'package:flutter/material.dart';
 import 'booking_manager.dart';
 import 'team_manager.dart';

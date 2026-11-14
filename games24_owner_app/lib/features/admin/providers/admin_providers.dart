@@ -11,6 +11,7 @@ class AdminSlotState {
   final Map<String, Set<String>> blockedSlotsByDate;
   final Map<String, Set<String>> bookedSlotsByDate;
   final Map<String, Map<String, String>> discountedSlotsByDate;
+  final Map<String, Map<String, String>> blockedReasonsByDate;
   final String weekdayOpeningTime;
   final String weekdayClosingTime;
   final String weekendOpeningTime;
@@ -35,16 +36,22 @@ class AdminSlotState {
     Map<String, Set<String>>? blockedSlotsByDate,
     Map<String, Set<String>>? bookedSlotsByDate,
     Map<String, Map<String, String>>? discountedSlotsByDate,
+    Map<String, Map<String, String>>? blockedReasonsByDate,
     this.weekdayOpeningTime = '06:00 AM',
     this.weekdayClosingTime = '10:00 PM',
     this.weekendOpeningTime = '06:00 AM',
     this.weekendClosingTime = '10:00 PM',
   })  : blockedSlotsByDate = blockedSlotsByDate ?? {},
         bookedSlotsByDate = bookedSlotsByDate ?? {},
-        discountedSlotsByDate = discountedSlotsByDate ?? {};
+        discountedSlotsByDate = discountedSlotsByDate ?? {},
+        blockedReasonsByDate = blockedReasonsByDate ?? {};
 
   Set<String> getBlockedSlotsForDate(String dateKey) {
     return blockedSlotsByDate[dateKey] ?? {};
+  }
+
+  String getBlockedReasonForDate(String dateKey, String slot) {
+    return blockedReasonsByDate[dateKey]?[slot] ?? 'Under Maintenance';
   }
 
   Set<String> getBookedSlotsForDate(String dateKey) {
@@ -59,6 +66,7 @@ class AdminSlotState {
     Map<String, Set<String>>? blockedSlotsByDate,
     Map<String, Set<String>>? bookedSlotsByDate,
     Map<String, Map<String, String>>? discountedSlotsByDate,
+    Map<String, Map<String, String>>? blockedReasonsByDate,
     String? weekdayOpeningTime,
     String? weekdayClosingTime,
     String? weekendOpeningTime,
@@ -68,6 +76,7 @@ class AdminSlotState {
       blockedSlotsByDate: blockedSlotsByDate ?? this.blockedSlotsByDate,
       bookedSlotsByDate: bookedSlotsByDate ?? this.bookedSlotsByDate,
       discountedSlotsByDate: discountedSlotsByDate ?? this.discountedSlotsByDate,
+      blockedReasonsByDate: blockedReasonsByDate ?? this.blockedReasonsByDate,
       weekdayOpeningTime: weekdayOpeningTime ?? this.weekdayOpeningTime,
       weekdayClosingTime: weekdayClosingTime ?? this.weekdayClosingTime,
       weekendOpeningTime: weekendOpeningTime ?? this.weekendOpeningTime,
@@ -80,17 +89,26 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
   @override
   AdminSlotState build() => AdminSlotState();
 
-  void setSlotsForDate(String dateKey, {Set<String>? booked, Set<String>? blocked, Map<String, String>? offers}) {
+  void setSlotsForDate(
+    String dateKey, {
+    Set<String>? booked,
+    Set<String>? blocked,
+    Map<String, String>? offers,
+    Map<String, String>? blockedReasons,
+  }) {
     final currentBooked = Map<String, Set<String>>.from(state.bookedSlotsByDate);
     final currentBlocked = Map<String, Set<String>>.from(state.blockedSlotsByDate);
     final currentOffers = Map<String, Map<String, String>>.from(state.discountedSlotsByDate);
+    final currentReasons = Map<String, Map<String, String>>.from(state.blockedReasonsByDate);
     if (booked != null) currentBooked[dateKey] = booked;
     if (blocked != null) currentBlocked[dateKey] = blocked;
     if (offers != null) currentOffers[dateKey] = offers;
+    if (blockedReasons != null) currentReasons[dateKey] = blockedReasons;
     state = state.copyWith(
       bookedSlotsByDate: currentBooked,
       blockedSlotsByDate: currentBlocked,
       discountedSlotsByDate: currentOffers,
+      blockedReasonsByDate: currentReasons,
     );
   }
 
@@ -103,17 +121,30 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
           final booked = <String>{};
           final blocked = <String>{};
           final offers = <String, String>{};
+          final blockedReasons = <String, String>{};
           for (final s in json['slots']) {
             final slotStr = (s['slot'] ?? s['time'])?.toString() ?? '';
             final status = s['status']?.toString();
             if (status == 'booked') booked.add(slotStr);
-            if (status == 'blocked') blocked.add(slotStr);
+            if (status == 'blocked') {
+              blocked.add(slotStr);
+              final r = (s['reason'] ?? s['blockReason'])?.toString();
+              if (r != null && r.isNotEmpty) {
+                blockedReasons[slotStr] = r;
+              }
+            }
             final offerTag = s['offerTag']?.toString();
             if (offerTag != null && offerTag.isNotEmpty) {
               offers[slotStr] = offerTag;
             }
           }
-          setSlotsForDate(dateKey, booked: booked, blocked: blocked, offers: offers);
+          setSlotsForDate(
+            dateKey,
+            booked: booked,
+            blocked: blocked,
+            offers: offers,
+            blockedReasons: blockedReasons,
+          );
         }
       }
     } catch (e) {
@@ -141,6 +172,60 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
       }
     } catch (e) {
       debugPrint("Error saving slot offer in DB: $e");
+      fetchSlotsForDate(adminId, dateKey);
+      return false;
+    }
+  }
+
+  Future<bool> updateSlotStatusRealtime({
+    required int adminId,
+    required String slot,
+    required String dateKey,
+    required String statusType, // 'Available', 'Under Maintenance', 'Already Booked'
+  }) async {
+    final isUnblock = statusType == 'Available';
+    final action = isUnblock ? 'unblock' : 'block';
+    final reason = statusType == 'Already Booked' ? 'Already Booked' : 'Under Maintenance';
+
+    // Optimistic local state update
+    final currentBlockedMap = Map<String, Set<String>>.from(state.blockedSlotsByDate);
+    final currentReasonsMap = Map<String, Map<String, String>>.from(state.blockedReasonsByDate);
+    final dateBlocked = Set<String>.from(currentBlockedMap[dateKey] ?? {});
+    final dateReasons = Map<String, String>.from(currentReasonsMap[dateKey] ?? {});
+
+    if (isUnblock) {
+      dateBlocked.remove(slot);
+      dateReasons.remove(slot);
+    } else {
+      dateBlocked.add(slot);
+      dateReasons[slot] = reason;
+    }
+    currentBlockedMap[dateKey] = dateBlocked;
+    currentReasonsMap[dateKey] = dateReasons;
+    state = state.copyWith(
+      blockedSlotsByDate: currentBlockedMap,
+      blockedReasonsByDate: currentReasonsMap,
+    );
+
+    try {
+      final res = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/toggle-block'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'date': dateKey,
+          'timeSlot': slot,
+          'reason': reason,
+          'action': action,
+        }),
+      );
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        return true;
+      } else {
+        fetchSlotsForDate(adminId, dateKey);
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Error updating slot status in DB: $e");
       fetchSlotsForDate(adminId, dateKey);
       return false;
     }
