@@ -1047,16 +1047,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       return d == todayStr || d.toLowerCase() == 'today';
     }).toList();
 
-    final dynamicTodayCount = activeTodayList.isNotEmpty
-        ? activeTodayList.length
-        : profile.todayBookingsCount;
-    final dynamicTodayPaid = activeTodayList.isNotEmpty
-        ? activeTodayList.where((b) => !b.paymentMethod.toLowerCase().contains('cash')).length
-        : profile.todayPaidBookings;
-    final dynamicTodayCash = (dynamicTodayCount - dynamicTodayPaid) > 0
-        ? (dynamicTodayCount - dynamicTodayPaid)
-        : 0;
-
     final activeMonthList = allList.where((b) => !b.isCancelled).toList();
     final dynamicTodayRev = profile.todayRevenue > 0
         ? profile.todayRevenue
@@ -1064,20 +1054,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final dynamicMonthRev = profile.monthRevenue > 0
         ? profile.monthRevenue
         : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
-
-    int dynamicBookedSlotsCount = 0;
-    for (final b in activeTodayList) {
-      final slotStr = b.effectiveTimeSlot;
-      if (slotStr.isNotEmpty) {
-        final slots = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
-        dynamicBookedSlotsCount += slots.isNotEmpty ? slots.length : 1;
-      } else {
-        dynamicBookedSlotsCount += 1;
-      }
-    }
-    if (dynamicBookedSlotsCount == 0 && activeTodayList.isNotEmpty) {
-      dynamicBookedSlotsCount = activeTodayList.length;
-    }
 
     final operatingSlots = AppConstants.generateTimeSlots(
       profile.openingTime.isNotEmpty ? profile.openingTime : '05:00 AM',
@@ -1117,34 +1093,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section Header (clean, authoritative)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Turf Command Centre',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
-                letterSpacing: -0.3,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF154D36).withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'Live Overview',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF154D36),
-                ),
-              ),
-            ),
-          ],
+        const Text(
+          'Turf Command Centre',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+            letterSpacing: -0.3,
+          ),
         ),
         const SizedBox(height: 10),
 
@@ -1356,31 +1312,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    // Micro Collections Pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFDCFCE7)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 10),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$dynamicTodayPaid Online • $dynamicTodayCash Cash',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF15803D),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -1446,31 +1377,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           color: Color(0xFF0F172A),
                           letterSpacing: -0.5,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Micro Capacity Pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF0F9FF),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFE0F2FE)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.pie_chart_rounded, color: Color(0xFF0284C7), size: 10),
-                          const SizedBox(width: 4),
-                          Text(
-                            '$dynamicBookedSlotsCount / $totalDailySlots Booked',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF0369A1),
-                            ),
-                          ),
-                        ],
                       ),
                     ),
                   ],
