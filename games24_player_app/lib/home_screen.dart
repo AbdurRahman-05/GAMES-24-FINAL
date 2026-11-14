@@ -12,9 +12,7 @@ import 'package:games24_player_app/booking_manager.dart';
 import 'package:games24_player_app/match_scorecard_screen.dart';
 import 'package:games24_player_app/match_score_manager.dart';
 import 'package:games24_player_app/match_schedule_screen.dart';
-import 'package:games24_player_app/booking_qr_pass_modal.dart';
 import 'package:games24_player_app/location_manager.dart';
-import 'package:games24_player_app/core/widgets/turf_card_carousel.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
@@ -48,7 +46,9 @@ class _HomeScreenState extends State<HomeScreen> {
     BookingManager().fetchBookings();
     ChallengeManager().syncWithCurrentUser();
     ChallengeManager().cleanExpiredChallenges();
-    ChallengeManager().fetchChallenges(location: LocationManager().currentLocation);
+    ChallengeManager().fetchChallenges(
+      location: LocationManager().currentLocation,
+    );
   }
 
   @override
@@ -61,7 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onLocationChanged() {
     if (mounted) {
       setState(() {});
-      ChallengeManager().fetchChallenges(location: LocationManager().currentLocation);
+      ChallengeManager().fetchChallenges(
+        location: LocationManager().currentLocation,
+      );
     }
   }
 
@@ -72,51 +74,23 @@ class _HomeScreenState extends State<HomeScreen> {
         return false;
       }
 
-      final name = (turf['venueName'] ?? turf['name'] ?? '').toString().toLowerCase();
+      final name = (turf['venueName'] ?? turf['name'] ?? '')
+          .toString()
+          .toLowerCase();
       final location = (turf['location'] ?? '').toString().toLowerCase();
 
       List<String> sports = [];
       if (turf['sports'] is List) {
-        sports = (turf['sports'] as List).map((s) => s.toString().toLowerCase().trim()).toList();
+        sports = (turf['sports'] as List)
+            .map((s) => s.toString().toLowerCase())
+            .toList();
       } else if (turf['sports'] != null) {
         sports = turf['sports']
             .toString()
             .toLowerCase()
             .split(RegExp(r'[,•|/]'))
             .map((s) => s.trim())
-            .where((s) => s.isNotEmpty)
             .toList();
-      }
-
-      // Check real courts for dedicated court sports
-      final rawCourts = (turf['courts'] is List) ? turf['courts'] as List : [];
-      for (final c in rawCourts) {
-        if (c is Map) {
-          final cName = c['name']?.toString().trim() ?? '';
-          final isMock = RegExp(r'^(Cricket|Football|Pickle ball|Badminton)\s+Court\s+\d+$', caseSensitive: false).hasMatch(cName);
-          if (isMock) continue;
-
-          if (c['sports'] is List) {
-            for (final cs in c['sports']) {
-              final str = cs.toString().toLowerCase().trim();
-              if (str.isNotEmpty && !sports.contains(str)) sports.add(str);
-            }
-          }
-          if (c['sport'] != null) {
-            for (final cs in c['sport'].toString().toLowerCase().split(RegExp(r'[,•|/]'))) {
-              final str = cs.trim();
-              if (str.isNotEmpty && !sports.contains(str)) sports.add(str);
-            }
-          }
-        }
-      }
-
-      // Every sports turf automatically supports Cricket & Football on the main pitch
-      if (!sports.any((s) => s.contains('cricket'))) {
-        sports.add('cricket');
-      }
-      if (!sports.any((s) => s.contains('football') || s.contains('soccer'))) {
-        sports.add('football');
       }
 
       // 1. Search Query filter
@@ -132,38 +106,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // 2. Sport Filter (from Filter sheet or Category selection)
       if (_filterSport != 'All') {
-        final target = _filterSport.toLowerCase().trim();
-        final isCricketTarget = target == 'cricket' || target.contains('cricket');
-        final isFootballTarget = target == 'football' || target.contains('football') || target.contains('soccer');
-
-        if (isCricketTarget) {
-          // All standard turfs support Cricket!
-          final matches = sports.any((s) => s.contains('cricket'));
-          if (!matches) return false;
-        } else if (isFootballTarget) {
-          // All standard turfs support Football!
-          final matches = sports.any((s) => s.contains('football') || s.contains('soccer'));
-          if (!matches) return false;
-        } else {
-          // Special sports like Pickle ball, Badminton, Tennis, Basketball, etc:
-          // Must have explicit court or configured sport for that venue!
-          final matches = sports.any((s) {
-            final sLower = s.toLowerCase();
-            return sLower.contains(target) ||
-                target.contains(sLower) ||
-                (target.contains('pickle') && sLower.contains('pickle'));
-          });
-          if (!matches) return false;
-        }
+        final target = _filterSport.toLowerCase();
+        final matches = sports.any((s) {
+          final sLower = s.toLowerCase();
+          return sLower.contains(target) ||
+              target.contains(sLower) ||
+              (target == 'cricket' && sLower.contains('box cricket')) ||
+              (target == 'football' && sLower.contains('soccer')) ||
+              (target.contains('pickle') && sLower.contains('pickle'));
+        });
+        if (!matches) return false;
       }
 
       // 3. Price Filter
       if (_filterPrice != 'Any') {
-        final priceRaw = (turf['price'] ?? '0').toString().replaceAll(RegExp(r'[^0-9]'), '');
+        final priceRaw = (turf['price'] ?? '0').toString().replaceAll(
+          RegExp(r'[^0-9]'),
+          '',
+        );
         final priceVal = double.tryParse(priceRaw) ?? 0.0;
-        if (_filterPrice == 'Under ₹800' && priceVal > 800) return false;
-        if (_filterPrice == '₹800 - ₹1,500' && (priceVal < 800 || priceVal > 1500)) return false;
-        if (_filterPrice == '₹1,500+' && priceVal < 1500) return false;
+        if (_filterPrice == 'Under ₹800' && priceVal > 800) {
+          return false;
+        }
+        if (_filterPrice == '₹800 - ₹1,500' &&
+            (priceVal < 800 || priceVal > 1500)) {
+          return false;
+        }
+        if (_filterPrice == '₹1,500+' && priceVal < 1500) {
+          return false;
+        }
       }
 
       // 4. Rating Filter
@@ -178,7 +149,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_filterAmenities.isNotEmpty) {
         List<String> turfAmenities = [];
         if (turf['amenities'] is List) {
-          turfAmenities = (turf['amenities'] as List).map((a) => a.toString().toLowerCase()).toList();
+          turfAmenities = (turf['amenities'] as List)
+              .map((a) => a.toString().toLowerCase())
+              .toList();
         }
         for (var req in _filterAmenities) {
           if (!turfAmenities.any((a) => a.contains(req.toLowerCase()))) {
@@ -192,7 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool get _hasActiveFilters {
-    final isLocFiltered = LocationManager().currentLocation != 'All Madurai' &&
+    final isLocFiltered =
+        LocationManager().currentLocation != 'All Madurai' &&
         LocationManager().currentLocation != 'All';
     return isLocFiltered ||
         _filterSport != 'All' ||
@@ -257,7 +231,11 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Map<String, dynamic>> _categories = [
     {'name': 'Football', 'icon': Icons.sports_soccer, 'isSelected': false},
     {'name': 'Cricket', 'icon': Icons.sports_cricket, 'isSelected': false},
-    {'name': 'Pickle ball', 'icon': Icons.sports_tennis_rounded, 'isSelected': false},
+    {
+      'name': 'Pickle ball',
+      'icon': Icons.sports_tennis_rounded,
+      'isSelected': false,
+    },
     {'name': 'Badminton', 'icon': Icons.sports_tennis, 'isSelected': false},
     {'name': 'Tennis', 'icon': Icons.sports_tennis, 'isSelected': false},
     {
@@ -281,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
             border: Border.all(color: const Color(0xFFBBF7D0)),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF154D36).withValues(alpha: 0.04),
+                color: const Color(0xFF166534).withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -297,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: const Icon(
                   Icons.location_on,
-                  color: Color(0xFF154D36),
+                  color: Color(0xFF166534),
                   size: 18,
                 ),
               ),
@@ -324,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           : 'Filtered for turfs & open matches nearby',
                       style: const TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFF166534),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -337,9 +315,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () => LocationManager.showLocationPicker(context),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF154D36),
+                    color: const Color(0xFF166534),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -354,7 +335,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       SizedBox(width: 2),
-                      Icon(Icons.keyboard_arrow_right, size: 14, color: Colors.white),
+                      Icon(
+                        Icons.keyboard_arrow_right,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),
@@ -371,12 +356,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       color: const Color(0xFFFAFAFA),
       child: RefreshIndicator(
-        color: const Color(0xFF154D36),
+        color: const Color(0xFF166534),
         onRefresh: () async {
           await Future.wait([
             _fetchTurfs(),
             BookingManager().fetchBookings(),
-            ChallengeManager().fetchChallenges(location: LocationManager().currentLocation),
+            ChallengeManager().fetchChallenges(
+              location: LocationManager().currentLocation,
+            ),
           ]);
         },
         child: SingleChildScrollView(
@@ -398,18 +385,37 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   _buildCategories(),
-                  // Unified Active Bookings section: Only shown if the user has an active booking.
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: _buildSectionHeader(
+                      'Upcoming Matches',
+                      'View Schedule',
+                      hasLiveBadge: activeBookings.any(
+                        (b) => BookingManager.isMatchStarted(
+                          dateStr: (b['date'] ?? '').toString(),
+                          timeSlot: (b['timeSlot'] ?? '').toString(),
+                        ),
+                      ),
+                      onActionTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MatchScheduleScreen(),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildUpcomingMatches(activeBookings),
+
+                  // Red circled section: Only shown if the user has an active booking. If no active bookings, completely removed with no extra blank space.
                   if (activeBookings.isNotEmpty) ...[
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 32),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: _buildSectionHeader(
                         'Your Active Bookings',
-                        'View All',
-                        hasLiveBadge: activeBookings.any((b) => BookingManager.isMatchStarted(
-                          dateStr: (b['date'] ?? '').toString(),
-                          timeSlot: (b['timeSlot'] ?? '').toString(),
-                        )),
+                        'History',
                         onActionTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -505,10 +511,12 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: _isSearchOpen ? const Color(0xFF154D36) : Colors.white,
+              color: _isSearchOpen ? const Color(0xFF166534) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _isSearchOpen ? const Color(0xFF154D36) : const Color(0xFFE5E7EB),
+                color: _isSearchOpen
+                    ? const Color(0xFF166534)
+                    : const Color(0xFFE5E7EB),
               ),
               boxShadow: [
                 BoxShadow(
@@ -536,11 +544,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36),
+                  color: const Color(0xFF166534),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                      color: const Color(0xFF166534).withValues(alpha: 0.25),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     ),
@@ -562,7 +570,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Color(0xFFEF4444),
                       shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
                     alignment: Alignment.center,
                     child: Text(
                       '$_activeFilterCount',
@@ -599,7 +610,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.search, color: Color(0xFF154D36), size: 20),
+          const Icon(Icons.search, color: Color(0xFF166534), size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -627,7 +638,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   _searchQuery = '';
                 });
               },
-              child: const Icon(Icons.cancel, size: 18, color: Color(0xFF9CA3AF)),
+              child: const Icon(
+                Icons.cancel,
+                size: 18,
+                color: Color(0xFF9CA3AF),
+              ),
             ),
         ],
       ),
@@ -639,44 +654,56 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (LocationManager().currentLocation != 'All Madurai' &&
         LocationManager().currentLocation != 'All') {
-      chips.add(_buildFilterPill(LocationManager().currentLocation, () {
-        LocationManager().setLocation('All Madurai');
-      }));
+      chips.add(
+        _buildFilterPill('📍 ${LocationManager().currentLocation}', () {
+          LocationManager().setLocation('All Madurai');
+        }),
+      );
     }
 
     if (_filterSport != 'All') {
-      chips.add(_buildFilterPill(_filterSport, () {
-        setState(() {
-          _filterSport = 'All';
-          for (var c in _categories) {
-            c['isSelected'] = false;
-          }
-        });
-      }));
+      chips.add(
+        _buildFilterPill(_filterSport, () {
+          setState(() {
+            _filterSport = 'All';
+            for (var c in _categories) {
+              c['isSelected'] = false;
+            }
+          });
+        }),
+      );
     }
 
     if (_filterDistance != 'Any') {
-      chips.add(_buildFilterPill(_filterDistance, () {
-        setState(() => _filterDistance = 'Any');
-      }));
+      chips.add(
+        _buildFilterPill(_filterDistance, () {
+          setState(() => _filterDistance = 'Any');
+        }),
+      );
     }
 
     if (_filterPrice != 'Any') {
-      chips.add(_buildFilterPill(_filterPrice, () {
-        setState(() => _filterPrice = 'Any');
-      }));
+      chips.add(
+        _buildFilterPill(_filterPrice, () {
+          setState(() => _filterPrice = 'Any');
+        }),
+      );
     }
 
     if (_filterRating != 'Any') {
-      chips.add(_buildFilterPill(_filterRating, () {
-        setState(() => _filterRating = 'Any');
-      }));
+      chips.add(
+        _buildFilterPill(_filterRating, () {
+          setState(() => _filterRating = 'Any');
+        }),
+      );
     }
 
     for (final a in _filterAmenities) {
-      chips.add(_buildFilterPill(a, () {
-        setState(() => _filterAmenities.remove(a));
-      }));
+      chips.add(
+        _buildFilterPill(a, () {
+          setState(() => _filterAmenities.remove(a));
+        }),
+      );
     }
 
     return SingleChildScrollView(
@@ -711,7 +738,9 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF0FDF4),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF154D36).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF166534).withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -721,17 +750,13 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF154D36),
+              color: Color(0xFF166534),
             ),
           ),
           const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(
-              Icons.close,
-              size: 14,
-              color: Color(0xFF154D36),
-            ),
+            child: const Icon(Icons.close, size: 14, color: Color(0xFF166534)),
           ),
         ],
       ),
@@ -757,8 +782,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: -0.3,
-                    color: Color(0xFF0F172A),
+                    letterSpacing: -0.5,
+                    color: Color(0xFF111827),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -767,26 +792,21 @@ class _HomeScreenState extends State<HomeScreen> {
               if (hasLiveBadge) ...[
                 const SizedBox(width: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDC2626),
-                    borderRadius: BorderRadius.circular(10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.circle, color: Colors.white, size: 6),
-                      SizedBox(width: 4),
-                      Text(
-                        'LIVE',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF166534),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Live',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -801,16 +821,16 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (trailingIcon != null) ...[
-                Icon(trailingIcon, size: 14, color: const Color(0xFF154D36)),
+                Icon(trailingIcon, size: 14, color: const Color(0xFF166534)),
                 const SizedBox(width: 4),
               ],
               if (actionText.isNotEmpty)
                 Text(
                   actionText,
                   style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF154D36),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF166534),
                   ),
                 ),
             ],
@@ -835,7 +855,8 @@ class _HomeScreenState extends State<HomeScreen> {
           return GestureDetector(
             onTap: () {
               setState(() {
-                final currentSelected = _categories[index]['isSelected'] as bool;
+                final currentSelected =
+                    _categories[index]['isSelected'] as bool;
                 for (var category in _categories) {
                   category['isSelected'] = false;
                 }
@@ -848,53 +869,48 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
             child: Container(
-              width: 86,
+              width: 88,
               decoration: BoxDecoration(
-                gradient: isSelected
-                    ? const LinearGradient(
-                        colors: [Color(0xFF113E2B), Color(0xFF1B5E41)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: isSelected ? null : Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                color: isSelected ? const Color(0xFF166534) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: const Color(0xFF154D36).withValues(alpha: 0.25),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: const Color(0xFF166534).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
                         ),
                       ]
                     : [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 6,
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
                       ],
-                border: Border.all(
-                  color: isSelected ? const Color(0xFF1B5E41) : const Color(0xFFE2E8F0),
-                  width: 1.0,
-                ),
+                border: isSelected
+                    ? null
+                    : Border.all(color: const Color(0xFFF3F4F6), width: 1.5),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     cat['icon'] as IconData,
-                    color: isSelected ? Colors.white : const Color(0xFF475569),
-                    size: 26,
+                    color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                    size: 28,
                   ),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 8),
                   Text(
                     cat['name'] as String,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : const Color(0xFF0F172A),
-                      fontSize: 12.5,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                      letterSpacing: -0.2,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF4B5563),
+                      fontSize: 13,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ],
@@ -945,7 +961,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: const Icon(
                 Icons.sports_soccer_outlined,
-                color: Color(0xFF154D36),
+                color: Color(0xFF166534),
                 size: 26,
               ),
             ),
@@ -966,10 +982,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 4),
                   Text(
                     'Book a turf slot or join an open game to play!',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B7280),
-                    ),
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
                   ),
                 ],
               ),
@@ -1006,13 +1019,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMinimalUpcomingMatchCard(Map<String, dynamic> match) {
-    final turfName = (match['turfName'] ?? match['courtName'] ?? 'Turf Match').toString();
+    final turfName = (match['turfName'] ?? match['courtName'] ?? 'Turf Match')
+        .toString();
     final courtName = (match['courtName'] ?? '').toString();
     final sport = (match['sport'] ?? 'Football').toString();
     final date = (match['date'] ?? '').toString();
     final timeSlot = (match['timeSlot'] ?? '').toString();
-    final bookingCode = (match['bookingCode'] ?? match['bookingId'] ?? '').toString();
-    final isLive = BookingManager.isMatchStarted(dateStr: date, timeSlot: timeSlot);
+    final bookingCode = (match['bookingCode'] ?? match['bookingId'] ?? '')
+        .toString();
+    final isLive = BookingManager.isMatchStarted(
+      dateStr: date,
+      timeSlot: timeSlot,
+    );
 
     final sportIcon = _getSportIconData(sport);
 
@@ -1020,7 +1038,8 @@ class _HomeScreenState extends State<HomeScreen> {
     String formattedDateTime = timeSlot;
     if (date.isNotEmpty) {
       final now = DateTime.now();
-      final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      final todayStr =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       if (date == todayStr) {
         formattedDateTime = 'Today • $timeSlot';
       } else {
@@ -1058,11 +1077,14 @@ class _HomeScreenState extends State<HomeScreen> {
             );
             final isSlotActive = remainingSlotMins > 0;
             final isLiveMatch = live != null && live.isLive;
-            final canPlayNext = !isLiveMatch && isSlotActive && results.isNotEmpty;
+            final canPlayNext =
+                !isLiveMatch && isSlotActive && results.isNotEmpty;
 
             final targetTab = isLiveMatch
                 ? 2
-                : (canPlayNext ? 1 : (results.isNotEmpty && !isSlotActive ? 3 : 0));
+                : (canPlayNext
+                      ? 1
+                      : (results.isNotEmpty && !isSlotActive ? 3 : 0));
 
             Navigator.push(
               context,
@@ -1089,12 +1111,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: isLive ? const Color(0xFFDCFCE7) : const Color(0xFFF1F5F9),
+                    color: isLive
+                        ? const Color(0xFFDCFCE7)
+                        : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     sportIcon,
-                    color: isLive ? const Color(0xFF16A34A) : const Color(0xFF154D36),
+                    color: isLive
+                        ? const Color(0xFF16A34A)
+                        : const Color(0xFF166534),
                     size: 22,
                   ),
                 ),
@@ -1111,7 +1137,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.45),
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.45,
+                            ),
                             child: Text(
                               turfName,
                               style: const TextStyle(
@@ -1125,33 +1154,35 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           if (match['isOpenMatch'] == true)
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFFF1F2),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: const Color(0xFFFECDD3)),
+                                border: Border.all(
+                                  color: const Color(0xFFFECDD3),
+                                ),
                               ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.sports_kabaddi_rounded, size: 11, color: Color(0xFFBE123C)),
-                                  SizedBox(width: 3),
-                                  Text(
-                                    'CHALLENGE',
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFFBE123C),
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                ],
+                              child: const Text(
+                                '⚔️ Open Match',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFBE123C),
+                                ),
                               ),
                             ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: isLive ? const Color(0xFFDCFCE7) : const Color(0xFFF1F5F9),
+                              color: isLive
+                                  ? const Color(0xFFDCFCE7)
+                                  : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -1213,7 +1244,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      if (bookingCode.isNotEmpty || (courtName.isNotEmpty && courtName != turfName)) ...[
+                      if (bookingCode.isNotEmpty ||
+                          (courtName.isNotEmpty && courtName != turfName)) ...[
                         const SizedBox(height: 3),
                         Text(
                           bookingCode.isNotEmpty ? bookingCode : courtName,
@@ -1265,7 +1297,11 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 80,
           child: Text(
             name,
-            style: const TextStyle(fontSize: 10, color: Color(0xFF111827), fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontSize: 10,
+              color: Color(0xFF111827),
+              fontWeight: FontWeight.w600,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -1334,9 +1370,13 @@ class _HomeScreenState extends State<HomeScreen> {
         final locationOrCourt =
             (booking['courtName'] ?? booking['location'] ?? 'Turf 1')
                 .toString();
-        final isCompleted = !BookingManager.isBookingActive(booking) ||
+        final isCompleted =
+            !BookingManager.isBookingActive(booking) ||
             (booking['status'] ?? '').toString().toLowerCase() == 'completed';
-        final isStarted = BookingManager.isMatchStarted(dateStr: dateStr, timeSlot: timeSlot);
+        final isStarted = BookingManager.isMatchStarted(
+          dateStr: dateStr,
+          timeSlot: timeSlot,
+        );
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 12.0),
@@ -1385,13 +1425,13 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: const Icon(
                               Icons.sports_soccer,
-                              color: Color(0xFF154D36),
+                              color: Color(0xFF166534),
                               size: 36,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1400,6 +1440,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               spacing: 6,
                               runSpacing: 4,
                               crossAxisAlignment: WrapCrossAlignment.center,
+                              alignment: WrapAlignment.spaceBetween,
                               children: [
                                 if (turfName.isNotEmpty)
                                   Text(
@@ -1411,43 +1452,55 @@ class _HomeScreenState extends State<HomeScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                if (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2.5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFFF1F2),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFFFECDD3)),
-                                    ),
-                                    child: const Text(
-                                      'OPEN MATCH',
-                                      style: TextStyle(
-                                        fontSize: 9.5,
-                                        color: Color(0xFFBE123C),
-                                        fontWeight: FontWeight.bold,
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    if (booking['isOpenMatch'] == true ||
+                                        booking['is_open_match'] == true)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2.5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFF1F2),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(0xFFFECDD3),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          '⚔️ Open Match',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            color: Color(0xFFBE123C),
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 2.5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        status,
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          color: Colors.green.shade800,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 7,
-                                    vertical: 2.5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.shade100,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    status,
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      color: Colors.green.shade800,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -1486,152 +1539,130 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      // Prominent Top-Right View Details Arrow Icon Button
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyBookingsScreen(),
-                            ),
-                          ).then((_) => BookingManager().fetchBookings());
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF0FDF4),
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFDCFCE7), width: 1.2),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 13,
-                            color: Color(0xFF154D36),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   const Divider(height: 1, color: Color(0xFFF3F4F6)),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // 1. Entry Pass Button (Opens Ticket QR Code)
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => BookingQrPassModal.show(context, booking),
-                          icon: const Icon(
-                            Icons.qr_code_2_rounded,
-                            size: 17,
-                            color: Color(0xFF86EFAC),
-                          ),
-                          label: const Text(
-                            'Entry Pass',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F2B1E),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // 2. Lineup / Match / Scorecard Button
-                      Expanded(
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: MatchScoreManager().liveStateNotifier,
-                          builder: (context, _, child) {
-                            final bId = (booking['id'] ?? 'BK-1').toString();
-                            final liveState = MatchScoreManager().getLiveStateSync(bId);
-                            final results = MatchScoreManager().getAllResultsForBooking(bId);
-                            final isLive = liveState != null && liveState.isLive;
-                            final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
-                              dateStr: dateStr,
-                              timeSlot: timeSlot,
-                            );
-                            final isSlotActive = remainingSlotMins > 0;
-                            final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
-                            final isSlotFinished = isCompleted || (!isSlotActive && results.isNotEmpty);
+                      ValueListenableBuilder<int>(
+                        valueListenable: MatchScoreManager().liveStateNotifier,
+                        builder: (context, _, child) {
+                          final bId = (booking['id'] ?? 'BK-1').toString();
+                          final liveState = MatchScoreManager()
+                              .getLiveStateSync(bId);
+                          final results = MatchScoreManager()
+                              .getAllResultsForBooking(bId);
+                          final isLive = liveState != null && liveState.isLive;
+                          final remainingSlotMins =
+                              BookingManager.getRemainingSlotMinutes(
+                                dateStr: dateStr,
+                                timeSlot: timeSlot,
+                              );
+                          final isSlotActive = remainingSlotMins > 0;
+                          final canPlayNext =
+                              !isLive && isSlotActive && results.isNotEmpty;
+                          final isSlotFinished =
+                              isCompleted ||
+                              (!isSlotActive && results.isNotEmpty);
 
-                            Color btnColor;
-                            IconData btnIcon;
-                            String btnText;
-                            int targetTab;
-                            bool startNew = false;
+                          Color btnColor;
+                          IconData btnIcon;
+                          String btnText;
+                          int targetTab;
+                          bool startNew = false;
 
-                            if (isLive) {
-                              btnColor = const Color(0xFFDC2626);
-                              btnIcon = Icons.play_circle_fill_rounded;
-                              btnText = 'Live Match';
-                              targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
-                            } else if (canPlayNext) {
-                              btnColor = const Color(0xFFDC2626);
-                              btnIcon = Icons.flash_on_rounded;
-                              btnText = 'Next Match';
-                              targetTab = 1;
-                              startNew = true;
-                            } else if (isSlotFinished) {
-                              btnColor = const Color(0xFF154D36);
-                              btnIcon = Icons.emoji_events_rounded;
-                              btnText = 'Scorecard';
-                              targetTab = 3;
-                            } else {
-                              btnColor = const Color(0xFF154D36);
-                              btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
-                              btnText = (booking['isOpenMatch'] == true || booking['is_open_match'] == true)
-                                  ? (isStarted ? 'Scorecard' : 'Squad')
-                                  : (isStarted ? 'Scorecard' : 'Team Lineup');
-                              targetTab = 0;
-                            }
+                          if (isLive) {
+                            btnColor = const Color(0xFFDC2626);
+                            btnIcon = Icons.play_circle_fill_rounded;
+                            btnText =
+                                'Continue Live Match 🔴 (${liveState.liveScoreSummary})';
+                            targetTab = liveState.activeTabIndex == 0
+                                ? 2
+                                : liveState.activeTabIndex;
+                          } else if (canPlayNext) {
+                            btnColor = const Color(0xFFDC2626);
+                            btnIcon = Icons.flash_on_rounded;
+                            btnText =
+                                'Play Match #${results.length + 1} ⚡ (~${remainingSlotMins}m left)';
+                            targetTab = 1;
+                            startNew = true;
+                          } else if (isSlotFinished) {
+                            btnColor = const Color(0xFF0F6D38);
+                            btnIcon = Icons.emoji_events_rounded;
+                            btnText = results.length > 1
+                                ? 'View Match Summaries (${results.length}) 🏆'
+                                : 'View Scorecard 🏆';
+                            targetTab = 3;
+                          } else {
+                            btnColor = const Color(0xFF166534);
+                            btnIcon = isStarted
+                                ? Icons.sports_score_rounded
+                                : Icons.groups_rounded;
+                            btnText =
+                                (booking['isOpenMatch'] == true ||
+                                    booking['is_open_match'] == true)
+                                ? (isStarted
+                                      ? 'Scorecard & Toss 🏆'
+                                      : 'Challenge Squad ⚔️')
+                                : (isStarted
+                                      ? 'Scorecard & Toss 🏆'
+                                      : 'Team Lineup 🛡️');
+                            targetTab = 0;
+                          }
 
-                            return ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MatchScorecardScreen(
-                                      bookingId: bId,
-                                      turfName: turfName,
-                                      sport: (booking['sport'] ?? 'Cricket').toString(),
-                                      date: dateStr,
-                                      timeSlot: timeSlot,
-                                      initialTab: targetTab,
-                                      startNewMatchImmediately: startNew,
-                                      isOpenMatch: booking['isOpenMatch'] == true ||
-                                          booking['is_open_match'] == true,
-                                    ),
+                          return ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MatchScorecardScreen(
+                                    bookingId: bId,
+                                    turfName: turfName,
+                                    sport: (booking['sport'] ?? 'Cricket')
+                                        .toString(),
+                                    date: dateStr,
+                                    timeSlot: timeSlot,
+                                    initialTab: targetTab,
+                                    startNewMatchImmediately: startNew,
+                                    isOpenMatch:
+                                        booking['isOpenMatch'] == true ||
+                                        booking['is_open_match'] == true,
                                   ),
-                                );
-                              },
-                              icon: Icon(btnIcon, size: 16),
-                              label: Text(
-                                btnText,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            },
+                            icon: Icon(btnIcon, size: 16),
+                            label: Text(
+                              btnText,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: btnColor,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                elevation: (isLive || canPlayNext) ? 2 : 0,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: btnColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
                               ),
-                            );
-                          },
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: (isLive || canPlayNext) ? 2 : 0,
+                            ),
+                          );
+                        },
+                      ),
+                      const Text(
+                        'View Booking →',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF166534),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1650,10 +1681,15 @@ class _HomeScreenState extends State<HomeScreen> {
       valueListenable: ChallengeManager().challengesNotifier,
       builder: (context, allChallenges, child) {
         final challenges = allChallenges
-            .where((c) => !c.isExpired && LocationManager().isMatchingLocation(c.location))
+            .where(
+              (c) =>
+                  !c.isExpired &&
+                  LocationManager().isMatchingLocation(c.location),
+            )
             .toList();
         if (challenges.isEmpty) {
-          final isFiltered = LocationManager().currentLocation != 'All Madurai' &&
+          final isFiltered =
+              LocationManager().currentLocation != 'All Madurai' &&
               LocationManager().currentLocation != 'All';
           return Container(
             width: double.infinity,
@@ -1682,7 +1718,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: const Icon(
                     Icons.flag_outlined,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFF166534),
                     size: 26,
                   ),
                 ),
@@ -1746,8 +1782,18 @@ class _HomeScreenState extends State<HomeScreen> {
         final day = int.tryParse(parts[2]);
         if (year != null && month != null && day != null) {
           const months = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
           ];
           cleanDate = '$day ${months[month - 1]}';
         }
@@ -1782,7 +1828,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                  color: const Color(0xFF166534).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -1790,7 +1836,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFF166534),
                   ),
                 ),
               ),
@@ -1890,7 +1936,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Icon(
                             Icons.location_on,
                             size: 11,
-                            color: Color(0xFF154D36),
+                            color: Color(0xFF166534),
                           ),
                           const SizedBox(width: 2),
                           Flexible(
@@ -1922,12 +1968,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_rounded, size: 12, color: Color(0xFF154D36)),
+                      Icon(
+                        Icons.check_circle_rounded,
+                        size: 12,
+                        color: Color(0xFF166534),
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Matched',
                         style: TextStyle(
-                          color: Color(0xFF154D36),
+                          color: Color(0xFF166534),
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1947,7 +1997,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: challenge.joinRequests.isNotEmpty
-                          ? const Color(0xFF154D36)
+                          ? const Color(0xFF166534)
                           : const Color(0xFF0F766E),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -1988,7 +2038,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.hourglass_top_rounded, size: 12, color: Colors.orange.shade900),
+                      Icon(
+                        Icons.hourglass_top_rounded,
+                        size: 12,
+                        color: Colors.orange.shade900,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Requested',
@@ -2012,13 +2066,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF154D36),
+                      color: const Color(0xFF166534),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.sports_rounded, size: 13, color: Colors.white),
+                        Icon(
+                          Icons.sports_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'Join',
@@ -2055,14 +2113,21 @@ class _HomeScreenState extends State<HomeScreen> {
         final requests = challenge.joinRequests;
 
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  requests.isNotEmpty ? 'Join Requests (${requests.length})' : 'Open Challenge Status',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  requests.isNotEmpty
+                      ? 'Join Requests (${requests.length})'
+                      : 'Open Challenge Status',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -2085,18 +2150,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         const Icon(
                           Icons.mark_email_read_outlined,
                           size: 48,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFF166534),
                         ),
                         const SizedBox(height: 12),
                         const Text(
                           'No Requests Yet',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Your open challenge for ${challenge.sport} at ${challenge.turfName} is live.\n\nOther players can challenge your team with their team name, team size, and contact details.',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
                         ),
                       ],
                     ),
@@ -2104,7 +2175,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 : ListView.separated(
                     shrinkWrap: true,
                     itemCount: requests.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final req = requests[index];
                       return Container(
@@ -2132,7 +2204,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFE5F5EB),
                                     borderRadius: BorderRadius.circular(6),
@@ -2142,7 +2217,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: const TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF154D36),
+                                      color: Color(0xFF166534),
                                     ),
                                   ),
                                 ),
@@ -2151,16 +2226,26 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(Icons.phone_rounded, size: 12, color: Color(0xFF6B7280)),
+                                const Icon(
+                                  Icons.phone_rounded,
+                                  size: 12,
+                                  color: Color(0xFF6B7280),
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   req.contactDetails,
-                                  style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF4B5563),
+                                  ),
                                 ),
                                 const Spacer(),
                                 Text(
                                   req.requestedAt,
-                                  style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
                                 ),
                               ],
                             ),
@@ -2171,39 +2256,76 @@ class _HomeScreenState extends State<HomeScreen> {
                                 OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: const Color(0xFFDC2626),
-                                    side: const BorderSide(color: Color(0xFFFCA5A5)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    side: const BorderSide(
+                                      color: Color(0xFFFCA5A5),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
                                     minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  icon: const Icon(Icons.close_rounded, size: 14),
-                                  label: const Text('Decline', style: TextStyle(fontSize: 11)),
+                                  icon: const Icon(
+                                    Icons.close_rounded,
+                                    size: 14,
+                                  ),
+                                  label: const Text(
+                                    'Decline',
+                                    style: TextStyle(fontSize: 11),
+                                  ),
                                   onPressed: () {
-                                    ChallengeManager().rejectRequest(challenge.id, req.id);
+                                    ChallengeManager().rejectRequest(
+                                      challenge.id,
+                                      req.id,
+                                    );
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Request declined.')),
+                                      const SnackBar(
+                                        content: Text('Request declined.'),
+                                      ),
                                     );
                                   },
                                 ),
                                 const SizedBox(width: 8),
                                 ElevatedButton.icon(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF154D36),
+                                    backgroundColor: const Color(0xFF166534),
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
                                     minimumSize: Size.zero,
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  icon: const Icon(Icons.check_circle_rounded, size: 14),
-                                  label: const Text('Accept Challenge', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                  icon: const Icon(
+                                    Icons.check_circle_rounded,
+                                    size: 14,
+                                  ),
+                                  label: const Text(
+                                    'Accept Challenge',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   onPressed: () {
-                                    ChallengeManager().acceptRequest(challenge.id, req);
+                                    ChallengeManager().acceptRequest(
+                                      challenge.id,
+                                      req,
+                                    );
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Challenge accepted! Paired with ${req.teamName}.'),
-                                        backgroundColor: const Color(0xFF154D36),
+                                        content: Text(
+                                          'Challenge accepted! Paired with ${req.teamName}.',
+                                        ),
+                                        backgroundColor: const Color(
+                                          0xFF166534,
+                                        ),
                                       ),
                                     );
                                   },
@@ -2232,7 +2354,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFF154D36)),
+          child: CircularProgressIndicator(color: Color(0xFF166534)),
         ),
       );
     }
@@ -2309,13 +2431,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ElevatedButton(
               onPressed: _clearAllFilters,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF154D36),
+                backgroundColor: const Color(0xFF166534),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
               ),
-              child: const Text('Reset Filters', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Reset Filters',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -2332,11 +2460,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ? (turf['photoUrls'] as List).map((e) => e.toString()).toList()
             : [turf['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
 
-        final List<String> sportsFromTurf = (turf['sports'] is List && (turf['sports'] as List).isNotEmpty)
-            ? (turf['sports'] as List).map((e) => e.toString()).toList()
-            : ['Cricket', 'Football'];
-
-        final sportsStr = sportsFromTurf.join(' • ');
+        final sportsStr = (turf['sports'] is List)
+            ? (turf['sports'] as List).join(' • ')
+            : (turf['sports']?.toString() ??
+                  'Cricket • Football • Pickle ball • Badminton');
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -2355,9 +2482,9 @@ class _HomeScreenState extends State<HomeScreen> {
             rating: turf['rating']?.toString() ?? '4.9',
             reviews: turf['reviews']?.toString() ?? '128',
             sports: sportsStr,
-            sportsList: (turf['sportsList'] is List) ? (turf['sportsList'] as List) : null,
-            courts: (turf['courts'] is List) ? (turf['courts'] as List) : null,
-            turf: turf,
+            sportsList: (turf['sportsList'] is List)
+                ? (turf['sportsList'] as List)
+                : null,
             tags: tags,
           ),
         );
@@ -2379,8 +2506,6 @@ class _HomeScreenState extends State<HomeScreen> {
     required String reviews,
     required String sports,
     List<dynamic>? sportsList,
-    List<dynamic>? courts,
-    Map<String, dynamic>? turf,
     required List<String> tags,
   }) {
     return Container(
@@ -2398,100 +2523,86 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Header with Multi-Photo Carousel
-          TurfCardCarousel(
-            photoUrls: photoUrls,
-            fallbackImageUrl: imageUrl,
-            height: 180,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            topTrailing: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+          // Image Header
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+                child: Image.network(
+                  imageUrl,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => Container(
+                    height: 180,
+                    color: Colors.grey.shade200,
+                    child: const Icon(
+                      Icons.sports_soccer,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
                   ),
-                ],
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 14),
-                  const SizedBox(width: 4),
-                  Text(
-                    rating,
+              Positioned(
+                top: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        rating,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      Text(
+                        ' ($reviews)',
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    sports,
                     style: const TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
                     ),
                   ),
-                  Text(
-                    ' ($reviews)',
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            bottomLeading: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.92),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Text(
-                sports,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF154D36),
                 ),
               ),
-            ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => BookingScreen(
-                    turfId: turfId,
-                    turfName: name,
-                    imageUrl: imageUrl,
-                    photoUrls: photoUrls,
-                    amenities: amenities,
-                    openingTime: openingTime,
-                    closingTime: closingTime,
-                    price: price,
-                    location: location,
-                    sports: sports.split(' • '),
-                    sportsList: sportsList,
-                    courts: courts,
-                    turf: turf,
-                    initialSport: (_filterSport != 'All') ? _filterSport : 'Football',
-                  ),
-                ),
-              );
-            },
+            ],
           ),
 
           // Details
@@ -2519,7 +2630,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFF166534),
                       ),
                     ),
                   ],
@@ -2610,15 +2721,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               location: location,
                               sports: sports.split(' • '),
                               sportsList: sportsList,
-                              courts: courts,
-                              turf: turf,
-                              initialSport: (_filterSport != 'All') ? _filterSport : 'Football',
                             ),
                           ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
+                        backgroundColor: const Color(0xFF166534),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
@@ -2679,16 +2787,27 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            Widget buildChip(String title, bool isSelected, VoidCallback onTap) {
+            Widget buildChip(
+              String title,
+              bool isSelected,
+              VoidCallback onTap,
+            ) {
               return GestureDetector(
                 onTap: onTap,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF9FAFB),
+                    color: isSelected
+                        ? const Color(0xFF166534)
+                        : const Color(0xFFF9FAFB),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE5E7EB),
+                      color: isSelected
+                          ? const Color(0xFF166534)
+                          : const Color(0xFFE5E7EB),
                       width: 1.2,
                     ),
                   ),
@@ -2696,8 +2815,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     title,
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                      color: isSelected ? Colors.white : const Color(0xFF374151),
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF374151),
                     ),
                   ),
                 ),
@@ -2726,13 +2849,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // Header
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Row(
                             children: [
-                              Icon(Icons.tune_rounded, color: Color(0xFF154D36), size: 22),
+                              Icon(
+                                Icons.tune_rounded,
+                                color: Color(0xFF166534),
+                                size: 22,
+                              ),
                               SizedBox(width: 8),
                               Text(
                                 'Filter Games & Turfs',
@@ -2770,26 +2900,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: ListView(
                         controller: scrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
                         children: [
                           // 1. Sport
                           buildSectionLabel('Particular Sport'),
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: [
-                              'All',
-                              'Cricket',
-                              'Football',
-                              'Pickle ball',
-                              'Badminton',
-                              'Tennis',
-                              'Basketball',
-                            ].map((s) {
-                              return buildChip(s, tempSport == s, () {
-                                setModalState(() => tempSport = s);
-                              });
-                            }).toList(),
+                            children:
+                                [
+                                  'All',
+                                  'Cricket',
+                                  'Football',
+                                  'Pickle ball',
+                                  'Badminton',
+                                  'Tennis',
+                                  'Basketball',
+                                ].map((s) {
+                                  return buildChip(s, tempSport == s, () {
+                                    setModalState(() => tempSport = s);
+                                  });
+                                }).toList(),
                           ),
 
                           // 2. Distance
@@ -2797,11 +2931,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: ['Any', '< 5 km', '< 10 km', '< 25 km'].map((d) {
-                              return buildChip(d, tempDistance == d, () {
-                                setModalState(() => tempDistance = d);
-                              });
-                            }).toList(),
+                            children: ['Any', '< 5 km', '< 10 km', '< 25 km']
+                                .map((d) {
+                                  return buildChip(d, tempDistance == d, () {
+                                    setModalState(() => tempDistance = d);
+                                  });
+                                })
+                                .toList(),
                           ),
 
                           // 3. Price
@@ -2809,16 +2945,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: [
-                              'Any',
-                              'Under ₹800',
-                              '₹800 - ₹1,500',
-                              '₹1,500+',
-                            ].map((p) {
-                              return buildChip(p, tempPrice == p, () {
-                                setModalState(() => tempPrice = p);
-                              });
-                            }).toList(),
+                            children:
+                                [
+                                  'Any',
+                                  'Under ₹800',
+                                  '₹800 - ₹1,500',
+                                  '₹1,500+',
+                                ].map((p) {
+                                  return buildChip(p, tempPrice == p, () {
+                                    setModalState(() => tempPrice = p);
+                                  });
+                                }).toList(),
                           ),
 
                           // 4. Rating
@@ -2838,24 +2975,25 @@ class _HomeScreenState extends State<HomeScreen> {
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
-                            children: [
-                              'Floodlights',
-                              'Parking',
-                              'Restroom',
-                              'Drinking Water',
-                              'Air Conditioning',
-                            ].map((a) {
-                              final isSelected = tempAmenities.contains(a);
-                              return buildChip(a, isSelected, () {
-                                setModalState(() {
-                                  if (isSelected) {
-                                    tempAmenities.remove(a);
-                                  } else {
-                                    tempAmenities.add(a);
-                                  }
-                                });
-                              });
-                            }).toList(),
+                            children:
+                                [
+                                  'Floodlights',
+                                  'Parking',
+                                  'Restroom',
+                                  'Drinking Water',
+                                  'Air Conditioning',
+                                ].map((a) {
+                                  final isSelected = tempAmenities.contains(a);
+                                  return buildChip(a, isSelected, () {
+                                    setModalState(() {
+                                      if (isSelected) {
+                                        tempAmenities.remove(a);
+                                      } else {
+                                        tempAmenities.add(a);
+                                      }
+                                    });
+                                  });
+                                }).toList(),
                           ),
 
                           const SizedBox(height: 24),
@@ -2890,13 +3028,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                 _filterAmenities.addAll(tempAmenities);
 
                                 for (var cat in _categories) {
-                                  cat['isSelected'] = (cat['name'] == _filterSport);
+                                  cat['isSelected'] =
+                                      (cat['name'] == _filterSport);
                                 }
                               });
                               Navigator.pop(ctx);
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF154D36),
+                              backgroundColor: const Color(0xFF166534),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -2931,7 +3070,8 @@ class _JoinChallengeBottomSheet extends StatefulWidget {
   const _JoinChallengeBottomSheet({required this.challenge});
 
   @override
-  State<_JoinChallengeBottomSheet> createState() => _JoinChallengeBottomSheetState();
+  State<_JoinChallengeBottomSheet> createState() =>
+      _JoinChallengeBottomSheetState();
 }
 
 class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
@@ -2996,8 +3136,18 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
         final day = int.tryParse(parts[2]);
         if (year != null && month != null && day != null) {
           const months = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
           ];
           cleanDate = '$day ${months[month - 1]}';
         }
@@ -3052,16 +3202,23 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFF154D36),
+        backgroundColor: const Color(0xFF166534),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Challenge request sent to ${widget.challenge.challengerName}!',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                'Challenge request sent to ${widget.challenge.challengerName}! ⚡',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -3079,12 +3236,19 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Row(
           children: [
-            const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+            const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 msg,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -3096,7 +3260,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final isCricket = widget.challenge.sport.toLowerCase().contains('cricket');
-    final sportIcon = isCricket ? Icons.sports_cricket_rounded : Icons.sports_soccer_rounded;
+    final sportEmoji = isCricket ? '🏏' : '⚽';
+    final sportIcon = isCricket
+        ? Icons.sports_cricket_rounded
+        : Icons.sports_soccer_rounded;
 
     return Container(
       decoration: const BoxDecoration(
@@ -3141,7 +3308,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                       ),
                       child: const Icon(
                         Icons.bolt_rounded,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFF166534),
                         size: 20,
                       ),
                     ),
@@ -3179,7 +3346,11 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                   ),
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF475569)),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: Color(0xFF475569),
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -3200,7 +3371,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                 border: Border.all(color: const Color(0xFF86EFAC), width: 1.2),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF154D36).withValues(alpha: 0.04),
+                    color: const Color(0xFF166534).withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -3223,7 +3394,8 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: widget.challenge.challengerColor.withValues(alpha: 0.3),
+                                    color: widget.challenge.challengerColor
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 6,
                                   ),
                                 ],
@@ -3253,7 +3425,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                             ),
                             const SizedBox(height: 2),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1.5,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFDCFCE7),
                                 borderRadius: BorderRadius.circular(6),
@@ -3263,7 +3438,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                                 style: TextStyle(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFF166534),
                                 ),
                               ),
                             ),
@@ -3273,13 +3448,18 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
 
                       // VS Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF154D36),
+                          color: const Color(0xFF166534),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                              color: const Color(
+                                0xFF166534,
+                              ).withValues(alpha: 0.25),
                               blurRadius: 6,
                             ),
                           ],
@@ -3306,14 +3486,14 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                                 color: Colors.white,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(0xFF154D36),
+                                  color: const Color(0xFF166534),
                                   width: 1.8,
                                 ),
                               ),
                               child: const Center(
                                 child: Icon(
                                   Icons.add_rounded,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFF166534),
                                   size: 22,
                                 ),
                               ),
@@ -3332,7 +3512,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                             ),
                             const SizedBox(height: 2),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1.5,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFEF3C7),
                                 borderRadius: BorderRadius.circular(6),
@@ -3363,9 +3546,9 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                     children: [
                       _buildMatchBadge(
                         sportIcon,
-                        widget.challenge.sport,
+                        '${widget.challenge.sport} $sportEmoji',
                         const Color(0xFFDCFCE7),
-                        const Color(0xFF154D36),
+                        const Color(0xFF166534),
                       ),
                       _buildMatchBadge(
                         Icons.location_on_outlined,
@@ -3375,7 +3558,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                       ),
                       _buildMatchBadge(
                         Icons.access_time_rounded,
-                        _formatMatchDateTime(widget.challenge.date, widget.challenge.time),
+                        _formatMatchDateTime(
+                          widget.challenge.date,
+                          widget.challenge.time,
+                        ),
                         const Color(0xFFFEF3C7),
                         const Color(0xFF92400E),
                       ),
@@ -3403,10 +3589,17 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'e.g. Thunder Smashers FC',
                 hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-                prefixIcon: const Icon(Icons.shield_outlined, color: Color(0xFF154D36), size: 19),
+                prefixIcon: const Icon(
+                  Icons.shield_outlined,
+                  color: Color(0xFF166534),
+                  size: 19,
+                ),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -3417,7 +3610,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF166534),
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -3441,7 +3637,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFF166534),
                   ),
                 ),
               ],
@@ -3460,12 +3656,19 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                       onTap: () => _onFormatSelected(fmt),
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF1F5F9),
+                          color: isSelected
+                              ? const Color(0xFF166534)
+                              : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF154D36) : const Color(0xFFCBD5E1),
+                            color: isSelected
+                                ? const Color(0xFF166534)
+                                : const Color(0xFFCBD5E1),
                           ),
                         ),
                         child: Text(
@@ -3473,7 +3676,9 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : const Color(0xFF475569),
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF475569),
                           ),
                         ),
                       ),
@@ -3488,10 +3693,17 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'e.g. 7 Players (7v7)',
                 hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-                prefixIcon: const Icon(Icons.groups_outlined, color: Color(0xFF154D36), size: 19),
+                prefixIcon: const Icon(
+                  Icons.groups_outlined,
+                  color: Color(0xFF166534),
+                  size: 19,
+                ),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -3502,7 +3714,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF166534),
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -3525,10 +3740,17 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               decoration: InputDecoration(
                 hintText: '10-digit mobile number',
                 hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-                prefixIcon: const Icon(Icons.phone_rounded, color: Color(0xFF154D36), size: 19),
+                prefixIcon: const Icon(
+                  Icons.phone_rounded,
+                  color: Color(0xFF166534),
+                  size: 19,
+                ),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFC),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -3539,7 +3761,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF166534),
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -3555,12 +3780,20 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               ),
               child: const Row(
                 children: [
-                  Icon(Icons.info_outline_rounded, color: Color(0xFF154D36), size: 16),
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: Color(0xFF166534),
+                    size: 16,
+                  ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Host captain will be notified and can accept your squad to lock the match.',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF154D36), fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF166534),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -3574,16 +3807,25 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               height: 48,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
+                  backgroundColor: const Color(0xFF166534),
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: _isSubmitting ? null : _handleSubmit,
-                icon: const Icon(Icons.bolt_rounded, size: 20, color: Color(0xFF86EFAC)),
+                icon: const Icon(
+                  Icons.bolt_rounded,
+                  size: 20,
+                  color: Color(0xFF86EFAC),
+                ),
                 label: Text(
-                  _isSubmitting ? 'Sending Request...' : 'Send Join Request',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                  _isSubmitting ? 'Sending Request...' : 'Send Join Request ⚡',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                  ),
                 ),
               ),
             ),
@@ -3593,7 +3835,11 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
                   'Cancel',
-                  style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold, fontSize: 12),
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
               ),
             ),
@@ -3617,7 +3863,11 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: text),
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.bold,
+              color: text,
+            ),
           ),
         ],
       ),

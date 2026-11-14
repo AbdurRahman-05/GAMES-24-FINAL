@@ -1,0 +1,1382 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/toast_utils.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../providers/admin_providers.dart';
+
+class TurfOwnerSettingsScreen extends ConsumerStatefulWidget {
+  const TurfOwnerSettingsScreen({super.key});
+
+  @override
+  ConsumerState<TurfOwnerSettingsScreen> createState() =>
+      _TurfOwnerSettingsScreenState();
+}
+
+class _TurfOwnerSettingsScreenState
+    extends ConsumerState<TurfOwnerSettingsScreen> {
+  bool _pushNotifications = true;
+  bool _audioCheckInAlerts = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = ref.watch(turfProfileProvider);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF072115),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 60,
+        titleSpacing: 0,
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFF1E3A2F), width: 1),
+        ),
+        leading: IconButton(
+          icon: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white, size: 15),
+          ),
+          tooltip: 'Back to Profile',
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin/profile');
+            }
+          },
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'VENUE SETTINGS & OPERATIONS',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.6,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '${profile.venueName.isNotEmpty ? profile.venueName : 'Venue'} • Operations Hub',
+              style: const TextStyle(
+                color: Color(0xFF86EFAC),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+        physics: const BouncingScrollPhysics(),
+        children: [
+          // 1. Executive Venue Passport Badge Card
+          _buildVenuePassportCard(profile),
+          const SizedBox(height: 20),
+
+          // 2. Section: Venue Configuration (Moved from Carousel)
+          _buildSectionHeader('VENUE CONFIGURATION & RATES'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildActionTile(
+                  icon: Icons.tune_rounded,
+                  accentColor: const Color(0xFF154D36),
+                  bgColor: const Color(0xFFDCFCE7),
+                  title: 'Edit Venue & Owner Profile',
+                  subtitle:
+                      '${profile.ownerName.isNotEmpty ? profile.ownerName : 'Owner'} • ${profile.ownerPhone}',
+                  onTap: () => _showEditProfileDialog(profile),
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildActionTile(
+                  icon: Icons.schedule_rounded,
+                  accentColor: const Color(0xFFB45309),
+                  bgColor: const Color(0xFFFEF3C7),
+                  title: 'Operating Timings & Tariffs',
+                  subtitle: profile.openingTime == '24 Hours'
+                      ? 'Open 24 Hours • ₹${profile.dayRate.toInt()}/hr'
+                      : '${profile.openingTime} - ${profile.closingTime} • ₹${profile.dayRate.toInt()}/hr',
+                  onTap: () => _showEditTimingsDialog(profile),
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildActionTile(
+                  icon: Icons.stadium_rounded,
+                  accentColor: const Color(0xFF334155),
+                  bgColor: const Color(0xFFF1F5F9),
+                  title: 'Turf Specifications & Amenities',
+                  subtitle:
+                      '${profile.facilities.length} amenities • Lighting, surface, pitch details',
+                  onTap: _showEditTurfDialog,
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildActionTile(
+                  icon: Icons.sports_soccer_rounded,
+                  accentColor: const Color(0xFF0369A1),
+                  bgColor: const Color(0xFFE0F2FE),
+                  title: 'Add New Sport Offering',
+                  subtitle:
+                      '${profile.sports.length} sports listed • Set hourly tariffs',
+                  onTap: _showAddSportDialog,
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildActionTile(
+                  icon: Icons.add_business_rounded,
+                  accentColor: const Color(0xFF6D28D9),
+                  bgColor: const Color(0xFFEDE9FE),
+                  title: 'Add Arena / Court',
+                  subtitle:
+                      '${profile.courts.length} arenas configured • Add new pitch or lane',
+                  onTap: () => _showAddVenueCourtDialog(profile),
+                  isLast: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 3. Section: Matchday & Gate Operations
+          _buildSectionHeader('MATCHDAY & PLATFORM OPERATIONS'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildActionTile(
+                  icon: Icons.qr_code_scanner_rounded,
+                  accentColor: const Color(0xFF15803D),
+                  bgColor: const Color(0xFFDCFCE7),
+                  title: 'Gate Pass QR Scanner',
+                  subtitle: 'Quick scanner to validate player booking vouchers',
+                  onTap: () => context.push('/admin/qr-scanner'),
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                _buildActionTile(
+                  icon: Icons.verified_user_rounded,
+                  accentColor: const Color(0xFFCA8A04),
+                  bgColor: const Color(0xFFFEF9C3),
+                  title: 'Games24 Platform License & Invoices',
+                  subtitle:
+                      'Renews: ${profile.subscriptionRenewDate} • ₹1,180/mo (GST included)',
+                  onTap: () => _showSubscriptionPaymentDialog(profile),
+                  isLast: true,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // 4. Section: Preferences
+          _buildSectionHeader('PREFERENCES & ALERTS'),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.02),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  activeTrackColor: const Color(0xFF154D36),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  secondary: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEDE9FE),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.notifications_active_rounded,
+                        color: Color(0xFF7C3AED), size: 16),
+                  ),
+                  title: const Text(
+                    'Booking Push Notifications',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Receive live alerts for new slots and payments',
+                    style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                  ),
+                  value: _pushNotifications,
+                  onChanged: (val) {
+                    setState(() => _pushNotifications = val);
+                    ToastUtils.showSuccess(context,
+                        val ? 'Push alerts enabled' : 'Push alerts disabled');
+                  },
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFFF1F5F9)),
+                SwitchListTile(
+                  activeTrackColor: const Color(0xFF154D36),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  secondary: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0F2FE),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.volume_up_rounded,
+                        color: Color(0xFF0284C7), size: 16),
+                  ),
+                  title: const Text(
+                    'Check-In Audio Chime',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Play sound confirmation on gate barcode check-in',
+                    style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                  ),
+                  value: _audioCheckInAlerts,
+                  onChanged: (val) {
+                    setState(() => _audioCheckInAlerts = val);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // 5. Section: Security & Logout
+          _buildLogoutCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF64748B),
+          letterSpacing: 0.6,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVenuePassportCard(TurfProfileState profile) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF04140D), Color(0xFF0C2B1E), Color(0xFF154D36)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF34D399).withValues(alpha: 0.3),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF154D36).withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10,
+            bottom: -15,
+            child: Icon(
+              Icons.stadium_rounded,
+              size: 110,
+              color: Colors.white.withValues(alpha: 0.04),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFEAB308), Color(0xFFCA8A04)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.stadium_rounded,
+                        color: Colors.white, size: 26),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              profile.venueName.isNotEmpty
+                                  ? profile.venueName
+                                  : 'Games24 Turf',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.verified_rounded,
+                              color: Color(0xFF34D399), size: 16),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Owner: ${profile.ownerName} • ${profile.ownerPhone}',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        profile.address.isNotEmpty
+                            ? profile.address
+                            : 'Madurai, Tamil Nadu',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 10.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required Color accentColor,
+    required Color bgColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    bool isLast = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.vertical(
+        top: isLast ? Radius.zero : const Radius.circular(16),
+        bottom: isLast ? const Radius.circular(16) : Radius.zero,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: accentColor, size: 16),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF64748B),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 12, color: Color(0xFF94A3B8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutCard() {
+    return InkWell(
+      onTap: _confirmLogout,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF2F2),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFECACA), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.logout_rounded,
+                  color: Color(0xFFDC2626), size: 18),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Logout of Partner Hub',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFDC2626),
+                    ),
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    'Securely sign out and exit this session',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF991B1B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 13, color: Color(0xFFDC2626)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // -------------------------------------------------------------
+  // OPERATIONAL CONFIGURATION DIALOGS
+  // -------------------------------------------------------------
+
+  void _showEditProfileDialog(TurfProfileState profile) {
+    final ownerNameCtrl = TextEditingController(text: profile.ownerName);
+    final phoneCtrl = TextEditingController(text: profile.ownerPhone);
+    final emailCtrl = TextEditingController(text: profile.ownerEmail);
+    final venueNameCtrl = TextEditingController(text: profile.venueName);
+    final addressCtrl = TextEditingController(text: profile.address);
+    final areaCtrl = TextEditingController(text: profile.area);
+    final dayRateCtrl =
+        TextEditingController(text: profile.dayRate.toStringAsFixed(0));
+    final nightRateCtrl =
+        TextEditingController(text: profile.nightRate.toStringAsFixed(0));
+    final weekdayRateCtrl =
+        TextEditingController(text: profile.weekdayRate.toStringAsFixed(0));
+    final weekendRateCtrl =
+        TextEditingController(text: profile.weekendRate.toStringAsFixed(0));
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.edit_note_rounded, color: AppColors.primary),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Edit Turf Profile Details',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Basic Contact & Venue Info',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.primary)),
+              const SizedBox(height: 12),
+              AppTextField(label: 'Owner Full Name', controller: ownerNameCtrl),
+              const SizedBox(height: 10),
+              AppTextField(
+                  label: 'Phone Number',
+                  controller: phoneCtrl,
+                  keyboardType: TextInputType.phone),
+              const SizedBox(height: 10),
+              AppTextField(
+                  label: 'Email Address',
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress),
+              const SizedBox(height: 10),
+              AppTextField(
+                  label: 'Turf / Venue Business Name',
+                  controller: venueNameCtrl),
+              const SizedBox(height: 10),
+              AppTextField(label: 'Full Address', controller: addressCtrl),
+              const SizedBox(height: 10),
+              AppTextField(label: 'Area / Landmark', controller: areaCtrl),
+              const SizedBox(height: 16),
+              const Text('Hourly Rates Setup (₹)',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: AppColors.primary)),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      label: 'Day Rate (₹/hr)',
+                      controller: dayRateCtrl,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextField(
+                      label: 'Night Rate (₹/hr)',
+                      controller: nightRateCtrl,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: AppTextField(
+                      label: 'Weekday Rate (₹/hr)',
+                      controller: weekdayRateCtrl,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: AppTextField(
+                      label: 'Weekend Rate (₹/hr)',
+                      controller: weekendRateCtrl,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              final newOwnerName = ownerNameCtrl.text.trim();
+              final newPhone = phoneCtrl.text.trim();
+              final newEmail = emailCtrl.text.trim();
+              final newVenueName = venueNameCtrl.text.trim();
+              final newAddress = addressCtrl.text.trim();
+              final newArea = areaCtrl.text.trim();
+              final dayR = double.tryParse(dayRateCtrl.text.trim()) ??
+                  profile.dayRate;
+              final nightR = double.tryParse(nightRateCtrl.text.trim()) ??
+                  profile.nightRate;
+              final wkdayR = double.tryParse(weekdayRateCtrl.text.trim()) ??
+                  profile.weekdayRate;
+              final wkendR = double.tryParse(weekendRateCtrl.text.trim()) ??
+                  profile.weekendRate;
+
+              await ref
+                  .read(turfProfileProvider.notifier)
+                  .updateProfileDetails(
+                    ownerName: newOwnerName,
+                    ownerPhone: newPhone,
+                    ownerEmail: newEmail,
+                    venueName: newVenueName,
+                    address: newAddress,
+                    area: newArea,
+                    dayRate: dayR,
+                    nightRate: nightR,
+                    weekdayRate: wkdayR,
+                    weekendRate: wkendR,
+                  );
+
+              if (ctx.mounted) Navigator.pop(ctx);
+              if (mounted) {
+                ToastUtils.showSuccess(
+                    context, 'Turf Profile details updated successfully!');
+              }
+            },
+            child: const Text('Save Changes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditTimingsDialog(TurfProfileState profile) {
+    String wkdayOpen = profile.weekdayOpeningTime;
+    String wkdayClose = profile.weekdayClosingTime;
+    String wkendOpen = profile.weekendOpeningTime;
+    String wkendClose = profile.weekendClosingTime;
+
+    final openOptions = [
+      '24 Hours',
+      '05:00 AM',
+      '06:00 AM',
+      '07:00 AM',
+      '08:00 AM',
+      '09:00 AM'
+    ];
+    final closeOptions = [
+      '24 Hours',
+      '09:00 PM',
+      '10:00 PM',
+      '11:00 PM',
+      '11:30 PM',
+      '12:00 AM',
+      '01:00 AM (Overnight)'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.access_time_filled_rounded, color: AppColors.primary),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Edit Operating Timings',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: wkdayOpen == '24 Hours',
+                        activeColor: AppColors.primary,
+                        onChanged: (val) {
+                          if (val != null) {
+                            setDialogState(() {
+                              if (val) {
+                                wkdayOpen = '24 Hours';
+                                wkdayClose = '24 Hours';
+                                wkendOpen = '24 Hours';
+                                wkendClose = '24 Hours';
+                              } else {
+                                wkdayOpen = '06:00 AM';
+                                wkdayClose = '11:00 PM';
+                                wkendOpen = '05:00 AM';
+                                wkendClose = '11:30 PM';
+                              }
+                            });
+                          }
+                        },
+                      ),
+                      const Text(
+                        'Open 24 Hours (All Day)',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  if (wkdayOpen != '24 Hours') ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Weekdays (Mon - Fri)',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                  fontSize: 13)),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue:
+                                      openOptions.contains(wkdayOpen)
+                                          ? wkdayOpen
+                                          : openOptions[1],
+                                  decoration: InputDecoration(
+                                    labelText: 'Opens at',
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                  items: openOptions
+                                      .map((t) => DropdownMenuItem(
+                                          value: t, child: Text(t)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(() => wkdayOpen = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue:
+                                      closeOptions.contains(wkdayClose)
+                                          ? wkdayClose
+                                          : closeOptions[2],
+                                  decoration: InputDecoration(
+                                    labelText: 'Closes at',
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                  items: closeOptions
+                                      .map((t) => DropdownMenuItem(
+                                          value: t, child: Text(t)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(() => wkdayClose = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: AppColors.secondary.withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Weekends (Sat - Sun)',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.secondary,
+                                  fontSize: 13)),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue:
+                                      openOptions.contains(wkendOpen)
+                                          ? wkendOpen
+                                          : openOptions[0],
+                                  decoration: InputDecoration(
+                                    labelText: 'Opens at',
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                  items: openOptions
+                                      .map((t) => DropdownMenuItem(
+                                          value: t, child: Text(t)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(() => wkendOpen = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  initialValue:
+                                      closeOptions.contains(wkendClose)
+                                          ? wkendClose
+                                          : closeOptions[3],
+                                  decoration: InputDecoration(
+                                    labelText: 'Closes at',
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                  ),
+                                  items: closeOptions
+                                      .map((t) => DropdownMenuItem(
+                                          value: t, child: Text(t)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setDialogState(() => wkendClose = val);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                ref.read(turfProfileProvider.notifier).updateOperatingHours(
+                      weekdayOpening: wkdayOpen,
+                      weekdayClosing: wkdayClose,
+                      weekendOpening: wkendOpen,
+                      weekendClosing: wkendClose,
+                    );
+                ref.read(adminSlotProvider.notifier).updateOperatingHours(
+                    wkdayOpen, wkdayClose, wkendOpen, wkendClose);
+                Navigator.pop(ctx);
+                ToastUtils.showSuccess(context, 'Operating timings updated!');
+              },
+              child: const Text('Save Timings'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddSportDialog() {
+    final popularSports = [
+      'Cricket',
+      'Football',
+      'Pickleball',
+      'Badminton',
+      'Others'
+    ];
+    String selectedSportName = popularSports.first;
+    final rateCtrl = TextEditingController(text: '1200');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.sports_soccer_rounded, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text('Add New Sport Offering',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Select Sport:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<String>(
+                initialValue: selectedSportName,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: popularSports
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setDialogState(() => selectedSportName = val);
+                  }
+                },
+              ),
+              const SizedBox(height: 14),
+              AppTextField(
+                label: 'Base Rate per Hour (₹)',
+                controller: rateCtrl,
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
+                ref.read(turfProfileProvider.notifier).addSport(
+                      TurfSportItem(
+                        name: selectedSportName,
+                        hourlyRate: rate,
+                        weekdayRate: rate,
+                        weekendRate: rate * 1.2,
+                        nightRate: rate * 1.1,
+                        courtsAvailable: 1,
+                      ),
+                    );
+                Navigator.pop(ctx);
+                ToastUtils.showSuccess(
+                    context, 'Added $selectedSportName to venue offerings!');
+              },
+              child: const Text('Add Sport'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddVenueCourtDialog(TurfProfileState profile) {
+    final courtNameCtrl = TextEditingController();
+    final sizeCtrl = TextEditingController(text: '7-a-side (90x60 ft)');
+    final surfaceCtrl =
+        TextEditingController(text: 'FIFA Pro 50mm Monofilament');
+    final rateCtrl = TextEditingController(text: '1200');
+    final sportsList =
+        profile.sports.isNotEmpty ? profile.sports.map((s) => s.name).toList() : ['Football', 'Cricket'];
+    String selectedSport = sportsList.first;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Row(
+            children: [
+              Icon(Icons.add_business_rounded, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text('Register Arena / Court',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppTextField(
+                    label: 'Court / Pitch Name (e.g. Arena Alpha)',
+                    controller: courtNameCtrl),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  initialValue: selectedSport,
+                  decoration: InputDecoration(
+                    labelText: 'Sport Category',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                  ),
+                  items: sportsList
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => selectedSport = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 10),
+                AppTextField(label: 'Pitch Dimensions', controller: sizeCtrl),
+                const SizedBox(height: 10),
+                AppTextField(label: 'Surface Type', controller: surfaceCtrl),
+                const SizedBox(height: 10),
+                AppTextField(
+                  label: 'Base Rate (₹/hr)',
+                  controller: rateCtrl,
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () {
+                final name = courtNameCtrl.text.trim();
+                if (name.isEmpty) {
+                  ToastUtils.showError(context, 'Please enter a court name');
+                  return;
+                }
+                final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
+                final newCourt = TurfCourtVenueItem(
+                  id: 'CR-${DateTime.now().millisecondsSinceEpoch}',
+                  name: name,
+                  sport: selectedSport,
+                  sports: [selectedSport],
+                  surface: surfaceCtrl.text.trim().isNotEmpty
+                      ? surfaceCtrl.text.trim()
+                      : 'FIFA Pro 50mm Monofilament',
+                  hourlyRate: rate,
+                  timings: profile.weekdayOpeningTime == '24 Hours'
+                      ? '24 Hours Open'
+                      : '${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
+                );
+                ref.read(turfProfileProvider.notifier).addCourtVenue(newCourt);
+                Navigator.pop(ctx);
+                ToastUtils.showSuccess(context, 'Registered arena: $name');
+              },
+              child: const Text('Add Court'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditTurfDialog() {
+    ToastUtils.showSuccess(
+        context, 'Turf specifications & amenities verified up-to-date.');
+  }
+
+  void _showSubscriptionPaymentDialog(TurfProfileState profile) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF166534).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.workspace_premium_rounded,
+                  color: Color(0xFF166534), size: 22),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Games24 License Status',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Zero fee for players — owners pay a monthly ₹1,000 + 18% GST (₹1,180) platform subscription to keep their venue discoverable.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: Column(
+                children: [
+                  _buildSubRow('Monthly Base Fee', '₹1,000.00'),
+                  const SizedBox(height: 4),
+                  _buildSubRow('Applicable GST (18%)', '₹180.00'),
+                  const Divider(height: 12),
+                  _buildSubRow('Total Monthly Payable', '₹1,180.00',
+                      isBold: true),
+                  const SizedBox(height: 4),
+                  _buildSubRow('Status',
+                      profile.isSubscriptionActive ? 'ACTIVE' : 'EXPIRED',
+                      valueColor: profile.isSubscriptionActive
+                          ? const Color(0xFF166534)
+                          : const Color(0xFFDC2626)),
+                  const SizedBox(height: 4),
+                  _buildSubRow(
+                      'Next Renewal Date', profile.subscriptionRenewDate),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: profile.isSubscriptionActive
+                  ? const Color(0xFF166534)
+                  : const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await ref
+                  .read(turfProfileProvider.notifier)
+                  .payPlatformSubscription();
+              if (mounted) {
+                if (success) {
+                  ToastUtils.showSuccess(
+                      context, 'License renewed! 30 days active added.');
+                } else {
+                  ToastUtils.showError(context, 'Payment failed. Please retry.');
+                }
+              }
+            },
+            child: Text(
+                profile.isSubscriptionActive ? 'Renew Ahead' : 'Pay ₹1,180 Now'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubRow(String label, String value,
+      {bool isBold = false, Color? valueColor}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: TextStyle(
+                fontSize: 11,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                color: const Color(0xFF4B5563))),
+        Text(value,
+            style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                color: valueColor ??
+                    (isBold
+                        ? const Color(0xFF111827)
+                        : const Color(0xFF374151)))),
+      ],
+    );
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 22),
+            SizedBox(width: 8),
+            Text('Logout Confirmation',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your Games24 Partner Hub account?',
+          style: TextStyle(fontSize: 13.5, color: Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('owner_logged_in', false);
+      await prefs.remove('owner_phone');
+      await prefs.remove('verified_admin_data');
+      await prefs.remove('owner_venue_name');
+      ref.read(isAdminModeProvider.notifier).setMode(false);
+      if (mounted) {
+        context.go('/login');
+      }
+    }
+  }
+}

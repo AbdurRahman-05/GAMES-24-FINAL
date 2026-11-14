@@ -6,6 +6,7 @@ import '../../features/admin/presentation/screens/admin_qr_scanner_screen.dart';
 import '../../features/admin/presentation/screens/admin_slot_manager_screen.dart';
 import '../../features/admin/presentation/screens/turf_owner_profile_screen.dart';
 import '../../features/admin/presentation/screens/turf_owner_registration_screen.dart';
+import '../../features/admin/presentation/screens/turf_owner_settings_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 
 import '../../features/admin/presentation/screens/web_partner_portal_screen.dart';
@@ -41,6 +42,11 @@ class AppRouter {
       GoRoute(
         path: '/admin/qr-scanner',
         builder: (context, state) => const AdminQrScannerScreen(),
+      ),
+      // Standalone Full-Screen Turf Owner Settings & Operations Page
+      GoRoute(
+        path: '/admin/settings',
+        builder: (context, state) => const TurfOwnerSettingsScreen(),
       ),
 
       // Shell Route for Turf Owner Dedicated Navigation
