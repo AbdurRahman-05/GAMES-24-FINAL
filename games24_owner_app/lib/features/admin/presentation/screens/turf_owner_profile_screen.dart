@@ -1569,13 +1569,17 @@ class _TurfOwnerProfileScreenState
         children: [
           Row(
             children: [
-              const Text(
-                'VENUE OPERATIONS & PASSPORT',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.6,
+              const Flexible(
+                child: Text(
+                  'VENUE OPERATIONS & PASSPORT',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 6),
@@ -1613,61 +1617,330 @@ class _TurfOwnerProfileScreenState
       actions: [
         IconButton(
           visualDensity: VisualDensity.compact,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          icon: Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: const Color(0xFF154D36),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF4ADE80).withValues(alpha: 0.3)),
-            ),
-            child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF86EFAC), size: 17),
-          ),
-          tooltip: 'Open Gate QR Scanner',
-          onPressed: () => context.push('/admin/qr-scanner'),
-        ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6),
           icon: Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
-            child: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 18),
+            child: const Icon(Icons.settings_rounded, color: Colors.white, size: 18),
           ),
-          tooltip: 'Edit Profile Details',
-          onPressed: () => _showEditProfileDialog(profile),
+          tooltip: 'Venue Settings & Logout',
+          onPressed: () => _showSettingsBottomSheet(context, profile),
         ),
-        IconButton(
-          visualDensity: VisualDensity.compact,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          icon: Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-            ),
-            child: const Icon(Icons.logout_rounded, color: Color(0xFFF87171), size: 17),
-          ),
-          tooltip: 'Logout of Partner Hub',
-          onPressed: () async {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('owner_logged_in', false);
-            await prefs.remove('owner_phone');
-            await prefs.remove('verified_admin_data');
-            await prefs.remove('owner_venue_name');
-            ref.read(isAdminModeProvider.notifier).setMode(false);
-            if (context.mounted) {
-              context.go('/login');
-            }
-          },
-        ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
       ],
     );
+  }
+
+  void _showSettingsBottomSheet(BuildContext context, TurfProfileState profile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetCtx) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0F3D28), Color(0xFF154D36)],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.settings_rounded, color: Colors.white, size: 18),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Settings & Operations',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
+                              ),
+                            ),
+                            Text(
+                              '${profile.venueName.isNotEmpty ? profile.venueName : 'Turf Venue'} • Partner Hub',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 20),
+                      onPressed: () => Navigator.pop(bottomSheetCtx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const SizedBox(height: 12),
+
+                // Option: Edit Profile
+                _buildSettingsTile(
+                  icon: Icons.storefront_rounded,
+                  iconColor: const Color(0xFF154D36),
+                  iconBg: const Color(0xFFDCFCE7),
+                  title: 'Edit Venue & Owner Profile',
+                  subtitle: 'Update phone, address, and amenities',
+                  onTap: () {
+                    Navigator.pop(bottomSheetCtx);
+                    _showEditProfileDialog(profile);
+                  },
+                ),
+                const SizedBox(height: 8),
+
+                // Option: Operating Schedule
+                _buildSettingsTile(
+                  icon: Icons.schedule_rounded,
+                  iconColor: const Color(0xFFB45309),
+                  iconBg: const Color(0xFFFEF3C7),
+                  title: 'Operating Timings & Tariffs',
+                  subtitle: 'Weekday, weekend, day & night rates',
+                  onTap: () {
+                    Navigator.pop(bottomSheetCtx);
+                    _showEditTimingsDialog(profile);
+                  },
+                ),
+                const SizedBox(height: 8),
+
+                // Option: QR Scanner
+                _buildSettingsTile(
+                  icon: Icons.qr_code_scanner_rounded,
+                  iconColor: const Color(0xFF0284C7),
+                  iconBg: const Color(0xFFE0F2FE),
+                  title: 'Gate Pass QR Scanner',
+                  subtitle: 'Fast check-in for player bookings',
+                  onTap: () {
+                    Navigator.pop(bottomSheetCtx);
+                    context.push('/admin/qr-scanner');
+                  },
+                ),
+                const SizedBox(height: 8),
+
+                // Option: Accreditation & Subscription
+                _buildSettingsTile(
+                  icon: Icons.verified_user_rounded,
+                  iconColor: const Color(0xFF7C3AED),
+                  iconBg: const Color(0xFFEDE9FE),
+                  title: 'Platform License & Invoices',
+                  subtitle: 'Renewal: ${profile.subscriptionRenewDate}',
+                  onTap: () {
+                    Navigator.pop(bottomSheetCtx);
+                    _showSubscriptionPaymentDialog(profile);
+                  },
+                ),
+                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const SizedBox(height: 14),
+
+                // Logout Button
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(bottomSheetCtx);
+                    _confirmLogout(context);
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFECACA)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEE2E2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Logout of Partner Hub',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFDC2626),
+                                ),
+                              ),
+                              SizedBox(height: 1),
+                              Text(
+                                'Sign out from this device',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF991B1B),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded, size: 13, color: Color(0xFFDC2626)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: iconColor, size: 16),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF94A3B8)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmLogout(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 22),
+            SizedBox(width: 8),
+            Text('Logout Confirmation', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your Games24 Partner Hub account?',
+          style: TextStyle(fontSize: 13.5, color: Color(0xFF475569)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('owner_logged_in', false);
+      await prefs.remove('owner_phone');
+      await prefs.remove('verified_admin_data');
+      await prefs.remove('owner_venue_name');
+      ref.read(isAdminModeProvider.notifier).setMode(false);
+      if (context.mounted) {
+        context.go('/login');
+      }
+    }
   }
 
   Widget _buildExecutivePassportHeader(TurfProfileState profile) {
