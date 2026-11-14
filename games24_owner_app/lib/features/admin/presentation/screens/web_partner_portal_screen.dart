@@ -45,7 +45,7 @@ class _WebPartnerPortalScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Games24 Owner - Turf Owner Web Portal',
+                  'Gamez24 Owner - Turf Owner Web Portal',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -123,7 +123,7 @@ class _WebPartnerPortalScreenState
                         Icon(Icons.laptop_mac_rounded, color: AppColors.primary),
                         SizedBox(height: 6),
                         Text('Web Desk Verified', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
-                        Text('Games24.in/partner-web', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                        Text('Gamez24.in/partner-web', style: TextStyle(fontSize: 10, color: Colors.grey)),
                       ],
                     ),
                   ),

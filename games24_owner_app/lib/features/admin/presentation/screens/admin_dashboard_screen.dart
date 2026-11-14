@@ -3334,7 +3334,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Icon(Icons.stadium_rounded, color: Color(0xFF154D36), size: 24),
             SizedBox(width: 8),
             Text(
-              'Games24 Partner Hub',
+              'Gamez24 Partner Hub',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -3403,7 +3403,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Your monthly platform subscription for "${profile.venueName.isNotEmpty ? profile.venueName : 'Your Turf'}" has ended.\n\nYour venue is currently HIDDEN from players on the Games24 Player App and owner hub access is locked until renewed.',
+                'Your monthly platform subscription for "${profile.venueName.isNotEmpty ? profile.venueName : 'Your Turf'}" has ended.\n\nYour venue is currently HIDDEN from players on the Gamez24 Player App and owner hub access is locked until renewed.',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563), height: 1.5),
               ),
@@ -3531,7 +3531,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Games24 operates on a zero-convenience fee model for players. Turf owners subscribe monthly to list their turf and accept live bookings.',
+              'Gamez24 operates on a zero-convenience fee model for players. Turf owners subscribe monthly to list their turf and accept live bookings.',
               style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             ),
             const SizedBox(height: 14),
@@ -3635,7 +3635,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     if (success) {
                       ToastUtils.showSuccess(
                         context,
-                        "Monthly subscription of ₹1,180 paid! Your turf is now LIVE and visible on Games24 Player App.",
+                        "Monthly subscription of ₹1,180 paid! Your turf is now LIVE and visible on Gamez24 Player App.",
                       );
                     } else {
                       ToastUtils.showError(context, "Payment failed. Please retry.");

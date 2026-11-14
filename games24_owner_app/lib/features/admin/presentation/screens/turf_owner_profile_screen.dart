@@ -1788,7 +1788,7 @@ class _TurfOwnerProfileScreenState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'GAMES24 VENUE LICENSE',
+                                    'GAMEZ24 VENUE LICENSE',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w900,
@@ -2131,7 +2131,7 @@ class _TurfOwnerProfileScreenState
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                'Games24 Platform Services Ltd.\nGSTIN: 33AAACG2424F1Z9\nHSN/SAC: 998314',
+                'Gamez24 Platform Services Ltd.\nGSTIN: 33AAACG2424F1Z9\nHSN/SAC: 998314',
                 style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
               ),
             ),
@@ -2376,7 +2376,7 @@ class _TurfOwnerProfileScreenState
                                 if (success) {
                                   ToastUtils.showSuccess(
                                     context,
-                                    'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Games24 Player App.',
+                                    'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Gamez24 Player App.',
                                   );
                                 } else {
                                   ToastUtils.showError(

@@ -1887,7 +1887,7 @@ class _TurfOwnerRegistrationScreenState
         ),
         const SizedBox(height: 8),
         Text(
-          'Your venue details and KYC documents for $venueName have been securely sent to the Games24 Super Admin.',
+          'Your venue details and KYC documents for $venueName have been securely sent to the Gamez24 Super Admin.',
           style: theme.textTheme.bodyMedium,
           textAlign: TextAlign.center,
         ),

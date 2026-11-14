@@ -38,7 +38,7 @@ class BadgesScreen extends StatelessWidget {
     final List<BadgeItem> badges = [
       BadgeItem(
         title: 'First Kickoff',
-        description: 'Book your very first turf slot on Games24',
+        description: 'Book your very first turf slot on Gamez24',
         icon: Icons.sports_soccer_rounded,
         color: const Color(0xFF154D36),
         isUnlocked: hasBooking,
@@ -101,7 +101,7 @@ class BadgesScreen extends StatelessWidget {
       ),
       BadgeItem(
         title: 'Grand Master',
-        description: 'Unlock 5 badges to earn the exclusive Games24 Master badge',
+        description: 'Unlock 5 badges to earn the exclusive Gamez24 Master badge',
         icon: Icons.workspace_premium_rounded,
         color: const Color(0xFFB45309),
         isUnlocked: false,

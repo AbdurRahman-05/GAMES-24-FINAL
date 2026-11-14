@@ -139,7 +139,7 @@ class _AdminTournamentManagerScreenState
       logoUrl:
           'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
       description: _descCtrl.text.trim().isEmpty
-          ? 'Official Games24 Tournament'
+          ? 'Official Gamez24 Tournament'
           : _descCtrl.text.trim(),
       rules: _rulesCtrl.text.trim().isEmpty
           ? '1. Standard tournament rules apply.'
@@ -233,7 +233,7 @@ class _AdminTournamentManagerScreenState
     if (mounted) {
       ToastUtils.showSuccess(
         context,
-        'Tournament "${newTournament.title}" created & published across Games24 platform!',
+        'Tournament "${newTournament.title}" created & published across Gamez24 platform!',
       );
     }
   }
@@ -361,7 +361,7 @@ class _AdminTournamentManagerScreenState
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                'When players register for this tournament from the Games24 app, their squad name, captain phone, roster count, and payment info will appear here immediately.',
+                                'When players register for this tournament from the Gamez24 app, their squad name, captain phone, roster count, and payment info will appear here immediately.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B), height: 1.4),
                               ),

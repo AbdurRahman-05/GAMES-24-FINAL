@@ -402,7 +402,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     SizedBox(width: 6),
                     Text(
-                      '256-bit SSL Encrypted • GAMES24 Secure Authentication',
+                      '256-bit SSL Encrypted • GAMEZ24 Secure Authentication',
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF9CA3AF),

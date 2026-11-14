@@ -191,7 +191,7 @@ class _TurfOwnerSettingsScreenState
                   icon: Icons.verified_user_rounded,
                   accentColor: const Color(0xFFCA8A04),
                   bgColor: const Color(0xFFFEF9C3),
-                  title: 'Games24 Platform License & Invoices',
+                  title: 'Gamez24 Platform License & Invoices',
                   onTap: () => _showSubscriptionPaymentBottomSheet(profile),
                   isLast: true,
                 ),
@@ -403,7 +403,7 @@ class _TurfOwnerSettingsScreenState
                             child: Text(
                               profile.venueName.isNotEmpty
                                   ? profile.venueName
-                                  : 'Games24 Turf',
+                                  : 'Gamez24 Turf',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -1452,7 +1452,7 @@ class _TurfOwnerSettingsScreenState
                                 if (success) {
                                   ToastUtils.showSuccess(
                                     context,
-                                    'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Games24 Player App.',
+                                    'Monthly subscription of ₹1,180 paid! Your turf is LIVE on Gamez24 Player App.',
                                   );
                                 } else {
                                   ToastUtils.showError(
@@ -1677,7 +1677,7 @@ class _TurfOwnerSettingsScreenState
           ],
         ),
         content: const Text(
-          'Are you sure you want to log out of your Games24 Partner Hub account?',
+          'Are you sure you want to log out of your Gamez24 Partner Hub account?',
           style: TextStyle(fontSize: 13.5, color: Color(0xFF475569)),
         ),
         actions: [

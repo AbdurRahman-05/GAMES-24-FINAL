@@ -52,7 +52,7 @@ class BookingQrPassModal extends StatelessWidget {
     final paymentMethod = (booking['paymentMethod'] ?? 'UPI (GPay)').toString();
 
     return jsonEncode({
-      'app': 'GAMES24',
+      'app': 'GAMEZ24',
       'type': 'TICKET_PASS',
       'bookingId': bookingId,
       'bookingCode': bookingId,

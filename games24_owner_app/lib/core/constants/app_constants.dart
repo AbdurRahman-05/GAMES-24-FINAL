@@ -1,7 +1,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'Games24 Owner';
+  static const String appName = 'Gamez24 Owner';
   static const String appTagline = 'Sports & Celebration Venue Booking';
   static const String currencySymbol = '₹';
   

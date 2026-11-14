@@ -639,7 +639,7 @@ class _CreatePrivateTournamentStep2ScreenState
             child: Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Text(
-                'I confirm that this private tournament is organized for invited teams only, and I agree to the GAMES24 Host Guidelines.',
+                'I confirm that this private tournament is organized for invited teams only, and I agree to the GAMEZ24 Host Guidelines.',
                 style: TextStyle(
                   fontSize: 11.5,
                   color: _agreedToTerms ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),

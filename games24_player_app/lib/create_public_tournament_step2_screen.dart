@@ -31,9 +31,9 @@ class _CreatePublicTournamentStep2ScreenState
 
     final prefs = await SharedPreferences.getInstance();
     final userPhone = (prefs.getString('mobileNumber') ?? '').trim();
-    final userName = (prefs.getString('fullName') ?? prefs.getString('userName') ?? 'Games24 Player').trim();
+    final userName = (prefs.getString('fullName') ?? prefs.getString('userName') ?? 'Gamez24 Player').trim();
     final backendPayload = widget.formData.toBackendJson(
-      organizerName: userName.isNotEmpty ? userName : 'Games24 Player',
+      organizerName: userName.isNotEmpty ? userName : 'Gamez24 Player',
       organizerPhone: userPhone.isNotEmpty ? userPhone : '9876543210',
     );
     final success = await TournamentManager().createTournamentInBackend(backendPayload);
@@ -569,7 +569,7 @@ class _CreatePublicTournamentStep2ScreenState
             child: Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: Text(
-                'I confirm that the venue booking is reserved for this tournament date, and I agree to abide by GAMES24 Tournament Organizer Policies.',
+                'I confirm that the venue booking is reserved for this tournament date, and I agree to abide by GAMEZ24 Tournament Organizer Policies.',
                 style: TextStyle(
                   fontSize: 11.5,
                   color: _agreedToTerms ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),

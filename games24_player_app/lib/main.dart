@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Games24',
+      title: 'Gamez24',
       themeMode: ThemeMode.light,
       theme: ThemeData(
         useMaterial3: true,
