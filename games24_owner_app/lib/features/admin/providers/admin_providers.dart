@@ -1473,6 +1473,10 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     _syncCourtsToBackend(updatedCourts);
   }
 
+  void updateFacilities(List<String> newFacilities) {
+    state = state.copyWith(facilities: newFacilities);
+  }
+
   Future<void> _syncCourtsToBackend(List<TurfCourtVenueItem> courts) async {
     final tId = state.turfId;
     if (tId <= 0) return;

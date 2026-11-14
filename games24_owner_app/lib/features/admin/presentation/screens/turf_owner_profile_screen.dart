@@ -2517,176 +2517,968 @@ class _TurfOwnerProfileScreenState
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
-          // Sports Supported Row
+          // 1. SPORTS SUPPORTED SECTION (Unique & Creative Sport Showcase)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Sports Supported', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-              TextButton.icon(
-                icon: const Icon(Icons.add_circle_outline_rounded, size: 16),
-                label: const Text('Add Sport'),
+              Row(
+                children: [
+                  const Text('Sports Supported', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                    ),
+                    child: Text(
+                      '${profile.sports.length} Offered',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.add_circle_outline_rounded, size: 15),
+                label: const Text('Add Sport', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  foregroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
                 onPressed: _showAddSportDialog,
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: profile.sports.map((sport) {
-              return InkWell(
-                onTap: () => _showEditSportRateDialog(sport),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.sports_rounded, size: 16, color: AppColors.primary),
-                      const SizedBox(width: 6),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${sport.name} • ₹${sport.hourlyRate.toStringAsFixed(0)}/hr',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary),
-                          ),
-                          Text(
-                            'Wkday ₹${sport.weekdayRate.toStringAsFixed(0)} | Wkend ₹${sport.weekendRate.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 9, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(Icons.edit_rounded, size: 12, color: AppColors.primary),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
+          const SizedBox(height: 10),
+          if (profile.sports.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.sports_soccer_rounded, size: 36, color: Colors.grey.shade400),
+                  const SizedBox(height: 8),
+                  const Text('No sports listed yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B))),
+                  const SizedBox(height: 4),
+                  const Text('Tap "+ Add Sport" to list supported sports with pricing tiers', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
+              ),
+            )
+          else
+            ...profile.sports.map((sport) => _buildCreativeSportCard(sport)),
           const SizedBox(height: 20),
 
-          // Sport Venues & Courts List
+          // 2. REGISTERED COURTS & VENUES (Arena Pitch Pass Design)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
-                child: Text(
-                  'Registered Courts & Venues',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Row(
+                  children: [
+                    const Flexible(
+                      child: Text(
+                        'Registered Arenas & Courts',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F766E).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF0F766E).withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        '${profile.courts.length} Active',
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F766E),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextButton.icon(
-                icon: const Icon(Icons.add_location_alt_outlined, size: 16),
-                label: const Text('Add Court'),
+              FilledButton.tonalIcon(
+                icon: const Icon(Icons.add_location_alt_outlined, size: 15),
+                label: const Text('Add Court', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F766E).withValues(alpha: 0.12),
+                  foregroundColor: const Color(0xFF0F766E),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
                 onPressed: () => _showAddVenueCourtDialog(profile),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          ...profile.courts.map((court) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: AppCard(
+          const SizedBox(height: 10),
+          if (profile.courts.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.stadium_rounded, size: 36, color: Colors.grey.shade400),
+                  const SizedBox(height: 8),
+                  const Text('No arenas or courts registered', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B))),
+                  const SizedBox(height: 4),
+                  const Text('Add pitches and courts so players can book specific turfs', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
+              ),
+            )
+          else
+            ...profile.courts.map((court) => _buildCreativeCourtCard(profile, court)),
+          const SizedBox(height: 20),
+
+          // 3. AMENITIES & FACILITIES (Curated Amenity Badges with Manage Dialog)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Text('Amenities & Facilities', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                    ),
+                    child: Text(
+                      '${profile.facilities.length} Active',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.tune_rounded, size: 15),
+                label: const Text('Manage', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  visualDensity: VisualDensity.compact,
+                ),
+                onPressed: () => _showEditAmenitiesDialog(profile),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (profile.facilities.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.check_circle_outline_rounded, size: 32, color: Colors.grey.shade400),
+                  const SizedBox(height: 6),
+                  const Text('No amenities selected', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B))),
+                  const SizedBox(height: 2),
+                  const Text('Tap "Manage" to select facilities like Parking, Floodlights, Restrooms', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
+              ),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: profile.facilities.map((facility) => _buildAmenityBadge(facility)).toList(),
+            ),
+        ],
+      );
+  }
+
+  // --- CREATIVE UI HELPERS FOR PROFILE OVERVIEW ---
+
+  Widget _buildCreativeSportCard(TurfSportItem sport) {
+    final theme = _getSportTheme(sport.name);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.accent.withValues(alpha: 0.22), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: theme.accent.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showEditSportRateDialog(sport),
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
+            children: [
+              // Sport Header Banner
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [theme.lightBg, Colors.white],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: theme.gradient,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.gradient.first.withValues(alpha: 0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(theme.icon, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  sport.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                    color: Color(0xFF0F172A),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: theme.accent.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: theme.accent.withValues(alpha: 0.3)),
+                                ),
+                                child: Text(
+                                  'OFFERED',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: theme.accent,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '${sport.courtsAvailable > 0 ? sport.courtsAvailable : 1} Arena(s) Linked • Full Pitch',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            '₹${sport.hourlyRate.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const Text(
+                            '/hour base',
+                            style: TextStyle(
+                              color: Color(0xFF94A3B8),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(height: 1, color: Colors.grey.shade100),
+              // Pricing Breakdown Strip & Quick Edit
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.calendar_today_rounded, size: 12, color: Colors.grey.shade600),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                'Wkday: ₹${sport.weekdayRate.toStringAsFixed(0)}',
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFFDE68A)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.stars_rounded, size: 13, color: Color(0xFFD97706)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                'Wkend: ₹${sport.weekendRate.toStringAsFixed(0)}',
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF92400E)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: theme.accent.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.edit_outlined, size: 15, color: theme.accent),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreativeCourtCard(TurfProfileState profile, TurfCourtVenueItem court) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Arena Header Strip
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0F766E).withValues(alpha: 0.3),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.stadium_rounded, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondary.withValues(alpha: 0.12),
-                              shape: BoxShape.circle,
+                          Flexible(
+                            child: Text(
+                              court.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                color: Color(0xFF0F172A),
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            child: const Icon(Icons.stadium, color: AppColors.secondary, size: 22),
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDCFCE7),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: const Color(0xFF86EFAC)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(court.name,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                                const SizedBox(height: 2),
-                                Text('Sport: ${court.sport} • ${court.surface}',
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                const SizedBox(height: 2),
-                                Text('Timings: ${court.timings}',
-                                    style: const TextStyle(fontSize: 10, color: AppColors.primary)),
+                                CircleAvatar(radius: 2.5, backgroundColor: Color(0xFF16A34A)),
+                                SizedBox(width: 4),
+                                Text(
+                                  'ACTIVE',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFF15803D),
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          Text(
-                            '₹${court.hourlyRate.toStringAsFixed(0)}/hr',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 13),
-                          ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 3),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.edit_rounded, size: 14),
-                            label: const Text('Edit Turf', style: TextStyle(fontSize: 12)),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.primary,
-                              side: const BorderSide(color: AppColors.primary),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(5),
                             ),
-                            onPressed: () => _showEditVenueCourtDialog(profile, court),
+                            child: Text(
+                              court.sport.isNotEmpty ? court.sport : 'Multi-Sport',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF475569),
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          OutlinedButton.icon(
-                            icon: const Icon(Icons.delete_outline_rounded, size: 14),
-                            label: const Text('Remove', style: TextStyle(fontSize: 12)),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.error,
-                              side: const BorderSide(color: AppColors.error),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(5),
                             ),
-                            onPressed: () {
-                              ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
-                              ToastUtils.showSuccess(context, "Removed court: ${court.name}");
-                            },
+                            child: Text(
+                              court.surface.isNotEmpty ? court.surface : 'Synthetic Turf',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-              )),
-          const SizedBox(height: 16),
-
-          // Facilities List
-          const Text('Amenities & Facilities', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: profile.facilities.map((facility) {
-              return Chip(
-                avatar: const Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
-                label: Text(facility, style: const TextStyle(fontSize: 11)),
-                backgroundColor: Colors.grey.withValues(alpha: 0.08),
-              );
-            }).toList(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '₹${court.hourlyRate.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const Text(
+                        '/hour',
+                        style: TextStyle(
+                          color: Color(0xFF065F46),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                Icon(Icons.schedule_rounded, size: 14, color: Colors.grey.shade600),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Operating Hours: ${court.timings.isNotEmpty ? court.timings : '06:00 AM - 11:00 PM'}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF475569),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: Colors.grey.shade100),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.edit_rounded, size: 14),
+                  label: const Text('Edit Arena', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.04),
+                  ),
+                  onPressed: () => _showEditVenueCourtDialog(profile, court),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.delete_outline_rounded, size: 14),
+                  label: const Text('Remove', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.error,
+                    side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    backgroundColor: AppColors.error.withValues(alpha: 0.04),
+                  ),
+                  onPressed: () {
+                    ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
+                    ToastUtils.showSuccess(context, "Removed arena: ${court.name}");
+                  },
+                ),
+              ],
+            ),
           ),
         ],
-      );
+      ),
+    );
   }
 
+  Widget _buildAmenityBadge(String facility) {
+    final info = _getAmenityInfo(facility);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: info.bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: info.color.withValues(alpha: 0.28), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: info.color.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4.5),
+            decoration: BoxDecoration(
+              color: info.color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(info.icon, size: 13, color: info.color),
+          ),
+          const SizedBox(width: 7),
+          Text(
+            facility,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          const SizedBox(width: 6),
+          const Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF10B981)),
+        ],
+      ),
+    );
+  }
+
+  void _showEditAmenitiesDialog(TurfProfileState profile) {
+    final allKnownAmenities = [
+      'Drinking Water',
+      'Parking',
+      'Restroom',
+      'Floodlights',
+      'Changing Room',
+      'First Aid',
+      'Cafeteria',
+      'High-Speed WiFi',
+      'Lockers',
+      'Spectator Seating',
+      'Equipment Rental',
+    ];
+
+    final selectedFacilities = List<String>.from(profile.facilities);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.tune_rounded, color: AppColors.primary),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Manage Venue Amenities',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Select the facilities and amenities available to players at your turf:',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    ...allKnownAmenities.map((amenity) {
+                      final isChecked = selectedFacilities.contains(amenity);
+                      final info = _getAmenityInfo(amenity);
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: isChecked ? info.bgColor : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isChecked
+                                ? info.color.withValues(alpha: 0.4)
+                                : Colors.grey.shade200,
+                          ),
+                        ),
+                        child: CheckboxListTile(
+                          value: isChecked,
+                          activeColor: info.color,
+                          dense: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          secondary: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: isChecked ? info.color.withValues(alpha: 0.2) : Colors.grey.shade200,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(info.icon, size: 16, color: isChecked ? info.color : Colors.grey),
+                          ),
+                          title: Text(
+                            amenity,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
+                              color: isChecked ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                            ),
+                          ),
+                          onChanged: (val) {
+                            setDialogState(() {
+                              if (val == true) {
+                                if (!selectedFacilities.contains(amenity)) {
+                                  selectedFacilities.add(amenity);
+                                }
+                              } else {
+                                selectedFacilities.remove(amenity);
+                              }
+                            });
+                          },
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                onPressed: () {
+                  ref.read(turfProfileProvider.notifier).updateFacilities(selectedFacilities);
+                  Navigator.pop(ctx);
+                  ToastUtils.showSuccess(context, 'Amenities updated successfully!');
+                },
+                child: const Text('Save Changes'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+}
+
+class _SportTheme {
+  final IconData icon;
+  final List<Color> gradient;
+  final Color accent;
+  final Color lightBg;
+
+  const _SportTheme({
+    required this.icon,
+    required this.gradient,
+    required this.accent,
+    required this.lightBg,
+  });
+}
+
+_SportTheme _getSportTheme(String name) {
+  final lower = name.toLowerCase().trim();
+  if (lower.contains('cricket')) {
+    return const _SportTheme(
+      icon: Icons.sports_cricket_rounded,
+      gradient: [Color(0xFF065F46), Color(0xFF10B981)],
+      accent: Color(0xFF059669),
+      lightBg: Color(0xFFECFDF5),
+    );
+  } else if (lower.contains('foot') || lower.contains('soccer')) {
+    return const _SportTheme(
+      icon: Icons.sports_soccer_rounded,
+      gradient: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
+      accent: Color(0xFF2563EB),
+      lightBg: Color(0xFFEFF6FF),
+    );
+  } else if (lower.contains('badminton')) {
+    return const _SportTheme(
+      icon: Icons.sports_tennis_rounded,
+      gradient: [Color(0xFFB45309), Color(0xFFF59E0B)],
+      accent: Color(0xFFD97706),
+      lightBg: Color(0xFFFFFBEB),
+    );
+  } else if (lower.contains('tennis') || lower.contains('padel') || lower.contains('pickle')) {
+    return const _SportTheme(
+      icon: Icons.sports_tennis_rounded,
+      gradient: [Color(0xFF0F766E), Color(0xFF14B8A6)],
+      accent: Color(0xFF0D9488),
+      lightBg: Color(0xFFF0FDFA),
+    );
+  } else if (lower.contains('basket')) {
+    return const _SportTheme(
+      icon: Icons.sports_basketball_rounded,
+      gradient: [Color(0xFFC2410C), Color(0xFFF97316)],
+      accent: Color(0xFFEA580C),
+      lightBg: Color(0xFFFFF7ED),
+    );
+  } else if (lower.contains('volley')) {
+    return const _SportTheme(
+      icon: Icons.sports_volleyball_rounded,
+      gradient: [Color(0xFF9A3412), Color(0xFFFB923C)],
+      accent: Color(0xFFEA580C),
+      lightBg: Color(0xFFFFF7ED),
+    );
+  }
+  return const _SportTheme(
+    icon: Icons.sports_rounded,
+    gradient: [Color(0xFF1E293B), Color(0xFF475569)],
+    accent: Color(0xFF334155),
+    lightBg: Color(0xFFF8FAFC),
+  );
+}
+
+class _AmenityInfo {
+  final IconData icon;
+  final Color color;
+  final Color bgColor;
+
+  const _AmenityInfo({
+    required this.icon,
+    required this.color,
+    required this.bgColor,
+  });
+}
+
+_AmenityInfo _getAmenityInfo(String name) {
+  final lower = name.toLowerCase().trim();
+  if (lower.contains('water')) {
+    return const _AmenityInfo(
+      icon: Icons.water_drop_rounded,
+      color: Color(0xFF0284C7),
+      bgColor: Color(0xFFF0F9FF),
+    );
+  } else if (lower.contains('park')) {
+    return const _AmenityInfo(
+      icon: Icons.local_parking_rounded,
+      color: Color(0xFF4F46E5),
+      bgColor: Color(0xFFEEF2FF),
+    );
+  } else if (lower.contains('restroom') || lower.contains('washroom') || lower.contains('toilet')) {
+    return const _AmenityInfo(
+      icon: Icons.wc_rounded,
+      color: Color(0xFF7C3AED),
+      bgColor: Color(0xFFF5F3FF),
+    );
+  } else if (lower.contains('light') || lower.contains('flood')) {
+    return const _AmenityInfo(
+      icon: Icons.highlight_rounded,
+      color: Color(0xFFD97706),
+      bgColor: Color(0xFFFFFBEB),
+    );
+  } else if (lower.contains('changing') || lower.contains('room')) {
+    return const _AmenityInfo(
+      icon: Icons.checkroom_rounded,
+      color: Color(0xFF0D9488),
+      bgColor: Color(0xFFF0FDFA),
+    );
+  } else if (lower.contains('aid') || lower.contains('medical')) {
+    return const _AmenityInfo(
+      icon: Icons.medical_services_rounded,
+      color: Color(0xFFE11D48),
+      bgColor: Color(0xFFFFF1F2),
+    );
+  } else if (lower.contains('wifi') || lower.contains('internet')) {
+    return const _AmenityInfo(
+      icon: Icons.wifi_rounded,
+      color: Color(0xFF2563EB),
+      bgColor: Color(0xFFEFF6FF),
+    );
+  } else if (lower.contains('cafe') || lower.contains('canteen') || lower.contains('snack')) {
+    return const _AmenityInfo(
+      icon: Icons.local_cafe_rounded,
+      color: Color(0xFFEA580C),
+      bgColor: Color(0xFFFFF7ED),
+    );
+  } else if (lower.contains('locker')) {
+    return const _AmenityInfo(
+      icon: Icons.lock_rounded,
+      color: Color(0xFF475569),
+      bgColor: Color(0xFFF8FAFC),
+    );
+  } else if (lower.contains('seat') || lower.contains('dugout') || lower.contains('stand')) {
+    return const _AmenityInfo(
+      icon: Icons.chair_rounded,
+      color: Color(0xFF059669),
+      bgColor: Color(0xFFECFDF5),
+    );
+  }
+  return const _AmenityInfo(
+    icon: Icons.verified_rounded,
+    color: Color(0xFF059669),
+    bgColor: Color(0xFFF0FDF4),
+  );
 }
