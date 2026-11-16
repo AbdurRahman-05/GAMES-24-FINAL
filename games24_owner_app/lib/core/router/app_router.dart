@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/admin/presentation/admin_main_layout.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
@@ -32,7 +33,14 @@ class AppRouter {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => const AdminLoginScreen(),
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const AdminLoginScreen(),
+          transitionDuration: const Duration(milliseconds: 500),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        ),
       ),
       GoRoute(
         path: '/register',

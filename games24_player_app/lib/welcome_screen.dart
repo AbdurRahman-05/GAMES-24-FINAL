@@ -52,9 +52,10 @@ class WelcomeScreen extends StatelessWidget {
                 },
                 child: Column(
                   children: [
-                    Hero(
-                      tag: 'gamez24_logo_emblem',
-                      child: Image.asset('assets/images/logo.png', height: 180),
+                    Image.asset(
+                      'assets/images/logo_master.png',
+                      height: 140,
+                      fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 16),
                     const Text(
