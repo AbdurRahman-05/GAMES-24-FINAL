@@ -1871,7 +1871,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
+          color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
@@ -1880,7 +1880,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -1894,23 +1894,23 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               title,
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFF1C1C1C),
+                color: isSelected ? Colors.black.withValues(alpha: 0.15) : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                  fontWeight: FontWeight.w900,
+                  color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -2042,20 +2042,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     String badgeLabel;
 
     if (isCancelled) {
-      badgeBg = const Color(0xFFFEE2E2);
-      badgeTextColor = const Color(0xFFDC2626);
+      badgeBg = const Color(0xFF381219);
+      badgeTextColor = const Color(0xFFFB7185);
       badgeLabel = 'CANCELLED';
     } else if (isCompleted) {
       badgeBg = const Color(0xFF1C1C1C);
       badgeTextColor = const Color(0xFFA1A1AA);
       badgeLabel = 'COMPLETED ✓';
     } else if (isLiveNow) {
-      badgeBg = const Color(0xFFDCFCE7);
+      badgeBg = const Color(0xFF142908);
       badgeTextColor = const Color(0xFFD4FF00);
       badgeLabel = 'LIVE NOW 🟢';
     } else {
-      badgeBg = isUpi ? const Color(0xFFDCFCE7) : const Color(0xFF2D2005);
-      badgeTextColor = isUpi ? const Color(0xFFD4FF00) : const Color(0xFFB45309);
+      badgeBg = isUpi ? const Color(0xFF142908) : const Color(0xFF2D2005);
+      badgeTextColor = isUpi ? const Color(0xFFD4FF00) : const Color(0xFFFBBF24);
       badgeLabel = isUpi ? 'PAID ONLINE' : 'PAY AT VENUE';
     }
 
@@ -2142,14 +2142,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFFF1F2),
+                              color: const Color(0xFF280E14),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFFECDD3)),
+                              border: Border.all(color: const Color(0xFF4A1922)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFBE123C)),
+                                const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFFB7185)),
                                 const SizedBox(width: 3),
                                 ConstrainedBox(
                                   constraints: const BoxConstraints(maxWidth: 120),
@@ -2160,7 +2160,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     style: const TextStyle(
                                       fontSize: 9.5,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFFBE123C),
+                                      color: Color(0xFFFB7185),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -3803,8 +3803,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             _formatTargetLabel(preset.toDouble()),
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected ? Colors.white : AppColors.primary,
+                              fontWeight: FontWeight.w900,
+                              color: isSelected ? Colors.black : AppColors.primary,
                             ),
                           ),
                         ),

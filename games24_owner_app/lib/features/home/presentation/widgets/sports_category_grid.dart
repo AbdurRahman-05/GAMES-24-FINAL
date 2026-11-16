@@ -59,7 +59,7 @@ class SportsCategoryGrid extends StatelessWidget {
                     ),
                     child: Icon(
                       sport.icon,
-                      color: isSelected ? Colors.white : sport.color,
+                      color: isSelected ? Colors.black : sport.color,
                       size: 26,
                     ),
                   ),

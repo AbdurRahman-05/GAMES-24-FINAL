@@ -1188,15 +1188,15 @@ class _AdminTournamentManagerScreenState
                       Icon(
                         item['icon'] as IconData,
                         size: 14,
-                        color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                        color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                       ),
                       const SizedBox(width: 5),
                       Text(
                         item['label'] as String,
                         style: TextStyle(
                           fontSize: 11.5,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                          color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                         ),
                       ),
                     ],
@@ -1898,7 +1898,7 @@ class _AdminTournamentManagerScreenState
                           label: Text(s['name']!, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600)),
                           selected: isSelected,
                           selectedColor: const Color(0xFFD4FF00),
-                          labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFFE4E4E7)),
+                          labelStyle: TextStyle(color: isSelected ? Colors.black : const Color(0xFFE4E4E7), fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600),
                           backgroundColor: const Color(0xFF1C1C1C),
                           onSelected: (val) {
                             if (val) setState(() => _selectedSport = s['name']!);

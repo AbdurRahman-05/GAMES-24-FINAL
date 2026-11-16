@@ -3013,7 +3013,7 @@ class _TurfOwnerProfileScreenState
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [theme.lightBg, Colors.white],
+                    colors: [theme.lightBg, const Color(0xFF141414)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -3082,9 +3082,9 @@ class _TurfOwnerProfileScreenState
                           const SizedBox(height: 3),
                           Text(
                             '${sport.courtsAvailable > 0 ? sport.courtsAvailable : 1} Arena(s) Linked • Full Pitch',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 11,
-                              color: Colors.grey.shade600,
+                              color: Color(0xFFA1A1AA),
                               fontWeight: FontWeight.w500,
                             ),
                             maxLines: 1,
@@ -3138,11 +3138,11 @@ class _TurfOwnerProfileScreenState
                         decoration: BoxDecoration(
                           color: const Color(0xFF141414),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: const Color(0xFF262626)),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.calendar_today_rounded, size: 12, color: Colors.grey.shade600),
+                            const Icon(Icons.calendar_today_rounded, size: 12, color: Color(0xFFA1A1AA)),
                             const SizedBox(width: 4),
                             Expanded(
                               child: Text(
@@ -3171,7 +3171,7 @@ class _TurfOwnerProfileScreenState
                             Expanded(
                               child: Text(
                                 'Wkend: ₹${sport.weekendRate.toStringAsFixed(0)}',
-                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF92400E)),
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFFFBBF24)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -3895,8 +3895,8 @@ class _TurfOwnerProfileScreenState
                             _formatTargetLabel(preset.toDouble()),
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected ? Colors.white : AppColors.primary,
+                              fontWeight: FontWeight.w900,
+                              color: isSelected ? Colors.black : AppColors.primary,
                             ),
                           ),
                         ),
@@ -3979,14 +3979,14 @@ _SportTheme _getSportTheme(String name) {
       icon: Icons.sports_cricket_rounded,
       gradient: [Color(0xFF065F46), Color(0xFF10B981)],
       accent: Color(0xFF059669),
-      lightBg: Color(0xFFECFDF5),
+      lightBg: Color(0xFF092015),
     );
   } else if (lower.contains('foot') || lower.contains('soccer')) {
     return const _SportTheme(
       icon: Icons.sports_soccer_rounded,
       gradient: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
       accent: Color(0xFF2563EB),
-      lightBg: Color(0xFFEFF6FF),
+      lightBg: Color(0xFF0B1733),
     );
   } else if (lower.contains('badminton')) {
     return const _SportTheme(
@@ -4000,21 +4000,21 @@ _SportTheme _getSportTheme(String name) {
       icon: Icons.sports_tennis_rounded,
       gradient: [Color(0xFF0F766E), Color(0xFF14B8A6)],
       accent: Color(0xFF0D9488),
-      lightBg: Color(0xFFF0FDFA),
+      lightBg: Color(0xFF07211E),
     );
   } else if (lower.contains('basket')) {
     return const _SportTheme(
       icon: Icons.sports_basketball_rounded,
       gradient: [Color(0xFFC2410C), Color(0xFFF97316)],
       accent: Color(0xFFEA580C),
-      lightBg: Color(0xFFFFF7ED),
+      lightBg: Color(0xFF261308),
     );
   } else if (lower.contains('volley')) {
     return const _SportTheme(
       icon: Icons.sports_volleyball_rounded,
       gradient: [Color(0xFF9A3412), Color(0xFFFB923C)],
       accent: Color(0xFFEA580C),
-      lightBg: Color(0xFFFFF7ED),
+      lightBg: Color(0xFF261308),
     );
   }
   return const _SportTheme(

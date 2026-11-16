@@ -966,9 +966,9 @@ class _AdminSlotManagerScreenState
                           weekday,
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                             color: isSelected
-                                ? Colors.white.withValues(alpha: 0.8)
+                                ? Colors.black
                                 : const Color(0xFFA1A1AA),
                           ),
                         ),
@@ -979,7 +979,7 @@ class _AdminSlotManagerScreenState
                             fontSize: 16,
                             fontWeight: FontWeight.w900,
                             color: isSelected
-                                ? Colors.white
+                                ? Colors.black
                                 : Colors.white,
                           ),
                         ),
@@ -1064,13 +1064,14 @@ class _AdminSlotManagerScreenState
 
   Widget _buildFilterPill(String title, int count, Color color) {
     final isSelected = _selectedSlotFilter == title;
+    final isLime = color == const Color(0xFFD4FF00) || title == 'All';
     return InkWell(
       onTap: () => setState(() => _selectedSlotFilter = title),
       borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.white,
+          color: isSelected ? color : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? color : const Color(0xFF262626),
@@ -1093,8 +1094,10 @@ class _AdminSlotManagerScreenState
               title,
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                color: isSelected
+                    ? (isLime ? Colors.black : Colors.white)
+                    : const Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 6),
@@ -1102,7 +1105,9 @@ class _AdminSlotManagerScreenState
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withValues(alpha: 0.25)
+                    ? (isLime
+                        ? Colors.black.withValues(alpha: 0.15)
+                        : Colors.white.withValues(alpha: 0.25))
                     : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -1110,8 +1115,10 @@ class _AdminSlotManagerScreenState
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                  fontWeight: FontWeight.w900,
+                  color: isSelected
+                      ? (isLime ? Colors.black : Colors.white)
+                      : const Color(0xFFA1A1AA),
                 ),
               ),
             ),

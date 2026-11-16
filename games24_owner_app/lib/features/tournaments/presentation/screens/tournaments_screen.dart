@@ -126,8 +126,8 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                       selected: isSelected,
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black87),
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
                         fontSize: 12,
                       ),
                       onSelected: (selected) {
@@ -143,13 +143,13 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: ChoiceChip(
-                    avatar: Icon(sport.icon, size: 14, color: isSelected ? Colors.white : sport.color),
+                    avatar: Icon(sport.icon, size: 14, color: isSelected ? Colors.black : sport.color),
                     label: Text(sport.name),
                     selected: isSelected,
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black87),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
+                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
                       fontSize: 12,
                     ),
                     onSelected: (selected) {

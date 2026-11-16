@@ -1785,23 +1785,23 @@ class _TurfOwnerRegistrationScreenState
                         ? Icons.sports_basketball
                         : Icons.sports_volleyball,
                     size: 16,
-                    color: isSelected ? Colors.white : AppColors.primary,
+                    color: isSelected ? Colors.black : AppColors.primary,
                   ),
                   label: Text(
                     isStandardTurf ? '$sport (Turf Ground)' : sport,
                     style: TextStyle(
                       color: isSelected
-                          ? Colors.white
+                          ? Colors.black
                           : const Color(0xFF1F2937),
                       fontWeight: isSelected
-                          ? FontWeight.bold
+                          ? FontWeight.w900
                           : FontWeight.w500,
                       fontSize: 12,
                     ),
                   ),
                   selected: isSelected,
                   selectedColor: AppColors.primary,
-                  checkmarkColor: Colors.white,
+                  checkmarkColor: Colors.black,
                   backgroundColor: const Color(0xFFF3F4F6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),

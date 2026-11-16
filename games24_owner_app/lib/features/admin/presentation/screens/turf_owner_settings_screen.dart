@@ -1954,8 +1954,8 @@ class _TurfOwnerSettingsScreenState
                             selected: isSelected,
                             selectedColor: const Color(0xFFD4FF00),
                             labelStyle: TextStyle(
-                              color: isSelected ? Colors.white : const Color(0xFFE4E4E7),
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              color: isSelected ? Colors.black : const Color(0xFFE4E4E7),
+                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                               fontSize: 12,
                             ),
                             backgroundColor: const Color(0xFF0D0D0D),
@@ -2303,8 +2303,8 @@ class _TurfOwnerSettingsScreenState
                             _formatTargetLabel(preset.toDouble()),
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: isSelected ? Colors.white : AppColors.primary,
+                              fontWeight: FontWeight.w900,
+                              color: isSelected ? Colors.black : AppColors.primary,
                             ),
                           ),
                         ),
