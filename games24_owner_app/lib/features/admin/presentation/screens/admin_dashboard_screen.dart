@@ -178,26 +178,44 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       ),
       title: Row(
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFD4FF00), Color(0xFFAEEA00)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+          InkWell(
+            onTap: () => _showBranchSwitcherBottomSheet(context, profile),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF141414),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                  width: 1.2,
                 ),
-              ],
-            ),
-            child: const Center(
-              child: Icon(Icons.stadium_rounded, color: Color(0xFF141414), size: 24),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              padding: const EdgeInsets.all(4),
+              child: Center(
+                child: Hero(
+                  tag: 'gamez24_logo_emblem',
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'assets/images/image.png',
+                        fit: BoxFit.contain,
+                      );
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -375,7 +393,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         ),
                         child: Icon(
                           Icons.stadium_rounded,
-                          color: isCurrent ? Colors.white : const Color(0xFFA1A1AA),
+                          color: isCurrent ? Colors.black : const Color(0xFFA1A1AA),
                           size: 20,
                         ),
                       ),
