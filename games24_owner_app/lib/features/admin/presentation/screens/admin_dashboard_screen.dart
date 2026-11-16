@@ -9,11 +9,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
 import '../../providers/admin_providers.dart';
 import '../widgets/alter_booking_dialog.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-import 'package:image_picker/image_picker.dart';
-import '../../../../api_config.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -357,137 +352,70 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 const SizedBox(height: 16),
                 ...branches.map((b) {
                   final isCurrent = b.id == profile.verifiedAdminId;
-                  final isPending = b.isPending;
-
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     child: Material(
-                      color: isCurrent
-                          ? const Color(0xFFF0FDF4)
-                          : isPending
-                              ? const Color(0xFFFFFBEB)
-                              : const Color(0xFFF8FAFC),
+                      color: isCurrent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
-                          color: isCurrent
-                              ? const Color(0xFF86EFAC)
-                              : isPending
-                                  ? const Color(0xFFFDE68A)
-                                  : const Color(0xFFE2E8F0),
+                          color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
                           width: isCurrent ? 1.5 : 1.0,
                         ),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                        leading: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: isCurrent
-                                ? const Color(0xFF154D36)
-                                : isPending
-                                    ? const Color(0xFFFEF3C7)
-                                    : const Color(0xFFE2E8F0),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            isPending ? Icons.hourglass_top_rounded : Icons.stadium_rounded,
-                            color: isCurrent
-                                ? Colors.white
-                                : isPending
-                                    ? const Color(0xFFB45309)
-                                    : const Color(0xFF475569),
-                            size: 20,
-                          ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      leading: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isCurrent ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        title: Text(
-                          b.venueName,
-                          style: TextStyle(
-                            fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
-                            color: const Color(0xFF0F172A),
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Icon(
+                          Icons.stadium_rounded,
+                          color: isCurrent ? Colors.white : const Color(0xFF475569),
+                          size: 20,
                         ),
-                        subtitle: Text(
-                          isPending
-                              ? '${b.neighborhoodArea} • ⏳ Under Super Admin Verification'
-                              : '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: isPending ? const Color(0xFFB45309) : const Color(0xFF64748B),
-                            fontWeight: isPending ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                      ),
+                      title: Text(
+                        b.venueName,
+                        style: TextStyle(
+                          fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
+                          color: const Color(0xFF0F172A),
+                          fontSize: 14,
                         ),
-                        trailing: isCurrent
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF16A34A),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  'Active',
-                                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                                ),
-                              )
-                            : isPending
-                                ? Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFEF3C7),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: const Color(0xFFFDE68A)),
-                                    ),
-                                    child: const Text(
-                                      'Pending',
-                                      style: TextStyle(
-                                        color: Color(0xFFB45309),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  )
-                                : TextButton(
-                                    onPressed: () async {
-                                      Navigator.pop(ctx);
-                                      await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
-                                      if (mounted && context.mounted) {
-                                        ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
-                                      }
-                                    },
-                                    child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  ),
-                        onTap: isPending
-                            ? () {
-                                showDialog(
-                                  context: context,
-                                  builder: (dCtx) => AlertDialog(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    title: const Row(
-                                      children: [
-                                        Icon(Icons.hourglass_top_rounded, color: Color(0xFFB45309)),
-                                        SizedBox(width: 8),
-                                        Text('Branch Under Verification', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                    content: Text(
-                                      'Your new branch "${b.venueName}" (${b.neighborhoodArea}) is currently pending review by Super Admin. Once verified, it will be activated and visible to players.',
-                                      style: const TextStyle(fontSize: 13, color: Color(0xFF475569), height: 1.45),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(dCtx),
-                                        child: const Text('OK'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                            : null,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
+                        style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: isCurrent
+                          ? Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF16A34A),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Active',
+                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            )
+                          : TextButton(
+                              onPressed: () async {
+                                Navigator.pop(ctx);
+                                await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
+                                if (mounted && context.mounted) {
+                                  ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
+                                }
+                              },
+                              child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
                       ),
                     ),
                   );
@@ -693,272 +621,111 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final addressCtrl = TextEditingController();
     final altPhoneCtrl = TextEditingController();
     final rateCtrl = TextEditingController(text: '1200');
-    final List<String> branchPhotos = [];
-    bool isUploadingPhoto = false;
 
     showDialog(
       context: context,
-      builder: (dlgCtx) => StatefulBuilder(
-        builder: (dialogCtx, setDialogState) {
-          Future<void> pickAndUploadPhoto() async {
-            final ImagePicker picker = ImagePicker();
-            final List<XFile> images = [];
-            try {
-              final picked = await picker.pickMultiImage(imageQuality: 85);
-              if (picked.isNotEmpty) {
-                images.addAll(picked);
-              } else {
-                final single = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-                if (single != null) images.add(single);
-              }
-            } catch (_) {
-              try {
-                final single = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-                if (single != null) images.add(single);
-              } catch (_) {}
-            }
-
-            if (images.isEmpty) return;
-
-            setDialogState(() => isUploadingPhoto = true);
-            try {
-              for (final img in images) {
-                final bytes = await img.readAsBytes();
-                String fileName = img.name.isNotEmpty ? img.name : 'branch_${DateTime.now().millisecondsSinceEpoch}.jpg';
-                if (!fileName.contains('.')) fileName = '$fileName.jpg';
-                final ext = fileName.split('.').last.toLowerCase();
-                final mimeSubtype = (ext == 'png') ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
-
-                final uri = Uri.parse('${ApiConfig.baseUrl}/upload/photo');
-                final request = http.MultipartRequest('POST', uri);
-                request.files.add(http.MultipartFile.fromBytes(
-                  'file',
-                  bytes,
-                  filename: fileName,
-                  contentType: MediaType('image', mimeSubtype),
-                ));
-
-                final streamedResponse = await request.send();
-                final response = await http.Response.fromStream(streamedResponse);
-                if (response.statusCode == 200 || response.statusCode == 201) {
-                  final data = jsonDecode(response.body);
-                  final fileUrl = data['url'];
-                  if (fileUrl != null && !branchPhotos.contains(fileUrl.toString())) {
-                    setDialogState(() {
-                      branchPhotos.add(fileUrl.toString());
-                    });
-                  }
-                }
-              }
-            } catch (e) {
-              debugPrint('Error uploading branch photo: $e');
-            } finally {
-              setDialogState(() => isUploadingPhoto = false);
-            }
-          }
-
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('Register New Branch Location', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Primary Owner Phone: ${profile.ownerPhone}',
-                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF154D36)),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: 'New Branch Name *', hintText: 'e.g. Vicky Turf - Branch 2'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: areaCtrl,
-                    decoration: const InputDecoration(labelText: 'Branch Neighborhood / Area *', hintText: 'e.g. KK Nagar'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: addressCtrl,
-                    decoration: const InputDecoration(labelText: 'Branch Street Address *', hintText: 'e.g. 45, Main Avenue'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: altPhoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'Alternative Mobile Number * (Mandatory)',
-                      hintText: '10-digit number for this branch',
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: rateCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Hourly Rate (₹)', hintText: '1200'),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Branch Photos Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Branch Venue Photos *',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
-                      ),
-                      if (branchPhotos.isNotEmpty)
-                        Text(
-                          '${branchPhotos.length} uploaded',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF154D36)),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Upload photos of courts, turf grass & amenities for Super Admin verification and player booking cards.',
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Upload Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: isUploadingPhoto ? null : pickAndUploadPhoto,
-                      icon: isUploadingPhoto
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF154D36)))
-                          : const Icon(Icons.add_photo_alternate_rounded, size: 18, color: Color(0xFF154D36)),
-                      label: Text(
-                        isUploadingPhoto ? 'Uploading Photo...' : 'Add Branch Photos',
-                        style: const TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF154D36), width: 1.2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                    ),
-                  ),
-
-                  // Thumbnails row
-                  if (branchPhotos.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 72,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: branchPhotos.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, idx) {
-                          final photoUrl = branchPhotos[idx];
-                          return Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  photoUrl,
-                                  width: 72,
-                                  height: 72,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: 72,
-                                    height: 72,
-                                    color: Colors.grey.shade200,
-                                    child: const Icon(Icons.image_not_supported_rounded, size: 24, color: Colors.grey),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 2,
-                                right: 2,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setDialogState(() {
-                                      branchPhotos.removeAt(idx);
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black87,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ],
+      builder: (dlgCtx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Register New Branch Location', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Primary Owner Phone: ${profile.ownerPhone}',
+                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF154D36)),
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dlgCtx),
-                child: const Text('Cancel'),
+              const SizedBox(height: 10),
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(labelText: 'New Branch Name *', hintText: 'e.g. Vicky Turf - Branch 2'),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
-                  foregroundColor: Colors.white,
+              const SizedBox(height: 8),
+              TextField(
+                controller: areaCtrl,
+                decoration: const InputDecoration(labelText: 'Branch Neighborhood / Area *', hintText: 'e.g. KK Nagar'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: addressCtrl,
+                decoration: const InputDecoration(labelText: 'Branch Street Address *', hintText: 'e.g. 45, Main Avenue'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: altPhoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: 'Alternative Mobile Number * (Mandatory)',
+                  hintText: '10-digit number for this branch',
                 ),
-                onPressed: () async {
-                  final vName = nameCtrl.text.trim();
-                  final vArea = areaCtrl.text.trim();
-                  final altPhone = altPhoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
-
-                  if (vName.isEmpty || vArea.isEmpty) {
-                    ToastUtils.showError(context, 'Please enter branch name and area');
-                    return;
-                  }
-
-                  if (altPhone.length < 10) {
-                    ToastUtils.showError(context, 'Alternative mobile number is mandatory (10 digits)');
-                    return;
-                  }
-
-                  final primaryDigits = profile.ownerPhone.replaceAll(RegExp(r'\D'), '');
-                  if (primaryDigits.isNotEmpty && primaryDigits.endsWith(altPhone.length >= 10 ? altPhone.substring(altPhone.length - 10) : altPhone)) {
-                    ToastUtils.showError(context, 'Alternative number must be different from primary number');
-                    return;
-                  }
-
-                  Navigator.pop(dlgCtx);
-                  final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
-                  final ok = await ref.read(turfProfileProvider.notifier).addNewBranch(
-                    venueName: vName,
-                    neighborhoodArea: vArea,
-                    streetAddress: addressCtrl.text.trim().isNotEmpty ? addressCtrl.text.trim() : vArea,
-                    alternativePhone: altPhone,
-                    dayRate: rate,
-                    nightRate: rate + 200,
-                    photoUrls: branchPhotos,
-                  );
-                  if (context.mounted) {
-                    if (ok) {
-                      ToastUtils.showSuccess(
-                        context,
-                        'Branch "$vName" application submitted with ${branchPhotos.length} photos! Super Admin will verify and activate your branch.',
-                      );
-                    } else {
-                      ToastUtils.showError(context, 'Failed to submit branch application. Please try again.');
-                    }
-                  }
-                },
-                child: const Text('Submit Application'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: rateCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Hourly Rate (₹)', hintText: '1200'),
               ),
             ],
-          );
-        },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dlgCtx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF154D36),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final vName = nameCtrl.text.trim();
+              final vArea = areaCtrl.text.trim();
+              final altPhone = altPhoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
+
+              if (vName.isEmpty || vArea.isEmpty) {
+                ToastUtils.showError(context, 'Please enter branch name and area');
+                return;
+              }
+
+              if (altPhone.length < 10) {
+                ToastUtils.showError(context, 'Alternative mobile number is mandatory (10 digits)');
+                return;
+              }
+
+              final primaryDigits = profile.ownerPhone.replaceAll(RegExp(r'\D'), '');
+              if (primaryDigits.isNotEmpty && primaryDigits.endsWith(altPhone.length >= 10 ? altPhone.substring(altPhone.length - 10) : altPhone)) {
+                ToastUtils.showError(context, 'Alternative number must be different from primary number');
+                return;
+              }
+
+              Navigator.pop(dlgCtx);
+              final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
+              final ok = await ref.read(turfProfileProvider.notifier).addNewBranch(
+                venueName: vName,
+                neighborhoodArea: vArea,
+                streetAddress: addressCtrl.text.trim().isNotEmpty ? addressCtrl.text.trim() : vArea,
+                alternativePhone: altPhone,
+                dayRate: rate,
+                nightRate: rate + 200,
+              );
+              if (context.mounted) {
+                if (ok) {
+                  ToastUtils.showSuccess(
+                    context,
+                    'Branch "$vName" application submitted! Super Admin will verify and activate your branch.',
+                  );
+                } else {
+                  ToastUtils.showError(context, 'Failed to submit branch application. Please try again.');
+                }
+              }
+            },
+            child: const Text('Submit Application'),
+          ),
+        ],
       ),
     );
-  }
   }
 
   // --- 2. OPERATING STATUS & DATE BAR ---
