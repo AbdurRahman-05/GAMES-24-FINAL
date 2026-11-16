@@ -23,7 +23,10 @@ class AdminTournamentManagerScreen extends ConsumerStatefulWidget {
 
 class _AdminTournamentManagerScreenState
     extends ConsumerState<AdminTournamentManagerScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   late TabController _tabController;
 
   // Form Controllers for Create Tournament Wizard
@@ -1025,6 +1028,7 @@ class _AdminTournamentManagerScreenState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final tournState = ref.watch(adminTournamentProvider);
 
     return Scaffold(

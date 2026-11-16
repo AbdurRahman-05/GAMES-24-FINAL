@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/admin/presentation/admin_main_layout.dart';
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
@@ -11,6 +12,24 @@ import '../../features/auth/presentation/screens/splash_screen.dart';
 
 import '../../features/admin/presentation/screens/web_partner_portal_screen.dart';
 import '../../features/admin/presentation/screens/admin_tournament_manager_screen.dart';
+
+Page<dynamic> _buildSmoothPage(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 200),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        ),
+        child: child,
+      );
+    },
+  );
+}
 
 class AppRouter {
   AppRouter._();
@@ -38,17 +57,26 @@ class AppRouter {
       ),
       GoRoute(
         path: '/register',
-        builder: (context, state) => const TurfOwnerRegistrationScreen(),
+        pageBuilder: (context, state) => _buildSmoothPage(
+          const TurfOwnerRegistrationScreen(),
+          state,
+        ),
       ),
       // Standalone Full-Screen QR Scanner (Accessible via Top Header Bar & Booking Details)
       GoRoute(
         path: '/admin/qr-scanner',
-        builder: (context, state) => const AdminQrScannerScreen(),
+        pageBuilder: (context, state) => _buildSmoothPage(
+          const AdminQrScannerScreen(),
+          state,
+        ),
       ),
       // Standalone Full-Screen Turf Owner Settings & Operations Page
       GoRoute(
         path: '/admin/settings',
-        builder: (context, state) => const TurfOwnerSettingsScreen(),
+        pageBuilder: (context, state) => _buildSmoothPage(
+          const TurfOwnerSettingsScreen(),
+          state,
+        ),
       ),
 
       // Shell Route for Turf Owner Dedicated Navigation

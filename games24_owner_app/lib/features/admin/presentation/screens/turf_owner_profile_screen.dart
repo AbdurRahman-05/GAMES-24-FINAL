@@ -18,7 +18,11 @@ class TurfOwnerProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _TurfOwnerProfileScreenState
-    extends ConsumerState<TurfOwnerProfileScreen> {
+    extends ConsumerState<TurfOwnerProfileScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   void _showEditTimingsDialog(TurfProfileState profile) {
     String wkdayOpen = profile.weekdayOpeningTime;
     String wkdayClose = profile.weekdayClosingTime;
@@ -1843,6 +1847,7 @@ class _TurfOwnerProfileScreenState
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final profile = ref.watch(turfProfileProvider);
 
     return Scaffold(

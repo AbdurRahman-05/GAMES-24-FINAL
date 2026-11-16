@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 enum AppButtonType { primary, secondary, outline, text }
@@ -121,7 +122,12 @@ class AppButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: isLoading ? null : onPressed,
+          onTap: isLoading || isDisabled
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  onPressed?.call();
+                },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: buttonContent,

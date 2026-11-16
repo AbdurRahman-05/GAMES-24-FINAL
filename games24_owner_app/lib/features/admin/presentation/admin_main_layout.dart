@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 
 class AdminMainLayout extends StatelessWidget {
@@ -111,13 +112,16 @@ class AdminMainLayout extends StatelessWidget {
     required bool isSelected,
   }) {
     return InkWell(
-      onTap: () => onTabSelected(index),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTabSelected(index);
+      },
       borderRadius: BorderRadius.circular(18),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
+        duration: const Duration(milliseconds: 180),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          vertical: isSelected ? 7 : 5,
+        padding: const EdgeInsets.symmetric(
+          vertical: 6,
           horizontal: 2,
         ),
         decoration: BoxDecoration(
@@ -126,9 +130,9 @@ class AdminMainLayout extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.35),
+                    color: AppColors.primary.withValues(alpha: 0.25),
                     blurRadius: 8,
-                    offset: const Offset(0, 3),
+                    offset: const Offset(0, 2),
                   ),
                 ]
               : null,

@@ -18,7 +18,11 @@ class AdminSlotManagerScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminSlotManagerScreenState
-    extends ConsumerState<AdminSlotManagerScreen> {
+    extends ConsumerState<AdminSlotManagerScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   String? _selectedCourt;
   DateTime _selectedDate = DateTime.now();
   String _selectedSlotFilter =
@@ -256,6 +260,7 @@ class _AdminSlotManagerScreenState
       return true; // 'All'
     }).toList();
 
+    super.build(context);
     return Scaffold(
       backgroundColor: const Color(0xFF080808),
       appBar: _buildProAppBar(context, profile),

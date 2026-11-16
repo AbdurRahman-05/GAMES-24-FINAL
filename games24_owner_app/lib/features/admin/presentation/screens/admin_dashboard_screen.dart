@@ -19,7 +19,11 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
       _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   bool _isRefreshing = false;
   String _selectedFilter =
       'Upcoming'; // Default to 'Upcoming' with exact time-aware filtering
@@ -135,6 +139,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final profile = ref.watch(turfProfileProvider);
 
     // If subscription has expired or on hold: block owner access
