@@ -2430,8 +2430,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     String badgeLabel;
 
     if (isCancelled) {
-      badgeBg = const Color(0xFFFEE2E2);
-      badgeTextColor = const Color(0xFFDC2626);
       badgeBg = const Color(0xFF381219);
       badgeTextColor = const Color(0xFFFB7185);
       badgeLabel = 'CANCELLED';
@@ -2440,15 +2438,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       badgeTextColor = const Color(0xFFA1A1AA);
       badgeLabel = 'COMPLETED ✓';
     } else if (isLiveNow) {
-      badgeBg = const Color(0xFFDCFCE7);
       badgeBg = const Color(0xFF142908);
       badgeTextColor = const Color(0xFFD4FF00);
       badgeLabel = 'LIVE NOW 🟢';
     } else {
-      badgeBg = isUpi ? const Color(0xFFDCFCE7) : const Color(0xFF2D2005);
-      badgeTextColor = isUpi
-          ? const Color(0xFFD4FF00)
-          : const Color(0xFFB45309);
       badgeBg = isUpi ? const Color(0xFF142908) : const Color(0xFF2D2005);
       badgeTextColor = isUpi
           ? const Color(0xFFD4FF00)
@@ -2490,137 +2483,71 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               // 1. Match Header Row
               Padding(
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3.5,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: sportColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _getSportEmoji(booking.sport),
+                            style: const TextStyle(fontSize: 12),
                           ),
-                          decoration: BoxDecoration(
-                            color: sportColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                          const SizedBox(width: 4),
+                          Text(
+                            booking.sport,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: sportColor,
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _getSportEmoji(booking.sport),
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                booking.sport,
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: sportColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          booking.id,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFA1A1AA),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        if (booking.isOpenMatch)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF280E14),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFF4A1922),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeBg,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isLiveNow) ...[
+                            Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF16A34A),
+                                shape: BoxShape.circle,
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.sports_mma_rounded,
-                                  size: 10,
-                                  color: Color(0xFFFB7185),
-                                ),
-                                const SizedBox(width: 3),
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                    maxWidth: 120,
-                                  ),
-                                  child: Text(
-                                    booking.teamName != null &&
-                                            booking.teamName!.isNotEmpty
-                                        ? '⚔️ ${booking.teamName}'
-                                        : '⚔️ Open Challenge',
-                                    style: const TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFFFB7185),
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            badgeLabel,
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w800,
+                              color: badgeTextColor,
                             ),
                           ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: badgeBg,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (isLiveNow) ...[
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF16A34A),
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                              ],
-                              Text(
-                                badgeLabel,
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: badgeTextColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -2690,53 +2617,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 : const Color(0xFFD4FF00),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        if (booking.customerPhone.isNotEmpty)
-                          InkWell(
-                            onTap: () {
-                              PhoneDialer.call(
-                                context,
-                                booking.customerPhone,
-                                customerName: booking.customerName,
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2.5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF132204),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: const Color(
-                                    0xFFD4FF00,
-                                  ).withValues(alpha: 0.35),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.call_rounded,
-                                    size: 10,
-                                    color: Color(0xFFD4FF00),
-                                  ),
-                                  SizedBox(width: 3),
-                                  Text(
-                                    'Call',
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFFD4FF00),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                       ],
                     ),
                   ],
@@ -2878,37 +2758,96 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           ],
                         ),
                       )
-                    : SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD4FF00),
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 9,
-                              horizontal: 12,
+                    : Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD4FF00),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 9.5,
+                                  horizontal: 10,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                              icon: const Icon(
+                                Icons.confirmation_number_outlined,
+                                size: 14,
+                                color: Colors.black,
+                              ),
+                              label: const FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'Pass & Actions',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              onPressed: () =>
+                                  _openBookingDetailsSheet(context, booking),
                             ),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD4FF00),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 9.5,
+                                  horizontal: 10,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                              icon: const Icon(
+                                Icons.call_rounded,
+                                size: 14,
+                                color: Colors.black,
+                              ),
+                              label: const FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'Call',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                              onPressed: () {
+                                if (booking.customerPhone.isNotEmpty) {
+                                  PhoneDialer.call(
+                                    context,
+                                    booking.customerPhone,
+                                    customerName: booking.customerName,
+                                  );
+                                } else {
+                                  ToastUtils.showError(
+                                    context,
+                                    'No phone number available for this player',
+                                  );
+                                }
+                              },
                             ),
-                            elevation: 0,
                           ),
-                          icon: const Icon(
-                            Icons.confirmation_number_outlined,
-                            size: 15,
-                          ),
-                          label: const Text(
-                            'View Match Pass & Actions',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          onPressed: () =>
-                              _openBookingDetailsSheet(context, booking),
-                        ),
+                        ],
                       ),
               ),
             ],
