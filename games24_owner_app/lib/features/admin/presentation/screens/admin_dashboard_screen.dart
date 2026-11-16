@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
+import '../../../../core/utils/phone_dialer.dart';
 import '../../providers/admin_providers.dart';
 import '../widgets/alter_booking_dialog.dart';
 
@@ -2244,21 +2245,29 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         if (booking.customerPhone.isNotEmpty)
                           InkWell(
                             onTap: () {
-                              ToastUtils.showSuccess(context, "Contacting ${booking.customerName}: ${booking.customerPhone}");
+                              PhoneDialer.call(
+                                context,
+                                booking.customerPhone,
+                                customerName: booking.customerName,
+                              );
                             },
                             borderRadius: BorderRadius.circular(6),
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1C),
+                                color: const Color(0xFF132204),
                                 borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                  width: 0.8,
+                                ),
                               ),
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.call_rounded, size: 10, color: Color(0xFFA1A1AA)),
+                                  Icon(Icons.call_rounded, size: 10, color: Color(0xFFD4FF00)),
                                   SizedBox(width: 3),
-                                  Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
+                                  Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                                 ],
                               ),
                             ),
@@ -2790,9 +2799,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       if (booking.customerPhone.isNotEmpty)
                         InkWell(
                           onTap: () {
-                            ToastUtils.showSuccess(
+                            PhoneDialer.call(
                               context,
-                              'Calling ${booking.customerName}: ${booking.customerPhone}',
+                              booking.customerPhone,
+                              customerName: booking.customerName,
                             );
                           },
                           borderRadius: BorderRadius.circular(10),

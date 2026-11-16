@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
+import '../../../../core/utils/phone_dialer.dart';
 import '../../providers/admin_providers.dart';
 
 class AdminSlotManagerScreen extends ConsumerStatefulWidget {
@@ -2035,6 +2036,34 @@ class _AdminSlotManagerScreenState
                         'Phone Number',
                         booking.customerPhone,
                         Icons.phone_rounded,
+                        onTap: booking.customerPhone.isNotEmpty
+                            ? () => PhoneDialer.call(
+                                  context,
+                                  booking.customerPhone,
+                                  customerName: booking.customerName,
+                                )
+                            : null,
+                        trailing: booking.customerPhone.isNotEmpty
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF132204),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.call_rounded, size: 10, color: Color(0xFFD4FF00)),
+                                    SizedBox(width: 3),
+                                    Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                  ],
+                                ),
+                              )
+                            : null,
                       ),
                       const Divider(height: 16),
                       _buildBookingDetailRow(
@@ -2079,8 +2108,14 @@ class _AdminSlotManagerScreenState
     );
   }
 
-  Widget _buildBookingDetailRow(String label, String value, IconData icon) {
-    return Row(
+  Widget _buildBookingDetailRow(
+    String label,
+    String value,
+    IconData icon, {
+    VoidCallback? onTap,
+    Widget? trailing,
+  }) {
+    final row = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
@@ -2099,20 +2134,41 @@ class _AdminSlotManagerScreenState
           ],
         ),
         const SizedBox(width: 8),
-        Flexible(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: onTap != null ? const Color(0xFFD4FF00) : Colors.white,
+                ),
+                textAlign: TextAlign.end,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            textAlign: TextAlign.end,
-            overflow: TextOverflow.ellipsis,
-          ),
+            if (trailing != null) ...[
+              const SizedBox(width: 8),
+              trailing,
+            ],
+          ],
         ),
       ],
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: row,
+        ),
+      );
+    }
+    return row;
   }
 
   // --- 8. PRO OFFER ACTIONS SHEET ---

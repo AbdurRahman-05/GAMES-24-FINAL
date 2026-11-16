@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
+import '../../../../core/utils/phone_dialer.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../providers/admin_providers.dart';
 
@@ -2050,6 +2051,34 @@ class _TurfOwnerSettingsScreenState
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
+                                      if (item.customerPhone.isNotEmpty)
+                                        InkWell(
+                                          onTap: () => PhoneDialer.call(
+                                            context,
+                                            item.customerPhone,
+                                            customerName: item.customerName,
+                                          ),
+                                          borderRadius: BorderRadius.circular(6),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF132204),
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.call_rounded, size: 10, color: Color(0xFFD4FF00)),
+                                                SizedBox(width: 3),
+                                                Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                     ],
                                   ),
                                   const SizedBox(height: 4),
