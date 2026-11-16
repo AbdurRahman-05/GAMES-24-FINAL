@@ -32,7 +32,9 @@ class AppRouter {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => const AdminLoginScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(
+          child: AdminLoginScreen(),
+        ),
       ),
       GoRoute(
         path: '/register',

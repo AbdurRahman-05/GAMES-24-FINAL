@@ -23,8 +23,6 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
   String? _selectedSportFilter;
   final TextEditingController _searchController = TextEditingController();
 
-
-
   @override
   void initState() {
     super.initState();
@@ -46,11 +44,17 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
     final allMatches = ref.watch(hostedMatchesProvider);
 
     final filteredMatches = allMatches.where((m) {
-      final matchesSport = _selectedSportFilter == null ||
+      final matchesSport =
+          _selectedSportFilter == null ||
           m.sportName.toLowerCase() == _selectedSportFilter!.toLowerCase();
-      final matchesSearch = _searchController.text.isEmpty ||
-          m.venueName.toLowerCase().contains(_searchController.text.toLowerCase()) ||
-          m.sportName.toLowerCase().contains(_searchController.text.toLowerCase());
+      final matchesSearch =
+          _searchController.text.isEmpty ||
+          m.venueName.toLowerCase().contains(
+            _searchController.text.toLowerCase(),
+          ) ||
+          m.sportName.toLowerCase().contains(
+            _searchController.text.toLowerCase(),
+          );
       return matchesSport && matchesSearch;
     }).toList();
 
@@ -81,12 +85,18 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                       color: isDark ? AppColors.cardDark : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                        color: isDark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight,
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.search_rounded, color: AppColors.primary, size: 20),
+                        const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: TextField(
@@ -126,12 +136,17 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                       selected: isSelected,
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
-                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.black
+                            : (isDark ? Colors.white : Colors.black87),
+                        fontWeight: isSelected
+                            ? FontWeight.w900
+                            : FontWeight.w500,
                         fontSize: 12,
                       ),
                       onSelected: (selected) {
-                        if (selected) setState(() => _selectedSportFilter = null);
+                        if (selected)
+                          setState(() => _selectedSportFilter = null);
                       },
                     ),
                   );
@@ -143,17 +158,28 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: ChoiceChip(
-                    avatar: Icon(sport.icon, size: 14, color: isSelected ? Colors.black : sport.color),
+                    avatar: Icon(
+                      sport.icon,
+                      size: 14,
+                      color: isSelected ? Colors.black : sport.color,
+                    ),
                     label: Text(sport.name),
                     selected: isSelected,
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
-                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                      color: isSelected
+                          ? Colors.black
+                          : (isDark ? Colors.white : Colors.black87),
+                      fontWeight: isSelected
+                          ? FontWeight.w900
+                          : FontWeight.w500,
                       fontSize: 12,
                     ),
                     onSelected: (selected) {
-                      setState(() => _selectedSportFilter = selected ? sport.name : null);
+                      setState(
+                        () =>
+                            _selectedSportFilter = selected ? sport.name : null,
+                      );
                     },
                   ),
                 );
@@ -173,11 +199,20 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.sports_kabaddi_rounded, size: 48, color: Colors.grey),
+                            const Icon(
+                              Icons.sports_kabaddi_rounded,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
                             const SizedBox(height: 12),
-                            Text('No hosted games found', style: theme.textTheme.titleMedium),
+                            Text(
+                              'No hosted games found',
+                              style: theme.textTheme.titleMedium,
+                            ),
                             const SizedBox(height: 6),
-                            const Text('Be the first to host a match in Madurai!'),
+                            const Text(
+                              'Be the first to host a match in Madurai!',
+                            ),
                             const SizedBox(height: 16),
                             AppButton(
                               text: 'Host a Game',
@@ -188,7 +223,12 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 100),
+                        padding: const EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 4,
+                          bottom: 100,
+                        ),
                         itemCount: filteredMatches.length,
                         itemBuilder: (context, index) {
                           final match = filteredMatches[index];
@@ -197,7 +237,8 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                             child: MatchCard(
                               match: match,
                               width: double.infinity,
-                              onJoinTap: () => context.push('/join-match/${match.id}'),
+                              onJoinTap: () =>
+                                  context.push('/join-match/${match.id}'),
                             ),
                           );
                         },
@@ -216,7 +257,12 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 100),
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: 4,
+                        bottom: 100,
+                      ),
                       itemCount: tournamentsList.length,
                       itemBuilder: (context, index) {
                         final item = tournamentsList[index];
@@ -227,14 +273,18 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                             onTap: () {
                               showDialog(
                                 context: context,
-                                builder: (ctx) => UserTournamentDetailsDialog(tournament: item),
+                                builder: (ctx) => UserTournamentDetailsDialog(
+                                  tournament: item,
+                                ),
                               );
                             },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
                                   child: Stack(
                                     children: [
                                       Image.network(
@@ -242,26 +292,51 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                                         height: 130,
                                         width: double.infinity,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          height: 130,
-                                          decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
-                                          child: const Center(
-                                            child: Icon(Icons.emoji_events_rounded, size: 48, color: Colors.white),
-                                          ),
-                                        ),
+                                        errorBuilder:
+                                            (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) => Container(
+                                              height: 130,
+                                              decoration: const BoxDecoration(
+                                                gradient:
+                                                    AppColors.primaryGradient,
+                                              ),
+                                              child: const Center(
+                                                child: Icon(
+                                                  Icons.emoji_events_rounded,
+                                                  size: 48,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
                                       ),
                                       Positioned(
                                         top: 10,
                                         left: 10,
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
                                           decoration: BoxDecoration(
-                                            color: item.status == 'Live' ? Colors.red : AppColors.primary,
-                                            borderRadius: BorderRadius.circular(10),
+                                            color: item.status == 'Live'
+                                                ? Colors.red
+                                                : AppColors.primary,
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                           child: Text(
-                                            item.status == 'Live' ? '🔴 LIVE NOW' : item.sportType,
-                                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                            item.status == 'Live'
+                                                ? '🔴 LIVE NOW'
+                                                : item.sportType,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -271,30 +346,56 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                                 Padding(
                                   padding: const EdgeInsets.all(14),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.title,
-                                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                       const SizedBox(height: 2),
-                                      Text(item.subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                      Text(
+                                        item.subtitle,
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
                                       const SizedBox(height: 6),
                                       Row(
                                         children: [
-                                          const Icon(Icons.place_rounded, size: 15, color: AppColors.primary),
+                                          const Icon(
+                                            Icons.place_rounded,
+                                            size: 15,
+                                            color: AppColors.primary,
+                                          ),
                                           const SizedBox(width: 4),
                                           Expanded(
-                                            child: Text(item.courtAllocation, style: theme.textTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                            child: Text(
+                                              item.courtAllocation,
+                                              style: theme.textTheme.bodySmall,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          const Icon(Icons.calendar_today_rounded, size: 14, color: Colors.grey),
+                                          const Icon(
+                                            Icons.calendar_today_rounded,
+                                            size: 14,
+                                            color: Colors.grey,
+                                          ),
                                           const SizedBox(width: 4),
-                                          Text('Starts: ${item.startDate} (${item.matchStartTime})', style: theme.textTheme.bodySmall),
+                                          Text(
+                                            'Starts: ${item.startDate} (${item.matchStartTime})',
+                                            style: theme.textTheme.bodySmall,
+                                          ),
                                         ],
                                       ),
                                       const SizedBox(height: 10),
@@ -305,10 +406,21 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                             color: Colors.red.shade50,
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Colors.red.shade200),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.red.shade200,
+                                            ),
                                           ),
-                                          child: Text('🔴 ${item.liveScore}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red.shade900)),
+                                          child: Text(
+                                            '🔴 ${item.liveScore}',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red.shade900,
+                                            ),
+                                          ),
                                         ),
                                         const SizedBox(height: 10),
                                       ],
@@ -316,27 +428,51 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primary.withValues(alpha: 0.08),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.08,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
-                                              child: Text('Prize: ${item.championPrize}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary), overflow: TextOverflow.ellipsis),
+                                              child: Text(
+                                                'Prize: ${item.championPrize}',
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.primary,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ),
-                                            Text('${item.registeredTeamsCount}/${item.maxTeams} Teams', style: const TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.bold)),
+                                            Text(
+                                              '${item.registeredTeamsCount}/${item.maxTeams} Teams',
+                                              style: const TextStyle(
+                                                fontSize: 11,
+                                                color: AppColors.secondary,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
                                       const SizedBox(height: 14),
                                       AppButton(
-                                        text: 'View Details & Register (₹${item.teamEntryFee.toInt()})',
+                                        text:
+                                            'View Details & Register (₹${item.teamEntryFee.toInt()})',
                                         icon: Icons.shield_rounded,
                                         onPressed: () {
                                           showDialog(
                                             context: context,
-                                            builder: (ctx) => UserTournamentDetailsDialog(tournament: item),
+                                            builder: (ctx) =>
+                                                UserTournamentDetailsDialog(
+                                                  tournament: item,
+                                                ),
                                           );
                                         },
                                       ),
@@ -361,7 +497,10 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.black,
         icon: const Icon(Icons.add_rounded, color: Colors.black),
-        label: const Text('Host Match', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
+        label: const Text(
+          'Host Match',
+          style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black),
+        ),
       ),
     );
   }

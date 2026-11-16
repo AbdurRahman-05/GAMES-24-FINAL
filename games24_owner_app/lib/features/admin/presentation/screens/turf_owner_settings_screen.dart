@@ -43,8 +43,11 @@ class _TurfOwnerSettingsScreenState
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF141414), size: 15),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF141414),
+              size: 15,
+            ),
           ),
           tooltip: 'Back to Profile',
           onPressed: () {
@@ -260,16 +263,21 @@ class _TurfOwnerSettingsScreenState
               children: [
                 SwitchListTile(
                   activeTrackColor: const Color(0xFFD4FF00),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   secondary: Container(
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEDE9FE),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.notifications_active_rounded,
-                        color: Color(0xFF7C3AED), size: 16),
+                    child: const Icon(
+                      Icons.notifications_active_rounded,
+                      color: Color(0xFF7C3AED),
+                      size: 16,
+                    ),
                   ),
                   title: const Text(
                     'Booking Push Notifications',
@@ -282,23 +290,30 @@ class _TurfOwnerSettingsScreenState
                   value: _pushNotifications,
                   onChanged: (val) {
                     setState(() => _pushNotifications = val);
-                    ToastUtils.showSuccess(context,
-                        val ? 'Push alerts enabled' : 'Push alerts disabled');
+                    ToastUtils.showSuccess(
+                      context,
+                      val ? 'Push alerts enabled' : 'Push alerts disabled',
+                    );
                   },
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFF1C1C1C)),
                 SwitchListTile(
                   activeTrackColor: const Color(0xFFD4FF00),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   secondary: Container(
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE0F2FE),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.volume_up_rounded,
-                        color: Color(0xFF0284C7), size: 16),
+                    child: const Icon(
+                      Icons.volume_up_rounded,
+                      color: Color(0xFF0284C7),
+                      size: 16,
+                    ),
                   ),
                   title: const Text(
                     'Check-In Audio Chime',
@@ -386,11 +401,17 @@ class _TurfOwnerSettingsScreenState
                       end: Alignment.bottomRight,
                     ),
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF141414), width: 2),
+                    border: Border.all(
+                      color: const Color(0xFF141414),
+                      width: 2,
+                    ),
                   ),
                   child: const Center(
-                    child: Icon(Icons.stadium_rounded,
-                        color: Color(0xFF141414), size: 26),
+                    child: Icon(
+                      Icons.stadium_rounded,
+                      color: Color(0xFF141414),
+                      size: 26,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -415,8 +436,11 @@ class _TurfOwnerSettingsScreenState
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Icon(Icons.verified_rounded,
-                              color: Color(0xFFD4FF00), size: 16),
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: Color(0xFFD4FF00),
+                            size: 16,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 2),
@@ -490,8 +514,11 @@ class _TurfOwnerSettingsScreenState
                 ),
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 12, color: Color(0xFF71717A)),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 12,
+              color: Color(0xFF71717A),
+            ),
           ],
         ),
       ),
@@ -524,8 +551,11 @@ class _TurfOwnerSettingsScreenState
                 color: const Color(0xFFFEE2E2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.logout_rounded,
-                  color: Color(0xFFDC2626), size: 18),
+              child: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFDC2626),
+                size: 18,
+              ),
             ),
             const SizedBox(width: 14),
             const Expanded(
@@ -552,8 +582,11 @@ class _TurfOwnerSettingsScreenState
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 13, color: Color(0xFFDC2626)),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 13,
+              color: Color(0xFFDC2626),
+            ),
           ],
         ),
       ),
@@ -571,14 +604,18 @@ class _TurfOwnerSettingsScreenState
     final venueNameCtrl = TextEditingController(text: profile.venueName);
     final addressCtrl = TextEditingController(text: profile.address);
     final areaCtrl = TextEditingController(text: profile.area);
-    final dayRateCtrl =
-        TextEditingController(text: profile.dayRate.toStringAsFixed(0));
-    final nightRateCtrl =
-        TextEditingController(text: profile.nightRate.toStringAsFixed(0));
-    final weekdayRateCtrl =
-        TextEditingController(text: profile.weekdayRate.toStringAsFixed(0));
-    final weekendRateCtrl =
-        TextEditingController(text: profile.weekendRate.toStringAsFixed(0));
+    final dayRateCtrl = TextEditingController(
+      text: profile.dayRate.toStringAsFixed(0),
+    );
+    final nightRateCtrl = TextEditingController(
+      text: profile.nightRate.toStringAsFixed(0),
+    );
+    final weekdayRateCtrl = TextEditingController(
+      text: profile.weekdayRate.toStringAsFixed(0),
+    );
+    final weekendRateCtrl = TextEditingController(
+      text: profile.weekendRate.toStringAsFixed(0),
+    );
 
     showDialog(
       context: context,
@@ -603,37 +640,46 @@ class _TurfOwnerSettingsScreenState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Basic Contact & Venue Info',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.primary)),
+              const Text(
+                'Basic Contact & Venue Info',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 12),
               AppTextField(label: 'Owner Full Name', controller: ownerNameCtrl),
               const SizedBox(height: 10),
               AppTextField(
-                  label: 'Phone Number',
-                  controller: phoneCtrl,
-                  keyboardType: TextInputType.phone),
+                label: 'Phone Number',
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+              ),
               const SizedBox(height: 10),
               AppTextField(
-                  label: 'Email Address',
-                  controller: emailCtrl,
-                  keyboardType: TextInputType.emailAddress),
+                label: 'Email Address',
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+              ),
               const SizedBox(height: 10),
               AppTextField(
-                  label: 'Turf / Venue Business Name',
-                  controller: venueNameCtrl),
+                label: 'Turf / Venue Business Name',
+                controller: venueNameCtrl,
+              ),
               const SizedBox(height: 10),
               AppTextField(label: 'Full Address', controller: addressCtrl),
               const SizedBox(height: 10),
               AppTextField(label: 'Area / Landmark', controller: areaCtrl),
               const SizedBox(height: 16),
-              const Text('Hourly Rates Setup (₹)',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.primary)),
+              const Text(
+                'Hourly Rates Setup (₹)',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppColors.primary,
+                ),
+              ),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -687,7 +733,8 @@ class _TurfOwnerSettingsScreenState
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: () async {
               final newOwnerName = ownerNameCtrl.text.trim();
@@ -696,13 +743,16 @@ class _TurfOwnerSettingsScreenState
               final newVenueName = venueNameCtrl.text.trim();
               final newAddress = addressCtrl.text.trim();
               final newArea = areaCtrl.text.trim();
-              final dayR = double.tryParse(dayRateCtrl.text.trim()) ??
-                  profile.dayRate;
-              final nightR = double.tryParse(nightRateCtrl.text.trim()) ??
+              final dayR =
+                  double.tryParse(dayRateCtrl.text.trim()) ?? profile.dayRate;
+              final nightR =
+                  double.tryParse(nightRateCtrl.text.trim()) ??
                   profile.nightRate;
-              final wkdayR = double.tryParse(weekdayRateCtrl.text.trim()) ??
+              final wkdayR =
+                  double.tryParse(weekdayRateCtrl.text.trim()) ??
                   profile.weekdayRate;
-              final wkendR = double.tryParse(weekendRateCtrl.text.trim()) ??
+              final wkendR =
+                  double.tryParse(weekendRateCtrl.text.trim()) ??
                   profile.weekendRate;
 
               await ref
@@ -723,7 +773,9 @@ class _TurfOwnerSettingsScreenState
               if (ctx.mounted) Navigator.pop(ctx);
               if (mounted) {
                 ToastUtils.showSuccess(
-                    context, 'Turf Profile details updated successfully!');
+                  context,
+                  'Turf Profile details updated successfully!',
+                );
               }
             },
             child: const Text('Save Changes'),
@@ -745,7 +797,7 @@ class _TurfOwnerSettingsScreenState
       '06:00 AM',
       '07:00 AM',
       '08:00 AM',
-      '09:00 AM'
+      '09:00 AM',
     ];
     final closeOptions = [
       '24 Hours',
@@ -754,17 +806,20 @@ class _TurfOwnerSettingsScreenState
       '11:00 PM',
       '11:30 PM',
       '12:00 AM',
-      '01:00 AM (Overnight)'
+      '01:00 AM (Overnight)',
     ];
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.access_time_filled_rounded, color: AppColors.primary),
@@ -811,7 +866,9 @@ class _TurfOwnerSettingsScreenState
                       const Text(
                         'Open 24 Hours (All Day)',
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 13),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -823,39 +880,49 @@ class _TurfOwnerSettingsScreenState
                         color: AppColors.primary.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.2)),
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Weekdays (Mon - Fri)',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                  fontSize: 13)),
+                          const Text(
+                            'Weekdays (Mon - Fri)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                              fontSize: 13,
+                            ),
+                          ),
                           const SizedBox(height: 10),
                           Column(
                             children: [
                               DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                initialValue:
-                                    openOptions.contains(wkdayOpen)
-                                        ? wkdayOpen
-                                        : openOptions[1],
+                                initialValue: openOptions.contains(wkdayOpen)
+                                    ? wkdayOpen
+                                    : openOptions[1],
                                 decoration: InputDecoration(
                                   labelText: 'Opens at',
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                   border: OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10)),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
                                 items: openOptions
-                                    .map((t) => DropdownMenuItem(
+                                    .map(
+                                      (t) => DropdownMenuItem(
                                         value: t,
-                                        child: Text(t,
-                                            style: const TextStyle(fontSize: 13),
-                                            overflow: TextOverflow.ellipsis)))
+                                        child: Text(
+                                          t,
+                                          style: const TextStyle(fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
                                     .toList(),
                                 onChanged: (val) {
                                   if (val != null) {
@@ -866,24 +933,30 @@ class _TurfOwnerSettingsScreenState
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                initialValue:
-                                    closeOptions.contains(wkdayClose)
-                                        ? wkdayClose
-                                        : closeOptions[2],
+                                initialValue: closeOptions.contains(wkdayClose)
+                                    ? wkdayClose
+                                    : closeOptions[2],
                                 decoration: InputDecoration(
                                   labelText: 'Closes at',
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                   border: OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10)),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
                                 items: closeOptions
-                                    .map((t) => DropdownMenuItem(
+                                    .map(
+                                      (t) => DropdownMenuItem(
                                         value: t,
-                                        child: Text(t,
-                                            style: const TextStyle(fontSize: 13),
-                                            overflow: TextOverflow.ellipsis)))
+                                        child: Text(
+                                          t,
+                                          style: const TextStyle(fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
                                     .toList(),
                                 onChanged: (val) {
                                   if (val != null) {
@@ -903,39 +976,49 @@ class _TurfOwnerSettingsScreenState
                         color: AppColors.secondary.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppColors.secondary.withValues(alpha: 0.2)),
+                          color: AppColors.secondary.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Weekends (Sat - Sun)',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.secondary,
-                                  fontSize: 13)),
+                          const Text(
+                            'Weekends (Sat - Sun)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.secondary,
+                              fontSize: 13,
+                            ),
+                          ),
                           const SizedBox(height: 10),
                           Column(
                             children: [
                               DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                initialValue:
-                                    openOptions.contains(wkendOpen)
-                                        ? wkendOpen
-                                        : openOptions[0],
+                                initialValue: openOptions.contains(wkendOpen)
+                                    ? wkendOpen
+                                    : openOptions[0],
                                 decoration: InputDecoration(
                                   labelText: 'Opens at',
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                   border: OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10)),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
                                 items: openOptions
-                                    .map((t) => DropdownMenuItem(
+                                    .map(
+                                      (t) => DropdownMenuItem(
                                         value: t,
-                                        child: Text(t,
-                                            style: const TextStyle(fontSize: 13),
-                                            overflow: TextOverflow.ellipsis)))
+                                        child: Text(
+                                          t,
+                                          style: const TextStyle(fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
                                     .toList(),
                                 onChanged: (val) {
                                   if (val != null) {
@@ -946,24 +1029,30 @@ class _TurfOwnerSettingsScreenState
                               const SizedBox(height: 8),
                               DropdownButtonFormField<String>(
                                 isExpanded: true,
-                                initialValue:
-                                    closeOptions.contains(wkendClose)
-                                        ? wkendClose
-                                        : closeOptions[3],
+                                initialValue: closeOptions.contains(wkendClose)
+                                    ? wkendClose
+                                    : closeOptions[3],
                                 decoration: InputDecoration(
                                   labelText: 'Closes at',
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                   border: OutlineInputBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(10)),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
                                 items: closeOptions
-                                    .map((t) => DropdownMenuItem(
+                                    .map(
+                                      (t) => DropdownMenuItem(
                                         value: t,
-                                        child: Text(t,
-                                            style: const TextStyle(fontSize: 13),
-                                            overflow: TextOverflow.ellipsis)))
+                                        child: Text(
+                                          t,
+                                          style: const TextStyle(fontSize: 13),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    )
                                     .toList(),
                                 onChanged: (val) {
                                   if (val != null) {
@@ -991,17 +1080,26 @@ class _TurfOwnerSettingsScreenState
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
-                ref.read(turfProfileProvider.notifier).updateOperatingHours(
+                ref
+                    .read(turfProfileProvider.notifier)
+                    .updateOperatingHours(
                       weekdayOpening: wkdayOpen,
                       weekdayClosing: wkdayClose,
                       weekendOpening: wkendOpen,
                       weekendClosing: wkendClose,
                     );
-                ref.read(adminSlotProvider.notifier).updateOperatingHours(
-                    wkdayOpen, wkdayClose, wkendOpen, wkendClose);
+                ref
+                    .read(adminSlotProvider.notifier)
+                    .updateOperatingHours(
+                      wkdayOpen,
+                      wkdayClose,
+                      wkendOpen,
+                      wkendClose,
+                    );
                 Navigator.pop(ctx);
                 ToastUtils.showSuccess(context, 'Operating timings updated!');
               },
@@ -1019,7 +1117,7 @@ class _TurfOwnerSettingsScreenState
       'Football',
       'Pickleball',
       'Badminton',
-      'Others'
+      'Others',
     ];
     String selectedSportName = popularSports.first;
     final rateCtrl = TextEditingController(text: '1200');
@@ -1028,32 +1126,42 @@ class _TurfOwnerSettingsScreenState
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.sports_soccer_rounded, color: AppColors.primary),
               SizedBox(width: 8),
-              Text('Add New Sport Offering',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              Text(
+                'Add New Sport Offering',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Select Sport:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              const Text(
+                'Select Sport:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
                 initialValue: selectedSportName,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                 ),
                 items: popularSports
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
@@ -1082,11 +1190,14 @@ class _TurfOwnerSettingsScreenState
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
-                ref.read(turfProfileProvider.notifier).addSport(
+                ref
+                    .read(turfProfileProvider.notifier)
+                    .addSport(
                       TurfSportItem(
                         name: selectedSportName,
                         hourlyRate: rate,
@@ -1098,7 +1209,9 @@ class _TurfOwnerSettingsScreenState
                     );
                 Navigator.pop(ctx);
                 ToastUtils.showSuccess(
-                    context, 'Added $selectedSportName to venue offerings!');
+                  context,
+                  'Added $selectedSportName to venue offerings!',
+                );
               },
               child: const Text('Add Sport'),
             ),
@@ -1111,27 +1224,34 @@ class _TurfOwnerSettingsScreenState
   void _showAddVenueCourtDialog(TurfProfileState profile) {
     final courtNameCtrl = TextEditingController();
     final sizeCtrl = TextEditingController(text: '7-a-side (90x60 ft)');
-    final surfaceCtrl =
-        TextEditingController(text: 'FIFA Pro 50mm Monofilament');
+    final surfaceCtrl = TextEditingController(
+      text: 'FIFA Pro 50mm Monofilament',
+    );
     final rateCtrl = TextEditingController(text: '1200');
-    final sportsList =
-        profile.sports.isNotEmpty ? profile.sports.map((s) => s.name).toList() : ['Football', 'Cricket'];
+    final sportsList = profile.sports.isNotEmpty
+        ? profile.sports.map((s) => s.name).toList()
+        : ['Football', 'Cricket'];
     String selectedSport = sportsList.first;
 
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Row(
             children: [
               Icon(Icons.add_business_rounded, color: AppColors.primary),
               SizedBox(width: 8),
-              Text('Register Arena / Court',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+              Text(
+                'Register Arena / Court',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
           content: SingleChildScrollView(
@@ -1139,17 +1259,21 @@ class _TurfOwnerSettingsScreenState
               mainAxisSize: MainAxisSize.min,
               children: [
                 AppTextField(
-                    label: 'Court / Pitch Name (e.g. Arena Alpha)',
-                    controller: courtNameCtrl),
+                  label: 'Court / Pitch Name (e.g. Arena Alpha)',
+                  controller: courtNameCtrl,
+                ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   initialValue: selectedSport,
                   decoration: InputDecoration(
                     labelText: 'Sport Category',
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                   ),
                   items: sportsList
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
@@ -1183,7 +1307,8 @@ class _TurfOwnerSettingsScreenState
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 final name = courtNameCtrl.text.trim();
@@ -1219,7 +1344,9 @@ class _TurfOwnerSettingsScreenState
 
   void _showEditTurfDialog() {
     ToastUtils.showSuccess(
-        context, 'Turf specifications & amenities verified up-to-date.');
+      context,
+      'Turf specifications & amenities verified up-to-date.',
+    );
   }
 
   void _showSubscriptionPaymentBottomSheet(TurfProfileState profile) {
@@ -1256,8 +1383,11 @@ class _TurfOwnerSettingsScreenState
                       color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.workspace_premium_rounded,
-                        color: Color(0xFFD4FF00), size: 20),
+                    child: const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: Color(0xFFD4FF00),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Expanded(
@@ -1316,7 +1446,9 @@ class _TurfOwnerSettingsScreenState
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: profile.isSubscriptionActive
                                     ? const Color(0xFFDCFCE7)
@@ -1342,9 +1474,10 @@ class _TurfOwnerSettingsScreenState
                         const Text(
                           'Zero fee for players — owners pay a monthly ₹1,000 + 18% GST (₹1,180) platform subscription to keep their venue discoverable.',
                           style: TextStyle(
-                              fontSize: 11.5,
-                              color: Color(0xFFA1A1AA),
-                              height: 1.4),
+                            fontSize: 11.5,
+                            color: Color(0xFFA1A1AA),
+                            height: 1.4,
+                          ),
                         ),
                         const SizedBox(height: 14),
 
@@ -1364,16 +1497,18 @@ class _TurfOwnerSettingsScreenState
                                     child: Text(
                                       'Monthly Listing Fee',
                                       style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFFA1A1AA)),
+                                        fontSize: 12,
+                                        color: Color(0xFFA1A1AA),
+                                      ),
                                     ),
                                   ),
                                   Text(
                                     '₹1,000.00',
                                     style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1384,16 +1519,18 @@ class _TurfOwnerSettingsScreenState
                                     child: Text(
                                       'GST (18% Applicable)',
                                       style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFFA1A1AA)),
+                                        fontSize: 12,
+                                        color: Color(0xFFA1A1AA),
+                                      ),
                                     ),
                                   ),
                                   Text(
                                     '₹180.00',
                                     style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1404,18 +1541,20 @@ class _TurfOwnerSettingsScreenState
                                     child: Text(
                                       'Total Amount Payable',
                                       style: TextStyle(
-                                          fontSize: 12.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(width: 8),
                                   Text(
                                     '₹1,180 / mo',
                                     style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        color: Color(0xFFD4FF00)),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xFFD4FF00),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1430,10 +1569,10 @@ class _TurfOwnerSettingsScreenState
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD4FF00),
                               foregroundColor: Colors.black,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 13),
+                              padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               elevation: 0,
                             ),
                             icon: const Icon(Icons.payment_rounded, size: 18),
@@ -1442,7 +1581,9 @@ class _TurfOwnerSettingsScreenState
                                   ? 'Renew Platform Plan (₹1,180)'
                                   : 'Pay ₹1,180 & Go Live ⚡',
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 13),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
                             ),
                             onPressed: () async {
                               Navigator.pop(ctx);
@@ -1457,7 +1598,9 @@ class _TurfOwnerSettingsScreenState
                                   );
                                 } else {
                                   ToastUtils.showError(
-                                      context, 'Payment failed. Please retry.');
+                                    context,
+                                    'Payment failed. Please retry.',
+                                  );
                                 }
                               }
                             },
@@ -1474,8 +1617,11 @@ class _TurfOwnerSettingsScreenState
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.receipt_long_rounded,
-                              color: AppColors.primary, size: 18),
+                          Icon(
+                            Icons.receipt_long_rounded,
+                            color: AppColors.primary,
+                            size: 18,
+                          ),
                           SizedBox(width: 6),
                           Text(
                             'Subscription History & Invoices',
@@ -1489,7 +1635,9 @@ class _TurfOwnerSettingsScreenState
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1B2A06),
                           borderRadius: BorderRadius.circular(10),
@@ -1497,9 +1645,10 @@ class _TurfOwnerSettingsScreenState
                         child: Text(
                           '${profile.subscriptionHistory.length} Paid',
                           style: const TextStyle(
-                              color: Color(0xFFD4FF00),
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold),
+                            color: Color(0xFFD4FF00),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -1522,139 +1671,151 @@ class _TurfOwnerSettingsScreenState
                       ),
                     )
                   else
-                    ...profile.subscriptionHistory.map((item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF141414),
-                              borderRadius: BorderRadius.circular(12),
-                              border:
-                                  Border.all(color: const Color(0xFF262626)),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                              Icons.check_circle_rounded,
-                                              size: 16,
-                                              color: Color(0xFF16A34A)),
-                                          const SizedBox(width: 6),
-                                          Flexible(
-                                            child: Text(
-                                              item.id,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: Colors.white),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1B2A06),
-                                        borderRadius:
-                                            BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        item.status.toUpperCase(),
-                                        style: const TextStyle(
-                                            color: Color(0xFFD4FF00),
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Date: ${item.date}',
-                                            style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Color(0xFF4B5563)),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            'Valid: ${item.validPeriod}',
-                                            style: const TextStyle(
-                                                fontSize: 10.5,
-                                                color: Colors.grey),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
+                    ...profile.subscriptionHistory.map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141414),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF262626)),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          '₹${item.totalAmount.toInt()}',
-                                          style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w800,
-                                              color: Color(0xFFD4FF00)),
+                                        const Icon(
+                                          Icons.check_circle_rounded,
+                                          size: 16,
+                                          color: Color(0xFF16A34A),
                                         ),
-                                        const Text('₹1000 + 18% GST',
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: Colors.grey)),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            item.id,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                              color: Colors.white,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                                const Divider(height: 14),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        'Receipt: #${item.receiptNumber}',
-                                        style: const TextStyle(
-                                            fontSize: 10.5,
-                                            color: Color(0xFFA1A1AA),
-                                            fontFamily: 'monospace'),
-                                        overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1B2A06),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      item.status.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Color(0xFFD4FF00),
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                    const Text(
-                                      'PAID ONLINE',
-                                      style: TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFFD4FF00)),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Date: ${item.date}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF4B5563),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'Valid: ${item.validPeriod}',
+                                          style: const TextStyle(
+                                            fontSize: 10.5,
+                                            color: Colors.grey,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        '₹${item.totalAmount.toInt()}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFFD4FF00),
+                                        ),
+                                      ),
+                                      const Text(
+                                        '₹1000 + 18% GST',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const Divider(height: 14),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      'Receipt: #${item.receiptNumber}',
+                                      style: const TextStyle(
+                                        fontSize: 10.5,
+                                        color: Color(0xFFA1A1AA),
+                                        fontFamily: 'monospace',
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  const Text(
+                                    'PAID ONLINE',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFD4FF00),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        )),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -1673,8 +1834,10 @@ class _TurfOwnerSettingsScreenState
           children: const [
             Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 22),
             SizedBox(width: 8),
-            Text('Logout Confirmation',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(
+              'Logout Confirmation',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: const Text(
@@ -1684,19 +1847,24 @@ class _TurfOwnerSettingsScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel',
-                style: TextStyle(fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Logout',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Logout',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -1749,7 +1917,11 @@ class _TurfOwnerSettingsScreenState
                       color: const Color(0xFF0F766E).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.shield_rounded, color: Color(0xFF0F766E), size: 20),
+                    child: const Icon(
+                      Icons.shield_rounded,
+                      color: Color(0xFF0F766E),
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   const Expanded(
@@ -1782,11 +1954,17 @@ class _TurfOwnerSettingsScreenState
                     decoration: BoxDecoration(
                       color: AppColors.warning.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: AppColors.warning.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: const Row(
                       children: [
-                        Icon(Icons.lock_rounded, color: AppColors.warning, size: 24),
+                        Icon(
+                          Icons.lock_rounded,
+                          color: AppColors.warning,
+                          size: 24,
+                        ),
                         SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -1803,7 +1981,10 @@ class _TurfOwnerSettingsScreenState
                               SizedBox(height: 2),
                               Text(
                                 'Aadhaar, PAN Card, and GSTIN details were verified during partner registration and are locked for tax compliance. Contact Super Admin to request updates.',
-                                style: TextStyle(fontSize: 11, color: Colors.black87),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black87,
+                                ),
                               ),
                             ],
                           ),
@@ -1814,7 +1995,9 @@ class _TurfOwnerSettingsScreenState
                   const SizedBox(height: 16),
                   _buildKycDisplayCard(
                     title: 'GSTIN Business Registration Number',
-                    value: profile.gstin.isNotEmpty ? profile.gstin : '33AAAAA0000A1Z5',
+                    value: profile.gstin.isNotEmpty
+                        ? profile.gstin
+                        : '33AAAAA0000A1Z5',
                     icon: Icons.receipt_rounded,
                     badge: 'Verified GSTIN',
                   ),
@@ -1828,7 +2011,9 @@ class _TurfOwnerSettingsScreenState
                   const SizedBox(height: 12),
                   _buildKycDisplayCard(
                     title: 'Owner Aadhaar Identity Number',
-                    value: profile.aadhaar.isNotEmpty ? profile.aadhaar : 'XXXX-XXXX-4589',
+                    value: profile.aadhaar.isNotEmpty
+                        ? profile.aadhaar
+                        : 'XXXX-XXXX-4589',
                     icon: Icons.credit_card_rounded,
                     badge: 'Aadhaar Verified',
                   ),
@@ -1845,23 +2030,45 @@ class _TurfOwnerSettingsScreenState
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.account_balance_rounded, color: Color(0xFFD4FF00), size: 20),
+                            Icon(
+                              Icons.account_balance_rounded,
+                              color: Color(0xFFD4FF00),
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Automated Payout Bank Account',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                             Icon(Icons.lock, size: 13, color: Colors.grey),
                           ],
                         ),
                         const Divider(height: 20),
-                        _buildReadOnlyKycField('Bank Account Number', profile.bankAccount.isNotEmpty ? profile.bankAccount : 'Not Configured (Pending Setup)'),
+                        _buildReadOnlyKycField(
+                          'Bank Account Number',
+                          profile.bankAccount.isNotEmpty
+                              ? profile.bankAccount
+                              : 'Not Configured (Pending Setup)',
+                        ),
                         const SizedBox(height: 10),
-                        _buildReadOnlyKycField('IFSC Code', profile.ifsc.isNotEmpty ? profile.ifsc : 'Pending Verification'),
+                        _buildReadOnlyKycField(
+                          'IFSC Code',
+                          profile.ifsc.isNotEmpty
+                              ? profile.ifsc
+                              : 'Pending Verification',
+                        ),
                         const SizedBox(height: 10),
-                        _buildReadOnlyKycField('Payout UPI ID', profile.upiId.isNotEmpty ? profile.upiId : 'Not Linked'),
+                        _buildReadOnlyKycField(
+                          'Payout UPI ID',
+                          profile.upiId.isNotEmpty
+                              ? profile.upiId
+                              : 'Not Linked',
+                        ),
                       ],
                     ),
                   ),
@@ -1908,7 +2115,10 @@ class _TurfOwnerSettingsScreenState
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: Row(
                     children: [
                       Container(
@@ -1917,7 +2127,11 @@ class _TurfOwnerSettingsScreenState
                           color: const Color(0xFF1D4ED8).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF1D4ED8), size: 20),
+                        child: const Icon(
+                          Icons.receipt_long_rounded,
+                          color: Color(0xFF1D4ED8),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -1941,32 +2155,46 @@ class _TurfOwnerSettingsScreenState
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['All', 'Confirmed', 'Checked-In', 'Completed', 'Cancelled'].map((status) {
-                        final isSelected = localFilter == status;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: Text(status),
-                            selected: isSelected,
-                            selectedColor: const Color(0xFFD4FF00),
-                            labelStyle: TextStyle(
-                              color: isSelected ? Colors.black : const Color(0xFFE4E4E7),
-                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                              fontSize: 12,
-                            ),
-                            backgroundColor: const Color(0xFF0D0D0D),
-                            onSelected: (selected) {
-                              if (selected) {
-                                setSheetState(() => localFilter = status);
-                              }
-                            },
-                          ),
-                        );
-                      }).toList(),
+                      children:
+                          [
+                            'All',
+                            'Confirmed',
+                            'Checked-In',
+                            'Completed',
+                            'Cancelled',
+                          ].map((status) {
+                            final isSelected = localFilter == status;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(status),
+                                selected: isSelected,
+                                selectedColor: const Color(0xFFD4FF00),
+                                labelStyle: TextStyle(
+                                  color: isSelected
+                                      ? Colors.black
+                                      : const Color(0xFFE4E4E7),
+                                  fontWeight: isSelected
+                                      ? FontWeight.w900
+                                      : FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                                backgroundColor: const Color(0xFF0D0D0D),
+                                onSelected: (selected) {
+                                  if (selected) {
+                                    setSheetState(() => localFilter = status);
+                                  }
+                                },
+                              ),
+                            );
+                          }).toList(),
                     ),
                   ),
                 ),
@@ -1977,9 +2205,16 @@ class _TurfOwnerSettingsScreenState
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.receipt_long_outlined, size: 48, color: Colors.grey),
+                              Icon(
+                                Icons.receipt_long_outlined,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
                               SizedBox(height: 8),
-                              Text('No bookings found for this filter.', style: TextStyle(color: Colors.grey)),
+                              Text(
+                                'No bookings found for this filter.',
+                                style: TextStyle(color: Colors.grey),
+                              ),
                             ],
                           ),
                         )
@@ -1989,9 +2224,12 @@ class _TurfOwnerSettingsScreenState
                           itemBuilder: (context, index) {
                             final item = filteredBookings[index];
                             Color statusColor = AppColors.success;
-                            if (item.status.toLowerCase().contains('confirmed')) statusColor = const Color(0xFFD4FF00);
-                            if (item.status.toLowerCase().contains('checked')) statusColor = const Color(0xFF0284C7);
-                            if (item.status.toLowerCase().contains('cancel')) statusColor = AppColors.error;
+                            if (item.status.toLowerCase().contains('confirmed'))
+                              statusColor = const Color(0xFFD4FF00);
+                            if (item.status.toLowerCase().contains('checked'))
+                              statusColor = const Color(0xFF0284C7);
+                            if (item.status.toLowerCase().contains('cancel'))
+                              statusColor = AppColors.error;
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
@@ -1999,7 +2237,9 @@ class _TurfOwnerSettingsScreenState
                               decoration: BoxDecoration(
                                 color: const Color(0xFF141414),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0xFF262626)),
+                                border: Border.all(
+                                  color: const Color(0xFF262626),
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.02),
@@ -2012,7 +2252,8 @@ class _TurfOwnerSettingsScreenState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         item.id,
@@ -2023,10 +2264,17 @@ class _TurfOwnerSettingsScreenState
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: statusColor.withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(6),
+                                          color: statusColor.withValues(
+                                            alpha: 0.12,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Text(
                                           item.status.toUpperCase(),
@@ -2042,12 +2290,19 @@ class _TurfOwnerSettingsScreenState
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      const Icon(Icons.person_rounded, size: 16, color: Color(0xFFD4FF00)),
+                                      const Icon(
+                                        Icons.person_rounded,
+                                        size: 16,
+                                        color: Color(0xFFD4FF00),
+                                      ),
                                       const SizedBox(width: 6),
                                       Expanded(
                                         child: Text(
                                           '${item.customerName} (${item.customerPhone})',
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -2058,23 +2313,42 @@ class _TurfOwnerSettingsScreenState
                                             item.customerPhone,
                                             customerName: item.customerName,
                                           ),
-                                          borderRadius: BorderRadius.circular(6),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                              vertical: 2.5,
+                                            ),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFF132204),
-                                              borderRadius: BorderRadius.circular(6),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
                                               border: Border.all(
-                                                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                                color: const Color(
+                                                  0xFFD4FF00,
+                                                ).withValues(alpha: 0.35),
                                                 width: 0.8,
                                               ),
                                             ),
                                             child: const Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Icon(Icons.call_rounded, size: 10, color: Color(0xFFD4FF00)),
+                                                Icon(
+                                                  Icons.call_rounded,
+                                                  size: 10,
+                                                  color: Color(0xFFD4FF00),
+                                                ),
                                                 SizedBox(width: 3),
-                                                Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                                Text(
+                                                  'Call',
+                                                  style: TextStyle(
+                                                    fontSize: 9.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFFD4FF00),
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -2084,12 +2358,19 @@ class _TurfOwnerSettingsScreenState
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      const Icon(Icons.sports_rounded, size: 15, color: Colors.grey),
+                                      const Icon(
+                                        Icons.sports_rounded,
+                                        size: 15,
+                                        color: Colors.grey,
+                                      ),
                                       const SizedBox(width: 6),
                                       Expanded(
                                         child: Text(
                                           '${item.sport} • ${item.courtName}',
-                                          style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            color: Color(0xFFA1A1AA),
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -2098,12 +2379,19 @@ class _TurfOwnerSettingsScreenState
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      const Icon(Icons.access_time_rounded, size: 15, color: Colors.grey),
+                                      const Icon(
+                                        Icons.access_time_rounded,
+                                        size: 15,
+                                        color: Colors.grey,
+                                      ),
                                       const SizedBox(width: 6),
                                       Expanded(
                                         child: Text(
                                           item.dateTimeSlot,
-                                          style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFFA1A1AA),
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
@@ -2158,7 +2446,11 @@ class _TurfOwnerSettingsScreenState
                     Expanded(
                       child: Text(
                         title,
-                        style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFFA1A1AA),
+                          fontWeight: FontWeight.w600,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -2176,7 +2468,11 @@ class _TurfOwnerSettingsScreenState
               Expanded(
                 child: Text(
                   value,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -2188,7 +2484,11 @@ class _TurfOwnerSettingsScreenState
                 ),
                 child: Text(
                   badge,
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFD4FF00),
+                  ),
                 ),
               ),
             ],
@@ -2202,13 +2502,20 @@ class _TurfOwnerSettingsScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -2217,8 +2524,12 @@ class _TurfOwnerSettingsScreenState
   }
 
   void _showEditMonthlyTargetDialog(TurfProfileState profile) {
-    final currentTarget = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
-    final controller = TextEditingController(text: currentTarget.toInt().toString());
+    final currentTarget = profile.monthlyRevenueTarget > 0
+        ? profile.monthlyRevenueTarget
+        : 50000.0;
+    final controller = TextEditingController(
+      text: currentTarget.toInt().toString(),
+    );
     final quickPresets = [25000, 50000, 75000, 100000, 150000, 200000];
 
     showDialog(
@@ -2226,10 +2537,16 @@ class _TurfOwnerSettingsScreenState
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: const Row(
               children: [
-                Icon(Icons.track_changes_rounded, color: AppColors.primary, size: 24),
+                Icon(
+                  Icons.track_changes_rounded,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -2253,16 +2570,28 @@ class _TurfOwnerSettingsScreenState
                     controller: controller,
                     keyboardType: TextInputType.number,
                     autofocus: true,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Monthly Revenue Target',
                       prefixText: '₹ ',
-                      prefixStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary),
+                      prefixStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
                       helperText: 'E.g., 50000 for ₹50k, 100000 for ₹1 Lakh',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 2,
+                        ),
                       ),
                     ),
                     onChanged: (_) => setDialogState(() {}),
@@ -2270,14 +2599,19 @@ class _TurfOwnerSettingsScreenState
                   const SizedBox(height: 16),
                   const Text(
                     'Quick Presets:',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFA1A1AA)),
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFA1A1AA),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: quickPresets.map((preset) {
-                      final isSelected = controller.text.trim() == preset.toString();
+                      final isSelected =
+                          controller.text.trim() == preset.toString();
                       return InkWell(
                         onTap: () {
                           setDialogState(() {
@@ -2289,14 +2623,19 @@ class _TurfOwnerSettingsScreenState
                         },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.primary
                                 : AppColors.primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.25),
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.primary.withValues(alpha: 0.25),
                             ),
                           ),
                           child: Text(
@@ -2304,7 +2643,9 @@ class _TurfOwnerSettingsScreenState
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
-                              color: isSelected ? Colors.black : AppColors.primary,
+                              color: isSelected
+                                  ? Colors.black
+                                  : AppColors.primary,
                             ),
                           ),
                         ),
@@ -2323,17 +2664,30 @@ class _TurfOwnerSettingsScreenState
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
                 ),
                 onPressed: () {
-                  final text = controller.text.trim().replaceAll(',', '').replaceAll('₹', '');
+                  final text = controller.text
+                      .trim()
+                      .replaceAll(',', '')
+                      .replaceAll('₹', '');
                   final val = double.tryParse(text);
                   if (val == null || val <= 0) {
-                    ToastUtils.showError(context, 'Please enter a valid target amount');
+                    ToastUtils.showError(
+                      context,
+                      'Please enter a valid target amount',
+                    );
                     return;
                   }
-                  ref.read(turfProfileProvider.notifier).updateMonthlyRevenueTarget(val);
+                  ref
+                      .read(turfProfileProvider.notifier)
+                      .updateMonthlyRevenueTarget(val);
                   Navigator.pop(ctx);
                   ToastUtils.showSuccess(
                     context,

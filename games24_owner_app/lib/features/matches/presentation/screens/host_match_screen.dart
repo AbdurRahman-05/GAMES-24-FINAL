@@ -40,7 +40,9 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
   }
 
   void _onHostMatch() {
-    final venue = MockVenuesRepository.venues.firstWhere((v) => v.id == _selectedVenueId);
+    final venue = MockVenuesRepository.venues.firstWhere(
+      (v) => v.id == _selectedVenueId,
+    );
 
     final match = MatchModel(
       id: 'm_${DateTime.now().millisecondsSinceEpoch}',
@@ -66,7 +68,10 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
 
     ref.read(hostedMatchesProvider.notifier).addMatch(match);
 
-    ToastUtils.showSuccess(context, "Match hosted successfully! Players can now join.");
+    ToastUtils.showSuccess(
+      context,
+      "Match hosted successfully! Players can now join.",
+    );
 
     context.go('/main');
   }
@@ -77,11 +82,14 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Host a Match'),
-      ),
+      appBar: AppBar(title: const Text('Host a Match')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 12, bottom: 100),
+        padding: const EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 12,
+          bottom: 100,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -100,7 +108,11 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                       color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.groups_rounded, color: Colors.white, size: 30),
+                    child: const Icon(
+                      Icons.groups_rounded,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -132,7 +144,12 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
             const SizedBox(height: 24),
 
             // Select Sport
-            Text('Select Sport', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Select Sport',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               height: 44,
@@ -145,16 +162,25 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      avatar: Icon(sport.icon, size: 16, color: isSelected ? Colors.black : sport.color),
+                      avatar: Icon(
+                        sport.icon,
+                        size: 16,
+                        color: isSelected ? Colors.black : sport.color,
+                      ),
                       label: Text(sport.name),
                       selected: isSelected,
                       selectedColor: AppColors.primary,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.black : (isDark ? Colors.white : Colors.black87),
-                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.black
+                            : (isDark ? Colors.white : Colors.black87),
+                        fontWeight: isSelected
+                            ? FontWeight.w900
+                            : FontWeight.w500,
                       ),
                       onSelected: (selected) {
-                        if (selected) setState(() => _selectedSport = sport.name);
+                        if (selected)
+                          setState(() => _selectedSport = sport.name);
                       },
                     ),
                   );
@@ -164,7 +190,12 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
             const SizedBox(height: 24),
 
             // Select Venue in Madurai
-            Text('Select Venue in Madurai', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Select Venue in Madurai',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 10),
             AppCard(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
@@ -172,7 +203,11 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                 initialValue: _selectedVenueId,
                 isExpanded: true,
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.place_rounded, color: AppColors.primary, size: 22),
+                  prefixIcon: Icon(
+                    Icons.place_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
                   border: InputBorder.none,
                 ),
                 items: MockVenuesRepository.venues.map((venue) {
@@ -182,7 +217,9 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                       '${venue.name} (${venue.area})',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -194,7 +231,12 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
             const SizedBox(height: 24),
 
             // Skill Level Required
-            Text('Skill Level Required', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Skill Level Required',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
@@ -206,7 +248,9 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                   selected: isSelected,
                   selectedColor: AppColors.secondary,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark ? Colors.white : Colors.black87),
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                   onSelected: (selected) {
@@ -227,30 +271,52 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Players Needed', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Players Needed',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          const Text('Total spots open for strangers', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          const Text(
+                            'Total spots open for strangers',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
                         ],
                       ),
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.remove_circle_outline_rounded, color: AppColors.primary),
-                            onPressed: _playersNeeded > 2 ? () => setState(() => _playersNeeded--) : null,
+                            icon: const Icon(
+                              Icons.remove_circle_outline_rounded,
+                              color: AppColors.primary,
+                            ),
+                            onPressed: _playersNeeded > 2
+                                ? () => setState(() => _playersNeeded--)
+                                : null,
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
                               '$_playersNeeded',
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: AppColors.primary),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
+                            icon: const Icon(
+                              Icons.add_circle_outline_rounded,
+                              color: AppColors.primary,
+                            ),
                             onPressed: () => setState(() => _playersNeeded++),
                           ),
                         ],
@@ -275,7 +341,8 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
             // Match Guidelines Text Field
             AppTextField(
               label: 'Match Guidelines / Notes',
-              hint: 'Bring your own boots/rackets. Match balls and bibs provided by host.',
+              hint:
+                  'Bring your own boots/rackets. Match balls and bibs provided by host.',
               maxLines: 3,
               controller: _descController,
             ),

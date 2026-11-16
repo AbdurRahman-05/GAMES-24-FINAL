@@ -15,12 +15,14 @@ class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   bool _isRefreshing = false;
-  String _selectedFilter = 'Upcoming'; // Default to 'Upcoming' with exact time-aware filtering
+  String _selectedFilter =
+      'Upcoming'; // Default to 'Upcoming' with exact time-aware filtering
 
   @override
   void initState() {
@@ -36,10 +38,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     try {
       final profile = ref.read(turfProfileProvider);
       if (profile.ownerPhone.isNotEmpty) {
-        await ref.read(turfProfileProvider.notifier).fetchVerifiedAdminByPhone(
-          profile.ownerPhone,
-          turfId: profile.turfId > 0 ? profile.turfId : null,
-        );
+        await ref
+            .read(turfProfileProvider.notifier)
+            .fetchVerifiedAdminByPhone(
+              profile.ownerPhone,
+              turfId: profile.turfId > 0 ? profile.turfId : null,
+            );
       }
     } catch (e) {
       debugPrint("Error refreshing realtime dashboard data: $e");
@@ -66,26 +70,36 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           final p = ref.read(turfProfileProvider);
           final newShifted = p.shiftedCount + 1;
           final newCancelledTotal = p.cancelledCount + newShifted;
-          await ref.read(turfProfileProvider.notifier).updateVenueKpiMetrics(
-            shiftedCount: newShifted,
-            cancelledTotal: newCancelledTotal,
-            cancelledBadge: '$newCancelledTotal Tracked',
-          );
+          await ref
+              .read(turfProfileProvider.notifier)
+              .updateVenueKpiMetrics(
+                shiftedCount: newShifted,
+                cancelledTotal: newCancelledTotal,
+                cancelledBadge: '$newCancelledTotal Tracked',
+              );
           if (context.mounted) {
-            ToastUtils.showSuccess(context, "Booking $bookingId rescheduled! Shifted metrics updated.");
+            ToastUtils.showSuccess(
+              context,
+              "Booking $bookingId rescheduled! Shifted metrics updated.",
+            );
           }
         },
         onCancelled: () async {
           final p = ref.read(turfProfileProvider);
           final newCancelled = p.cancelledCount + 1;
           final newCancelledTotal = newCancelled + p.shiftedCount;
-          await ref.read(turfProfileProvider.notifier).updateVenueKpiMetrics(
-            cancelledCount: newCancelled,
-            cancelledTotal: newCancelledTotal,
-            cancelledBadge: '$newCancelledTotal Tracked',
-          );
+          await ref
+              .read(turfProfileProvider.notifier)
+              .updateVenueKpiMetrics(
+                cancelledCount: newCancelled,
+                cancelledTotal: newCancelledTotal,
+                cancelledBadge: '$newCancelledTotal Tracked',
+              );
           if (context.mounted) {
-            ToastUtils.showSuccess(context, "Booking $bookingId cancelled. Database record updated.");
+            ToastUtils.showSuccess(
+              context,
+              "Booking $bookingId cancelled. Database record updated.",
+            );
           }
         },
         onCheckedIn: () async {
@@ -101,16 +115,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final newPaidBookings = p.todayPaidBookings + 1;
     final newMonthBookings = p.monthTotalBookings + 1;
     final newMonthRev = p.monthRevenue + 1200.0;
-    await ref.read(turfProfileProvider.notifier).updateVenueKpiMetrics(
-      todayBookingsCount: newTodayBookings,
-      todayPaidBookings: newPaidBookings,
-      todayBookingsGrowth: '+$newTodayBookings Today',
-      monthTotalBookings: newMonthBookings,
-      monthRevenue: newMonthRev,
-      revenueBadge: '₹${newMonthRev.toInt()} GMV',
-    );
+    await ref
+        .read(turfProfileProvider.notifier)
+        .updateVenueKpiMetrics(
+          todayBookingsCount: newTodayBookings,
+          todayPaidBookings: newPaidBookings,
+          todayBookingsGrowth: '+$newTodayBookings Today',
+          monthTotalBookings: newMonthBookings,
+          monthRevenue: newMonthRev,
+          revenueBadge: '₹${newMonthRev.toInt()} GMV',
+        );
     if (mounted) {
-      ToastUtils.showSuccess(context, "Gate check-in confirmed for $playerName! 🎉");
+      ToastUtils.showSuccess(
+        context,
+        "Gate check-in confirmed for $playerName! 🎉",
+      );
     }
   }
 
@@ -135,8 +154,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         color: AppColors.primary,
         backgroundColor: const Color(0xFF0D0D0D),
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 100),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: 100,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -166,7 +192,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // --- 1. PRO APP BAR ---
-  PreferredSizeWidget _buildProAppBar(BuildContext context, TurfProfileState profile) {
+  PreferredSizeWidget _buildProAppBar(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
     return AppBar(
       backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
@@ -233,7 +262,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       children: [
                         Flexible(
                           child: Text(
-                            profile.venueName.isNotEmpty ? profile.venueName : 'Turf Partner Hub',
+                            profile.venueName.isNotEmpty
+                                ? profile.venueName
+                                : 'Turf Partner Hub',
                             style: const TextStyle(
                               fontSize: 15.5,
                               fontWeight: FontWeight.w900,
@@ -244,7 +275,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.arrow_drop_down_circle_outlined, size: 16, color: Color(0xFFD4FF00)),
+                        const Icon(
+                          Icons.arrow_drop_down_circle_outlined,
+                          size: 16,
+                          color: Color(0xFFD4FF00),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -261,7 +296,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
-                            profile.area.isNotEmpty ? '${profile.area} • Tap to Switch Branch' : 'Tap to Switch Branch',
+                            profile.area.isNotEmpty
+                                ? '${profile.area} • Tap to Switch Branch'
+                                : 'Tap to Switch Branch',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -289,9 +326,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.2)),
+              border: Border.all(
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
+              ),
             ),
-            child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFFD4FF00), size: 18),
+            child: const Icon(
+              Icons.qr_code_scanner_rounded,
+              color: Color(0xFFD4FF00),
+              size: 18,
+            ),
           ),
         ),
         const SizedBox(width: 6),
@@ -299,7 +342,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  void _showBranchSwitcherBottomSheet(BuildContext context, TurfProfileState profile) {
+  void _showBranchSwitcherBottomSheet(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
     final branches = profile.branches.isNotEmpty
         ? profile.branches
         : [
@@ -348,12 +394,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         children: [
                           Text(
                             'Your Turf Branches',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
                           ),
                           SizedBox(height: 2),
                           Text(
                             'Select a location or register another branch',
-                            style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFFA1A1AA),
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -361,7 +414,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFFA1A1AA)),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFFA1A1AA),
+                      ),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -374,67 +430,101 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     child: Material(
-                      color: isCurrent ? const Color(0xFF1B2A06) : const Color(0xFF141414),
+                      color: isCurrent
+                          ? const Color(0xFF1B2A06)
+                          : const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
-                          color: isCurrent ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                          color: isCurrent
+                              ? const Color(0xFFD4FF00)
+                              : const Color(0xFF262626),
                           width: isCurrent ? 1.5 : 1.0,
                         ),
                       ),
                       child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                      leading: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isCurrent ? const Color(0xFFD4FF00) : const Color(0xFF262626),
-                          borderRadius: BorderRadius.circular(10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 4,
                         ),
-                        child: Icon(
-                          Icons.stadium_rounded,
-                          color: isCurrent ? Colors.black : const Color(0xFFA1A1AA),
-                          size: 20,
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isCurrent
+                                ? const Color(0xFFD4FF00)
+                                : const Color(0xFF262626),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.stadium_rounded,
+                            color: isCurrent
+                                ? Colors.black
+                                : const Color(0xFFA1A1AA),
+                            size: 20,
+                          ),
                         ),
-                      ),
-                      title: Text(
-                        b.venueName,
-                        style: TextStyle(
-                          fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
-                          color: Colors.white,
-                          fontSize: 14,
+                        title: Text(
+                          b.venueName,
+                          style: TextStyle(
+                            fontWeight: isCurrent
+                                ? FontWeight.w800
+                                : FontWeight.w700,
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
-                        style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: isCurrent
-                          ? Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF16A34A),
-                                borderRadius: BorderRadius.circular(12),
+                        subtitle: Text(
+                          '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFFA1A1AA),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: isCurrent
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF16A34A),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'Active',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            : TextButton(
+                                onPressed: () async {
+                                  Navigator.pop(ctx);
+                                  await ref
+                                      .read(turfProfileProvider.notifier)
+                                      .switchBranch(b.id);
+                                  if (mounted && context.mounted) {
+                                    ToastUtils.showSuccess(
+                                      context,
+                                      'Switched to branch: ${b.venueName}',
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'Switch',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFD4FF00),
+                                  ),
+                                ),
                               ),
-                              child: const Text(
-                                'Active',
-                                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                              ),
-                            )
-                          : TextButton(
-                              onPressed: () async {
-                                Navigator.pop(ctx);
-                                await ref.read(turfProfileProvider.notifier).switchBranch(b.id);
-                                if (mounted && context.mounted) {
-                                  ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
-                                }
-                              },
-                              child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
-                            ),
                       ),
                     ),
                   );
@@ -451,15 +541,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             _showAddCourtSamePlaceDialog(context, profile);
                           },
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFFD4FF00), width: 1.5),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            side: const BorderSide(
+                              color: Color(0xFFD4FF00),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          icon: const Icon(Icons.sports_soccer_rounded, color: Color(0xFFD4FF00), size: 16),
+                          icon: const Icon(
+                            Icons.sports_soccer_rounded,
+                            color: Color(0xFFD4FF00),
+                            size: 16,
+                          ),
                           label: const FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               '+ Add Court (Same Place)',
-                              style: TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.w700, fontSize: 11.5),
+                              style: TextStyle(
+                                color: Color(0xFFD4FF00),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 11.5,
+                              ),
                             ),
                           ),
                         ),
@@ -477,14 +580,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFD4FF00),
                             foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          icon: const Icon(Icons.add_location_alt_rounded, color: Colors.black, size: 16),
+                          icon: const Icon(
+                            Icons.add_location_alt_rounded,
+                            color: Colors.black,
+                            size: 16,
+                          ),
                           label: const FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               '+ New Branch (Location)',
-                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 11.5),
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 11.5,
+                              ),
                             ),
                           ),
                         ),
@@ -501,21 +614,38 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  void _showAddCourtSamePlaceDialog(BuildContext context, TurfProfileState profile) {
+  void _showAddCourtSamePlaceDialog(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
     final nextNum = profile.courts.length + 1;
-    final nameCtrl = TextEditingController(text: '${profile.venueName} - Pitch $nextNum');
+    final nameCtrl = TextEditingController(
+      text: '${profile.venueName} - Pitch $nextNum',
+    );
     final Set<String> selectedSports = {'Cricket', 'Football'};
     final rateCtrl = TextEditingController(text: '1200');
     final surfaceCtrl = TextEditingController(text: 'Synthetic Grass Turf');
 
-    final sportsOptions = ['Cricket', 'Football', 'Pickle ball', 'Badminton', 'Tennis', 'Volleyball'];
+    final sportsOptions = [
+      'Cricket',
+      'Football',
+      'Pickle ball',
+      'Badminton',
+      'Tennis',
+      'Volleyball',
+    ];
 
     showDialog(
       context: context,
       builder: (dlgCtx) => StatefulBuilder(
         builder: (ctx, setDlgState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text('Add Court / Pitch to ${profile.venueName}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Add Court / Pitch to ${profile.venueName}',
+            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -536,7 +666,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 const SizedBox(height: 14),
                 const Text(
                   'Supported Sports (Multi-Select) *',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
@@ -557,7 +691,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       labelStyle: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isChecked ? Colors.white : const Color(0xFFE4E4E7),
+                        color: isChecked
+                            ? Colors.white
+                            : const Color(0xFFE4E4E7),
                       ),
                       backgroundColor: const Color(0xFF1C1C1C),
                       onSelected: (selected) {
@@ -577,13 +713,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 const SizedBox(height: 14),
                 TextField(
                   controller: surfaceCtrl,
-                  decoration: const InputDecoration(labelText: 'Surface Type', hintText: 'e.g. Synthetic Grass, Astro Turf, Hard Court'),
+                  decoration: const InputDecoration(
+                    labelText: 'Surface Type',
+                    hintText: 'e.g. Synthetic Grass, Astro Turf, Hard Court',
+                  ),
                 ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: rateCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Hourly Rate (₹) *', hintText: '1200'),
+                  decoration: const InputDecoration(
+                    labelText: 'Hourly Rate (₹) *',
+                    hintText: '1200',
+                  ),
                 ),
               ],
             ),
@@ -605,7 +747,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   return;
                 }
                 if (selectedSports.isEmpty) {
-                  ToastUtils.showError(context, 'Please select at least one sport');
+                  ToastUtils.showError(
+                    context,
+                    'Please select at least one sport',
+                  );
                   return;
                 }
                 Navigator.pop(dlgCtx);
@@ -616,14 +761,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   name: cName,
                   sport: sportsList.join(' • '),
                   sports: sportsList,
-                  surface: surfaceCtrl.text.trim().isNotEmpty ? surfaceCtrl.text.trim() : 'Turf Surface',
+                  surface: surfaceCtrl.text.trim().isNotEmpty
+                      ? surfaceCtrl.text.trim()
+                      : 'Turf Surface',
                   hourlyRate: rate,
                   timings: '06:00 AM - 11:00 PM',
                   description: 'Court at ${profile.venueName}',
                 );
                 ref.read(turfProfileProvider.notifier).addCourtVenue(newCourt);
                 if (context.mounted) {
-                  ToastUtils.showSuccess(context, 'Court "$cName" (${sportsList.join(", ")}) added to ${profile.venueName}!');
+                  ToastUtils.showSuccess(
+                    context,
+                    'Court "$cName" (${sportsList.join(", ")}) added to ${profile.venueName}!',
+                  );
                 }
               },
               child: const Text('Add Court'),
@@ -645,7 +795,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       context: context,
       builder: (dlgCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Register New Branch Location', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+        title: const Text(
+          'Register New Branch Location',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -653,22 +806,35 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             children: [
               Text(
                 'Primary Owner Phone: ${profile.ownerPhone}',
-                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFFD4FF00)),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFD4FF00),
+                ),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: nameCtrl,
-                decoration: const InputDecoration(labelText: 'New Branch Name *', hintText: 'e.g. Vicky Turf - Branch 2'),
+                decoration: const InputDecoration(
+                  labelText: 'New Branch Name *',
+                  hintText: 'e.g. Vicky Turf - Branch 2',
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: areaCtrl,
-                decoration: const InputDecoration(labelText: 'Branch Neighborhood / Area *', hintText: 'e.g. KK Nagar'),
+                decoration: const InputDecoration(
+                  labelText: 'Branch Neighborhood / Area *',
+                  hintText: 'e.g. KK Nagar',
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: addressCtrl,
-                decoration: const InputDecoration(labelText: 'Branch Street Address *', hintText: 'e.g. 45, Main Avenue'),
+                decoration: const InputDecoration(
+                  labelText: 'Branch Street Address *',
+                  hintText: 'e.g. 45, Main Avenue',
+                ),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -683,7 +849,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               TextField(
                 controller: rateCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Hourly Rate (₹)', hintText: '1200'),
+                decoration: const InputDecoration(
+                  labelText: 'Hourly Rate (₹)',
+                  hintText: '1200',
+                ),
               ),
             ],
           ),
@@ -701,34 +870,58 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             onPressed: () async {
               final vName = nameCtrl.text.trim();
               final vArea = areaCtrl.text.trim();
-              final altPhone = altPhoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
+              final altPhone = altPhoneCtrl.text.trim().replaceAll(
+                RegExp(r'\D'),
+                '',
+              );
 
               if (vName.isEmpty || vArea.isEmpty) {
-                ToastUtils.showError(context, 'Please enter branch name and area');
+                ToastUtils.showError(
+                  context,
+                  'Please enter branch name and area',
+                );
                 return;
               }
 
               if (altPhone.length < 10) {
-                ToastUtils.showError(context, 'Alternative mobile number is mandatory (10 digits)');
+                ToastUtils.showError(
+                  context,
+                  'Alternative mobile number is mandatory (10 digits)',
+                );
                 return;
               }
 
-              final primaryDigits = profile.ownerPhone.replaceAll(RegExp(r'\D'), '');
-              if (primaryDigits.isNotEmpty && primaryDigits.endsWith(altPhone.length >= 10 ? altPhone.substring(altPhone.length - 10) : altPhone)) {
-                ToastUtils.showError(context, 'Alternative number must be different from primary number');
+              final primaryDigits = profile.ownerPhone.replaceAll(
+                RegExp(r'\D'),
+                '',
+              );
+              if (primaryDigits.isNotEmpty &&
+                  primaryDigits.endsWith(
+                    altPhone.length >= 10
+                        ? altPhone.substring(altPhone.length - 10)
+                        : altPhone,
+                  )) {
+                ToastUtils.showError(
+                  context,
+                  'Alternative number must be different from primary number',
+                );
                 return;
               }
 
               Navigator.pop(dlgCtx);
               final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
-              final ok = await ref.read(turfProfileProvider.notifier).addNewBranch(
-                venueName: vName,
-                neighborhoodArea: vArea,
-                streetAddress: addressCtrl.text.trim().isNotEmpty ? addressCtrl.text.trim() : vArea,
-                alternativePhone: altPhone,
-                dayRate: rate,
-                nightRate: rate + 200,
-              );
+              final ok = await ref
+                  .read(turfProfileProvider.notifier)
+                  .addNewBranch(
+                    venueName: vName,
+                    neighborhoodArea: vArea,
+                    streetAddress: addressCtrl.text.trim().isNotEmpty
+                        ? addressCtrl.text.trim()
+                        : vArea,
+                    alternativePhone: altPhone,
+                    dayRate: rate,
+                    nightRate: rate + 200,
+                  );
               if (context.mounted) {
                 if (ok) {
                   ToastUtils.showSuccess(
@@ -736,7 +929,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     'Branch "$vName" application submitted! Super Admin will verify and activate your branch.',
                   );
                 } else {
-                  ToastUtils.showError(context, 'Failed to submit branch application. Please try again.');
+                  ToastUtils.showError(
+                    context,
+                    'Failed to submit branch application. Please try again.',
+                  );
                 }
               }
             },
@@ -748,7 +944,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // --- 2. OPERATING STATUS & DATE BAR ---
-  Widget _buildVenueHeaderPulseBar(TurfProfileState profile, String formattedDate) {
+  Widget _buildVenueHeaderPulseBar(
+    TurfProfileState profile,
+    String formattedDate,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF141414),
@@ -768,13 +967,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           child: Row(
             children: [
               // Tactical Left Accent Ribbon
-              Container(
-                width: 4,
-                color: const Color(0xFFD4FF00),
-              ),
+              Container(width: 4, color: const Color(0xFFD4FF00)),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       Container(
@@ -783,7 +982,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           color: const Color(0xFF1C1C1C),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFFD4FF00)),
+                        child: const Icon(
+                          Icons.calendar_today_rounded,
+                          size: 15,
+                          color: Color(0xFFD4FF00),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -814,7 +1017,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF132204),
                           borderRadius: BorderRadius.circular(10),
@@ -823,7 +1029,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.fiber_manual_record_rounded, color: Color(0xFF16A34A), size: 8),
+                            Icon(
+                              Icons.fiber_manual_record_rounded,
+                              color: Color(0xFF16A34A),
+                              size: 8,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Courts Open',
@@ -848,7 +1058,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // --- 3. SUBSCRIPTION CARD (URGENT ALERT vs SLEEK MEMBERSHIP PILL) ---
-  Widget _buildSubscriptionCard(BuildContext context, TurfProfileState profile) {
+  Widget _buildSubscriptionCard(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
     if (profile.isSubscriptionEndingSoon) {
       // Urgent Renewal Banner
       return Container(
@@ -880,7 +1093,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     color: Color(0xFFF59E0B),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.timer_outlined, color: Color(0xFF141414), size: 18),
+                  child: const Icon(
+                    Icons.timer_outlined,
+                    color: Color(0xFF141414),
+                    size: 18,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -931,16 +1148,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD97706),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       elevation: 0,
                     ),
                     icon: const Icon(Icons.bolt_rounded, size: 14),
                     label: const Text(
                       'Renew Now',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     onPressed: () => _openSubscriptionDialog(context, profile),
                   ),
@@ -978,7 +1203,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(9),
             ),
-            child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFBBF24), size: 18),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: Color(0xFFFBBF24),
+              size: 18,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1032,10 +1261,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 children: [
                   Text(
                     'Plan',
-                    style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                   SizedBox(width: 2),
-                  Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 9),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white,
+                    size: 9,
+                  ),
                 ],
               ),
             ),
@@ -1048,7 +1285,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   // --- 4. FINANCIAL & OPERATIONAL OVERVIEW (STADIUM BOX OFFICE) ---
   Widget _buildPerformanceBentoSection(TurfProfileState profile) {
     final now = DateTime.now();
-    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
     final allList = _getAllBookingsSource(profile);
 
     // Dynamic metrics based on actual bookings
@@ -1073,14 +1311,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final dynamicMonthRev = profile.monthRevenue > 0
         ? profile.monthRevenue
         : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
-    final monthTarget = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
-    final targetPct = ((dynamicMonthRev / monthTarget).clamp(0.0, 1.0) * 100).toInt();
+    final monthTarget = profile.monthlyRevenueTarget > 0
+        ? profile.monthlyRevenueTarget
+        : 50000.0;
+    final targetPct = ((dynamicMonthRev / monthTarget).clamp(0.0, 1.0) * 100)
+        .toInt();
 
     final operatingSlots = AppConstants.generateTimeSlots(
       profile.openingTime.isNotEmpty ? profile.openingTime : '05:00 AM',
       profile.closingTime.isNotEmpty ? profile.closingTime : '11:00 PM',
     );
-    final totalDailySlots = operatingSlots.isNotEmpty ? operatingSlots.length : 18;
+    final totalDailySlots = operatingSlots.isNotEmpty
+        ? operatingSlots.length
+        : 18;
 
     // Time-aware slot availability: total slots - passed slots - upcoming booked slots = remaining
     final currentMinutes = now.hour * 60 + now.minute;
@@ -1094,11 +1337,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     int upcomingBookedSlots = 0;
     for (final b in activeTodayList) {
-      final startMin = TurfBookingHistoryItem.parseSlotStartMinutes(b.effectiveTimeSlot);
+      final startMin = TurfBookingHistoryItem.parseSlotStartMinutes(
+        b.effectiveTimeSlot,
+      );
       if (startMin == -1 || currentMinutes < startMin) {
         final slotStr = b.effectiveTimeSlot;
         if (slotStr.isNotEmpty) {
-          final slots = slotStr.split(',').map((x) => x.trim()).where((x) => x.isNotEmpty).toList();
+          final slots = slotStr
+              .split(',')
+              .map((x) => x.trim())
+              .where((x) => x.isNotEmpty)
+              .toList();
           upcomingBookedSlots += slots.isNotEmpty ? slots.length : 1;
         } else {
           upcomingBookedSlots += 1;
@@ -1106,8 +1355,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       }
     }
 
-    final dynamicRemainingSlots = (totalDailySlots - passedSlotsCount - upcomingBookedSlots - profile.blockedSlotsCount) > 0
-        ? (totalDailySlots - passedSlotsCount - upcomingBookedSlots - profile.blockedSlotsCount)
+    final dynamicRemainingSlots =
+        (totalDailySlots -
+                passedSlotsCount -
+                upcomingBookedSlots -
+                profile.blockedSlotsCount) >
+            0
+        ? (totalDailySlots -
+              passedSlotsCount -
+              upcomingBookedSlots -
+              profile.blockedSlotsCount)
         : 0;
 
     return Column(
@@ -1152,9 +1409,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               children: [
                 // Subtle Athletic Pitch Markings Watermark
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: _TurfPitchMarkingsPainter(),
-                  ),
+                  child: CustomPaint(painter: _TurfPitchMarkingsPainter()),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(18),
@@ -1166,10 +1421,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.14),
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.14),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFD4FF00), size: 15),
+                            child: const Icon(
+                              Icons.currency_rupee_rounded,
+                              color: Color(0xFFD4FF00),
+                              size: 15,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           const Expanded(
@@ -1185,11 +1446,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             ),
                           ),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E1E1E),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFF333333)),
+                              border: Border.all(
+                                color: const Color(0xFF333333),
+                              ),
                             ),
                             child: Text(
                               DateFormat('MMM yyyy').format(now),
@@ -1231,10 +1497,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(5),
                         child: LinearProgressIndicator(
-                          value: dynamicMonthRev > 0 ? (dynamicMonthRev / monthTarget).clamp(0.05, 1.0) : 0.05,
+                          value: dynamicMonthRev > 0
+                              ? (dynamicMonthRev / monthTarget).clamp(0.05, 1.0)
+                              : 0.05,
                           minHeight: 5.5,
                           backgroundColor: Colors.white.withValues(alpha: 0.15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4FF00)),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFFD4FF00),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1258,11 +1528,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             onTap: () => _showEditMonthlyTargetDialog(profile),
                             borderRadius: BorderRadius.circular(6),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E1E1E),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: const Color(0xFF333333)),
+                                border: Border.all(
+                                  color: const Color(0xFF333333),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1276,7 +1551,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.edit_rounded, size: 10, color: Color(0xFFD4FF00)),
+                                  const Icon(
+                                    Icons.edit_rounded,
+                                    size: 10,
+                                    color: Color(0xFFD4FF00),
+                                  ),
                                 ],
                               ),
                             ),
@@ -1323,9 +1602,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     children: [
                       // Background Geometric Pattern
                       Positioned.fill(
-                        child: CustomPaint(
-                          painter: _RevenueCardPainter(),
-                        ),
+                        child: CustomPaint(painter: _RevenueCardPainter()),
                       ),
                       // Watermark Icon
                       Positioned(
@@ -1334,7 +1611,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         child: Icon(
                           Icons.currency_rupee_rounded,
                           size: 72,
-                          color: const Color(0xFFD4FF00).withValues(alpha: 0.04),
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.04),
                         ),
                       ),
                       Padding(
@@ -1347,10 +1626,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
+                                    color: const Color(
+                                      0xFFD4FF00,
+                                    ).withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFFD4FF00), size: 13),
+                                  child: const Icon(
+                                    Icons.account_balance_wallet_rounded,
+                                    color: Color(0xFFD4FF00),
+                                    size: 13,
+                                  ),
                                 ),
                                 const SizedBox(width: 7),
                                 const Expanded(
@@ -1428,9 +1713,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     children: [
                       // Background Radar Range Pattern
                       Positioned.fill(
-                        child: CustomPaint(
-                          painter: _RadarCardPainter(),
-                        ),
+                        child: CustomPaint(painter: _RadarCardPainter()),
                       ),
                       // Watermark Icon
                       Positioned(
@@ -1439,7 +1722,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         child: Icon(
                           Icons.radar_rounded,
                           size: 72,
-                          color: const Color(0xFF38BDF8).withValues(alpha: 0.04),
+                          color: const Color(
+                            0xFF38BDF8,
+                          ).withValues(alpha: 0.04),
                         ),
                       ),
                       Padding(
@@ -1452,10 +1737,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                                    color: const Color(
+                                      0xFF0284C7,
+                                    ).withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.stadium_rounded, color: Color(0xFF38BDF8), size: 13),
+                                  child: const Icon(
+                                    Icons.stadium_rounded,
+                                    color: Color(0xFF38BDF8),
+                                    size: 13,
+                                  ),
                                 ),
                                 const SizedBox(width: 7),
                                 const Expanded(
@@ -1540,7 +1831,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     color: const Color(0xFFFFF7ED),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.published_with_changes_rounded, color: Color(0xFFEA580C), size: 15),
+                  child: const Icon(
+                    Icons.published_with_changes_rounded,
+                    color: Color(0xFFEA580C),
+                    size: 15,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -1549,24 +1844,38 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     children: [
                       const Text(
                         'Cancellations & Slot Reschedules',
-                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFE4E4E7)),
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFE4E4E7),
+                        ),
                       ),
                       Text(
                         '$dynamicCancelledCount cancelled • $dynamicShiftedCount rescheduled',
-                        style: const TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA)),
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          color: Color(0xFFA1A1AA),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1C1C1C),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '$dynamicCancelledTotal Total',
-                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFFA1A1AA)),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFA1A1AA),
+                    ),
                   ),
                 ),
               ],
@@ -1577,15 +1886,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // --- 5. BROADCAST MATCHDAY SPOTLIGHT ---
-  Widget? _buildMatchSpotlightBanner(BuildContext context, TurfProfileState profile) {
-    if (_selectedFilter != 'Upcoming' && _selectedFilter != 'All' && _selectedFilter != 'Live Now') {
+  Widget? _buildMatchSpotlightBanner(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
+    if (_selectedFilter != 'Upcoming' &&
+        _selectedFilter != 'All' &&
+        _selectedFilter != 'Live Now') {
       return null;
     }
 
     final now = DateTime.now();
     final allList = _getAllBookingsSource(profile);
-    final liveMatches = allList.where((b) => !b.isCancelled && b.isLiveNow(now)).toList();
-    final upcomingMatches = allList.where((b) => !b.isCancelled && b.isUpcoming(now)).toList();
+    final liveMatches = allList
+        .where((b) => !b.isCancelled && b.isLiveNow(now))
+        .toList();
+    final upcomingMatches = allList
+        .where((b) => !b.isCancelled && b.isUpcoming(now))
+        .toList();
 
     final spotlight = liveMatches.isNotEmpty
         ? liveMatches.first
@@ -1602,7 +1920,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isLive ? const Color(0xFF16A34A) : const Color(0xFFD4FF00).withValues(alpha: 0.2),
+          color: isLive
+              ? const Color(0xFF16A34A)
+              : const Color(0xFFD4FF00).withValues(alpha: 0.2),
           width: isLive ? 1.5 : 1.2,
         ),
         boxShadow: [
@@ -1641,7 +1961,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
-                          color: isLive ? const Color(0xFFD4FF00) : const Color(0xFFFBBF24),
+                          color: isLive
+                              ? const Color(0xFFD4FF00)
+                              : const Color(0xFFFBBF24),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -1651,14 +1973,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
-                          color: isLive ? const Color(0xFFD4FF00) : Colors.white,
+                          color: isLive
+                              ? const Color(0xFFD4FF00)
+                              : Colors.white,
                           letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
@@ -1689,7 +2016,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         radius: 20,
                         backgroundColor: sportColor.withValues(alpha: 0.12),
                         child: Text(
-                          spotlight.customerName.isNotEmpty ? spotlight.customerName[0].toUpperCase() : 'P',
+                          spotlight.customerName.isNotEmpty
+                              ? spotlight.customerName[0].toUpperCase()
+                              : 'P',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w900,
@@ -1713,7 +2042,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                Text(_getSportEmoji(spotlight.sport), style: const TextStyle(fontSize: 12)),
+                                Text(
+                                  _getSportEmoji(spotlight.sport),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                                 const SizedBox(width: 4),
                                 Expanded(
                                   child: Text(
@@ -1744,11 +2076,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            spotlight.paymentMethod.toUpperCase().contains('CASH') ? 'Pay at Venue' : 'Paid Online',
+                            spotlight.paymentMethod.toUpperCase().contains(
+                                  'CASH',
+                                )
+                                ? 'Pay at Venue'
+                                : 'Paid Online',
                             style: TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w700,
-                              color: spotlight.paymentMethod.toUpperCase().contains('CASH')
+                              color:
+                                  spotlight.paymentMethod
+                                      .toUpperCase()
+                                      .contains('CASH')
                                   ? const Color(0xFFB45309)
                                   : const Color(0xFFD4FF00),
                             ),
@@ -1766,15 +2105,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         backgroundColor: const Color(0xFFD4FF00),
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         elevation: 0,
                       ),
                       icon: const Icon(Icons.bolt_rounded, size: 16),
                       label: const Text(
                         'View Match Pass & Check-In',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      onPressed: () => _openBookingDetailsSheet(context, spotlight),
+                      onPressed: () =>
+                          _openBookingDetailsSheet(context, spotlight),
                     ),
                   ),
                 ],
@@ -1798,7 +2143,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final upcomingCount = allList.where((b) => b.isUpcoming(now)).length;
     final liveNowCount = allList.where((b) => b.isLiveNow(now)).length;
     final completedCount = allList.where((b) => b.isCompleted(now)).length;
-    final cancelledCount = allList.where((b) => b.status.toLowerCase() == 'cancelled').length;
+    final cancelledCount = allList
+        .where((b) => b.status.toLowerCase() == 'cancelled')
+        .length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1826,7 +2173,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text('All Slots ➔', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'All Slots ➔',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -1874,7 +2224,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+            color: isSelected
+                ? const Color(0xFFD4FF00)
+                : const Color(0xFF262626),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
@@ -1902,14 +2254,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.black.withValues(alpha: 0.15) : const Color(0xFF1C1C1C),
+                color: isSelected
+                    ? Colors.black.withValues(alpha: 0.15)
+                    : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                   color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                 ),
               ),
@@ -1922,14 +2276,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Widget _buildBookingScheduleDisplay(TurfBookingHistoryItem booking) {
     final now = DateTime.now();
-    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final todayStr =
+        "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
     final tomorrow = now.add(const Duration(days: 1));
-    final tomorrowStr = "${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}";
+    final tomorrowStr =
+        "${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}";
 
     String dateLabel = booking.effectiveDate;
     if (dateLabel == todayStr || dateLabel.toLowerCase() == 'today') {
       dateLabel = 'Today';
-    } else if (dateLabel == tomorrowStr || dateLabel.toLowerCase() == 'tomorrow') {
+    } else if (dateLabel == tomorrowStr ||
+        dateLabel.toLowerCase() == 'tomorrow') {
       dateLabel = 'Tomorrow';
     } else if (dateLabel.isNotEmpty) {
       try {
@@ -1941,14 +2298,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
 
     final slotStr = booking.effectiveTimeSlot;
-    final slotList = slotStr.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    final slotList = slotStr
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.calendar_today_rounded, size: 11, color: Color(0xFFA1A1AA)),
+            const Icon(
+              Icons.calendar_today_rounded,
+              size: 11,
+              color: Color(0xFFA1A1AA),
+            ),
             const SizedBox(width: 4),
             Text(
               dateLabel.isNotEmpty ? dateLabel : 'Today',
@@ -1961,7 +2326,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             if (slotList.length > 1) ...[
               const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 1.5,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
@@ -1982,7 +2350,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         if (slotList.length <= 1)
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, size: 11.5, color: Color(0xFFD4FF00)),
+              const Icon(
+                Icons.access_time_rounded,
+                size: 11.5,
+                color: Color(0xFFD4FF00),
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -2000,40 +2372,56 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           Wrap(
             spacing: 6,
             runSpacing: 4,
-            children: slotList.map((slot) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C1C1C),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFF262626)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.access_time_rounded, size: 10, color: Color(0xFFE4E4E7)),
-                  const SizedBox(width: 3),
-                  Text(
-                    slot,
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+            children: slotList
+                .map(
+                  (slot) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1C1C1C),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFF262626)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time_rounded,
+                          size: 10,
+                          color: Color(0xFFE4E4E7),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          slot,
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            )).toList(),
+                )
+                .toList(),
           ),
       ],
     );
   }
 
-  Widget _buildProBookingCard(BuildContext context, TurfBookingHistoryItem booking) {
+  Widget _buildProBookingCard(
+    BuildContext context,
+    TurfBookingHistoryItem booking,
+  ) {
     final now = DateTime.now();
     final isCompleted = booking.isCompleted(now);
     final isLiveNow = booking.isLiveNow(now);
     final isCancelled = booking.status.toLowerCase() == 'cancelled';
-    final isUpi = booking.paymentMethod.toUpperCase().contains('UPI') || booking.paymentMethod.toUpperCase().contains('GPAY');
+    final isUpi =
+        booking.paymentMethod.toUpperCase().contains('UPI') ||
+        booking.paymentMethod.toUpperCase().contains('GPAY');
     final sportColor = _getSportColor(booking.sport);
 
     // Dynamic Pill Badge Styling
@@ -2042,6 +2430,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     String badgeLabel;
 
     if (isCancelled) {
+      badgeBg = const Color(0xFFFEE2E2);
+      badgeTextColor = const Color(0xFFDC2626);
       badgeBg = const Color(0xFF381219);
       badgeTextColor = const Color(0xFFFB7185);
       badgeLabel = 'CANCELLED';
@@ -2050,12 +2440,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       badgeTextColor = const Color(0xFFA1A1AA);
       badgeLabel = 'COMPLETED ✓';
     } else if (isLiveNow) {
+      badgeBg = const Color(0xFFDCFCE7);
       badgeBg = const Color(0xFF142908);
       badgeTextColor = const Color(0xFFD4FF00);
       badgeLabel = 'LIVE NOW 🟢';
     } else {
+      badgeBg = isUpi ? const Color(0xFFDCFCE7) : const Color(0xFF2D2005);
+      badgeTextColor = isUpi
+          ? const Color(0xFFD4FF00)
+          : const Color(0xFFB45309);
       badgeBg = isUpi ? const Color(0xFF142908) : const Color(0xFF2D2005);
-      badgeTextColor = isUpi ? const Color(0xFFD4FF00) : const Color(0xFFFBBF24);
+      badgeTextColor = isUpi
+          ? const Color(0xFFD4FF00)
+          : const Color(0xFFFBBF24);
       badgeLabel = isUpi ? 'PAID ONLINE' : 'PAY AT VENUE';
     }
 
@@ -2067,7 +2464,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         border: Border.all(
           color: isLiveNow
               ? const Color(0xFF16A34A)
-              : (isCompleted ? const Color(0xFF262626) : const Color(0xFF262626)),
+              : (isCompleted
+                    ? const Color(0xFF262626)
+                    : const Color(0xFF262626)),
           width: isLiveNow ? 1.5 : 1,
         ),
         boxShadow: [
@@ -2101,7 +2500,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3.5,
+                          ),
                           decoration: BoxDecoration(
                             color: sportColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -2109,7 +2511,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(_getSportEmoji(booking.sport), style: const TextStyle(fontSize: 12)),
+                              Text(
+                                _getSportEmoji(booking.sport),
+                                style: const TextStyle(fontSize: 12),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 booking.sport,
@@ -2140,21 +2545,33 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       children: [
                         if (booking.isOpenMatch)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF280E14),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF4A1922)),
+                              border: Border.all(
+                                color: const Color(0xFF4A1922),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.sports_mma_rounded, size: 10, color: Color(0xFFFB7185)),
+                                const Icon(
+                                  Icons.sports_mma_rounded,
+                                  size: 10,
+                                  color: Color(0xFFFB7185),
+                                ),
                                 const SizedBox(width: 3),
                                 ConstrainedBox(
-                                  constraints: const BoxConstraints(maxWidth: 120),
+                                  constraints: const BoxConstraints(
+                                    maxWidth: 120,
+                                  ),
                                   child: Text(
-                                    booking.teamName != null && booking.teamName!.isNotEmpty
+                                    booking.teamName != null &&
+                                            booking.teamName!.isNotEmpty
                                         ? '⚔️ ${booking.teamName}'
                                         : '⚔️ Open Challenge',
                                     style: const TextStyle(
@@ -2170,7 +2587,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             ),
                           ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3.5,
+                          ),
                           decoration: BoxDecoration(
                             color: badgeBg,
                             borderRadius: BorderRadius.circular(8),
@@ -2214,13 +2634,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   children: [
                     CircleAvatar(
                       radius: 19,
-                      backgroundColor: isCompleted ? const Color(0xFF262626) : sportColor.withValues(alpha: 0.12),
+                      backgroundColor: isCompleted
+                          ? const Color(0xFF262626)
+                          : sportColor.withValues(alpha: 0.12),
                       child: Text(
-                        booking.customerName.isNotEmpty ? booking.customerName[0].toUpperCase() : 'P',
+                        booking.customerName.isNotEmpty
+                            ? booking.customerName[0].toUpperCase()
+                            : 'P',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: isCompleted ? const Color(0xFFA1A1AA) : sportColor,
+                          color: isCompleted
+                              ? const Color(0xFFA1A1AA)
+                              : sportColor,
                         ),
                       ),
                     ),
@@ -2242,7 +2668,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           const SizedBox(height: 3),
                           Text(
                             booking.courtName,
-                            style: const TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA)),
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              color: Color(0xFFA1A1AA),
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -2256,7 +2685,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           style: TextStyle(
                             fontSize: 16.5,
                             fontWeight: FontWeight.w900,
-                            color: isCompleted ? const Color(0xFFA1A1AA) : const Color(0xFFD4FF00),
+                            color: isCompleted
+                                ? const Color(0xFFA1A1AA)
+                                : const Color(0xFFD4FF00),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -2271,21 +2702,37 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             },
                             borderRadius: BorderRadius.circular(6),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2.5,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF132204),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                  color: const Color(
+                                    0xFFD4FF00,
+                                  ).withValues(alpha: 0.35),
                                   width: 0.8,
                                 ),
                               ),
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.call_rounded, size: 10, color: Color(0xFFD4FF00)),
+                                  Icon(
+                                    Icons.call_rounded,
+                                    size: 10,
+                                    color: Color(0xFFD4FF00),
+                                  ),
                                   SizedBox(width: 3),
-                                  Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                  Text(
+                                    'Call',
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFD4FF00),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -2305,7 +2752,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     height: 14,
                     decoration: const BoxDecoration(
                       color: Color(0xFF141414),
-                      borderRadius: BorderRadius.horizontal(right: Radius.circular(7)),
+                      borderRadius: BorderRadius.horizontal(
+                        right: Radius.circular(7),
+                      ),
                     ),
                   ),
                   Expanded(
@@ -2313,7 +2762,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       builder: (context, constraints) {
                         const dashWidth = 4.0;
                         const dashSpace = 4.0;
-                        final dashCount = (constraints.constrainWidth() / (dashWidth + dashSpace)).floor();
+                        final dashCount =
+                            (constraints.constrainWidth() /
+                                    (dashWidth + dashSpace))
+                                .floor();
                         return Flex(
                           direction: Axis.horizontal,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2323,7 +2775,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               width: dashWidth,
                               height: 1.2,
                               child: DecoratedBox(
-                                decoration: BoxDecoration(color: Color(0xFF262626)),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF262626),
+                                ),
                               ),
                             ),
                           ),
@@ -2336,7 +2790,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     height: 14,
                     decoration: const BoxDecoration(
                       color: Color(0xFF141414),
-                      borderRadius: BorderRadius.horizontal(left: Radius.circular(7)),
+                      borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(7),
+                      ),
                     ),
                   ),
                 ],
@@ -2349,7 +2805,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 child: isCompleted
                     ? Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF141414),
                           borderRadius: BorderRadius.circular(10),
@@ -2360,62 +2819,97 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           children: [
                             const Row(
                               children: [
-                                Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFF16A34A)),
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 15,
+                                  color: Color(0xFF16A34A),
+                                ),
                                 SizedBox(width: 6),
                                 Text(
                                   'Match Completed & Closed',
-                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFE4E4E7)),
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFFE4E4E7),
+                                  ),
                                 ),
                               ],
                             ),
                             Text(
                               '₹${booking.amount.toInt()} Settled',
-                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFD4FF00),
+                              ),
                             ),
                           ],
                         ),
                       )
                     : isCancelled
-                        ? Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFEF2F2),
+                    ? Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFEF2F2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFECACA)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.info_outline_rounded,
+                              size: 14,
+                              color: Color(0xFFDC2626),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'Slot Cancelled & Released',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFDC2626),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD4FF00),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 9,
+                              horizontal: 12,
+                            ),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFFECACA)),
                             ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.info_outline_rounded, size: 14, color: Color(0xFFDC2626)),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Slot Cancelled & Released',
-                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFDC2626)),
-                                ),
-                              ],
-                            ),
-                          )
-                        : SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD4FF00),
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                elevation: 0,
-                              ),
-                              icon: const Icon(Icons.confirmation_number_outlined, size: 15),
-                              label: const Text(
-                                'View Match Pass & Actions',
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                              onPressed: () => _openBookingDetailsSheet(context, booking),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(
+                            Icons.confirmation_number_outlined,
+                            size: 15,
+                          ),
+                          label: const Text(
+                            'View Match Pass & Actions',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          onPressed: () =>
+                              _openBookingDetailsSheet(context, booking),
+                        ),
+                      ),
               ),
             ],
           ),
@@ -2424,7 +2918,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     );
   }
 
-  void _openBookingDetailsSheet(BuildContext context, TurfBookingHistoryItem booking) {
+  void _openBookingDetailsSheet(
+    BuildContext context,
+    TurfBookingHistoryItem booking,
+  ) {
     final now = DateTime.now();
     final isCompleted = booking.isCompleted(now);
     final isCancelled = booking.status.toLowerCase() == 'cancelled';
@@ -2474,7 +2971,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.all(9),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -2515,7 +3014,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFFA1A1AA)),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Color(0xFFA1A1AA),
+                      ),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -2542,15 +3044,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD4FF00),
                         foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: Colors.black),
+                      icon: const Icon(
+                        Icons.qr_code_scanner_rounded,
+                        size: 18,
+                        color: Colors.black,
+                      ),
                       label: const FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           'Gate Check-in (Open Scanner)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.black),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       onPressed: () {
@@ -2567,12 +3079,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFFE4E4E7),
                         side: const BorderSide(color: Color(0xFF262626)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      icon: const Icon(Icons.published_with_changes_rounded, size: 16),
+                      icon: const Icon(
+                        Icons.published_with_changes_rounded,
+                        size: 16,
+                      ),
                       label: const Text(
                         'Alter / Shift Slot',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       onPressed: () {
                         Navigator.pop(ctx);
@@ -2594,13 +3114,23 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFD4FF00),
                         foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: Colors.black),
+                      icon: const Icon(
+                        Icons.qr_code_scanner_rounded,
+                        size: 18,
+                        color: Colors.black,
+                      ),
                       label: const Text(
                         'Open Gate Scanner',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.black),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
                       ),
                       onPressed: () {
                         Navigator.pop(ctx);
@@ -2625,7 +3155,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     required bool isCancelled,
   }) {
     final sportColor = _getSportColor(booking.sport);
-    final isCheckedIn = booking.status.toLowerCase().contains('check') ||
+    final isCheckedIn =
+        booking.status.toLowerCase().contains('check') ||
         booking.status.toLowerCase() == 'checked in';
     final isLiveNow = booking.isLiveNow(DateTime.now());
 
@@ -2742,11 +3273,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1C1C1C),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.5)),
+                      border: Border.all(
+                        color: const Color(0xFFD4FF00).withValues(alpha: 0.5),
+                      ),
                     ),
                     child: Text(
                       booking.id,
@@ -2832,7 +3368,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF132204),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFF262626)),
+                              border: Border.all(
+                                color: const Color(0xFF262626),
+                              ),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -2861,7 +3399,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
                   // Prominent Fixture Card (Date & Time Ticket Stub)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(14),
@@ -2876,7 +3417,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               Container(
                                 padding: const EdgeInsets.all(7),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
+                                  color: const Color(
+                                    0xFFD4FF00,
+                                  ).withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -2930,7 +3473,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               Container(
                                 padding: const EdgeInsets.all(7),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
+                                  color: const Color(
+                                    0xFFD4FF00,
+                                  ).withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
@@ -2975,10 +3520,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   ),
 
                   // Team / Open Match challenge pill if applicable
-                  if (booking.teamName != null && booking.teamName!.isNotEmpty) ...[
+                  if (booking.teamName != null &&
+                      booking.teamName!.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF241014),
                         borderRadius: BorderRadius.circular(10),
@@ -3034,9 +3583,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           builder: (context, constraints) {
                             const dashWidth = 5.0;
                             const dashSpace = 4.0;
-                            final dashCount = (constraints.constrainWidth() /
-                                    (dashWidth + dashSpace))
-                                .floor();
+                            final dashCount =
+                                (constraints.constrainWidth() /
+                                        (dashWidth + dashSpace))
+                                    .floor();
                             return Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: List.generate(
@@ -3068,7 +3618,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         borderRadius: const BorderRadius.horizontal(
                           right: Radius.circular(11),
                         ),
-                        border: Border.all(color: const Color(0xFF262626), width: 1.2),
+                        border: Border.all(
+                          color: const Color(0xFF262626),
+                          width: 1.2,
+                        ),
                       ),
                     ),
                   ),
@@ -3083,7 +3636,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         borderRadius: const BorderRadius.horizontal(
                           left: Radius.circular(11),
                         ),
-                        border: Border.all(color: const Color(0xFF262626), width: 1.2),
+                        border: Border.all(
+                          color: const Color(0xFF262626),
+                          width: 1.2,
+                        ),
                       ),
                     ),
                   ),
@@ -3119,7 +3675,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                booking.paymentMethod.toUpperCase().contains('CASH')
+                                booking.paymentMethod.toUpperCase().contains(
+                                      'CASH',
+                                    )
                                     ? Icons.payments_rounded
                                     : Icons.account_balance_wallet_rounded,
                                 size: 14,
@@ -3171,7 +3729,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: statusBgColor,
                           borderRadius: BorderRadius.circular(8),
@@ -3227,7 +3788,24 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   Widget _buildDecorativeBarcode({double height = 18}) {
     const barWidths = [
-      2.0, 1.0, 3.0, 1.5, 4.0, 1.0, 2.5, 1.5, 3.5, 1.0, 2.0, 4.0, 1.5, 2.5, 1.0, 3.0, 1.5, 2.0
+      2.0,
+      1.0,
+      3.0,
+      1.5,
+      4.0,
+      1.0,
+      2.5,
+      1.5,
+      3.5,
+      1.0,
+      2.0,
+      4.0,
+      1.5,
+      2.5,
+      1.0,
+      3.0,
+      1.5,
+      2.0,
     ];
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -3263,14 +3841,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               color: Color(0xFF1C1C1C),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.event_available_rounded, size: 28, color: Color(0xFFA1A1AA)),
+            child: const Icon(
+              Icons.event_available_rounded,
+              size: 28,
+              color: Color(0xFFA1A1AA),
+            ),
           ),
           const SizedBox(height: 10),
           Text(
             _selectedFilter == 'Upcoming'
                 ? 'No more upcoming bookings today'
                 : 'No matching bookings in "$_selectedFilter"',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -3300,7 +3886,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     } else if (_selectedFilter == 'Completed') {
       return source.where((b) => b.isCompleted(now)).toList();
     } else if (_selectedFilter == 'Cancelled') {
-      return source.where((b) => b.status.toLowerCase() == 'cancelled').toList();
+      return source
+          .where((b) => b.status.toLowerCase() == 'cancelled')
+          .toList();
     }
     return source;
   }
@@ -3320,8 +3908,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Color _getSportColor(String sport) {
     final lower = sport.toLowerCase();
     if (lower.contains('cricket')) return const Color(0xFFD97706); // Warm Amber
-    if (lower.contains('foot') || lower.contains('soccer')) return const Color(0xFFD4FF00); // Grass Emerald
-    if (lower.contains('badminton')) return const Color(0xFF4338CA); // Court Indigo
+    if (lower.contains('foot') || lower.contains('soccer'))
+      return const Color(0xFFD4FF00); // Grass Emerald
+    if (lower.contains('badminton'))
+      return const Color(0xFF4338CA); // Court Indigo
     if (lower.contains('pickle')) return const Color(0xFF0284C7); // Cyan
     if (lower.contains('tennis')) return const Color(0xFF65A30D); // Tennis Lime
     if (lower.contains('basket')) return const Color(0xFFEA580C); // Warm Orange
@@ -3329,7 +3919,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   // --- 8. BLOCKED ACCESS SCAFFOLD ---
-  Widget _buildBlockedAccessScaffold(BuildContext context, TurfProfileState profile) {
+  Widget _buildBlockedAccessScaffold(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
@@ -3357,7 +3950,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.logout_rounded, color: Colors.red.shade700, size: 18),
+              child: Icon(
+                Icons.logout_rounded,
+                color: Colors.red.shade700,
+                size: 18,
+              ),
             ),
             onPressed: () => _handleLogout(context),
             tooltip: 'Log Out',
@@ -3378,7 +3975,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: const Color(0xFFF87171), width: 2),
                 ),
-                child: const Icon(Icons.lock_clock_rounded, size: 48, color: Color(0xFFDC2626)),
+                child: const Icon(
+                  Icons.lock_clock_rounded,
+                  size: 48,
+                  color: Color(0xFFDC2626),
+                ),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -3393,7 +3994,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFDC2626).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -3411,7 +4015,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               Text(
                 'Your monthly platform subscription for "${profile.venueName.isNotEmpty ? profile.venueName : 'Your Turf'}" has ended.\n\nYour venue is currently HIDDEN from players on the Gamez24 Player App and owner hub access is locked until renewed.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF4B5563), height: 1.5),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF4B5563),
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 24),
               // Fee breakdown
@@ -3434,24 +4042,62 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Platform Listing Fee', style: TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
-                        Text('₹1,000.00', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Platform Listing Fee',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF4B5563),
+                          ),
+                        ),
+                        Text(
+                          '₹1,000.00',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                     SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Applicable GST (18%)', style: TextStyle(fontSize: 13, color: Color(0xFF4B5563))),
-                        Text('₹180.00', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                        Text(
+                          'Applicable GST (18%)',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF4B5563),
+                          ),
+                        ),
+                        Text(
+                          '₹180.00',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                     Divider(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Amount Due', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
-                        Text('₹1,180 / month', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFFD4FF00))),
+                        Text(
+                          'Total Amount Due',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '₹1,180 / month',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFD4FF00),
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -3465,7 +4111,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     backgroundColor: const Color(0xFFD4FF00),
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 2,
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 20),
@@ -3474,7 +4122,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   onPressed: () async {
-                    final success = await ref.read(turfProfileProvider.notifier).payPlatformSubscription();
+                    final success = await ref
+                        .read(turfProfileProvider.notifier)
+                        .payPlatformSubscription();
                     if (context.mounted && success) {
                       ToastUtils.showSuccess(
                         context,
@@ -3487,14 +4137,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               const SizedBox(height: 12),
               OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 onPressed: () {
-                  ref.read(turfProfileProvider.notifier).setSubscriptionDays(30);
-                  ToastUtils.showSuccess(context, "Testing: Subscription reset to Active (30 days remaining).");
+                  ref
+                      .read(turfProfileProvider.notifier)
+                      .setSubscriptionDays(30);
+                  ToastUtils.showSuccess(
+                    context,
+                    "Testing: Subscription reset to Active (30 days remaining).",
+                  );
                 },
-                child: const Text('Quick Test: Unlock for 30 Days (Demo)', style: TextStyle(fontSize: 12)),
+                child: const Text(
+                  'Quick Test: Unlock for 30 Days (Demo)',
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
             ],
           ),
@@ -3520,7 +4183,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD4FF00), size: 22),
+              child: const Icon(
+                Icons.workspace_premium_rounded,
+                color: Color(0xFFD4FF00),
+                size: 22,
+              ),
             ),
             const SizedBox(width: 10),
             const Expanded(
@@ -3556,10 +4223,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           'Monthly Listing Fee',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF4B5563),
+                          ),
                         ),
                       ),
-                      Text('₹1,000.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text(
+                        '₹1,000.00',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -3569,10 +4245,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           'GST (18% Applicable)',
-                          style: TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF4B5563),
+                          ),
                         ),
                       ),
-                      Text('₹180.00', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      Text(
+                        '₹180.00',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                   const Divider(height: 16),
@@ -3582,14 +4267,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           'Total Subscription Due',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       SizedBox(width: 8),
                       Text(
                         '₹1,180 / mo',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFD4FF00),
+                        ),
                       ),
                     ],
                   ),
@@ -3600,9 +4293,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Row(
               children: [
                 Icon(
-                  profile.isSubscriptionActive ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                  profile.isSubscriptionActive
+                      ? Icons.check_circle_rounded
+                      : Icons.info_outline_rounded,
                   size: 16,
-                  color: profile.isSubscriptionActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                  color: profile.isSubscriptionActive
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFFDC2626),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -3613,7 +4310,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.bold,
-                      color: profile.isSubscriptionActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                      color: profile.isSubscriptionActive
+                          ? const Color(0xFF16A34A)
+                          : const Color(0xFFDC2626),
                     ),
                   ),
                 ),
@@ -3627,16 +4326,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   backgroundColor: const Color(0xFFD4FF00),
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 icon: const Icon(Icons.payment_rounded, size: 18),
                 label: Text(
-                  profile.isSubscriptionActive ? 'Renew Platform Plan (₹1,180)' : 'Pay ₹1,180 & Activate Turf ⚡',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  profile.isSubscriptionActive
+                      ? 'Renew Platform Plan (₹1,180)'
+                      : 'Pay ₹1,180 & Activate Turf ⚡',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
                 onPressed: () async {
                   Navigator.pop(ctx);
-                  final success = await ref.read(turfProfileProvider.notifier).payPlatformSubscription();
+                  final success = await ref
+                      .read(turfProfileProvider.notifier)
+                      .payPlatformSubscription();
                   if (context.mounted) {
                     if (success) {
                       ToastUtils.showSuccess(
@@ -3644,7 +4352,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         "Monthly subscription of ₹1,180 paid! Your turf is now LIVE and visible on Gamez24 Player App.",
                       );
                     } else {
-                      ToastUtils.showError(context, "Payment failed. Please retry.");
+                      ToastUtils.showError(
+                        context,
+                        "Payment failed. Please retry.",
+                      );
                     }
                   }
                 },
@@ -3655,18 +4366,30 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               child: TextButton(
                 onPressed: () async {
                   Navigator.pop(ctx);
-                  await ref.read(turfProfileProvider.notifier).toggleSubscription();
+                  await ref
+                      .read(turfProfileProvider.notifier)
+                      .toggleSubscription();
                   if (context.mounted) {
-                    final isNowActive = ref.read(turfProfileProvider).isSubscriptionActive;
+                    final isNowActive = ref
+                        .read(turfProfileProvider)
+                        .isSubscriptionActive;
                     if (isNowActive) {
-                      ToastUtils.showSuccess(context, "Subscription ACTIVE: Turf is now visible on Player App!");
+                      ToastUtils.showSuccess(
+                        context,
+                        "Subscription ACTIVE: Turf is now visible on Player App!",
+                      );
                     } else {
-                      ToastUtils.showWarning(context, "Subscription HOLD: Turf is now HIDDEN from Player App!");
+                      ToastUtils.showWarning(
+                        context,
+                        "Subscription HOLD: Turf is now HIDDEN from Player App!",
+                      );
                     }
                   }
                 },
                 child: Text(
-                  profile.isSubscriptionActive ? 'Test Deactivate / Hide Turf' : 'Test Activate Turf',
+                  profile.isSubscriptionActive
+                      ? 'Test Deactivate / Hide Turf'
+                      : 'Test Activate Turf',
                   style: const TextStyle(fontSize: 11, color: Colors.grey),
                 ),
               ),
@@ -3683,8 +4406,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Log Out', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('Are you sure you want to log out of the Partner Hub?'),
+        title: const Text(
+          'Log Out',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to log out of the Partner Hub?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -3694,7 +4422,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Log Out'),
@@ -3717,8 +4447,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   }
 
   void _showEditMonthlyTargetDialog(TurfProfileState profile) {
-    final currentTarget = profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0;
-    final controller = TextEditingController(text: currentTarget.toInt().toString());
+    final currentTarget = profile.monthlyRevenueTarget > 0
+        ? profile.monthlyRevenueTarget
+        : 50000.0;
+    final controller = TextEditingController(
+      text: currentTarget.toInt().toString(),
+    );
     final quickPresets = [25000, 50000, 75000, 100000, 150000, 200000];
 
     showDialog(
@@ -3726,10 +4460,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: const Row(
               children: [
-                Icon(Icons.track_changes_rounded, color: AppColors.primary, size: 24),
+                Icon(
+                  Icons.track_changes_rounded,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -3753,16 +4493,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     controller: controller,
                     keyboardType: TextInputType.number,
                     autofocus: true,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
                     decoration: InputDecoration(
                       labelText: 'Monthly Revenue Target',
                       prefixText: '₹ ',
-                      prefixStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primary),
+                      prefixStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
                       helperText: 'E.g., 50000 for ₹50k, 100000 for ₹1 Lakh',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                        borderSide: const BorderSide(
+                          color: AppColors.primary,
+                          width: 2,
+                        ),
                       ),
                     ),
                     onChanged: (_) => setDialogState(() {}),
@@ -3770,14 +4522,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     'Quick Presets:',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFA1A1AA)),
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFA1A1AA),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: quickPresets.map((preset) {
-                      final isSelected = controller.text.trim() == preset.toString();
+                      final isSelected =
+                          controller.text.trim() == preset.toString();
                       return InkWell(
                         onTap: () {
                           setDialogState(() {
@@ -3789,14 +4546,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         },
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.primary
                                 : AppColors.primary.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isSelected ? AppColors.primary : AppColors.primary.withValues(alpha: 0.25),
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.primary.withValues(alpha: 0.25),
                             ),
                           ),
                           child: Text(
@@ -3804,7 +4566,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
-                              color: isSelected ? Colors.black : AppColors.primary,
+                              color: isSelected
+                                  ? Colors.black
+                                  : AppColors.primary,
                             ),
                           ),
                         ),
@@ -3823,17 +4587,30 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
                 ),
                 onPressed: () {
-                  final text = controller.text.trim().replaceAll(',', '').replaceAll('₹', '');
+                  final text = controller.text
+                      .trim()
+                      .replaceAll(',', '')
+                      .replaceAll('₹', '');
                   final val = double.tryParse(text);
                   if (val == null || val <= 0) {
-                    ToastUtils.showError(context, 'Please enter a valid target amount');
+                    ToastUtils.showError(
+                      context,
+                      'Please enter a valid target amount',
+                    );
                     return;
                   }
-                  ref.read(turfProfileProvider.notifier).updateMonthlyRevenueTarget(val);
+                  ref
+                      .read(turfProfileProvider.notifier)
+                      .updateMonthlyRevenueTarget(val);
                   Navigator.pop(ctx);
                   ToastUtils.showSuccess(
                     context,
@@ -3938,7 +4715,11 @@ class _RevenueCardPainter extends CustomPainter {
       ..color = const Color(0xFF16A34A).withValues(alpha: 0.04)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
-    canvas.drawLine(Offset(size.width - 32, 0), Offset(size.width, 32), linePaint);
+    canvas.drawLine(
+      Offset(size.width - 32, 0),
+      Offset(size.width, 32),
+      linePaint,
+    );
   }
 
   @override
@@ -3965,7 +4746,11 @@ class _RadarCardPainter extends CustomPainter {
       ..color = const Color(0xFF0284C7).withValues(alpha: 0.04)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
-    canvas.drawLine(Offset(size.width - 32, 0), Offset(size.width, 32), linePaint);
+    canvas.drawLine(
+      Offset(size.width - 32, 0),
+      Offset(size.width, 32),
+      linePaint,
+    );
   }
 
   @override

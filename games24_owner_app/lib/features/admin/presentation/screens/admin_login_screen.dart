@@ -9,7 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../providers/admin_providers.dart';
 
 class AdminLoginScreen extends ConsumerStatefulWidget {
-  const AdminLoginScreen({super.key});
+  final bool showLogo;
+  const AdminLoginScreen({super.key, this.showLogo = true});
 
   @override
   ConsumerState<AdminLoginScreen> createState() => _AdminLoginScreenState();
@@ -166,17 +167,20 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
             children: [
               const SizedBox(height: 12),
 
-              // Official Games24 Brand Logo with Shared Element Hero Tag
-              Center(
-                child: Hero(
-                  tag: 'gamez24_logo_emblem',
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    height: 80,
-                    fit: BoxFit.contain,
+              // Official Games24 Brand Logo
+              if (widget.showLogo)
+                Center(
+                  child: Hero(
+                    tag: 'gamez24_logo_emblem',
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
                   ),
-                ),
-              ),
+                )
+              else
+                const SizedBox(height: 80),
               const SizedBox(height: 16),
 
               // Header Titles

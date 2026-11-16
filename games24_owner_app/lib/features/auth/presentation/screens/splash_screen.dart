@@ -413,7 +413,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ignoring: _controller.value < 0.98,
                     child: _isLoggedIn
                         ? Container(color: const Color(0xFF0F172A))
-                        : const AdminLoginScreen(),
+                        : const AdminLoginScreen(showLogo: false),
                   ),
                 ),
 
@@ -524,13 +524,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   left: (screenSize.width - currentWidth) / 2,
                   width: currentWidth,
                   height: currentHeight,
-                  child: Hero(
-                    tag: 'gamez24_logo_emblem',
-                    child: Transform.scale(
-                      scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
+                  child: Transform.scale(
+                    scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
                           // 5a. Disassembled Entering Components (Phase 3)
                           if (_masterSymbolCrossfade.value < 1.0 && _emblemYTransition.value == 0.0) ...[
                             // Dynamic Circular Football Outline Drawing
@@ -642,7 +640,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                     ),
                   ),
-                ),
 
               // Floating Sound FX Toggle (Top-Right)
               Positioned(

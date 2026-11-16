@@ -1115,7 +1115,7 @@ class _AdminSlotManagerScreenState
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                   color: isSelected
                       ? (isLime ? Colors.black : Colors.white)
                       : const Color(0xFFA1A1AA),
