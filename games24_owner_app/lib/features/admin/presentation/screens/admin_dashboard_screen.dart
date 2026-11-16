@@ -2425,24 +2425,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final sportColor = _getSportColor(booking.sport);
 
     // Dynamic Pill Badge Styling
-    Color badgeBg;
     Color badgeTextColor;
     String badgeLabel;
 
     if (isCancelled) {
-      badgeBg = const Color(0xFF381219);
       badgeTextColor = const Color(0xFFFB7185);
       badgeLabel = 'CANCELLED';
     } else if (isCompleted) {
-      badgeBg = const Color(0xFF1C1C1C);
       badgeTextColor = const Color(0xFFA1A1AA);
       badgeLabel = 'COMPLETED ✓';
     } else if (isLiveNow) {
-      badgeBg = const Color(0xFF142908);
       badgeTextColor = const Color(0xFFD4FF00);
       badgeLabel = 'LIVE NOW 🟢';
     } else {
-      badgeBg = isUpi ? const Color(0xFF142908) : const Color(0xFF2D2005);
       badgeTextColor = isUpi
           ? const Color(0xFFD4FF00)
           : const Color(0xFFFBBF24);
@@ -2488,21 +2483,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         borderRadius: BorderRadius.circular(19),
         child: Stack(
           children: [
-            // Left stadium sport accent stripe
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              child: Container(
-                width: 4.5,
-                decoration: BoxDecoration(
-                  color: isLiveNow ? const Color(0xFF22C55E) : sportColor,
-                  borderRadius: const BorderRadius.horizontal(
-                    left: Radius.circular(20),
-                  ),
-                ),
-              ),
-            ),
             // Background sport watermark
             Positioned(
               right: 14,
@@ -2525,22 +2505,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   children: [
                     // 1. Match Header Row
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 14, 10),
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 4,
+                              horizontal: 10,
+                              vertical: 4.5,
                             ),
                             decoration: BoxDecoration(
-                              color: sportColor.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(9),
+                              color: const Color(0xFF161814),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: sportColor.withValues(alpha: 0.3),
-                                width: 0.8,
+                                color: const Color(0xFF262C20),
+                                width: 1,
                               ),
                             ),
                             child: Row(
@@ -2548,15 +2528,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               children: [
                                 Text(
                                   _getSportEmoji(booking.sport),
-                                  style: const TextStyle(fontSize: 12),
+                                  style: const TextStyle(fontSize: 11),
                                 ),
                                 const SizedBox(width: 5),
                                 Text(
-                                  booking.sport.toUpperCase(),
+                                  booking.sport,
                                   style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.6,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.3,
                                     color: sportColor,
                                   ),
                                 ),
@@ -2565,23 +2545,23 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 9,
-                              vertical: 4,
+                              horizontal: 10,
+                              vertical: 4.5,
                             ),
                             decoration: BoxDecoration(
-                              color: badgeBg,
-                              borderRadius: BorderRadius.circular(9),
+                              color: const Color(0xFF161814),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: badgeTextColor.withValues(alpha: 0.35),
-                                width: 0.8,
+                                color: const Color(0xFF262C20),
+                                width: 1,
                               ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Container(
-                                  width: 5.5,
-                                  height: 5.5,
+                                  width: 5,
+                                  height: 5,
                                   decoration: BoxDecoration(
                                     color: badgeTextColor,
                                     shape: BoxShape.circle,
@@ -2591,7 +2571,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                               color: badgeTextColor.withValues(
                                                 alpha: 0.6,
                                               ),
-                                              blurRadius: 4,
+                                              blurRadius: 3,
                                             ),
                                           ]
                                         : null,
@@ -2601,9 +2581,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 Text(
                                   badgeLabel,
                                   style: TextStyle(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.3,
                                     color: badgeTextColor,
                                   ),
                                 ),
@@ -2616,7 +2596,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
                     // 2. Player Info & Match Fixture
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 14, 10),
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
