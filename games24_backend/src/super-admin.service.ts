@@ -304,7 +304,35 @@ export class SuperAdminService {
     if (!verifiedAdmin) {
       throw new NotFoundException(`Verified admin #${id} not found`);
     }
-    return verifiedAdmin;
+
+    const cleanPhone = (verifiedAdmin.ownerPhone || '').trim().replace(/\D/g, '');
+    const approvedBranches = await this.prisma.verifiedAdmin.findMany({
+      where: {
+        id: { not: verifiedAdmin.id },
+        OR: [
+          { parentTurfId: verifiedAdmin.id },
+          { ownerPhone: cleanPhone, isBranch: true },
+        ],
+      },
+      include: { dashboard: true },
+    });
+
+    const pendingBranchApplications = await this.prisma.adminUser.findMany({
+      where: {
+        status: 'PENDING_APPROVAL',
+        OR: [
+          { parentTurfId: verifiedAdmin.id },
+          { ownerPhone: cleanPhone, isBranch: true },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      ...verifiedAdmin,
+      approvedBranches,
+      pendingBranchApplications,
+    };
   }
 
   async getAdminStatus(adminIdOrTracking: string) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,7 +67,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   // Sound Effects & Haptics
   AudioPlayer? _audioPlayer;
-  bool _isMuted = false;
   final Set<int> _triggeredHaptics = {};
 
   final List<String> _letterFiles = [
@@ -289,6 +289,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _initAudio() async {
+    if (kIsWeb) {
+      // Modern browsers restrict autoplaying audio before user interaction
+      return;
+    }
     try {
       final player = AudioPlayer();
       _audioPlayer = player;
@@ -298,13 +302,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     } catch (e) {
       debugPrint('SplashScreen audio error: $e');
     }
-  }
-
-  void _toggleMute() {
-    setState(() {
-      _isMuted = !_isMuted;
-      _audioPlayer?.setVolume(_isMuted ? 0.0 : 1.0);
-    });
   }
 
   Future<void> _preloadSessionData() async {
@@ -358,7 +355,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   void dispose() {
     _controller.dispose();
     try {
-      _audioPlayer?.stop();
+      if (!kIsWeb) {
+        _audioPlayer?.stop();
+      }
       _audioPlayer?.dispose();
     } catch (_) {}
     super.dispose();
@@ -413,7 +412,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ignoring: _controller.value < 0.98,
                     child: _isLoggedIn
                         ? Container(color: const Color(0xFF0F172A))
-                        : const AdminLoginScreen(),
+                        : const HeroMode(
+                            enabled: false,
+                            child: AdminLoginScreen(),
+                          ),
                   ),
                 ),
 
@@ -524,10 +526,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   left: (screenSize.width - currentWidth) / 2,
                   width: currentWidth,
                   height: currentHeight,
-                  child: Hero(
-                    tag: 'gamez24_logo_emblem',
-                    child: Transform.scale(
-                      scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
+                  child: Transform.scale(
+                    scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
@@ -642,35 +642,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       ),
                     ),
                   ),
-                ),
-
-              // Floating Sound FX Toggle (Top-Right)
-              Positioned(
-                top: topPadding + 16,
-                right: 20,
-                child: Opacity(
-                  opacity: (1.0 - _nextScreenFadeIn.value).clamp(0.0, 1.0),
-                  child: GestureDetector(
-                    onTap: _toggleMute,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(
-                        _isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                        color: _isMuted ? Colors.white38 : const Color(0xFFD4FF00),
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           );
         },

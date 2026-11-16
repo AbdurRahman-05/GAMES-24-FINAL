@@ -57,10 +57,12 @@ export class UploadController {
           const ext = extname(originalName).toLowerCase();
           const mime = (file.mimetype || '').toLowerCase();
 
-          // Reject executables or scripts
-          const dangerousExtensions = ['.exe', '.bat', '.sh', '.cmd', '.js', '.ts', '.html', '.htm', '.php'];
-          if (dangerousExtensions.includes(ext)) {
-            return cb(new BadRequestException('Executable or script files are not allowed.'), false);
+          // Reject executables, scripts, or active vectors (prevent Stored XSS & RCE)
+          const dangerousExtensions = [
+            '.exe', '.bat', '.sh', '.cmd', '.js', '.ts', '.html', '.htm', '.php', '.svg', '.dll', '.vbs', '.py',
+          ];
+          if (dangerousExtensions.includes(ext) || mime === 'image/svg+xml') {
+            return cb(new BadRequestException('Executable, script, or SVG files are not allowed.'), false);
           }
 
           // Allow any image mimetype or extension or octet-stream/binary

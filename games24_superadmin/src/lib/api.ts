@@ -39,7 +39,6 @@ export async function safeAdminFetch(
   const timeoutId = setTimeout(() => controller.abort(), 25000);
 
   const mergedHeaders: Record<string, string> = {
-    'x-admin-key': ADMIN_SECRET,
     ...adminHeaders(),
     ...((options.headers as Record<string, string>) || {}),
   };
@@ -149,6 +148,11 @@ export interface VerifiedAdmin {
   bankAccount: string | null;
   ifscCode: string | null;
   upiId: string | null;
+  isBranch?: boolean;
+  parentTurfId?: number | null;
+  alternativePhone?: string | null;
+  approvedBranches?: VerifiedAdmin[];
+  pendingBranchApplications?: AdminRegistration[];
   status: string;
   isBookingHold?: boolean;
   weekdayRate?: number;
@@ -392,6 +396,17 @@ export async function getVerifiedAdmins(params: {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch verified admins');
+  return res.json();
+}
+
+export async function getVerifiedAdminById(id: number): Promise<VerifiedAdmin> {
+  const res = await safeAdminFetch(`/super-admin/verified-admins/${id}`, {
+    cache: 'no-store',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to fetch verified admin details');
+  }
   return res.json();
 }
 

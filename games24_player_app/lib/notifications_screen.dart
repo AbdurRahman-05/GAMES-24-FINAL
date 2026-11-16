@@ -1,6 +1,9 @@
 import 'main_layout.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_config.dart';
 import 'booking_manager.dart';
 import 'challenge_manager.dart';
 
@@ -44,53 +47,106 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Future<void> _loadNotifications() async {
     final prefs = await SharedPreferences.getInstance();
     final name = prefs.getString('fullName') ?? 'Player';
-
-    final bookings = BookingManager().allBookings;
-    final challenges = ChallengeManager().challengesNotifier.value;
+    final phone = (prefs.getString('mobileNumber') ?? '').trim();
 
     final List<NotificationItem> list = [];
 
-    // 1. Welcome Notification
-    list.add(
-      NotificationItem(
-        id: 'notif_welcome',
-        title: 'Welcome to Games24',
-        message: 'Hello $name, explore nearby turfs, book instant slots, and join competitive challenges.',
-        time: 'Just now',
-        icon: Icons.sports_handball_rounded,
-        color: const Color(0xFF154D36),
-        isRead: false,
-      ),
-    );
+    // Fetch real-time persisted notifications from PostgreSQL backend
+    if (phone.isNotEmpty) {
+      try {
+        final res = await http
+            .get(Uri.parse('${ApiConfig.baseUrl}/turfs/notifications/$phone'))
+            .timeout(const Duration(seconds: 10));
 
-    // 2. Booking confirmations
-    for (var b in bookings.take(3)) {
+        if (res.statusCode == 200) {
+          final data = jsonDecode(res.body);
+          if (data['notifications'] is List) {
+            final List rawList = data['notifications'];
+            for (var item in rawList) {
+              final type = (item['type'] ?? 'general').toString().toLowerCase();
+              IconData icon = Icons.notifications_active_rounded;
+              Color color = const Color(0xFF154D36);
+
+              if (type == 'booking') {
+                icon = Icons.confirmation_number_rounded;
+                color = const Color(0xFF0284C7);
+              } else if (type == 'challenge') {
+                icon = Icons.flag_rounded;
+                color = const Color(0xFFEA580C);
+              } else if (type == 'celebration') {
+                icon = Icons.cake_rounded;
+                color = const Color(0xFFD97706);
+              } else if (type == 'offer') {
+                icon = Icons.local_offer_rounded;
+                color = const Color(0xFF10B981);
+              } else if (type == 'team') {
+                icon = Icons.groups_rounded;
+                color = const Color(0xFF8B5CF6);
+              }
+
+              list.add(
+                NotificationItem(
+                  id: item['id']?.toString() ?? 'notif_${DateTime.now().millisecondsSinceEpoch}',
+                  title: item['title'] ?? 'Notification',
+                  message: item['message'] ?? '',
+                  time: 'Active',
+                  icon: icon,
+                  color: color,
+                  isRead: item['isRead'] == true,
+                ),
+              );
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading backend notifications: $e');
+      }
+    }
+
+    // Complement with local bookings if list is empty
+    if (list.isEmpty) {
+      final bookings = BookingManager().allBookings;
+      final challenges = ChallengeManager().challengesNotifier.value;
+
       list.add(
         NotificationItem(
-          id: 'notif_b_${b['id']}',
-          title: 'Booking Confirmed',
-          message: 'Your slot at ${b['courtName'] ?? 'Turf'} on ${b['date']} (${b['timeSlot']}) is locked in.',
-          time: 'Active',
-          icon: Icons.confirmation_number_rounded,
-          color: const Color(0xFF0284C7),
+          id: 'notif_welcome',
+          title: 'Welcome to Games24',
+          message: 'Hello $name, explore nearby turfs, book instant slots, and join competitive challenges.',
+          time: 'Just now',
+          icon: Icons.sports_handball_rounded,
+          color: const Color(0xFF154D36),
           isRead: false,
         ),
       );
-    }
 
-    // 3. Challenge alert
-    for (var c in challenges.take(2)) {
-      list.add(
-        NotificationItem(
-          id: 'notif_c_${c.id}',
-          title: 'Open Challenge Alert',
-          message: '${c.challengerName} is seeking opponents for ${c.sport} at ${c.turfName}.',
-          time: c.time,
-          icon: Icons.flag_rounded,
-          color: const Color(0xFFEA580C),
-          isRead: true,
-        ),
-      );
+      for (var b in bookings.take(3)) {
+        list.add(
+          NotificationItem(
+            id: 'notif_b_${b['id']}',
+            title: 'Booking Confirmed',
+            message: 'Your slot at ${b['courtName'] ?? 'Turf'} on ${b['date']} (${b['timeSlot']}) is locked in.',
+            time: 'Active',
+            icon: Icons.confirmation_number_rounded,
+            color: const Color(0xFF0284C7),
+            isRead: false,
+          ),
+        );
+      }
+
+      for (var c in challenges.take(2)) {
+        list.add(
+          NotificationItem(
+            id: 'notif_c_${c.id}',
+            title: 'Open Challenge Alert',
+            message: '${c.challengerName} is seeking opponents for ${c.sport} at ${c.turfName}.',
+            time: c.time,
+            icon: Icons.flag_rounded,
+            color: const Color(0xFFEA580C),
+            isRead: true,
+          ),
+        );
+      }
     }
 
     if (mounted) {
@@ -99,6 +155,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         _notifications.addAll(list);
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _markAsRead(NotificationItem item) async {
+    setState(() {
+      item.isRead = true;
+    });
+
+    final numId = int.tryParse(item.id);
+    if (numId != null) {
+      try {
+        await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/turfs/notifications/$numId/read'),
+        ).timeout(const Duration(seconds: 5));
+      } catch (_) {}
     }
   }
 
@@ -181,24 +252,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final item = _notifications[index];
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: item.isRead ? const Color(0xFFE5E7EB) : const Color(0xFFBBF7D0),
-                          width: item.isRead ? 1.0 : 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                    return GestureDetector(
+                      onTap: () => _markAsRead(item),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: item.isRead ? const Color(0xFFE5E7EB) : const Color(0xFFBBF7D0),
+                            width: item.isRead ? 1.0 : 1.5,
                           ),
-                        ],
-                      ),
-                      child: Row(
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
@@ -243,8 +316,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                  );
+                },
                 ),
     );
   }

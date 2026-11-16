@@ -35,39 +35,65 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAF7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Logo with Shared Element Hero Tag
-                Center(
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Top Curved Stadium Header with wm_full.png
+            ClipPath(
+              clipper: _HeaderCurveClipper(),
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 20,
+                  bottom: 34,
+                  left: 24,
+                  right: 24,
+                ),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xFF071C13), // Deep Stadium Midnight Pitch
+                      Color(0xFF0E3825), // Stadium Turf Dark Green
+                    ],
+                  ),
+                ),
+                child: Center(
                   child: Hero(
                     tag: 'gamez24_logo_emblem',
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 80,
-                      fit: BoxFit.contain,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 260, maxHeight: 36),
+                      child: Image.asset(
+                        'assets/images/wm_full.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+              ),
+            ),
 
-                // Header Texts
-                const Center(
-                  child: Text(
-                    'Welcome Back',
-                    style: TextStyle(
-                      fontFamily: 'PrimeNordic',
-                      fontSize: 32, // slightly larger for display font
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
+            // Content Body
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Texts
+                  const Center(
+                    child: Text(
+                      'Welcome Back',
+                      style: TextStyle(
+                        fontFamily: 'PrimeNordic',
+                        fontSize: 32, // slightly larger for display font
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF111827),
+                      ),
                     ),
                   ),
-                ),
                 const SizedBox(height: 8),
                 const Center(
                   child: Text(
@@ -338,9 +364,10 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-        ),
+        ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildLabel(String text) {
@@ -461,4 +488,26 @@ class _LoginScreenState extends State<LoginScreen> {
       ],
     );
   }
+}
+
+/// Custom Clipper to render the curved stadium banner header
+class _HeaderCurveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 28);
+    // Smooth quadratic curve dipping down in the center
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height,
+      size.width,
+      size.height - 28,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

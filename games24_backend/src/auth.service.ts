@@ -709,27 +709,57 @@ export class AuthService {
       },
     }).catch(() => {});
 
-    // Compute all branches summary for multi-branch switching
-    const branches = allAdmins.map((va: any) => {
-      const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
-      const tdBks = bks.filter((b: any) => b.date === todayStr);
-      const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
-      const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
-      const mRev = mBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
-      return {
-        id: va.id,
-        venueName: va.venueName,
-        neighborhoodArea: va.neighborhoodArea || 'Main Branch',
-        streetAddress: va.streetAddress,
-        ownerPhone: va.ownerPhone,
-        status: va.status,
-        todayBookingsCount: tdBks.length,
-        todayRevenue: tdRev,
-        monthRevenue: mRev,
-        monthTotalBookings: mBks.length,
-        isActive: va.id === verifiedAdmin.id,
-      };
+    // Fetch pending branch applications submitted by this owner waiting for Super Admin
+    const pendingBranches = await this.prisma.adminUser.findMany({
+      where: {
+        isBranch: true,
+        status: 'PENDING_APPROVAL',
+        OR: [
+          { ownerPhone: cleanPhone },
+          { ownerPhone: { contains: cleanPhone } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // Compute all branches summary for multi-branch switching (both verified and pending review)
+    const branches = [
+      ...allAdmins.map((va: any) => {
+        const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+        const tdBks = bks.filter((b: any) => b.date === todayStr);
+        const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
+        const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+        const mRev = mBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+        return {
+          id: va.id,
+          venueName: va.venueName,
+          neighborhoodArea: va.neighborhoodArea || 'Main Branch',
+          streetAddress: va.streetAddress,
+          ownerPhone: va.ownerPhone,
+          status: va.status,
+          isPending: false,
+          todayBookingsCount: tdBks.length,
+          todayRevenue: tdRev,
+          monthRevenue: mRev,
+          monthTotalBookings: mBks.length,
+          isActive: va.id === verifiedAdmin.id,
+        };
+      }),
+      ...pendingBranches.map((pb: any) => ({
+        id: -pb.id,
+        venueName: pb.venueName,
+        neighborhoodArea: pb.neighborhoodArea || 'Branch',
+        streetAddress: pb.streetAddress,
+        ownerPhone: pb.ownerPhone,
+        status: 'PENDING_APPROVAL',
+        isPending: true,
+        todayBookingsCount: 0,
+        todayRevenue: 0,
+        monthRevenue: 0,
+        monthTotalBookings: 0,
+        isActive: false,
+      })),
+    ];
 
     const sportsList = getAdminSports(verifiedAdmin.id);
     const courtsList = getAdminCourts(verifiedAdmin.id, verifiedAdmin.venueName, sportsList, verifiedAdmin.courts);
@@ -769,11 +799,12 @@ export class AuthService {
 
   async getVerifiedAdminByPhone(phone: string, queryTurfId?: number) {
     const clean = phone.trim().replace(/[^0-9]/g, '');
+    const cleanPhone = clean;
     const allAdmins = await this.prisma.verifiedAdmin.findMany({
       where: {
         OR: [
-          { ownerPhone: clean },
-          { ownerPhone: { contains: clean } },
+          { ownerPhone: cleanPhone },
+          { ownerPhone: { contains: cleanPhone } },
         ],
       },
       include: {
@@ -892,27 +923,57 @@ export class AuthService {
       },
     }).catch(() => {});
 
-    // Compute all branches summary for multi-branch switching
-    const branches = allAdmins.map((va: any) => {
-      const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
-      const tdBks = bks.filter((b: any) => b.date === todayStr);
-      const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
-      const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
-      const mRev = mBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
-      return {
-        id: va.id,
-        venueName: va.venueName,
-        neighborhoodArea: va.neighborhoodArea || 'Main Branch',
-        streetAddress: va.streetAddress,
-        ownerPhone: va.ownerPhone,
-        status: va.status,
-        todayBookingsCount: tdBks.length,
-        todayRevenue: tdRev,
-        monthRevenue: mRev,
-        monthTotalBookings: mBks.length,
-        isActive: va.id === admin.id,
-      };
+    // Fetch pending branch applications submitted by this owner waiting for Super Admin
+    const pendingBranches = await this.prisma.adminUser.findMany({
+      where: {
+        isBranch: true,
+        status: 'PENDING_APPROVAL',
+        OR: [
+          { ownerPhone: cleanPhone },
+          { ownerPhone: { contains: cleanPhone } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // Compute all branches summary for multi-branch switching (both verified and pending review)
+    const branches = [
+      ...allAdmins.map((va: any) => {
+        const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+        const tdBks = bks.filter((b: any) => b.date === todayStr);
+        const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
+        const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+        const mRev = mBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
+        return {
+          id: va.id,
+          venueName: va.venueName,
+          neighborhoodArea: va.neighborhoodArea || 'Main Branch',
+          streetAddress: va.streetAddress,
+          ownerPhone: va.ownerPhone,
+          status: va.status,
+          isPending: false,
+          todayBookingsCount: tdBks.length,
+          todayRevenue: tdRev,
+          monthRevenue: mRev,
+          monthTotalBookings: mBks.length,
+          isActive: va.id === admin.id,
+        };
+      }),
+      ...pendingBranches.map((pb: any) => ({
+        id: -pb.id,
+        venueName: pb.venueName,
+        neighborhoodArea: pb.neighborhoodArea || 'Branch',
+        streetAddress: pb.streetAddress,
+        ownerPhone: pb.ownerPhone,
+        status: 'PENDING_APPROVAL',
+        isPending: true,
+        todayBookingsCount: 0,
+        todayRevenue: 0,
+        monthRevenue: 0,
+        monthTotalBookings: 0,
+        isActive: false,
+      })),
+    ];
 
     const sportsList = getAdminSports(admin.id);
     const courtsList = getAdminCourts(admin.id, admin.venueName, sportsList, admin.courts);
@@ -995,6 +1056,12 @@ export class AuthService {
     }
 
     const trackingCode = `TRK-BR-${Date.now().toString().slice(-6)}`;
+    const branchPhotos: string[] = Array.isArray(body.photoUrls)
+      ? body.photoUrls.filter((u: any) => typeof u === 'string' && u.trim().length > 0)
+      : (body.imageUrl && typeof body.imageUrl === 'string' && body.imageUrl.trim().length > 0
+          ? [body.imageUrl.trim()]
+          : []);
+
     const newAdminUser = await this.prisma.adminUser.create({
       data: {
         trackingCode,
@@ -1006,6 +1073,8 @@ export class AuthService {
         neighborhoodArea: (neighborhoodArea || existingAdmin.neighborhoodArea).trim(),
         isMobileVerified: true,
         isEmailVerified: true,
+        photosCount: branchPhotos.length,
+        photoUrls: branchPhotos,
         isBranch: true,
         parentTurfId: existingAdmin.id,
         alternativePhone: cleanAltPhone,

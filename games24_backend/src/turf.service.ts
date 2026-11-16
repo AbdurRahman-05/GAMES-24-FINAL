@@ -873,7 +873,7 @@ export class TurfService {
   }
 
   async toggleBlockSlot(id: number, body: any) {
-    const { date, timeSlot, reason, action } = body || {};
+    const { date, timeSlot, reason, action, callerPhone, ownerPhone } = body || {};
 
     if (!date || !timeSlot) {
       throw new BadRequestException('Date and timeSlot are required to block/unblock a slot');
@@ -881,10 +881,25 @@ export class TurfService {
 
     const cleanDate = String(date || '').trim();
     const cleanTimeSlot = String(timeSlot || '').trim().replace(/\s*-\s*/, ' - ');
+    const cleanReason = String(reason || 'Under Maintenance').trim().slice(0, 80);
+
+    if (cleanDate.length > 25 || cleanTimeSlot.length > 50) {
+      throw new BadRequestException('Invalid date or timeSlot payload format');
+    }
 
     const turf = await this.findVerifiedAdmin(id, true, false);
     if (!turf) {
       throw new NotFoundException(`Turf with ID ${id} not found`);
+    }
+
+    if (turf.isBookingHold || turf.status !== 'VERIFIED') {
+      throw new BadRequestException('Cannot modify slot: venue is currently on booking hold or unverified');
+    }
+
+    // Authorization verification: if owner/caller phone provided, ensure ownership match
+    const providedPhone = String(callerPhone || ownerPhone || '').trim();
+    if (providedPhone && providedPhone !== turf.ownerPhone && providedPhone !== turf.alternativePhone) {
+      throw new BadRequestException('Unauthorized: Provided credentials do not match turf venue operator');
     }
 
     const verifiedAdminId = turf.id;
@@ -945,10 +960,10 @@ export class TurfService {
           verifiedAdminId,
           date: cleanDate,
           timeSlot: cleanTimeSlot,
-          reason: reason || 'Under Maintenance',
+          reason: cleanReason,
         },
         update: {
-          reason: reason || 'Under Maintenance',
+          reason: cleanReason,
         },
       });
       isBlocked = true;
@@ -994,10 +1009,10 @@ export class TurfService {
             verifiedAdminId,
             date: cleanDate,
             timeSlot: cleanTimeSlot,
-            reason: reason || 'Under Maintenance',
+            reason: cleanReason,
           },
           update: {
-            reason: reason || 'Under Maintenance',
+            reason: cleanReason,
           },
         });
         isBlocked = true;
@@ -2015,37 +2030,58 @@ export class TurfService {
 
     const isSubscribed = !turf.isBookingHold && turf.status === 'VERIFIED';
     const now = new Date();
-    // Subscription runs on monthly cycle (renews 07 Dec 2026)
-    const nextRenew = new Date(2026, 11, 7);
-    const renewDateStr = '07 Dec 2026';
+
+    // Dynamically calculate the monthly billing cycle based on verification/registration day
+    const baseDate = turf.verifiedAt ? new Date(turf.verifiedAt) : new Date(turf.createdAt);
+    const billingDay = Math.min(Math.max(1, baseDate.getDate()), 28);
+
+    let nextRenew = new Date(now.getFullYear(), now.getMonth(), billingDay, 23, 59, 59);
+    if (nextRenew.getTime() <= now.getTime()) {
+      nextRenew = new Date(now.getFullYear(), now.getMonth() + 1, billingDay, 23, 59, 59);
+    }
+
     const diffTime = nextRenew.getTime() - now.getTime();
-    const calculatedDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    const calculatedDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
     const daysRemaining = isSubscribed ? calculatedDays : 0;
     const isEndingSoon = isSubscribed && daysRemaining <= 3 && daysRemaining > 0;
     const isBlocked = !isSubscribed || daysRemaining <= 0;
 
+    const renewDateStr = nextRenew.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    const prevMonth1 = new Date(nextRenew.getFullYear(), nextRenew.getMonth() - 1, billingDay);
+    const prevMonth2 = new Date(nextRenew.getFullYear(), nextRenew.getMonth() - 2, billingDay);
+
+    const fmt = (d: Date) =>
+      d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const fmtId = (d: Date) =>
+      `SUB-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
     const history = [
       {
-        id: 'SUB-2026-11',
-        date: '07 Nov 2026, 10:15 AM',
+        id: fmtId(prevMonth1),
+        date: `${fmt(prevMonth1)}, 10:15 AM`,
         baseAmount: 1000.0,
         gstAmount: 180.0,
         totalAmount: 1180.0,
-        paymentMethod: 'UPI (GPay)',
+        paymentMethod: 'UPI (GPay / PhonePe)',
         status: isSubscribed ? 'Paid & Active' : 'Expired',
-        validPeriod: '07 Nov 2026 - 07 Dec 2026',
-        receiptNumber: 'RCP-SUB-84920',
+        validPeriod: `${fmt(prevMonth1)} - ${fmt(nextRenew)}`,
+        receiptNumber: `RCP-${turf.id}-${fmtId(prevMonth1)}`,
       },
       {
-        id: 'SUB-2026-10',
-        date: '07 Oct 2026, 11:30 AM',
+        id: fmtId(prevMonth2),
+        date: `${fmt(prevMonth2)}, 11:30 AM`,
         baseAmount: 1000.0,
         gstAmount: 180.0,
         totalAmount: 1180.0,
-        paymentMethod: 'UPI (PhonePe)',
+        paymentMethod: 'UPI (Auto-Pay)',
         status: 'Completed',
-        validPeriod: '07 Oct 2026 - 07 Nov 2026',
-        receiptNumber: 'RCP-SUB-72109',
+        validPeriod: `${fmt(prevMonth2)} - ${fmt(prevMonth1)}`,
+        receiptNumber: `RCP-${turf.id}-${fmtId(prevMonth2)}`,
       },
     ];
 
@@ -2661,6 +2697,161 @@ export class TurfService {
       success: true,
       message: 'Turf courts saved successfully in database',
       courts: updated.courts,
+    };
+  }
+
+  // =========================================================================
+  // CELEBRATION & EVENT ENQUIRIES & BOOKINGS
+  // =========================================================================
+  async createCelebrationBooking(body: any) {
+    const bookingCode = `G24-CEL-${Math.floor(1000 + Math.random() * 9000)}`;
+    const cleanPhone = (body.customerPhone || '').replace(/\D/g, '').slice(-10);
+
+    const celebration = await (this.prisma as any).celebrationBooking.create({
+      data: {
+        bookingCode,
+        packageId: body.packageId || 'c1',
+        packageTitle: body.packageTitle || 'Turf Sports Celebration',
+        turfId: body.turfId ? Number(body.turfId) : null,
+        turfName: body.turfName || 'Madurai Turf Arena',
+        customerName: body.customerName || 'Player',
+        customerPhone: cleanPhone,
+        eventDate: body.eventDate || 'Upcoming Weekend',
+        eventTimeSlot: body.eventTimeSlot || '04:00 PM - 07:00 PM',
+        guestCount: body.guestCount ? Number(body.guestCount) : 30,
+        totalAmount: body.totalAmount ? Number(body.totalAmount) : 4999.0,
+        notes: body.notes || 'Celebration booking submitted via Gamez24',
+        status: 'PENDING',
+      },
+    });
+
+    // Create a real notification for the player
+    if (cleanPhone) {
+      await (this.prisma as any).playerNotification.create({
+        data: {
+          userPhone: cleanPhone,
+          title: 'Celebration Enquiry Received 🎂',
+          message: `Your booking for "${celebration.packageTitle}" at ${celebration.turfName} (${celebration.eventDate}) has been logged. Our event manager will call you within 15 minutes!`,
+          type: 'celebration',
+          metadata: { bookingCode, celebrationId: celebration.id },
+        },
+      }).catch(() => null);
+    }
+
+    return {
+      success: true,
+      bookingCode,
+      message: 'Celebration booking created successfully!',
+      celebration,
+    };
+  }
+
+  async getCelebrations(phone?: string) {
+    const where: any = {};
+    if (phone && phone.trim()) {
+      const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
+      where.customerPhone = cleanPhone;
+    }
+
+    const list = await (this.prisma as any).celebrationBooking.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    return {
+      success: true,
+      count: list.length,
+      celebrations: list,
+    };
+  }
+
+  // =========================================================================
+  // REALTIME PLAYER NOTIFICATIONS
+  // =========================================================================
+  async getUserNotifications(phone: string) {
+    const cleanPhone = (phone || '').replace(/\D/g, '').slice(-10);
+    if (!cleanPhone) {
+      return { success: true, count: 0, notifications: [] };
+    }
+
+    let notifications = await (this.prisma as any).playerNotification.findMany({
+      where: { userPhone: cleanPhone },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    });
+
+    // If new user with 0 notifications, seed starter notifications in DB
+    if (notifications.length === 0) {
+      const starterItems = [
+        {
+          userPhone: cleanPhone,
+          title: 'Welcome to Games24 ⚽',
+          message: 'Explore verified local turfs, host open matches, build your squad, and book slots seamlessly.',
+          type: 'general',
+          isRead: false,
+        },
+        {
+          userPhone: cleanPhone,
+          title: 'Open Match Challenge Available 🔥',
+          message: 'Teams in Madurai are looking for football and cricket match opponents. Check out the Community section!',
+          type: 'challenge',
+          isRead: false,
+        },
+        {
+          userPhone: cleanPhone,
+          title: 'Cashfree Fast Payments Active 💳',
+          message: 'Instant UPI, Cards & Netbanking now supported for hassle-free venue slot booking.',
+          type: 'general',
+          isRead: true,
+        },
+      ];
+
+      for (const item of starterItems) {
+        await (this.prisma as any).playerNotification.create({ data: item }).catch(() => null);
+      }
+
+      notifications = await (this.prisma as any).playerNotification.findMany({
+        where: { userPhone: cleanPhone },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
+    return {
+      success: true,
+      count: notifications.length,
+      notifications,
+    };
+  }
+
+  async markNotificationRead(id: number) {
+    const updated = await (this.prisma as any).playerNotification.update({
+      where: { id },
+      data: { isRead: true },
+    }).catch(() => null);
+
+    return {
+      success: true,
+      notification: updated,
+    };
+  }
+
+  async createNotification(body: { userPhone: string; title: string; message: string; type?: string; metadata?: any }) {
+    const cleanPhone = (body.userPhone || '').replace(/\D/g, '').slice(-10);
+    const created = await (this.prisma as any).playerNotification.create({
+      data: {
+        userPhone: cleanPhone,
+        title: body.title,
+        message: body.message,
+        type: body.type || 'general',
+        metadata: body.metadata || null,
+        isRead: false,
+      },
+    });
+
+    return {
+      success: true,
+      notification: created,
     };
   }
 }

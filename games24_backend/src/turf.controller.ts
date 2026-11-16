@@ -118,6 +118,33 @@ export class TurfController {
     return this.turfService.checkInBooking(isNaN(adminId as any) ? undefined : adminId, body);
   }
 
+  // Celebrations & Event Bookings
+  @Post('celebrations')
+  async createCelebration(@Body() body: any) {
+    return this.turfService.createCelebrationBooking(body);
+  }
+
+  @Get('celebrations')
+  async getCelebrations(@Query('phone') phone?: string) {
+    return this.turfService.getCelebrations(phone);
+  }
+
+  // Player Realtime Notifications
+  @Get('notifications/:phone')
+  async getUserNotifications(@Param('phone') phone: string) {
+    return this.turfService.getUserNotifications(phone);
+  }
+
+  @Post('notifications/:id/read')
+  async markNotificationRead(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.markNotificationRead(id);
+  }
+
+  @Post('notifications')
+  async createNotification(@Body() body: any) {
+    return this.turfService.createNotification(body);
+  }
+
   @Post(':id/check-in')
   async checkInBooking(
     @Param('id') id: string,

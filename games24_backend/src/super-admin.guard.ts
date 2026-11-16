@@ -11,16 +11,6 @@ export class SuperAdminGuard implements CanActivate {
       return true;
     }
 
-    // Allow local development callers on loopback
-    const clientIp = request.ip || request.connection?.remoteAddress || '';
-    const origin = request.headers['origin'] || request.headers['referer'] || '';
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      (origin.includes('localhost') || origin.includes('127.0.0.1') || clientIp.includes('127.0.0.1') || clientIp === '::1')
-    ) {
-      return true;
-    }
-
     throw new UnauthorizedException('Access denied: Valid super admin credentials required.');
   }
 }

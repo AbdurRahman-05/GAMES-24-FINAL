@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { VerifiedAdmin, BACKEND_URL } from '@/lib/api';
+import { VerifiedAdmin, BACKEND_URL, verifyRegistration, cancelRegistration } from '@/lib/api';
 import {
   X,
   ShieldCheck,
@@ -18,6 +18,10 @@ import {
   CheckCircle2,
   Tag,
   Trash2,
+  GitBranch,
+  Check,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 interface Props {
@@ -25,12 +29,48 @@ interface Props {
   onClose: () => void;
   onToggleHold?: (admin: VerifiedAdmin) => void;
   onDelete?: (admin: VerifiedAdmin) => void;
+  onBranchUpdated?: () => void;
 }
 
-export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelete }: Props) {
+export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelete, onBranchUpdated }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [actionMsg, setActionMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   if (!admin) return null;
+
+  const handleApproveBranch = async (branchId: number) => {
+    setActionLoadingId(`approve_${branchId}`);
+    setActionMsg(null);
+    try {
+      await verifyRegistration(branchId);
+      setActionMsg({ text: 'Branch successfully approved and activated!', type: 'success' });
+      if (onBranchUpdated) {
+        setTimeout(() => onBranchUpdated(), 600);
+      }
+    } catch (err: any) {
+      setActionMsg({ text: err.message || 'Failed to approve branch', type: 'error' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleRejectBranch = async (branchId: number) => {
+    if (!confirm('Are you sure you want to reject this branch application?')) return;
+    setActionLoadingId(`reject_${branchId}`);
+    setActionMsg(null);
+    try {
+      await cancelRegistration(branchId, { reason: 'Rejected by Super Admin' });
+      setActionMsg({ text: 'Branch application rejected.', type: 'success' });
+      if (onBranchUpdated) {
+        setTimeout(() => onBranchUpdated(), 600);
+      }
+    } catch (err: any) {
+      setActionMsg({ text: err.message || 'Failed to reject branch', type: 'error' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   const getFullFileUrl = (url: string | null) => {
     if (!url) return '';
@@ -188,6 +228,180 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <span className="text-[11px] text-white font-mono bg-black/70 px-2 py-1 rounded">Zoom</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Action Message Alert */}
+          {actionMsg && (
+            <div
+              className={`p-4 rounded-xl border flex items-center justify-between gap-3 ${
+                actionMsg.type === 'success'
+                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                  : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
+              }`}
+            >
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                {actionMsg.type === 'success' ? (
+                  <Check className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-rose-400" />
+                )}
+                <span>{actionMsg.text}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActionMsg(null)}
+                className="text-xs opacity-75 hover:opacity-100"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Pending Branch Applications */}
+          {admin.pendingBranchApplications && admin.pendingBranchApplications.length > 0 && (
+            <div className="bg-[#121827] rounded-xl p-5 border border-amber-500/40 shadow-lg shadow-amber-500/5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                  <GitBranch className="w-4 h-4 text-amber-400" /> Pending Branch Applications ({admin.pendingBranchApplications.length})
+                </h3>
+                <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Verification Required
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {admin.pendingBranchApplications.map((branch) => (
+                  <div
+                    key={branch.id}
+                    className="p-4 rounded-xl bg-[#161D2F] border border-[#232C42] space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#232C42] pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-white">{branch.venueName}</h4>
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#1F293D] text-indigo-300 border border-[#2D3A54]">
+                            {branch.trackingCode || `#BR-${branch.id}`}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>{branch.neighborhoodArea}</span>
+                          <span className="text-slate-600">•</span>
+                          <span>{branch.streetAddress}</span>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-auto">
+                        <button
+                          type="button"
+                          disabled={actionLoadingId !== null}
+                          onClick={() => handleRejectBranch(branch.id)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 transition-all disabled:opacity-50"
+                        >
+                          {actionLoadingId === `reject_${branch.id}` ? 'Rejecting...' : 'Reject'}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={actionLoadingId !== null}
+                          onClick={() => handleApproveBranch(branch.id)}
+                          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                        >
+                          {actionLoadingId === `approve_${branch.id}` ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Approving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Approve & Activate Branch</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Branch Contacts */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+                      <div>
+                        <span className="text-slate-500">Owner Contact:</span>{' '}
+                        <span className="font-mono text-white">{branch.ownerPhone}</span>
+                      </div>
+                      {branch.alternativePhone && (
+                        <div>
+                          <span className="text-slate-500">Alt Phone:</span>{' '}
+                          <span className="font-mono text-indigo-300">{branch.alternativePhone}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Branch Photos Gallery */}
+                    {branch.photoUrls && branch.photoUrls.length > 0 ? (
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                          Uploaded Branch Photos ({branch.photoUrls.length})
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {branch.photoUrls.map((pUrl, pIdx) => (
+                            <div
+                              key={pIdx}
+                              onClick={() => setPreviewImage(getFullFileUrl(pUrl))}
+                              className="relative aspect-video rounded-lg overflow-hidden border border-[#232C42] bg-[#111727] cursor-pointer group"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={getFullFileUrl(pUrl)}
+                                alt={`Branch Photo ${pIdx + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span className="text-[10px] text-white font-mono bg-black/70 px-1.5 py-0.5 rounded">
+                                  Zoom
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 italic">No photos uploaded for this branch application.</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Approved Branches */}
+          {admin.approvedBranches && admin.approvedBranches.length > 0 && (
+            <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2">
+                <GitBranch className="w-4 h-4 text-emerald-400" /> Active Verified Branches ({admin.approvedBranches.length})
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {admin.approvedBranches.map((br) => (
+                  <div
+                    key={br.id}
+                    className="p-3.5 rounded-xl bg-[#161D2F] border border-[#232C42] space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white text-sm">{br.venueName}</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        Active
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>{br.neighborhoodArea}</span>
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-[#232C42]">
+                      <span className="font-mono">Photos: {br.photosCount || br.photoUrls?.length || 0}</span>
+                      <span className="font-mono text-indigo-300 font-semibold">₹{br.weekdayRate || 1200}/hr</span>
                     </div>
                   </div>
                 ))}
