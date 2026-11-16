@@ -128,11 +128,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       bool inheritPmForStart = false;
       if (endHasPm && !startHasExplicitAmPm) {
         final startDigit = int.tryParse(
-            startStr.replaceAll(RegExp(r'[^\d:]'), '').split(':').first);
-        final endDigit = int.tryParse(endStr
-            .replaceAll(RegExp(r'[^\d:]'), '')
-            .split(':')
-            .first);
+          startStr.replaceAll(RegExp(r'[^\d:]'), '').split(':').first,
+        );
+        final endDigit = int.tryParse(
+          endStr.replaceAll(RegExp(r'[^\d:]'), '').split(':').first,
+        );
         if (startDigit != null && endDigit != null) {
           if (startDigit <= endDigit || endDigit == 12) {
             inheritPmForStart = true;
@@ -234,11 +234,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       final parsed = jsonDecode(cleanInput);
       if (parsed is Map) {
         parsedQrMap = Map<String, dynamic>.from(parsed);
-        resolvedBookingId = (parsed['bookingCode'] ??
-                parsed['bookingId'] ??
-                parsed['id'] ??
-                parsed['numericId'])
-            ?.toString() ??
+        resolvedBookingId =
+            (parsed['bookingCode'] ??
+                    parsed['bookingId'] ??
+                    parsed['id'] ??
+                    parsed['numericId'])
+                ?.toString() ??
             resolvedBookingId;
 
         if (parsed['turfId'] != null) {
@@ -254,32 +255,38 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
     try {
       http.Response res;
       try {
-        res = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/turfs/$targetAdminId/check-in'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'ticketToken': cleanInput,
-            'bookingId': resolvedBookingId,
-            'bookingCode': resolvedBookingId,
-            'rawCode': cleanInput,
-            'qrPayload': cleanInput,
-            'turfId': targetAdminId,
-          }),
-        ).timeout(const Duration(seconds: 15));
+        res = await http
+            .post(
+              Uri.parse('${ApiConfig.baseUrl}/turfs/$targetAdminId/check-in'),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'ticketToken': cleanInput,
+                'bookingId': resolvedBookingId,
+                'bookingCode': resolvedBookingId,
+                'rawCode': cleanInput,
+                'qrPayload': cleanInput,
+                'turfId': targetAdminId,
+              }),
+            )
+            .timeout(const Duration(seconds: 15));
       } catch (e) {
         // Fallback to global /turfs/check-in
-        res = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/turfs/check-in?adminId=$targetAdminId'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'ticketToken': cleanInput,
-            'bookingId': resolvedBookingId,
-            'bookingCode': resolvedBookingId,
-            'rawCode': cleanInput,
-            'qrPayload': cleanInput,
-            'turfId': targetAdminId,
-          }),
-        ).timeout(const Duration(seconds: 15));
+        res = await http
+            .post(
+              Uri.parse(
+                '${ApiConfig.baseUrl}/turfs/check-in?adminId=$targetAdminId',
+              ),
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode({
+                'ticketToken': cleanInput,
+                'bookingId': resolvedBookingId,
+                'bookingCode': resolvedBookingId,
+                'rawCode': cleanInput,
+                'qrPayload': cleanInput,
+                'turfId': targetAdminId,
+              }),
+            )
+            .timeout(const Duration(seconds: 15));
       }
 
       final data = jsonDecode(res.body);
@@ -287,19 +294,27 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       final isSuccess = res.statusCode == 200 || res.statusCode == 201;
       final bool notYetOpen = data['notYetOpen'] == true;
       final bool alreadyCheckedIn = data['alreadyCheckedIn'] == true;
-      final bool isGranted = isSuccess && data['success'] == true && !notYetOpen && !alreadyCheckedIn;
+      final bool isGranted =
+          isSuccess &&
+          data['success'] == true &&
+          !notYetOpen &&
+          !alreadyCheckedIn;
 
       if (notYetOpen) {
         HapticFeedback.selectionClick();
         setState(() {
           _scannedResult = {
-            ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
+            ...(data['booking'] != null
+                ? Map<String, dynamic>.from(data['booking'])
+                : {}),
             ...?parsedQrMap,
             '_resultType': 'NOT_YET_OPEN',
             'opensAt': data['opensAt'] ?? '',
-            'startTime': data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
+            'startTime':
+                data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
             'endTime': data['endTime'] ?? (data['booking']?['endTime'] ?? ''),
-            'slotTime': data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
+            'slotTime':
+                data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
             'date': data['bookingDate'] ?? (data['booking']?['date'] ?? ''),
             'countdownStr': data['countdownStr'] ?? '',
             'message': data['message'] ?? 'Check-in window not open yet.',
@@ -308,39 +323,55 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
           _isProcessing = false;
         });
         if (mounted) {
-          ToastUtils.showInfo(context, data['message'] ?? 'Check-in opens 15-20 min before slot.');
+          ToastUtils.showInfo(
+            context,
+            data['message'] ?? 'Check-in opens 15-20 min before slot.',
+          );
         }
       } else if (alreadyCheckedIn) {
         HapticFeedback.vibrate();
         setState(() {
           _scannedResult = {
-            ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
+            ...(data['booking'] != null
+                ? Map<String, dynamic>.from(data['booking'])
+                : {}),
             ...?parsedQrMap,
             '_resultType': 'ALREADY_VERIFIED',
             'checkedInAt': data['checkedInAt'] ?? 'Earlier today',
-            'startTime': data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
+            'startTime':
+                data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
             'endTime': data['endTime'] ?? (data['booking']?['endTime'] ?? ''),
-            'slotTime': data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
+            'slotTime':
+                data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
             'date': data['bookingDate'] ?? (data['booking']?['date'] ?? ''),
-            'message': data['message'] ?? 'Pass already verified. Duplicate entry blocked.',
+            'message':
+                data['message'] ??
+                'Pass already verified. Duplicate entry blocked.',
           };
           _errorMessage = null;
           _isProcessing = false;
         });
         if (mounted) {
-          ToastUtils.showWarning(context, data['message'] ?? 'Pass already verified! Single-use entry.');
+          ToastUtils.showWarning(
+            context,
+            data['message'] ?? 'Pass already verified! Single-use entry.',
+          );
         }
       } else if (isGranted) {
         HapticFeedback.heavyImpact();
         setState(() {
           _scannedResult = {
-            ...(data['booking'] != null ? Map<String, dynamic>.from(data['booking']) : {}),
+            ...(data['booking'] != null
+                ? Map<String, dynamic>.from(data['booking'])
+                : {}),
             ...?parsedQrMap,
             '_resultType': 'GRANTED',
             'checkedInAt': data['checkedInAt'] ?? 'Just now',
-            'startTime': data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
+            'startTime':
+                data['startTime'] ?? (data['booking']?['startTime'] ?? ''),
             'endTime': data['endTime'] ?? (data['booking']?['endTime'] ?? ''),
-            'slotTime': data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
+            'slotTime':
+                data['slotTime'] ?? (data['booking']?['timeSlot'] ?? ''),
             'date': data['bookingDate'] ?? (data['booking']?['date'] ?? ''),
           };
           _errorMessage = null;
@@ -362,7 +393,8 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         }
       } else {
         setState(() {
-          _errorMessage = data['message'] ?? 'Invalid or unverified ticket pass.';
+          _errorMessage =
+              data['message'] ?? 'Invalid or unverified ticket pass.';
           _scannedResult = null;
           _isProcessing = false;
         });
@@ -381,7 +413,8 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       TurfBookingHistoryItem? matchedItem;
       for (final b in profile.bookingHistory) {
         if (b.id.toLowerCase() == cleanResolved ||
-            (digitsResolved.isNotEmpty && b.id.replaceAll(RegExp(r'\D'), '') == digitsResolved)) {
+            (digitsResolved.isNotEmpty &&
+                b.id.replaceAll(RegExp(r'\D'), '') == digitsResolved)) {
           matchedItem = b;
           break;
         }
@@ -409,12 +442,18 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             _isProcessing = false;
           });
           if (mounted) {
-            ToastUtils.showWarning(context, 'Pass already verified! Single-use entry.');
+            ToastUtils.showWarning(
+              context,
+              'Pass already verified! Single-use entry.',
+            );
           }
           return;
         }
 
-        final w = _parseLocalWindow(matchedItem.effectiveDate, matchedItem.effectiveTimeSlot);
+        final w = _parseLocalWindow(
+          matchedItem.effectiveDate,
+          matchedItem.effectiveTimeSlot,
+        );
         if (w != null) {
           final now = DateTime.now();
           final opensAt = w['opensAt'] as DateTime;
@@ -422,7 +461,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             final diff = opensAt.difference(now);
             final mLeft = diff.inMinutes;
             final hLeft = diff.inHours;
-            final countdown = hLeft > 0 ? '${hLeft}h ${mLeft % 60}m' : '$mLeft mins';
+            final countdown = hLeft > 0
+                ? '${hLeft}h ${mLeft % 60}m'
+                : '$mLeft mins';
 
             setState(() {
               _scannedResult = {
@@ -439,13 +480,17 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 '_resultType': 'NOT_YET_OPEN',
                 'opensAt': w['opensAtStr'],
                 'countdownStr': countdown,
-                'message': 'Check-in window opens 15-20 mins before slot start at ${w['opensAtStr']}.',
+                'message':
+                    'Check-in window opens 15-20 mins before slot start at ${w['opensAtStr']}.',
               };
               _errorMessage = null;
               _isProcessing = false;
             });
             if (mounted) {
-              ToastUtils.showInfo(context, 'Check-in window opens at ${w['opensAtStr']} (in $countdown).');
+              ToastUtils.showInfo(
+                context,
+                'Check-in window opens at ${w['opensAtStr']} (in $countdown).',
+              );
             }
             return;
           }
@@ -529,7 +574,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         elevation: 0,
         titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -563,7 +612,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
           IconButton(
             visualDensity: VisualDensity.compact,
             tooltip: 'Switch Camera',
-            icon: const Icon(Icons.flip_camera_ios_rounded, color: Color(0xFF141414), size: 20),
+            icon: const Icon(
+              Icons.flip_camera_ios_rounded,
+              color: Color(0xFF141414),
+              size: 20,
+            ),
             onPressed: () => _scannerController.switchCamera(),
           ),
           const SizedBox(width: 4),
@@ -628,12 +681,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.videocam_off_rounded, color: Colors.white54, size: 40),
+                      const Icon(
+                        Icons.videocam_off_rounded,
+                        color: Colors.white54,
+                        size: 40,
+                      ),
                       const SizedBox(height: 8),
                       Text(
                         'Camera unavailable on this device\nUse manual Ticket ID entry below',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -649,7 +709,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               height: 190,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _isProcessing ? const Color(0xFFFBBF24) : const Color(0xFF22C55E),
+                  color: _isProcessing
+                      ? const Color(0xFFFBBF24)
+                      : const Color(0xFF22C55E),
                   width: 2.5,
                 ),
                 borderRadius: BorderRadius.circular(16),
@@ -696,7 +758,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     SizedBox(height: 12),
                     Text(
                       'Validating Ticket Pass...',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                 ),
@@ -710,7 +776,10 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.65),
                   borderRadius: BorderRadius.circular(20),
@@ -718,11 +787,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFFD4FF00)),
+                    Icon(
+                      Icons.qr_code_scanner_rounded,
+                      size: 14,
+                      color: Color(0xFFD4FF00),
+                    ),
                     SizedBox(width: 6),
                     Text(
                       'Align QR code inside box to check in',
-                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -758,7 +835,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               SizedBox(width: 6),
               Text(
                 'Manual Pass Verification',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -771,8 +852,14 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
                     hintText: 'Enter Pass ID (e.g. G24-BK-0001)',
-                    hintStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF71717A)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    hintStyle: const TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFF71717A),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 10,
+                    ),
                     filled: true,
                     fillColor: const Color(0xFF141414),
                     border: OutlineInputBorder(
@@ -781,7 +868,10 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 1.5),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFD4FF00),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -791,8 +881,13 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4FF00),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 onPressed: () {
                   final text = _manualPassIdController.text.trim();
@@ -801,7 +896,10 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   }
                 },
                 icon: const Icon(Icons.verified_user_rounded, size: 16),
-                label: const Text('Verify', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                label: const Text(
+                  'Verify',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                ),
               ),
             ],
           ),
@@ -812,17 +910,22 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
 
   Widget _buildVerificationResultCard(Map<String, dynamic> booking) {
     final resultType = booking['_resultType']?.toString() ?? 'GRANTED';
-    final bookingId = booking['bookingCode']?.toString() ??
+    final bookingId =
+        booking['bookingCode']?.toString() ??
         booking['bookingId']?.toString() ??
-        (booking['id'] != null ? 'G24-BK-${booking['id'].toString().padLeft(4, '0')}' : 'G24-BK-0001');
+        (booking['id'] != null
+            ? 'G24-BK-${booking['id'].toString().padLeft(4, '0')}'
+            : 'G24-BK-0001');
     final customer = booking['customerName']?.toString() ?? 'Player Customer';
     final phone = booking['customerPhone']?.toString() ?? '';
     final sport = booking['sport']?.toString() ?? 'Football';
-    final court = booking['courtName']?.toString() ??
+    final court =
+        booking['courtName']?.toString() ??
         booking['turfName']?.toString() ??
         'Main Turf Arena';
     final date = booking['date']?.toString() ?? '';
-    final timeSlot = booking['timeSlot']?.toString() ??
+    final timeSlot =
+        booking['timeSlot']?.toString() ??
         booking['slotTime']?.toString() ??
         '';
     String startTime = booking['startTime']?.toString() ?? '';
@@ -863,7 +966,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     color: Color(0xFFD97706),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.hourglass_top_rounded, color: Color(0xFF141414), size: 22),
+                  child: const Icon(
+                    Icons.hourglass_top_rounded,
+                    color: Color(0xFF141414),
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -882,13 +989,20 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       const SizedBox(height: 2),
                       Text(
                         'Scan unlocks 10-20 min before slot start',
-                        style: TextStyle(fontSize: 11.5, color: Colors.amber.shade900, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.amber.shade900,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF2D2005),
                     borderRadius: BorderRadius.circular(8),
@@ -926,11 +1040,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     children: [
                       const Text(
                         'Check-In Opens At:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFDE68A)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFDE68A),
+                        ),
                       ),
                       Text(
                         opensAt.isNotEmpty ? opensAt : '20 min before slot',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFFB45309)),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFB45309),
+                        ),
                       ),
                     ],
                   ),
@@ -941,17 +1063,28 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       children: [
                         const Text(
                           'Time Until Unlocks:',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFDE68A)),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFDE68A),
+                          ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFD97706),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             'in $countdownStr',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -963,11 +1096,18 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     children: [
                       const Text(
                         'Booked Slot:',
-                        style: TextStyle(fontSize: 12, color: Color(0xFFFDE68A)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFFDE68A),
+                        ),
                       ),
                       Text(
                         timeSlot,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
@@ -987,12 +1127,20 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline_rounded, color: Color(0xFFD97706), size: 16),
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: Color(0xFFD97706),
+                    size: 16,
+                  ),
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Pass is valid & confirmed. Gate verification opens 10-20 minutes before slot start. Only booking time details are shown for early scans.',
-                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), height: 1.35),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA1A1AA),
+                        height: 1.35,
+                      ),
                     ),
                   ),
                 ],
@@ -1016,11 +1164,16 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   backgroundColor: const Color(0xFFD97706),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: _resetScanner,
                 icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
-                label: const Text('Scan Next Ticket', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                label: const Text(
+                  'Scan Next Ticket',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                ),
               ),
             ),
           ],
@@ -1054,7 +1207,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     color: Color(0xFFEA580C),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.warning_amber_rounded, color: Color(0xFF141414), size: 22),
+                  child: const Icon(
+                    Icons.warning_amber_rounded,
+                    color: Color(0xFF141414),
+                    size: 22,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1073,13 +1230,20 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       const SizedBox(height: 2),
                       const Text(
                         'Entry Previously Granted • Single-Use Only',
-                        style: TextStyle(fontSize: 11.5, color: Color(0xFF9A3412), fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF9A3412),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEDD5),
                     borderRadius: BorderRadius.circular(8),
@@ -1108,7 +1272,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.history_rounded, color: Color(0xFFC2410C), size: 18),
+                  const Icon(
+                    Icons.history_rounded,
+                    color: Color(0xFFC2410C),
+                    size: 18,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1116,12 +1284,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       children: [
                         Text(
                           'Checked in: $checkedInAt',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF7C2D12)),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF7C2D12),
+                          ),
                         ),
                         const SizedBox(height: 2),
                         const Text(
                           'This ticket pass has already been scanned. Duplicate entry is denied.',
-                          style: TextStyle(fontSize: 11, color: Color(0xFF9A3412)),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF9A3412),
+                          ),
                         ),
                       ],
                     ),
@@ -1147,11 +1322,16 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   backgroundColor: const Color(0xFFEA580C),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: _resetScanner,
                 icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
-                label: const Text('Scan Next Ticket', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                label: const Text(
+                  'Scan Next Ticket',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                ),
               ),
             ),
           ],
@@ -1160,8 +1340,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
     }
 
     final bool isReEntry = booking['isReEntry'] == true;
-    final int? slotIndex = booking['slotIndex'] != null ? int.tryParse(booking['slotIndex'].toString()) : null;
-    final int? totalSlots = booking['totalSlots'] != null ? int.tryParse(booking['totalSlots'].toString()) : null;
+    final int? slotIndex = booking['slotIndex'] != null
+        ? int.tryParse(booking['slotIndex'].toString())
+        : null;
+    final int? totalSlots = booking['totalSlots'] != null
+        ? int.tryParse(booking['totalSlots'].toString())
+        : null;
 
     // Default: ENTRY GRANTED (First Time Scan or Split Session Re-Entry)
     return Container(
@@ -1213,13 +1397,20 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       isReEntry
                           ? 'Slot ${slotIndex ?? 2} of ${totalSlots ?? 2} Verified ($checkedInAt) • Returning Player'
                           : 'Verified at gate ($checkedInAt) • Valid Pass',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFFD4FF00), fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFFD4FF00),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1B2A06),
                   borderRadius: BorderRadius.circular(8),
@@ -1246,12 +1437,20 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.sync_rounded, size: 16, color: Color(0xFFD4FF00)),
+                  const Icon(
+                    Icons.sync_rounded,
+                    size: 16,
+                    color: Color(0xFFD4FF00),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Multi-slot pass: Session ${slotIndex ?? 2} of ${totalSlots ?? 2} checked in successfully.',
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFD4FF00),
+                      ),
                     ),
                   ),
                 ],
@@ -1280,11 +1479,16 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 backgroundColor: const Color(0xFFD4FF00),
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _resetScanner,
               icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
-              label: const Text('Scan Next Ticket', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+              label: const Text(
+                'Scan Next Ticket',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+              ),
             ),
           ),
         ],
@@ -1304,7 +1508,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         children: [
           Row(
             children: [
-              const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 22),
+              const Icon(
+                Icons.error_outline_rounded,
+                color: Color(0xFFDC2626),
+                size: 22,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -1325,10 +1533,15 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               style: OutlinedButton.styleFrom(
                 foregroundColor: const Color(0xFFDC2626),
                 side: const BorderSide(color: Color(0xFFDC2626)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: _resetScanner,
-              child: const Text('Try Again / Scan Next', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Try Again / Scan Next',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -1342,12 +1555,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1381,7 +1601,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             const SizedBox(width: 8),
             Text(
               '${bookings.length} Available',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFA1A1AA)),
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFA1A1AA),
+              ),
             ),
           ],
         ),
@@ -1399,12 +1623,17 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               onTap: () => _processCheckIn(b.id),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isCheckedIn ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                    color: isCheckedIn
+                        ? const Color(0xFFD4FF00)
+                        : const Color(0xFF262626),
                   ),
                 ),
                 child: Row(
@@ -1412,13 +1641,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: isCheckedIn ? const Color(0xFFDCFCE7) : const Color(0xFF1C1C1C),
+                        color: isCheckedIn
+                            ? const Color(0xFFDCFCE7)
+                            : const Color(0xFF1C1C1C),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        isCheckedIn ? Icons.check_circle_rounded : Icons.confirmation_number_rounded,
+                        isCheckedIn
+                            ? Icons.check_circle_rounded
+                            : Icons.confirmation_number_rounded,
                         size: 16,
-                        color: isCheckedIn ? const Color(0xFF16A34A) : const Color(0xFFD4FF00),
+                        color: isCheckedIn
+                            ? const Color(0xFF16A34A)
+                            : const Color(0xFFD4FF00),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1431,27 +1666,40 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                               Flexible(
                                 child: Text(
                                   b.customerName,
-                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 13,
+                                  ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1C1C1C),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   b.id,
-                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA)),
+                                  style: const TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFA1A1AA),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           Text(
                             '${b.sport} • ${b.effectiveTimeSlot}',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFFA1A1AA),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1459,9 +1707,14 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
-                        color: isCheckedIn ? const Color(0xFFDCFCE7) : Colors.white,
+                        color: isCheckedIn
+                            ? const Color(0xFFDCFCE7)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -1469,7 +1722,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: isCheckedIn ? const Color(0xFFD4FF00) : Colors.white,
+                          color: isCheckedIn
+                              ? const Color(0xFFD4FF00)
+                              : Colors.white,
                         ),
                       ),
                     ),

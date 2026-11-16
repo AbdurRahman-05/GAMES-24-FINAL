@@ -53,23 +53,26 @@ class _TurfOwnerRegistrationScreenState
   bool get _isStep0Valid {
     final venue = _venueNameController.text.trim();
     final owner = _ownerNameController.text.trim();
-    final phone = _phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '');
+    final phone = _phoneController.text.trim().replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
     final email = _emailController.text.trim();
     final address = _addressController.text.trim();
     final area = _areaController.text.trim();
 
     return venue.isNotEmpty &&
-           owner.isNotEmpty &&
-           phone.length >= 10 &&
-           email.isNotEmpty &&
-           email.contains('@') &&
-           email.contains('.') &&
-           address.isNotEmpty &&
-           area.isNotEmpty &&
-           !_isPhoneRegistered &&
-           !_isEmailRegistered &&
-           !_isCheckingPhone &&
-           !_isCheckingEmail;
+        owner.isNotEmpty &&
+        phone.length >= 10 &&
+        email.isNotEmpty &&
+        email.contains('@') &&
+        email.contains('.') &&
+        address.isNotEmpty &&
+        area.isNotEmpty &&
+        !_isPhoneRegistered &&
+        !_isEmailRegistered &&
+        !_isCheckingPhone &&
+        !_isCheckingEmail;
   }
 
   bool get _isStep1Valid {
@@ -78,7 +81,8 @@ class _TurfOwnerRegistrationScreenState
 
   bool get _isStep2Valid {
     final hasPhotos = _venuePhotoUrls.isNotEmpty;
-    final hasAmenities = _hasWater ||
+    final hasAmenities =
+        _hasWater ||
         _hasParking ||
         _hasToilet ||
         _hasFloodlights ||
@@ -89,14 +93,14 @@ class _TurfOwnerRegistrationScreenState
 
   bool get _isStep3Valid {
     return _gstinController.text.trim().isNotEmpty &&
-           _panController.text.trim().isNotEmpty &&
-           _aadhaarController.text.trim().isNotEmpty &&
-           _isAadhaarUploaded &&
-           _isPanUploaded &&
-           _isGstUploaded &&
-           _bankAccountController.text.trim().isNotEmpty &&
-           _ifscController.text.trim().isNotEmpty &&
-           _upiIdController.text.trim().isNotEmpty;
+        _panController.text.trim().isNotEmpty &&
+        _aadhaarController.text.trim().isNotEmpty &&
+        _isAadhaarUploaded &&
+        _isPanUploaded &&
+        _isGstUploaded &&
+        _bankAccountController.text.trim().isNotEmpty &&
+        _ifscController.text.trim().isNotEmpty &&
+        _upiIdController.text.trim().isNotEmpty;
   }
 
   void _onPhoneChanged() {
@@ -159,7 +163,8 @@ class _TurfOwnerRegistrationScreenState
           setState(() {
             _isPhoneRegistered = exists;
             if (exists) {
-              _phoneErrorMessage = data['message'] ??
+              _phoneErrorMessage =
+                  data['message'] ??
                   'This mobile number is already registered. Please use another number.';
             } else {
               _phoneErrorMessage = null;
@@ -198,7 +203,8 @@ class _TurfOwnerRegistrationScreenState
           setState(() {
             _isEmailRegistered = exists;
             if (exists) {
-              _emailErrorMessage = data['message'] ??
+              _emailErrorMessage =
+                  data['message'] ??
                   'This email address is already registered. Please use another email.';
             } else {
               _emailErrorMessage = null;
@@ -277,8 +283,14 @@ class _TurfOwnerRegistrationScreenState
       if (_trackingCode != null) {
         await prefs.setString('owner_tracking_code', _trackingCode!);
       }
-      await prefs.setString('owner_venue_name', _venueNameController.text.trim());
-      await prefs.setString('owner_owner_name', _ownerNameController.text.trim());
+      await prefs.setString(
+        'owner_venue_name',
+        _venueNameController.text.trim(),
+      );
+      await prefs.setString(
+        'owner_owner_name',
+        _ownerNameController.text.trim(),
+      );
       await prefs.setString('owner_phone', _phoneController.text.trim());
       await prefs.setString('owner_email', _emailController.text.trim());
       await prefs.setString('owner_address', _addressController.text.trim());
@@ -388,7 +400,10 @@ class _TurfOwnerRegistrationScreenState
             _cancelReason = data['cancelReason'];
           });
           if (_liveAuditStatus == 'VERIFIED') {
-            ToastUtils.showSuccess(context, "Congratulations! Your venue has been verified by Super Admin!");
+            ToastUtils.showSuccess(
+              context,
+              "Congratulations! Your venue has been verified by Super Admin!",
+            );
           }
         }
       }
@@ -449,7 +464,10 @@ class _TurfOwnerRegistrationScreenState
       return;
     }
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (image == null) return;
 
     setState(() => _isUploadingPhoto = true);
@@ -460,16 +478,20 @@ class _TurfOwnerRegistrationScreenState
         fileName = '$fileName.jpg';
       }
       final ext = fileName.split('.').last.toLowerCase();
-      final mimeSubtype = (ext == 'png') ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
+      final mimeSubtype = (ext == 'png')
+          ? 'png'
+          : (ext == 'webp' ? 'webp' : 'jpeg');
 
       final uri = Uri.parse('${ApiConfig.baseUrl}/upload/photo');
       final request = http.MultipartRequest('POST', uri);
-      request.files.add(http.MultipartFile.fromBytes(
-        'file',
-        bytes,
-        filename: fileName,
-        contentType: MediaType('image', mimeSubtype),
-      ));
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          bytes,
+          filename: fileName,
+          contentType: MediaType('image', mimeSubtype),
+        ),
+      );
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -481,7 +503,11 @@ class _TurfOwnerRegistrationScreenState
           _venuePhotoUrls.add(fileUrl);
           _photosUploadedCount = _venuePhotoUrls.length;
         });
-        if (mounted) ToastUtils.showSuccess(context, "Venue photo uploaded successfully! 📸");
+        if (mounted)
+          ToastUtils.showSuccess(
+            context,
+            "Venue photo uploaded successfully! 📸",
+          );
       } else {
         String errorMsg = "Failed to upload photo (${response.statusCode})";
         try {
@@ -517,7 +543,11 @@ class _TurfOwnerRegistrationScreenState
 
       final file = result.files.first;
       if (!file.name.toLowerCase().endsWith('.pdf')) {
-        if (mounted) ToastUtils.showError(context, "Only PDF files are allowed for KYC documents!");
+        if (mounted)
+          ToastUtils.showError(
+            context,
+            "Only PDF files are allowed for KYC documents!",
+          );
         return;
       }
 
@@ -531,15 +561,20 @@ class _TurfOwnerRegistrationScreenState
       final request = http.MultipartRequest('POST', uri);
 
       if (file.bytes != null) {
-        request.files.add(http.MultipartFile.fromBytes(
-          'file',
-          file.bytes!,
-          filename: file.name,
-        ));
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            file.bytes!,
+            filename: file.name,
+          ),
+        );
       } else if (file.path != null) {
-        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+        request.files.add(
+          await http.MultipartFile.fromPath('file', file.path!),
+        );
       } else {
-        if (mounted) ToastUtils.showError(context, "Unable to read selected PDF file.");
+        if (mounted)
+          ToastUtils.showError(context, "Unable to read selected PDF file.");
         return;
       }
 
@@ -564,12 +599,18 @@ class _TurfOwnerRegistrationScreenState
             _isGstUploaded = true;
           }
         });
-        if (mounted) ToastUtils.showSuccess(context, "${file.name} (PDF) attached successfully! 📄✅");
+        if (mounted)
+          ToastUtils.showSuccess(
+            context,
+            "${file.name} (PDF) attached successfully! 📄✅",
+          );
       } else {
-        if (mounted) ToastUtils.showError(context, "Failed to upload KYC PDF document.");
+        if (mounted)
+          ToastUtils.showError(context, "Failed to upload KYC PDF document.");
       }
     } catch (e) {
-      if (mounted) ToastUtils.showError(context, "Error uploading document: $e");
+      if (mounted)
+        ToastUtils.showError(context, "Error uploading document: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -595,14 +636,14 @@ class _TurfOwnerRegistrationScreenState
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/send-admin-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'mobileNumber': phone,
-          'email': email,
-        }),
+        body: jsonEncode({'mobileNumber': phone, 'email': email}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
-          ToastUtils.showSuccess(context, "OTPs sent! Check your backend terminal 💻");
+          ToastUtils.showSuccess(
+            context,
+            "OTPs sent! Check your backend terminal 💻",
+          );
         }
       }
     } catch (e) {
@@ -625,27 +666,32 @@ class _TurfOwnerRegistrationScreenState
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/verify-admin-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'type': 'mobile',
-          'identifier': phone,
-          'otp': otp,
-        }),
+        body: jsonEncode({'type': 'mobile', 'identifier': phone, 'otp': otp}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() => _isMobileVerified = true);
-        if (mounted) ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+        if (mounted)
+          ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
       } else {
         final data = jsonDecode(response.body);
         if (mounted) {
-          ToastUtils.showError(context, data['message'] ?? "Invalid Mobile OTP. Check backend terminal.");
+          ToastUtils.showError(
+            context,
+            data['message'] ?? "Invalid Mobile OTP. Check backend terminal.",
+          );
         }
       }
     } catch (e) {
       if (otp.length == 4) {
         setState(() => _isMobileVerified = true);
-        if (mounted) ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+        if (mounted)
+          ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
       } else {
-        if (mounted) ToastUtils.showError(context, "Please check backend terminal for OTP.");
+        if (mounted)
+          ToastUtils.showError(
+            context,
+            "Please check backend terminal for OTP.",
+          );
       }
     } finally {
       if (mounted) setState(() => _isVerifyingMobile = false);
@@ -665,27 +711,32 @@ class _TurfOwnerRegistrationScreenState
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/verify-admin-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'type': 'email',
-          'identifier': email,
-          'otp': otp,
-        }),
+        body: jsonEncode({'type': 'email', 'identifier': email, 'otp': otp}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() => _isEmailVerified = true);
-        if (mounted) ToastUtils.showSuccess(context, "Email Address Verified ✅");
+        if (mounted)
+          ToastUtils.showSuccess(context, "Email Address Verified ✅");
       } else {
         final data = jsonDecode(response.body);
         if (mounted) {
-          ToastUtils.showError(context, data['message'] ?? "Invalid Email OTP. Check backend terminal.");
+          ToastUtils.showError(
+            context,
+            data['message'] ?? "Invalid Email OTP. Check backend terminal.",
+          );
         }
       }
     } catch (e) {
       if (otp.length == 4) {
         setState(() => _isEmailVerified = true);
-        if (mounted) ToastUtils.showSuccess(context, "Email Address Verified ✅");
+        if (mounted)
+          ToastUtils.showSuccess(context, "Email Address Verified ✅");
       } else {
-        if (mounted) ToastUtils.showError(context, "Please check backend terminal for OTP.");
+        if (mounted)
+          ToastUtils.showError(
+            context,
+            "Please check backend terminal for OTP.",
+          );
       }
     } finally {
       if (mounted) setState(() => _isVerifyingEmail = false);
@@ -718,11 +769,20 @@ class _TurfOwnerRegistrationScreenState
     if (_currentStep == 0) {
       if (!_isStep0Valid) {
         if (_isPhoneRegistered) {
-          ToastUtils.showError(context, "This mobile number is already registered. Please use another number to continue.");
+          ToastUtils.showError(
+            context,
+            "This mobile number is already registered. Please use another number to continue.",
+          );
         } else if (_isEmailRegistered) {
-          ToastUtils.showError(context, "This email address is already registered. Please use another email to continue.");
+          ToastUtils.showError(
+            context,
+            "This email address is already registered. Please use another email to continue.",
+          );
         } else {
-          ToastUtils.showError(context, "Please fill all identity fields properly to continue.");
+          ToastUtils.showError(
+            context,
+            "Please fill all identity fields properly to continue.",
+          );
         }
         return;
       }
@@ -742,20 +802,28 @@ class _TurfOwnerRegistrationScreenState
           if (data['phoneExists'] == true) {
             setState(() {
               _isPhoneRegistered = true;
-              _phoneErrorMessage = "This mobile number is already registered. Please use another number.";
+              _phoneErrorMessage =
+                  "This mobile number is already registered. Please use another number.";
             });
             if (mounted) {
-              ToastUtils.showError(context, "Mobile number already registered. Please use another number to continue.");
+              ToastUtils.showError(
+                context,
+                "Mobile number already registered. Please use another number to continue.",
+              );
             }
             return;
           }
           if (data['emailExists'] == true) {
             setState(() {
               _isEmailRegistered = true;
-              _emailErrorMessage = "This email address is already registered. Please use another email.";
+              _emailErrorMessage =
+                  "This email address is already registered. Please use another email.";
             });
             if (mounted) {
-              ToastUtils.showError(context, "Email address already registered. Please use another email to continue.");
+              ToastUtils.showError(
+                context,
+                "Email address already registered. Please use another email to continue.",
+              );
             }
             return;
           }
@@ -779,9 +847,12 @@ class _TurfOwnerRegistrationScreenState
         );
         if (response.statusCode != 200 && response.statusCode != 201) {
           final data = jsonDecode(response.body);
-          final errorMsg = (data['message'] ?? 'Failed to register admin details.').toString();
+          final errorMsg =
+              (data['message'] ?? 'Failed to register admin details.')
+                  .toString();
           if (!mounted) return;
-          if (errorMsg.toLowerCase().contains('phone') || errorMsg.toLowerCase().contains('mobile')) {
+          if (errorMsg.toLowerCase().contains('phone') ||
+              errorMsg.toLowerCase().contains('mobile')) {
             setState(() {
               _isPhoneRegistered = true;
               _phoneErrorMessage = errorMsg;
@@ -804,7 +875,10 @@ class _TurfOwnerRegistrationScreenState
           _trackingCode = 'REG-MAD-${1000 + _registeredAdminId!}';
         }
         if (!mounted) return;
-        ToastUtils.showSuccess(context, "Venue details saved! Generating OTPs...");
+        ToastUtils.showSuccess(
+          context,
+          "Venue details saved! Generating OTPs...",
+        );
         _sendAdminOtps();
       } catch (e) {
         if (!mounted) return;
@@ -815,20 +889,32 @@ class _TurfOwnerRegistrationScreenState
 
     // Step 1: OTP Verification check
     if (_currentStep == 1 && (!_isMobileVerified || !_isEmailVerified)) {
-      if (mounted) ToastUtils.showError(context, "Please verify both Mobile and Email OTP before proceeding.");
+      if (mounted)
+        ToastUtils.showError(
+          context,
+          "Please verify both Mobile and Email OTP before proceeding.",
+        );
       return;
     }
 
     // Step 2: Photos & Amenities check
     if (_currentStep == 2 && !_isStep2Valid) {
-      if (mounted) ToastUtils.showError(context, "Please upload at least 1 photo and select at least 1 facility before proceeding.");
+      if (mounted)
+        ToastUtils.showError(
+          context,
+          "Please upload at least 1 photo and select at least 1 facility before proceeding.",
+        );
       return;
     }
 
     // Step 3: Save KYC, Amenities & Bank Details to Database before moving to Approval step
     if (_currentStep == 3) {
       if (!_isStep3Valid) {
-        if (mounted) ToastUtils.showError(context, "Please complete all KYC details and upload all documents before proceeding.");
+        if (mounted)
+          ToastUtils.showError(
+            context,
+            "Please complete all KYC details and upload all documents before proceeding.",
+          );
         return;
       }
       final amenitiesList = <String>[];
@@ -869,7 +955,10 @@ class _TurfOwnerRegistrationScreenState
               _trackingCode = data['trackingCode'];
             }
             if (mounted) {
-              ToastUtils.showSuccess(context, "KYC & Bank details updated in database!");
+              ToastUtils.showSuccess(
+                context,
+                "KYC & Bank details updated in database!",
+              );
             }
           }
         } catch (e) {
@@ -973,7 +1062,9 @@ class _TurfOwnerRegistrationScreenState
       children: [
         CircleAvatar(
           radius: 11,
-          backgroundColor: isActive ? AppColors.primary : const Color(0xFF262626),
+          backgroundColor: isActive
+              ? AppColors.primary
+              : const Color(0xFF262626),
           child: isCurrent
               ? const Icon(Icons.edit, size: 11, color: Colors.black)
               : Text(
@@ -1031,11 +1122,15 @@ class _TurfOwnerRegistrationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 1: Venue & Owner Identity',
-            style: theme.textTheme.displayMedium?.copyWith(fontSize: 20)),
+        Text(
+          'Step 1: Venue & Owner Identity',
+          style: theme.textTheme.displayMedium?.copyWith(fontSize: 20),
+        ),
         const SizedBox(height: 6),
-        Text('Enter your sports venue name and owner contact profile details.',
-            style: theme.textTheme.bodyMedium),
+        Text(
+          'Enter your sports venue name and owner contact profile details.',
+          style: theme.textTheme.bodyMedium,
+        ),
         const SizedBox(height: 20),
 
         AppTextField(
@@ -1067,20 +1162,34 @@ class _TurfOwnerRegistrationScreenState
                   child: SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
                   ),
                 )
-              : (_phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '').length >= 10
-                  ? (_isPhoneRegistered
-                      ? const Tooltip(
-                          message: 'Mobile number already registered in database',
-                          child: Icon(Icons.cancel_rounded, color: AppColors.error),
-                        )
-                      : const Tooltip(
-                          message: 'Mobile number available',
-                          child: Icon(Icons.check_circle_rounded, color: AppColors.success),
-                        ))
-                  : null),
+              : (_phoneController.text
+                            .trim()
+                            .replaceAll(RegExp(r'[^0-9]'), '')
+                            .length >=
+                        10
+                    ? (_isPhoneRegistered
+                          ? const Tooltip(
+                              message:
+                                  'Mobile number already registered in database',
+                              child: Icon(
+                                Icons.cancel_rounded,
+                                color: AppColors.error,
+                              ),
+                            )
+                          : const Tooltip(
+                              message: 'Mobile number available',
+                              child: Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.success,
+                              ),
+                            ))
+                    : null),
         ),
         const SizedBox(height: 14),
 
@@ -1097,20 +1206,31 @@ class _TurfOwnerRegistrationScreenState
                   child: SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primary,
+                    ),
                   ),
                 )
-              : (_emailController.text.trim().contains('@') && _emailController.text.trim().contains('.')
-                  ? (_isEmailRegistered
-                      ? const Tooltip(
-                          message: 'Email address already registered in database',
-                          child: Icon(Icons.cancel_rounded, color: AppColors.error),
-                        )
-                      : const Tooltip(
-                          message: 'Email address available',
-                          child: Icon(Icons.check_circle_rounded, color: AppColors.success),
-                        ))
-                  : null),
+              : (_emailController.text.trim().contains('@') &&
+                        _emailController.text.trim().contains('.')
+                    ? (_isEmailRegistered
+                          ? const Tooltip(
+                              message:
+                                  'Email address already registered in database',
+                              child: Icon(
+                                Icons.cancel_rounded,
+                                color: AppColors.error,
+                              ),
+                            )
+                          : const Tooltip(
+                              message: 'Email address available',
+                              child: Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.success,
+                              ),
+                            ))
+                    : null),
         ),
         const SizedBox(height: 14),
 
@@ -1137,11 +1257,15 @@ class _TurfOwnerRegistrationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 2: Mobile & Email OTP Verification',
-            style: theme.textTheme.displayMedium?.copyWith(fontSize: 20)),
+        Text(
+          'Step 2: Mobile & Email OTP Verification',
+          style: theme.textTheme.displayMedium?.copyWith(fontSize: 20),
+        ),
         const SizedBox(height: 6),
-        Text('Verify your contact phone number and email address to activate your account.',
-            style: theme.textTheme.bodyMedium),
+        Text(
+          'Verify your contact phone number and email address to activate your account.',
+          style: theme.textTheme.bodyMedium,
+        ),
         const SizedBox(height: 16),
 
         // Dev Mode Terminal Banner
@@ -1150,18 +1274,30 @@ class _TurfOwnerRegistrationScreenState
           decoration: BoxDecoration(
             color: AppColors.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.25),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(Icons.terminal_rounded, color: AppColors.primary, size: 26),
+              const Icon(
+                Icons.terminal_rounded,
+                color: AppColors.primary,
+                size: 26,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Backend Terminal OTP Mode',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.primary)),
+                    const Text(
+                      'Backend Terminal OTP Mode',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: AppColors.primary,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       'Both 4-digit Mobile OTP & Email OTP are printed directly in your backend terminal console!',
@@ -1177,7 +1313,9 @@ class _TurfOwnerRegistrationScreenState
 
         // Mobile OTP Box
         AppCard(
-          color: _isMobileVerified ? AppColors.success.withValues(alpha: 0.08) : null,
+          color: _isMobileVerified
+              ? AppColors.success.withValues(alpha: 0.08)
+              : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1187,12 +1325,18 @@ class _TurfOwnerRegistrationScreenState
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.phone_android_rounded, color: AppColors.primary),
+                        const Icon(
+                          Icons.phone_android_rounded,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Mobile: +91 ${_phoneController.text.trim().isEmpty ? "9876543210" : _phoneController.text.trim()}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
@@ -1203,7 +1347,10 @@ class _TurfOwnerRegistrationScreenState
                   if (_isMobileVerified) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
@@ -1211,10 +1358,20 @@ class _TurfOwnerRegistrationScreenState
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 12,
+                            color: AppColors.success,
+                          ),
                           SizedBox(width: 4),
-                          Text('Verified',
-                              style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
+                          Text(
+                            'Verified',
+                            style: TextStyle(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1251,7 +1408,10 @@ class _TurfOwnerRegistrationScreenState
                   child: TextButton.icon(
                     onPressed: _isSendingOtp ? null : _sendAdminOtps,
                     icon: const Icon(Icons.refresh_rounded, size: 14),
-                    label: Text(_isSendingOtp ? 'Sending...' : 'Resend SMS OTP', style: const TextStyle(fontSize: 11)),
+                    label: Text(
+                      _isSendingOtp ? 'Sending...' : 'Resend SMS OTP',
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
                 ),
               ],
@@ -1262,7 +1422,9 @@ class _TurfOwnerRegistrationScreenState
 
         // Email OTP Box
         AppCard(
-          color: _isEmailVerified ? AppColors.success.withValues(alpha: 0.08) : null,
+          color: _isEmailVerified
+              ? AppColors.success.withValues(alpha: 0.08)
+              : null,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1272,12 +1434,18 @@ class _TurfOwnerRegistrationScreenState
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.email_rounded, color: AppColors.primary),
+                        const Icon(
+                          Icons.email_rounded,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Email: ${_emailController.text.trim().isEmpty ? "owner@turf.com" : _emailController.text.trim()}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
@@ -1288,7 +1456,10 @@ class _TurfOwnerRegistrationScreenState
                   if (_isEmailVerified) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.success.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
@@ -1296,10 +1467,20 @@ class _TurfOwnerRegistrationScreenState
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.check_circle_rounded, size: 12, color: AppColors.success),
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 12,
+                            color: AppColors.success,
+                          ),
                           SizedBox(width: 4),
-                          Text('Verified',
-                              style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 11)),
+                          Text(
+                            'Verified',
+                            style: TextStyle(
+                              color: AppColors.success,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -1336,7 +1517,10 @@ class _TurfOwnerRegistrationScreenState
                   child: TextButton.icon(
                     onPressed: _isSendingOtp ? null : _sendAdminOtps,
                     icon: const Icon(Icons.refresh_rounded, size: 14),
-                    label: Text(_isSendingOtp ? 'Sending...' : 'Resend Email OTP', style: const TextStyle(fontSize: 11)),
+                    label: Text(
+                      _isSendingOtp ? 'Sending...' : 'Resend Email OTP',
+                      style: const TextStyle(fontSize: 11),
+                    ),
                   ),
                 ),
               ],
@@ -1352,11 +1536,15 @@ class _TurfOwnerRegistrationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 3: Venue Photos & Amenities',
-            style: theme.textTheme.displayMedium?.copyWith(fontSize: 20)),
+        Text(
+          'Step 3: Venue Photos & Amenities',
+          style: theme.textTheme.displayMedium?.copyWith(fontSize: 20),
+        ),
         const SizedBox(height: 6),
-        Text('Upload venue photos and select amenities for your sports turf.',
-            style: theme.textTheme.bodyMedium),
+        Text(
+          'Upload venue photos and select amenities for your sports turf.',
+          style: theme.textTheme.bodyMedium,
+        ),
         const SizedBox(height: 20),
 
         // Info Banner: Pricing configured in Profile Page
@@ -1377,7 +1565,11 @@ class _TurfOwnerRegistrationScreenState
                   children: [
                     Text(
                       'Pricing Configured per Sport in Profile',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.primary),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: AppColors.primary,
+                      ),
                     ),
                     SizedBox(height: 2),
                     Text(
@@ -1393,7 +1585,12 @@ class _TurfOwnerRegistrationScreenState
         const SizedBox(height: 20),
 
         // Photos Uploader
-        Text('Upload Venue Photos (Images)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'Upload Venue Photos (Images)',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         Row(
           children: List.generate(4, (i) {
@@ -1406,12 +1603,16 @@ class _TurfOwnerRegistrationScreenState
                 child: Container(
                   height: 82,
                   decoration: BoxDecoration(
-                    color: hasPhoto ? Colors.black.withValues(alpha: 0.05) : Colors.grey[100],
+                    color: hasPhoto
+                        ? Colors.black.withValues(alpha: 0.05)
+                        : Colors.grey[100],
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: hasPhoto
                           ? AppColors.primary
-                          : (isNextAddSlot ? AppColors.primary.withValues(alpha: 0.6) : Colors.grey[300]!),
+                          : (isNextAddSlot
+                                ? AppColors.primary.withValues(alpha: 0.6)
+                                : Colors.grey[300]!),
                       width: hasPhoto ? 1.5 : 1,
                     ),
                   ),
@@ -1424,16 +1625,24 @@ class _TurfOwnerRegistrationScreenState
                               child: Image.network(
                                 _venuePhotoUrls[i],
                                 fit: BoxFit.cover,
-                                errorBuilder: (ctx, error, stackTrace) => const Center(
-                                  child: Icon(Icons.broken_image_rounded, color: Colors.grey, size: 24),
-                                ),
+                                errorBuilder: (ctx, error, stackTrace) =>
+                                    const Center(
+                                      child: Icon(
+                                        Icons.broken_image_rounded,
+                                        color: Colors.grey,
+                                        size: 24,
+                                      ),
+                                    ),
                                 loadingBuilder: (ctx, child, progress) {
                                   if (progress == null) return child;
                                   return const Center(
                                     child: SizedBox(
                                       width: 18,
                                       height: 18,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
                                   );
                                 },
@@ -1446,8 +1655,15 @@ class _TurfOwnerRegistrationScreenState
                                 onTap: () => _removePhoto(i),
                                 child: Container(
                                   padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                                  child: const Icon(Icons.close_rounded, color: Color(0xFF141414), size: 14),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close_rounded,
+                                    color: Color(0xFF141414),
+                                    size: 14,
+                                  ),
                                 ),
                               ),
                             ),
@@ -1455,13 +1671,22 @@ class _TurfOwnerRegistrationScreenState
                               bottom: 3,
                               left: 3,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 1,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.65),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: Text('Photo ${i + 1}',
-                                    style: const TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  'Photo ${i + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -1476,21 +1701,34 @@ class _TurfOwnerRegistrationScreenState
                                 const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
                                 )
                               else ...[
                                 Icon(
-                                  isNextAddSlot ? Icons.add_a_photo_rounded : Icons.photo_library_outlined,
-                                  color: isNextAddSlot ? AppColors.primary : Colors.grey[500],
+                                  isNextAddSlot
+                                      ? Icons.add_a_photo_rounded
+                                      : Icons.photo_library_outlined,
+                                  color: isNextAddSlot
+                                      ? AppColors.primary
+                                      : Colors.grey[500],
                                   size: 22,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  isNextAddSlot ? '+ Add Photo' : 'Photo ${i + 1}',
+                                  isNextAddSlot
+                                      ? '+ Add Photo'
+                                      : 'Photo ${i + 1}',
                                   style: TextStyle(
                                     fontSize: 9,
-                                    color: isNextAddSlot ? AppColors.primary : Colors.grey[600],
-                                    fontWeight: isNextAddSlot ? FontWeight.bold : FontWeight.w500,
+                                    color: isNextAddSlot
+                                        ? AppColors.primary
+                                        : Colors.grey[600],
+                                    fontWeight: isNextAddSlot
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -1505,7 +1743,12 @@ class _TurfOwnerRegistrationScreenState
         const SizedBox(height: 20),
 
         // Sports Available at Venue (Standard turf ground includes Cricket & Football at equal base rate)
-        Text('Sports Available at Venue', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'Sports Available at Venue',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
         Text(
           'Cricket and Football are standard turf sports played on the same ground at the same base rate. Select additional sports only if you have separate dedicated courts.',
@@ -1515,81 +1758,103 @@ class _TurfOwnerRegistrationScreenState
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: [
-            'Cricket',
-            'Football',
-            'Pickle ball',
-            'Badminton',
-            'Tennis',
-            'Basketball',
-            'Volleyball',
-          ].map((sport) {
-            final isSelected = _selectedSports.contains(sport);
-            final isStandardTurf = sport == 'Cricket' || sport == 'Football';
-            return FilterChip(
-              avatar: Icon(
-                sport == 'Cricket'
-                    ? Icons.sports_cricket
-                    : sport == 'Football'
+          children:
+              [
+                'Cricket',
+                'Football',
+                'Pickle ball',
+                'Badminton',
+                'Tennis',
+                'Basketball',
+                'Volleyball',
+              ].map((sport) {
+                final isSelected = _selectedSports.contains(sport);
+                final isStandardTurf =
+                    sport == 'Cricket' || sport == 'Football';
+                return FilterChip(
+                  avatar: Icon(
+                    sport == 'Cricket'
+                        ? Icons.sports_cricket
+                        : sport == 'Football'
                         ? Icons.sports_soccer
                         : sport == 'Badminton' || sport == 'Tennis'
-                            ? Icons.sports_tennis
-                            : sport == 'Pickle ball'
-                                ? Icons.sports_tennis_rounded
-                                : sport == 'Basketball'
-                                    ? Icons.sports_basketball
-                                    : Icons.sports_volleyball,
-                size: 16,
-                color: isSelected ? Colors.white : AppColors.primary,
-              ),
-              label: Text(
-                isStandardTurf ? '$sport (Turf Ground)' : sport,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF1F2937),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 12,
-                ),
-              ),
-              selected: isSelected,
-              selectedColor: AppColors.primary,
-              checkmarkColor: Colors.white,
-              backgroundColor: const Color(0xFFF3F4F6),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                  color: isSelected ? AppColors.primary : const Color(0xFF262626),
-                ),
-              ),
-              onSelected: (selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedSports.add(sport);
-                  } else {
-                    if (_selectedSports.length > 1) {
-                      _selectedSports.remove(sport);
-                    } else {
-                      ToastUtils.showError(context, 'At least one sport must be selected');
-                    }
-                  }
-                });
-              },
-            );
-          }).toList(),
+                        ? Icons.sports_tennis
+                        : sport == 'Pickle ball'
+                        ? Icons.sports_tennis_rounded
+                        : sport == 'Basketball'
+                        ? Icons.sports_basketball
+                        : Icons.sports_volleyball,
+                    size: 16,
+                    color: isSelected ? Colors.white : AppColors.primary,
+                  ),
+                  label: Text(
+                    isStandardTurf ? '$sport (Turf Ground)' : sport,
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF1F2937),
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                  selected: isSelected,
+                  selectedColor: AppColors.primary,
+                  checkmarkColor: Colors.white,
+                  backgroundColor: const Color(0xFFF3F4F6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppColors.primary
+                          : const Color(0xFF262626),
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        _selectedSports.add(sport);
+                      } else {
+                        if (_selectedSports.length > 1) {
+                          _selectedSports.remove(sport);
+                        } else {
+                          ToastUtils.showError(
+                            context,
+                            'At least one sport must be selected',
+                          );
+                        }
+                      }
+                    });
+                  },
+                );
+              }).toList(),
         ),
         const SizedBox(height: 20),
 
         // Amenities Checklist
-        Text('Venue Facilities & Amenities', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'Venue Facilities & Amenities',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         CheckboxListTile(
-          secondary: const Icon(Icons.water_drop_rounded, color: AppColors.primary),
+          secondary: const Icon(
+            Icons.water_drop_rounded,
+            color: AppColors.primary,
+          ),
           title: const Text('Purified Drinking Water Facility'),
           value: _hasWater,
           activeColor: AppColors.primary,
           onChanged: (val) => setState(() => _hasWater = val ?? true),
         ),
         CheckboxListTile(
-          secondary: const Icon(Icons.local_parking_rounded, color: AppColors.primary),
+          secondary: const Icon(
+            Icons.local_parking_rounded,
+            color: AppColors.primary,
+          ),
           title: const Text('Dedicated Parking (Two-Wheeler & Four-Wheeler)'),
           value: _hasParking,
           activeColor: AppColors.primary,
@@ -1603,7 +1868,10 @@ class _TurfOwnerRegistrationScreenState
           onChanged: (val) => setState(() => _hasToilet = val ?? true),
         ),
         CheckboxListTile(
-          secondary: const Icon(Icons.lightbulb_rounded, color: AppColors.primary),
+          secondary: const Icon(
+            Icons.lightbulb_rounded,
+            color: AppColors.primary,
+          ),
           title: const Text('LED Night Floodlights'),
           value: _hasFloodlights,
           activeColor: AppColors.primary,
@@ -1617,7 +1885,10 @@ class _TurfOwnerRegistrationScreenState
           onChanged: (val) => setState(() => _hasChangingRoom = val ?? true),
         ),
         CheckboxListTile(
-          secondary: const Icon(Icons.medical_services_rounded, color: AppColors.primary),
+          secondary: const Icon(
+            Icons.medical_services_rounded,
+            color: AppColors.primary,
+          ),
           title: const Text('First Aid Kit & Safety Gear'),
           value: _hasFirstAid,
           activeColor: AppColors.primary,
@@ -1632,11 +1903,15 @@ class _TurfOwnerRegistrationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Step 4: Business KYC & Bank Details',
-            style: theme.textTheme.displayMedium?.copyWith(fontSize: 20)),
+        Text(
+          'Step 4: Business KYC & Bank Details',
+          style: theme.textTheme.displayMedium?.copyWith(fontSize: 20),
+        ),
         const SizedBox(height: 6),
-        Text('Provide GST, PAN, Aadhaar numbers and bank details for automated weekly payouts.',
-            style: theme.textTheme.bodyMedium),
+        Text(
+          'Provide GST, PAN, Aadhaar numbers and bank details for automated weekly payouts.',
+          style: theme.textTheme.bodyMedium,
+        ),
         const SizedBox(height: 20),
 
         AppTextField(
@@ -1667,14 +1942,26 @@ class _TurfOwnerRegistrationScreenState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Attach KYC Documents', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Attach KYC Documents',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Text('PDF Only', style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'PDF Only',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -1685,34 +1972,57 @@ class _TurfOwnerRegistrationScreenState
             // Aadhaar Document Card
             Expanded(
               child: AppCard(
-                onTap: _isUploadingAadhaar ? null : () => _pickAndUploadKycPdf('aadhaar'),
-                color: _isAadhaarUploaded ? AppColors.success.withValues(alpha: 0.12) : null,
+                onTap: _isUploadingAadhaar
+                    ? null
+                    : () => _pickAndUploadKycPdf('aadhaar'),
+                color: _isAadhaarUploaded
+                    ? AppColors.success.withValues(alpha: 0.12)
+                    : null,
                 child: Column(
                   children: [
                     if (_isUploadingAadhaar)
-                      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                      const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
                     else ...[
                       Icon(
-                        _isAadhaarUploaded ? Icons.task_alt_rounded : Icons.picture_as_pdf_rounded,
-                        color: _isAadhaarUploaded ? AppColors.success : AppColors.primary,
+                        _isAadhaarUploaded
+                            ? Icons.task_alt_rounded
+                            : Icons.picture_as_pdf_rounded,
+                        color: _isAadhaarUploaded
+                            ? AppColors.success
+                            : AppColors.primary,
                         size: 24,
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        _isAadhaarUploaded ? 'Aadhaar Attached' : 'Attach Aadhaar',
+                        _isAadhaarUploaded
+                            ? 'Aadhaar Attached'
+                            : 'Attach Aadhaar',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: _isAadhaarUploaded ? AppColors.success : AppColors.primary,
+                          color: _isAadhaarUploaded
+                              ? AppColors.success
+                              : AppColors.primary,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _isAadhaarUploaded ? (_aadhaarDocName ?? 'PDF Attached') : '(PDF only)',
+                        _isAadhaarUploaded
+                            ? (_aadhaarDocName ?? 'PDF Attached')
+                            : '(PDF only)',
                         style: TextStyle(
                           fontSize: 8.5,
-                          color: _isAadhaarUploaded ? AppColors.success : Colors.grey[600],
+                          color: _isAadhaarUploaded
+                              ? AppColors.success
+                              : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -1729,16 +2039,31 @@ class _TurfOwnerRegistrationScreenState
             // PAN Document Card
             Expanded(
               child: AppCard(
-                onTap: _isUploadingPan ? null : () => _pickAndUploadKycPdf('pan'),
-                color: _isPanUploaded ? AppColors.success.withValues(alpha: 0.12) : null,
+                onTap: _isUploadingPan
+                    ? null
+                    : () => _pickAndUploadKycPdf('pan'),
+                color: _isPanUploaded
+                    ? AppColors.success.withValues(alpha: 0.12)
+                    : null,
                 child: Column(
                   children: [
                     if (_isUploadingPan)
-                      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                      const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
                     else ...[
                       Icon(
-                        _isPanUploaded ? Icons.task_alt_rounded : Icons.picture_as_pdf_rounded,
-                        color: _isPanUploaded ? AppColors.success : AppColors.primary,
+                        _isPanUploaded
+                            ? Icons.task_alt_rounded
+                            : Icons.picture_as_pdf_rounded,
+                        color: _isPanUploaded
+                            ? AppColors.success
+                            : AppColors.primary,
                         size: 24,
                       ),
                       const SizedBox(height: 5),
@@ -1747,16 +2072,22 @@ class _TurfOwnerRegistrationScreenState
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: _isPanUploaded ? AppColors.success : AppColors.primary,
+                          color: _isPanUploaded
+                              ? AppColors.success
+                              : AppColors.primary,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _isPanUploaded ? (_panDocName ?? 'PDF Attached') : '(PDF only)',
+                        _isPanUploaded
+                            ? (_panDocName ?? 'PDF Attached')
+                            : '(PDF only)',
                         style: TextStyle(
                           fontSize: 8.5,
-                          color: _isPanUploaded ? AppColors.success : Colors.grey[600],
+                          color: _isPanUploaded
+                              ? AppColors.success
+                              : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -1773,16 +2104,31 @@ class _TurfOwnerRegistrationScreenState
             // GST Document Card
             Expanded(
               child: AppCard(
-                onTap: _isUploadingGst ? null : () => _pickAndUploadKycPdf('gst'),
-                color: _isGstUploaded ? AppColors.success.withValues(alpha: 0.12) : null,
+                onTap: _isUploadingGst
+                    ? null
+                    : () => _pickAndUploadKycPdf('gst'),
+                color: _isGstUploaded
+                    ? AppColors.success.withValues(alpha: 0.12)
+                    : null,
                 child: Column(
                   children: [
                     if (_isUploadingGst)
-                      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
+                      const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
                     else ...[
                       Icon(
-                        _isGstUploaded ? Icons.task_alt_rounded : Icons.picture_as_pdf_rounded,
-                        color: _isGstUploaded ? AppColors.success : AppColors.primary,
+                        _isGstUploaded
+                            ? Icons.task_alt_rounded
+                            : Icons.picture_as_pdf_rounded,
+                        color: _isGstUploaded
+                            ? AppColors.success
+                            : AppColors.primary,
                         size: 24,
                       ),
                       const SizedBox(height: 5),
@@ -1791,16 +2137,22 @@ class _TurfOwnerRegistrationScreenState
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: _isGstUploaded ? AppColors.success : AppColors.primary,
+                          color: _isGstUploaded
+                              ? AppColors.success
+                              : AppColors.primary,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _isGstUploaded ? (_gstDocName ?? 'PDF Attached') : '(PDF only)',
+                        _isGstUploaded
+                            ? (_gstDocName ?? 'PDF Attached')
+                            : '(PDF only)',
                         style: TextStyle(
                           fontSize: 8.5,
-                          color: _isGstUploaded ? AppColors.success : Colors.grey[600],
+                          color: _isGstUploaded
+                              ? AppColors.success
+                              : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                         maxLines: 1,
@@ -1816,7 +2168,12 @@ class _TurfOwnerRegistrationScreenState
         ),
         const SizedBox(height: 20),
 
-        Text('Payout Bank Account & UPI', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'Payout Bank Account & UPI',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 10),
 
         AppTextField(
@@ -1863,7 +2220,8 @@ class _TurfOwnerRegistrationScreenState
     final area = _areaController.text.trim().isNotEmpty
         ? _areaController.text.trim()
         : 'Madurai';
-    final trackingCode = _trackingCode ??
+    final trackingCode =
+        _trackingCode ??
         (_registeredAdminId != null
             ? 'REG-MAD-${1000 + _registeredAdminId!}'
             : 'REG-MAD-1001');
@@ -1877,7 +2235,11 @@ class _TurfOwnerRegistrationScreenState
             color: AppColors.warning,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.shield_outlined, color: Color(0xFF141414), size: 54),
+          child: const Icon(
+            Icons.shield_outlined,
+            color: Color(0xFF141414),
+            size: 54,
+          ),
         ),
         const SizedBox(height: 24),
         Text(
@@ -1900,7 +2262,10 @@ class _TurfOwnerRegistrationScreenState
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Application Tracking Code:', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text(
+                    'Application Tracking Code:',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
@@ -2002,8 +2367,14 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('OTP Mobile & Email:'),
-                  const Text('VERIFIED',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 11)),
+                  const Text(
+                    'VERIFIED',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.success,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -2011,8 +2382,16 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('KYC Aadhaar (PDF):'),
-                  Text(_isAadhaarUploaded ? 'ATTACHED' : 'NOT ATTACHED',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: _isAadhaarUploaded ? AppColors.success : Colors.grey, fontSize: 11)),
+                  Text(
+                    _isAadhaarUploaded ? 'ATTACHED' : 'NOT ATTACHED',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _isAadhaarUploaded
+                          ? AppColors.success
+                          : Colors.grey,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -2020,8 +2399,14 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('KYC PAN (PDF):'),
-                  Text(_isPanUploaded ? 'ATTACHED' : 'NOT ATTACHED',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: _isPanUploaded ? AppColors.success : Colors.grey, fontSize: 11)),
+                  Text(
+                    _isPanUploaded ? 'ATTACHED' : 'NOT ATTACHED',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _isPanUploaded ? AppColors.success : Colors.grey,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -2029,8 +2414,14 @@ class _TurfOwnerRegistrationScreenState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('KYC GST (PDF):'),
-                  Text(_isGstUploaded ? 'ATTACHED' : 'NOT ATTACHED',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: _isGstUploaded ? AppColors.success : Colors.grey, fontSize: 11)),
+                  Text(
+                    _isGstUploaded ? 'ATTACHED' : 'NOT ATTACHED',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: _isGstUploaded ? AppColors.success : Colors.grey,
+                      fontSize: 11,
+                    ),
+                  ),
                 ],
               ),
               if (_bankAccountController.text.trim().isNotEmpty) ...[
@@ -2075,23 +2466,33 @@ class _TurfOwnerRegistrationScreenState
                 children: [
                   const Text('Super Admin Audit Status:'),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
-                      color: (_liveAuditStatus == 'VERIFIED'
-                              ? AppColors.success
-                              : (_liveAuditStatus == 'CANCELLED' ? Colors.red : AppColors.warning))
-                          .withValues(alpha: 0.2),
+                      color:
+                          (_liveAuditStatus == 'VERIFIED'
+                                  ? AppColors.success
+                                  : (_liveAuditStatus == 'CANCELLED'
+                                        ? Colors.red
+                                        : AppColors.warning))
+                              .withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       _liveAuditStatus == 'VERIFIED'
                           ? 'VERIFIED'
-                          : (_liveAuditStatus == 'CANCELLED' ? 'CANCELLED' : 'PENDING APPROVAL'),
+                          : (_liveAuditStatus == 'CANCELLED'
+                                ? 'CANCELLED'
+                                : 'PENDING APPROVAL'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: _liveAuditStatus == 'VERIFIED'
                             ? AppColors.success
-                            : (_liveAuditStatus == 'CANCELLED' ? Colors.red : AppColors.warning),
+                            : (_liveAuditStatus == 'CANCELLED'
+                                  ? Colors.red
+                                  : AppColors.warning),
                         fontSize: 11,
                       ),
                     ),
@@ -2102,8 +2503,13 @@ class _TurfOwnerRegistrationScreenState
                 const Divider(height: 18),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Uploaded Venue Photos (${_venuePhotoUrls.length}):',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'Uploaded Venue Photos (${_venuePhotoUrls.length}):',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
@@ -2124,9 +2530,14 @@ class _TurfOwnerRegistrationScreenState
                           child: Image.network(
                             _venuePhotoUrls[idx],
                             fit: BoxFit.cover,
-                            errorBuilder: (ctx, error, stackTrace) => const Center(
-                              child: Icon(Icons.broken_image, size: 20, color: Colors.grey),
-                            ),
+                            errorBuilder: (ctx, error, stackTrace) =>
+                                const Center(
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    size: 20,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                           ),
                         ),
                       );
@@ -2152,11 +2563,19 @@ class _TurfOwnerRegistrationScreenState
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.check_circle_rounded, color: AppColors.success, size: 22),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.success,
+                      size: 22,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Account Verified & Active!',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.success, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -2197,7 +2616,11 @@ class _TurfOwnerRegistrationScreenState
                     SizedBox(width: 8),
                     Text(
                       'Application Rejected',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -2225,7 +2648,6 @@ class _TurfOwnerRegistrationScreenState
                     }
                   },
                 ),
-
               ],
             ),
           ),
@@ -2245,12 +2667,19 @@ class _TurfOwnerRegistrationScreenState
                     SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange[800]),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.orange[800],
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Review in Progress',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange[900], fontSize: 14),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[900],
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -2262,10 +2691,14 @@ class _TurfOwnerRegistrationScreenState
                 ),
                 const SizedBox(height: 14),
                 AppButton(
-                  text: _isCheckingStatus ? 'Checking Status...' : 'Check Approval Status',
+                  text: _isCheckingStatus
+                      ? 'Checking Status...'
+                      : 'Check Approval Status',
                   icon: Icons.refresh_rounded,
                   type: AppButtonType.outline,
-                  onPressed: _isCheckingStatus ? null : _checkLiveStatusWithBackend,
+                  onPressed: _isCheckingStatus
+                      ? null
+                      : _checkLiveStatusWithBackend,
                 ),
               ],
             ),
@@ -2285,8 +2718,6 @@ class _TurfOwnerRegistrationScreenState
     );
   }
 
-
-
   String _getStepIncompleteMessage() {
     switch (_currentStep) {
       case 0:
@@ -2297,11 +2728,16 @@ class _TurfOwnerRegistrationScreenState
           return 'Email address is already registered. Use another email to continue.';
         }
         if (_phoneController.text.trim().isNotEmpty &&
-            _phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '').length < 10) {
+            _phoneController.text
+                    .trim()
+                    .replaceAll(RegExp(r'[^0-9]'), '')
+                    .length <
+                10) {
           return 'Enter a valid 10-digit mobile number to continue.';
         }
         if (_emailController.text.trim().isNotEmpty &&
-            (!_emailController.text.trim().contains('@') || !_emailController.text.trim().contains('.'))) {
+            (!_emailController.text.trim().contains('@') ||
+                !_emailController.text.trim().contains('.'))) {
           return 'Enter a valid email address to continue.';
         }
         return 'Please fill all venue & contact fields to activate Continue.';
@@ -2315,7 +2751,12 @@ class _TurfOwnerRegistrationScreenState
         return 'Verify Email OTP to activate Continue.';
       case 2:
         if (_venuePhotoUrls.isEmpty &&
-            !(_hasWater || _hasParking || _hasToilet || _hasFloodlights || _hasChangingRoom || _hasFirstAid)) {
+            !(_hasWater ||
+                _hasParking ||
+                _hasToilet ||
+                _hasFloodlights ||
+                _hasChangingRoom ||
+                _hasFirstAid)) {
           return 'Upload at least 1 photo & select 1 amenity to activate Continue.';
         }
         if (_venuePhotoUrls.isEmpty) {
@@ -2374,7 +2815,11 @@ class _TurfOwnerRegistrationScreenState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.info_outline_rounded, size: 14, color: Colors.amber[400]),
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 14,
+                    color: Colors.amber[400],
+                  ),
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
@@ -2407,8 +2852,8 @@ class _TurfOwnerRegistrationScreenState
                   text: _currentStep == 0
                       ? 'Continue'
                       : (_currentStep == 3
-                          ? 'Send to Super Admin for Verification'
-                          : 'Continue to Next Step'),
+                            ? 'Send to Super Admin for Verification'
+                            : 'Continue to Next Step'),
                   onPressed: isCurrentStepValid ? _nextStep : null,
                 ),
               ),

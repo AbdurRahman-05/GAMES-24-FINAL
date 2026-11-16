@@ -2528,10 +2528,12 @@ class _TurfOwnerProfileScreenState
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1B2A06), Color(0xFFDCFCE7)],
+                        colors: [Color(0xFF141414), Color(0xFF192508)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF262626)),
+                      border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
                     ),
                     child: Row(
                       children: [
@@ -2541,7 +2543,7 @@ class _TurfOwnerProfileScreenState
                             color: const Color(0xFFD4FF00),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.calendar_month_rounded, size: 16, color: Colors.white),
+                          child: const Icon(Icons.calendar_month_rounded, size: 16, color: Colors.black),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -2562,7 +2564,7 @@ class _TurfOwnerProfileScreenState
                                 profile.weekdayOpeningTime == '24 Hours'
                                     ? 'Open 24 Hours'
                                     : '${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFFA1A1AA)),
                               ),
                             ],
                           ),
@@ -2575,7 +2577,7 @@ class _TurfOwnerProfileScreenState
                           ),
                           child: Text(
                             '₹${profile.weekdayRate.toStringAsFixed(0)}/hr',
-                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Colors.white),
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Colors.black),
                           ),
                         ),
                       ],
@@ -2592,17 +2594,19 @@ class _TurfOwnerProfileScreenState
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF241A04), Color(0xFF2D2005)],
+                        colors: [Color(0xFF141414), Color(0xFF261908)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFD4FF00)),
+                      border: Border.all(color: const Color(0xFFD97706).withValues(alpha: 0.35)),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFB45309),
+                            color: const Color(0xFFD97706),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.weekend_rounded, size: 16, color: Colors.white),
@@ -2619,14 +2623,14 @@ class _TurfOwnerProfileScreenState
                               const SizedBox(height: 1),
                               const Text(
                                 'Sat - Sun',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF92400E)),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFFBBF24)),
                               ),
                               const SizedBox(height: 1),
                               Text(
                                 profile.weekendOpeningTime == '24 Hours'
                                     ? 'Open 24 Hours'
                                     : '${profile.weekendOpeningTime} - ${profile.weekendClosingTime}',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFFA1A1AA)),
                               ),
                             ],
                           ),
@@ -2634,7 +2638,7 @@ class _TurfOwnerProfileScreenState
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFB45309),
+                            color: const Color(0xFFD97706),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -2659,10 +2663,10 @@ class _TurfOwnerProfileScreenState
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFEFCE8), Color(0xFFFEF08A)],
+                              colors: [Color(0xFF1A1708), Color(0xFF241F0A)],
                             ),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFDE047)),
+                            border: Border.all(color: const Color(0xFFEAB308).withValues(alpha: 0.35)),
                           ),
                           child: Row(
                             children: [
@@ -2679,13 +2683,13 @@ class _TurfOwnerProfileScreenState
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Day Slot', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF854D0E))),
+                                    const Text('Day Slot', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
                                     const SizedBox(height: 1),
-                                    const Text('06:00 AM - 06:00 PM', style: TextStyle(fontSize: 9, color: Color(0xFF92400E))),
+                                    const Text('06:00 AM - 06:00 PM', style: TextStyle(fontSize: 9.5, color: Color(0xFFA1A1AA))),
                                     const SizedBox(height: 2),
                                     Text(
                                       '₹${profile.dayRate.toStringAsFixed(0)}/hr',
-                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF713F12)),
+                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFFFBBF24)),
                                     ),
                                   ],
                                 ),
@@ -2704,10 +2708,10 @@ class _TurfOwnerProfileScreenState
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFEEF2FF), Color(0xFFE0E7FF)],
+                              colors: [Color(0xFF0F1222), Color(0xFF14182E)],
                             ),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFC7D2FE)),
+                            border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.35)),
                           ),
                           child: Row(
                             children: [
@@ -2724,13 +2728,13 @@ class _TurfOwnerProfileScreenState
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Night Slot', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF3730A3))),
+                                    const Text('Night Slot', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
                                     const SizedBox(height: 1),
-                                    const Text('06:00 PM - 12:00 AM', style: TextStyle(fontSize: 9, color: Color(0xFF4338CA))),
+                                    const Text('06:00 PM - 12:00 AM', style: TextStyle(fontSize: 9.5, color: Color(0xFFA1A1AA))),
                                     const SizedBox(height: 2),
                                     Text(
                                       '₹${profile.nightRate.toStringAsFixed(0)}/hr',
-                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: Color(0xFF312E81)),
+                                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF818CF8)),
                                     ),
                                   ],
                                 ),
@@ -4038,67 +4042,67 @@ _AmenityInfo _getAmenityInfo(String name) {
   if (lower.contains('water')) {
     return const _AmenityInfo(
       icon: Icons.water_drop_rounded,
-      color: Color(0xFF0284C7),
-      bgColor: Color(0xFFF0F9FF),
+      color: Color(0xFF38BDF8),
+      bgColor: Color(0xFF0C1F2E),
     );
   } else if (lower.contains('park')) {
     return const _AmenityInfo(
       icon: Icons.local_parking_rounded,
-      color: Color(0xFF4F46E5),
-      bgColor: Color(0xFFEEF2FF),
+      color: Color(0xFF818CF8),
+      bgColor: Color(0xFF141830),
     );
   } else if (lower.contains('restroom') || lower.contains('washroom') || lower.contains('toilet')) {
     return const _AmenityInfo(
       icon: Icons.wc_rounded,
-      color: Color(0xFF7C3AED),
-      bgColor: Color(0xFFF5F3FF),
+      color: Color(0xFFA78BFA),
+      bgColor: Color(0xFF1C1430),
     );
   } else if (lower.contains('light') || lower.contains('flood')) {
     return const _AmenityInfo(
       icon: Icons.highlight_rounded,
-      color: Color(0xFFD97706),
+      color: Color(0xFFFBBF24),
       bgColor: Color(0xFF241A04),
     );
   } else if (lower.contains('changing') || lower.contains('room')) {
     return const _AmenityInfo(
       icon: Icons.checkroom_rounded,
-      color: Color(0xFF0D9488),
-      bgColor: Color(0xFFF0FDFA),
+      color: Color(0xFF2DD4BF),
+      bgColor: Color(0xFF0A2420),
     );
   } else if (lower.contains('aid') || lower.contains('medical')) {
     return const _AmenityInfo(
       icon: Icons.medical_services_rounded,
-      color: Color(0xFFE11D48),
-      bgColor: Color(0xFFFFF1F2),
+      color: Color(0xFFFB7185),
+      bgColor: Color(0xFF280E14),
     );
   } else if (lower.contains('wifi') || lower.contains('internet')) {
     return const _AmenityInfo(
       icon: Icons.wifi_rounded,
-      color: Color(0xFF2563EB),
-      bgColor: Color(0xFFEFF6FF),
+      color: Color(0xFF60A5FA),
+      bgColor: Color(0xFF0E1A30),
     );
   } else if (lower.contains('cafe') || lower.contains('canteen') || lower.contains('snack')) {
     return const _AmenityInfo(
       icon: Icons.local_cafe_rounded,
-      color: Color(0xFFEA580C),
-      bgColor: Color(0xFFFFF7ED),
+      color: Color(0xFFFB923C),
+      bgColor: Color(0xFF261408),
     );
   } else if (lower.contains('locker')) {
     return const _AmenityInfo(
       icon: Icons.lock_rounded,
       color: Color(0xFFA1A1AA),
-      bgColor: Color(0xFF141414),
+      bgColor: Color(0xFF181818),
     );
   } else if (lower.contains('seat') || lower.contains('dugout') || lower.contains('stand')) {
     return const _AmenityInfo(
       icon: Icons.chair_rounded,
-      color: Color(0xFF059669),
-      bgColor: Color(0xFFECFDF5),
+      color: Color(0xFF34D399),
+      bgColor: Color(0xFF062016),
     );
   }
   return const _AmenityInfo(
     icon: Icons.verified_rounded,
-    color: Color(0xFF059669),
-    bgColor: Color(0xFF1B2A06),
+    color: Color(0xFFD4FF00),
+    bgColor: Color(0xFF181818),
   );
 }

@@ -605,7 +605,7 @@ class _AdminSlotManagerScreenState
                 _buildHeroMiniStat(
                   'Passed',
                   '$passedCount',
-                  const Color(0xFF71717A),
+                  const Color(0xFFA1A1AA),
                 ),
               ],
             ),
@@ -712,7 +712,7 @@ class _AdminSlotManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
+                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
@@ -751,9 +751,9 @@ class _AdminSlotManagerScreenState
                             court.name,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w900,
                               color: isSelected
-                                  ? Colors.white
+                                  ? Colors.black
                                   : Colors.white,
                             ),
                           ),
@@ -761,10 +761,10 @@ class _AdminSlotManagerScreenState
                             '₹${court.hourlyRate.toInt()}/hr • ${court.sport}',
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               color: isSelected
-                                  ? const Color(0xFFD4FF00)
-                                  : const Color(0xFF16A34A),
+                                  ? const Color(0xFF141414)
+                                  : const Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
@@ -1255,53 +1255,53 @@ class _AdminSlotManagerScreenState
             : 'Booked • Completed';
         statusIcon = Icons.task_alt_rounded;
       } else {
-        cardBg = const Color(0xFFFFF1F2);
-        borderColor = const Color(0xFFFECDD3);
-        titleColor = const Color(0xFF9F1239);
-        statusBadgeBg = const Color(0xFFFFE4E6);
-        statusBadgeText = const Color(0xFFE11D48);
+        cardBg = const Color(0xFF200D12);
+        borderColor = const Color(0xFF4A1922);
+        titleColor = Colors.white;
+        statusBadgeBg = const Color(0xFF381219);
+        statusBadgeText = const Color(0xFFFB7185);
         statusTitle = booking != null ? booking.customerName : 'Booked Online';
         statusIcon = Icons.confirmation_number_rounded;
       }
     } else if (isPast) {
       cardBg = const Color(0xFF141414);
       borderColor = const Color(0xFF262626);
-      titleColor = const Color(0xFF71717A);
+      titleColor = const Color(0xFFA1A1AA);
       statusBadgeBg = const Color(0xFF1C1C1C);
       statusBadgeText = const Color(0xFFA1A1AA);
       statusTitle = 'Time Passed';
       statusIcon = Icons.history_rounded;
     } else if (isBlocked) {
       if (isAlreadyBooked) {
-        cardBg = const Color(0xFFEFF6FF);
-        borderColor = const Color(0xFFBFDBFE);
-        titleColor = const Color(0xFF1E3A8A);
-        statusBadgeBg = const Color(0xFFDBEAFE);
-        statusBadgeText = const Color(0xFF1D4ED8);
+        cardBg = const Color(0xFF0C192E);
+        borderColor = const Color(0xFF1E3A5F);
+        titleColor = Colors.white;
+        statusBadgeBg = const Color(0xFF13284A);
+        statusBadgeText = const Color(0xFF60A5FA);
         statusTitle = 'Already Booked';
         statusIcon = Icons.bookmark_added_rounded;
       } else {
         cardBg = const Color(0xFF241A04);
-        borderColor = const Color(0xFFD4FF00);
-        titleColor = const Color(0xFF92400E);
-        statusBadgeBg = const Color(0xFF2D2005);
-        statusBadgeText = const Color(0xFFD97706);
+        borderColor = const Color(0xFFB45309);
+        titleColor = Colors.white;
+        statusBadgeBg = const Color(0xFF382506);
+        statusBadgeText = const Color(0xFFFBBF24);
         statusTitle = 'Under Maintenance';
         statusIcon = Icons.build_circle_rounded;
       }
     } else if (offerTag != null && offerTag.isNotEmpty) {
       cardBg = const Color(0xFF1B2A06);
-      borderColor = const Color(0xFF262626);
-      titleColor = const Color(0xFF14532D);
-      statusBadgeBg = const Color(0xFFDCFCE7);
+      borderColor = const Color(0xFFD4FF00);
+      titleColor = Colors.white;
+      statusBadgeBg = const Color(0xFF243808);
       statusBadgeText = const Color(0xFFD4FF00);
       statusTitle = 'Special Offer';
       statusIcon = Icons.local_offer_rounded;
     } else {
-      cardBg = Colors.white;
+      cardBg = const Color(0xFF141414);
       borderColor = const Color(0xFF262626);
       titleColor = Colors.white;
-      statusBadgeBg = const Color(0xFFDCFCE7);
+      statusBadgeBg = const Color(0xFF1B2A06);
       statusBadgeText = const Color(0xFFD4FF00);
       statusTitle = 'Available';
       statusIcon = Icons.check_circle_rounded;

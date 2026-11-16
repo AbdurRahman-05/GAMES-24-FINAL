@@ -52,13 +52,19 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   }
 
   Future<void> _onAdminLogin() async {
-    final phone = _phoneController.text.trim().replaceAll(RegExp(r'[^0-9]'), '');
+    final phone = _phoneController.text.trim().replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
     final otp = _otpController.text.trim();
 
     setState(() => _errorMessage = null);
 
     if (phone.length < 10) {
-      setState(() => _errorMessage = 'Please enter a valid 10-digit registered mobile number.');
+      setState(
+        () => _errorMessage =
+            'Please enter a valid 10-digit registered mobile number.',
+      );
       ToastUtils.showError(context, 'Enter a valid 10-digit mobile number.');
       return;
     }
@@ -70,7 +76,10 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     }
 
     if (otp != '1234') {
-      setState(() => _errorMessage = 'Invalid OTP! Please check your OTP and try again.');
+      setState(
+        () =>
+            _errorMessage = 'Invalid OTP! Please check your OTP and try again.',
+      );
       ToastUtils.showError(context, 'Invalid OTP! Try again.');
       return;
     }
@@ -81,10 +90,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/admin-login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'mobileNumber': phone,
-          'otp': otp,
-        }),
+        body: jsonEncode({'mobileNumber': phone, 'otp': otp}),
       );
 
       final data = jsonDecode(response.body);
@@ -92,29 +98,35 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         ref.read(isAdminModeProvider.notifier).setMode(true);
         if (data['admin'] != null && data['admin'] is Map<String, dynamic>) {
-          ref.read(turfProfileProvider.notifier).setFromVerifiedAdmin(data['admin'] as Map<String, dynamic>);
+          ref
+              .read(turfProfileProvider.notifier)
+              .setFromVerifiedAdmin(data['admin'] as Map<String, dynamic>);
         }
         try {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('owner_logged_in', true);
           await prefs.setString('owner_phone', phone);
           if (data['admin'] != null) {
-            await prefs.setString('verified_admin_data', jsonEncode(data['admin']));
-            await prefs.setString('owner_venue_name', data['admin']?['venueName'] ?? 'Venue');
+            await prefs.setString(
+              'verified_admin_data',
+              jsonEncode(data['admin']),
+            );
+            await prefs.setString(
+              'owner_venue_name',
+              data['admin']?['venueName'] ?? 'Venue',
+            );
           }
         } catch (e) {
           debugPrint('Error saving login prefs: $e');
         }
         if (mounted) {
           final venue = data['admin']?['venueName'] ?? 'Venue';
-          ToastUtils.showSuccess(
-            context,
-            'Login Successful! Welcome, $venue.',
-          );
+          ToastUtils.showSuccess(context, 'Login Successful! Welcome, $venue.');
           context.go('/admin/dashboard');
         }
       } else {
-        final message = data['message'] ??
+        final message =
+            data['message'] ??
             'Access Denied: This mobile number is not in the Verified Admin table. Waiting registrations cannot log in.';
         if (mounted) {
           setState(() => _errorMessage = message);
@@ -123,7 +135,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        final errorStr = 'Cannot connect to server (${ApiConfig.baseUrl}). Please ensure backend is running.';
+        final errorStr =
+            'Cannot connect to server (${ApiConfig.baseUrl}). Please ensure backend is running.';
         setState(() => _errorMessage = errorStr);
         ToastUtils.showError(context, errorStr);
       }
@@ -199,7 +212,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.hourglass_top_rounded, color: Color(0xFFFBBF24), size: 24),
+                      const Icon(
+                        Icons.hourglass_top_rounded,
+                        color: Color(0xFFFBBF24),
+                        size: 24,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -207,19 +224,33 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           children: [
                             const Text(
                               'Pending Verification Notice',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD4FF00)),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: Color(0xFFD4FF00),
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'Your venue (${_pendingVenueName ?? 'Application'}${_pendingTrackingCode != null ? ' • $_pendingTrackingCode' : ''}) is waiting for Super Admin audit.',
-                              style: const TextStyle(fontSize: 11.5, color: Color(0xFFD4FF00)),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Color(0xFFD4FF00),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       TextButton(
                         onPressed: () => context.go('/register'),
-                        child: const Text('View Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD4FF00))),
+                        child: const Text(
+                          'View Status',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: Color(0xFFD4FF00),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -264,9 +295,14 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 13,
+                            ),
                             decoration: const BoxDecoration(
-                              border: Border(right: BorderSide(color: Color(0xFF2E2E2E))),
+                              border: Border(
+                                right: BorderSide(color: Color(0xFF2E2E2E)),
+                              ),
                             ),
                             child: const Row(
                               children: [
@@ -279,7 +315,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                   ),
                                 ),
                                 SizedBox(width: 4),
-                                Icon(Icons.arrow_drop_down, size: 18, color: Color(0xFFA1A1AA)),
+                                Icon(
+                                  Icons.arrow_drop_down,
+                                  size: 18,
+                                  color: Color(0xFFA1A1AA),
+                                ),
                               ],
                             ),
                           ),
@@ -294,9 +334,15 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                               ),
                               decoration: const InputDecoration(
                                 hintText: 'Enter 10-digit number',
-                                hintStyle: TextStyle(color: Color(0xFF71717A), fontSize: 13.5),
+                                hintStyle: TextStyle(
+                                  color: Color(0xFF71717A),
+                                  fontSize: 13.5,
+                                ),
                                 border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 13,
+                                ),
                               ),
                             ),
                           ),
@@ -331,11 +377,22 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           color: Colors.white,
                         ),
                         decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.lock_outline_rounded, color: Color(0xFFD4FF00), size: 20),
+                          prefixIcon: Icon(
+                            Icons.lock_outline_rounded,
+                            color: Color(0xFFD4FF00),
+                            size: 20,
+                          ),
                           hintText: 'Enter 4-digit OTP',
-                          hintStyle: TextStyle(color: Color(0xFF71717A), fontSize: 13.5, letterSpacing: 0),
+                          hintStyle: TextStyle(
+                            color: Color(0xFF71717A),
+                            fontSize: 13.5,
+                            letterSpacing: 0,
+                          ),
                           border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 13,
+                          ),
                         ),
                       ),
                     ),
@@ -353,12 +410,19 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.error_outline_rounded, color: Colors.red.shade400, size: 20),
+                            Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.red.shade400,
+                              size: 20,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 _errorMessage!,
-                                style: TextStyle(color: Colors.red.shade200, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.red.shade200,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ],
@@ -388,7 +452,9 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.black,
+                                  ),
                                 ),
                               )
                             : const Row(
@@ -404,7 +470,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                     ),
                                   ),
                                   SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.black),
+                                  Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 18,
+                                    color: Colors.black,
+                                  ),
                                 ],
                               ),
                       ),
@@ -440,7 +510,9 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.12),
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(

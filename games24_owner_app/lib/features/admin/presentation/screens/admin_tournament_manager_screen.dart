@@ -1342,7 +1342,7 @@ class _AdminTournamentManagerScreenState
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildHeroMiniStat('Total', '${tournState.totalTournaments}', const Color(0xFF262626)),
+                _buildHeroMiniStat('Total', '${tournState.totalTournaments}', Colors.white),
                 _buildStatDivider(),
                 _buildHeroMiniStat('Live Now', '${tournState.liveCount}', const Color(0xFFF87171)),
                 _buildStatDivider(),
@@ -1365,7 +1365,7 @@ class _AdminTournamentManagerScreenState
       children: [
         Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
         const SizedBox(height: 1),
-        Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF71717A), fontWeight: FontWeight.w600)),
+        Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -1389,6 +1389,7 @@ class _AdminTournamentManagerScreenState
         children: filters.map((f) {
           final isSelected = _activeFilter == f['label'];
           final color = f['color'] as Color;
+          final isAllFilter = f['label'] == 'All';
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: InkWell(
@@ -1397,7 +1398,7 @@ class _AdminTournamentManagerScreenState
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isSelected ? color : Colors.white,
+                  color: isSelected ? color : const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected ? color : const Color(0xFF262626),
@@ -1415,23 +1416,29 @@ class _AdminTournamentManagerScreenState
                       f['label'] as String,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                        color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                        fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                        color: isSelected
+                            ? (isAllFilter ? Colors.black : Colors.white)
+                            : const Color(0xFFA1A1AA),
                       ),
                     ),
                     const SizedBox(width: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFF1C1C1C),
+                        color: isSelected
+                            ? (isAllFilter ? Colors.black.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.25))
+                            : const Color(0xFF1C1C1C),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '${f['count']}',
                         style: TextStyle(
                           fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                          fontWeight: FontWeight.w900,
+                          color: isSelected
+                              ? (isAllFilter ? Colors.black : Colors.white)
+                              : const Color(0xFFA1A1AA),
                         ),
                       ),
                     ),
@@ -1583,7 +1590,11 @@ class _AdminTournamentManagerScreenState
                       ],
                       Text(
                         isLive ? 'LIVE NOW' : t.status.toUpperCase(),
-                        style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w900, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w900,
+                          color: isLive ? Colors.white : Colors.black,
+                        ),
                       ),
                     ],
                   ),
@@ -1641,7 +1652,7 @@ class _AdminTournamentManagerScreenState
                             Flexible(
                               child: Text(
                                 t.championPrize,
-                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF92400E)),
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -1733,15 +1744,19 @@ class _AdminTournamentManagerScreenState
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00),
-                          foregroundColor: Colors.black,
+                          foregroundColor: isLive ? Colors.white : Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
-                        icon: const Icon(Icons.live_tv_rounded, size: 14),
+                        icon: Icon(Icons.live_tv_rounded, size: 14, color: isLive ? Colors.white : Colors.black),
                         label: Text(
                           isLive ? 'Live Controller' : 'Manage Live',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: isLive ? Colors.white : Colors.black,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -1752,8 +1767,9 @@ class _AdminTournamentManagerScreenState
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
+                          backgroundColor: const Color(0xFF181818),
                           foregroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFF2E2E2E)),
                           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
@@ -1761,7 +1777,7 @@ class _AdminTournamentManagerScreenState
                         icon: const Icon(Icons.groups_rounded, size: 14, color: Color(0xFFD4FF00)),
                         label: Text(
                           'Teams (${t.registeredTeams.length})',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

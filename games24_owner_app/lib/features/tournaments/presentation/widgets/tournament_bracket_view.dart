@@ -40,8 +40,14 @@ class TournamentBracketView extends StatelessWidget {
           children: const [
             Icon(Icons.account_tree_rounded, size: 40, color: Colors.grey),
             SizedBox(height: 8),
-            Text('No Bracket Generated Yet', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text('Admin can generate fixtures after registrations close.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(
+              'No Bracket Generated Yet',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Admin can generate fixtures after registrations close.',
+              style: TextStyle(fontSize: 11, color: Colors.grey),
+            ),
           ],
         ),
       );
@@ -54,9 +60,20 @@ class TournamentBracketView extends StatelessWidget {
     }
 
     // Ordered stages sequence
-    final stageOrder = ['Group Stage', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
-    final activeStages = stageOrder.where((s) => stagesMap.containsKey(s)).toList();
-    final stageMatchCounts = activeStages.map((s) => stagesMap[s]!.length).toList();
+    final stageOrder = [
+      'Group Stage',
+      'Round of 32',
+      'Round of 16',
+      'Quarter Final',
+      'Semi Final',
+      'Final',
+    ];
+    final activeStages = stageOrder
+        .where((s) => stagesMap.containsKey(s))
+        .toList();
+    final stageMatchCounts = activeStages
+        .map((s) => stagesMap[s]!.length)
+        .toList();
     final sportIcon = _getSportIcon(tournament.sportType);
 
     const double slotHeight = 160.0;
@@ -113,13 +130,28 @@ class TournamentBracketView extends StatelessWidget {
                         children: [
                           Text(
                             '${tournament.sportType.toUpperCase()} CHAMPION 🏆',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 1,
+                            ),
                           ),
                           Text(
                             tournament.championTeam,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
                           ),
-                          const Text('Winner of Grand Final', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                          const Text(
+                            'Winner of Grand Final',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -141,12 +173,18 @@ class TournamentBracketView extends StatelessWidget {
                     children: [
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: isFinal
                                 ? [Colors.amber.shade700, Colors.amber.shade900]
-                                : [AppColors.primary, AppColors.primary.withValues(alpha: 0.85)],
+                                : [
+                                    AppColors.primary,
+                                    AppColors.primary.withValues(alpha: 0.85),
+                                  ],
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -157,18 +195,29 @@ class TournamentBracketView extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               stageName.toUpperCase(),
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 0.5),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 10),
-                      ...fixtures.map((fix) => _buildBracketMatchCard(context, fix)),
+                      ...fixtures.map(
+                        (fix) => _buildBracketMatchCard(context, fix),
+                      ),
                       if (!isFinal)
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Icon(Icons.arrow_downward_rounded, color: AppColors.primary.withValues(alpha: 0.6), size: 24),
+                            child: Icon(
+                              Icons.arrow_downward_rounded,
+                              color: AppColors.primary.withValues(alpha: 0.6),
+                              size: 24,
+                            ),
                           ),
                         ),
                     ],
@@ -231,15 +280,39 @@ class TournamentBracketView extends StatelessWidget {
     final prevCount = stageMatchCounts[stageIndex - 1];
 
     if (prevCount == currentCount * 2) {
-      final topY = getMatchCenterY(stageIndex - 1, 2 * matchIndex, stageMatchCounts, headerHeight, slotHeight);
-      final botY = getMatchCenterY(stageIndex - 1, 2 * matchIndex + 1, stageMatchCounts, headerHeight, slotHeight);
+      final topY = getMatchCenterY(
+        stageIndex - 1,
+        2 * matchIndex,
+        stageMatchCounts,
+        headerHeight,
+        slotHeight,
+      );
+      final botY = getMatchCenterY(
+        stageIndex - 1,
+        2 * matchIndex + 1,
+        stageMatchCounts,
+        headerHeight,
+        slotHeight,
+      );
       return (topY + botY) / 2;
     } else {
       final int startK = (matchIndex * prevCount) ~/ currentCount;
       final int endK = (((matchIndex + 1) * prevCount) ~/ currentCount) - 1;
       final safeEndK = endK.clamp(startK, prevCount - 1);
-      final firstY = getMatchCenterY(stageIndex - 1, startK, stageMatchCounts, headerHeight, slotHeight);
-      final lastY = getMatchCenterY(stageIndex - 1, safeEndK, stageMatchCounts, headerHeight, slotHeight);
+      final firstY = getMatchCenterY(
+        stageIndex - 1,
+        startK,
+        stageMatchCounts,
+        headerHeight,
+        slotHeight,
+      );
+      final lastY = getMatchCenterY(
+        stageIndex - 1,
+        safeEndK,
+        stageMatchCounts,
+        headerHeight,
+        slotHeight,
+      );
       return (firstY + lastY) / 2;
     }
   }
@@ -272,7 +345,10 @@ class TournamentBracketView extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: isFinalStage
                       ? [Colors.amber.shade700, Colors.amber.shade900]
-                      : [AppColors.primary, AppColors.primary.withValues(alpha: 0.85)],
+                      : [
+                          AppColors.primary,
+                          AppColors.primary.withValues(alpha: 0.85),
+                        ],
                 ),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
@@ -304,7 +380,15 @@ class TournamentBracketView extends StatelessWidget {
           ),
           for (int j = 0; j < fixtures.length; j++) ...[
             Positioned(
-              top: getMatchCenterY(stageIndex, j, stageMatchCounts, headerHeight, slotHeight) - 57.5,
+              top:
+                  getMatchCenterY(
+                    stageIndex,
+                    j,
+                    stageMatchCounts,
+                    headerHeight,
+                    slotHeight,
+                  ) -
+                  57.5,
               height: 115,
               left: 0,
               right: 0,
@@ -341,7 +425,9 @@ class TournamentBracketView extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: isLive ? Colors.red.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.04),
+              color: isLive
+                  ? Colors.red.withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.04),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -357,12 +443,19 @@ class TournamentBracketView extends StatelessWidget {
                 Expanded(
                   child: Text(
                     fix.matchNumber,
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: isLive
                         ? Colors.red
@@ -374,16 +467,34 @@ class TournamentBracketView extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
-                      color: (isLive || isCompleted) ? Colors.white : Colors.grey.shade700,
+                      color: (isLive || isCompleted)
+                          ? Colors.white
+                          : Colors.grey.shade700,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            _buildTeamRow(fix.teamA, fix.logoA, fix.scoreA, fix.wicketsA, fix.oversA, fix.winnerTeam == fix.teamA, fix.winnerTeam.isNotEmpty && fix.winnerTeam != fix.teamA),
+            _buildTeamRow(
+              fix.teamA,
+              fix.logoA,
+              fix.scoreA,
+              fix.wicketsA,
+              fix.oversA,
+              fix.winnerTeam == fix.teamA,
+              fix.winnerTeam.isNotEmpty && fix.winnerTeam != fix.teamA,
+            ),
             const Divider(height: 8, thickness: 0.8),
-            _buildTeamRow(fix.teamB, fix.logoB, fix.scoreB, fix.wicketsB, fix.oversB, fix.winnerTeam == fix.teamB, fix.winnerTeam.isNotEmpty && fix.winnerTeam != fix.teamB),
+            _buildTeamRow(
+              fix.teamB,
+              fix.logoB,
+              fix.scoreB,
+              fix.wicketsB,
+              fix.oversB,
+              fix.winnerTeam == fix.teamB,
+              fix.winnerTeam.isNotEmpty && fix.winnerTeam != fix.teamB,
+            ),
           ],
         ),
       ),
@@ -429,10 +540,14 @@ class TournamentBracketView extends StatelessWidget {
             name,
             style: TextStyle(
               fontSize: 11,
-              fontWeight: isWinner ? FontWeight.bold : (isTbd ? FontWeight.normal : FontWeight.w500),
+              fontWeight: isWinner
+                  ? FontWeight.bold
+                  : (isTbd ? FontWeight.normal : FontWeight.w500),
               color: isLoser
                   ? Colors.grey
-                  : (isBye ? Colors.orange.shade800 : (isWinner ? Colors.green.shade900 : Colors.black87)),
+                  : (isBye
+                        ? Colors.orange.shade800
+                        : (isWinner ? Colors.green.shade900 : Colors.black87)),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -441,7 +556,9 @@ class TournamentBracketView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: isWinner ? const Color(0xFF16A34A) : const Color(0xFF262626),
+              color: isWinner
+                  ? const Color(0xFF16A34A)
+                  : const Color(0xFF262626),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -486,7 +603,13 @@ class BracketStageConnectorPainter extends CustomPainter {
     final targetCount = stageMatchCounts[stageIndex + 1];
 
     for (int j = 0; j < targetCount; j++) {
-      final targetY = TournamentBracketView.getMatchCenterY(stageIndex + 1, j, stageMatchCounts, headerHeight, slotHeight);
+      final targetY = TournamentBracketView.getMatchCenterY(
+        stageIndex + 1,
+        j,
+        stageMatchCounts,
+        headerHeight,
+        slotHeight,
+      );
 
       List<int> feederIndices = [];
       if (prevCount == targetCount * 2) {
@@ -500,7 +623,13 @@ class BracketStageConnectorPainter extends CustomPainter {
       }
 
       for (int k in feederIndices) {
-        final feederY = TournamentBracketView.getMatchCenterY(stageIndex, k, stageMatchCounts, headerHeight, slotHeight);
+        final feederY = TournamentBracketView.getMatchCenterY(
+          stageIndex,
+          k,
+          stageMatchCounts,
+          headerHeight,
+          slotHeight,
+        );
         final path = Path();
         path.moveTo(0, feederY);
         path.lineTo(midX, feederY);
@@ -512,5 +641,6 @@ class BracketStageConnectorPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant BracketStageConnectorPainter oldDelegate) => true;
+  bool shouldRepaint(covariant BracketStageConnectorPainter oldDelegate) =>
+      true;
 }
