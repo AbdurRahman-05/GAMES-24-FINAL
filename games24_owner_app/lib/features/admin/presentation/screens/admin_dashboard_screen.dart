@@ -3908,10 +3908,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Color _getSportColor(String sport) {
     final lower = sport.toLowerCase();
     if (lower.contains('cricket')) return const Color(0xFFD97706); // Warm Amber
-    if (lower.contains('foot') || lower.contains('soccer'))
+    if (lower.contains('foot') || lower.contains('soccer')) {
       return const Color(0xFFD4FF00); // Grass Emerald
-    if (lower.contains('badminton'))
+    }
+    if (lower.contains('badminton')) {
       return const Color(0xFF4338CA); // Court Indigo
+    }
     if (lower.contains('pickle')) return const Color(0xFF0284C7); // Cyan
     if (lower.contains('tennis')) return const Color(0xFF65A30D); // Tennis Lime
     if (lower.contains('basket')) return const Color(0xFFEA580C); // Warm Orange

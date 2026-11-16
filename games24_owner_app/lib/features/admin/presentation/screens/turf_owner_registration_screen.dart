@@ -503,11 +503,12 @@ class _TurfOwnerRegistrationScreenState
           _venuePhotoUrls.add(fileUrl);
           _photosUploadedCount = _venuePhotoUrls.length;
         });
-        if (mounted)
+        if (mounted) {
           ToastUtils.showSuccess(
             context,
             "Venue photo uploaded successfully! 📸",
           );
+        }
       } else {
         String errorMsg = "Failed to upload photo (${response.statusCode})";
         try {
@@ -543,11 +544,12 @@ class _TurfOwnerRegistrationScreenState
 
       final file = result.files.first;
       if (!file.name.toLowerCase().endsWith('.pdf')) {
-        if (mounted)
+        if (mounted) {
           ToastUtils.showError(
             context,
             "Only PDF files are allowed for KYC documents!",
           );
+        }
         return;
       }
 
@@ -573,8 +575,9 @@ class _TurfOwnerRegistrationScreenState
           await http.MultipartFile.fromPath('file', file.path!),
         );
       } else {
-        if (mounted)
+        if (mounted) {
           ToastUtils.showError(context, "Unable to read selected PDF file.");
+        }
         return;
       }
 
@@ -599,18 +602,21 @@ class _TurfOwnerRegistrationScreenState
             _isGstUploaded = true;
           }
         });
-        if (mounted)
+        if (mounted) {
           ToastUtils.showSuccess(
             context,
             "${file.name} (PDF) attached successfully! 📄✅",
           );
+        }
       } else {
-        if (mounted)
+        if (mounted) {
           ToastUtils.showError(context, "Failed to upload KYC PDF document.");
+        }
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ToastUtils.showError(context, "Error uploading document: $e");
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -670,8 +676,9 @@ class _TurfOwnerRegistrationScreenState
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() => _isMobileVerified = true);
-        if (mounted)
+        if (mounted) {
           ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+        }
       } else {
         final data = jsonDecode(response.body);
         if (mounted) {
@@ -684,14 +691,16 @@ class _TurfOwnerRegistrationScreenState
     } catch (e) {
       if (otp.length == 4) {
         setState(() => _isMobileVerified = true);
-        if (mounted)
+        if (mounted) {
           ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+        }
       } else {
-        if (mounted)
+        if (mounted) {
           ToastUtils.showError(
             context,
             "Please check backend terminal for OTP.",
           );
+        }
       }
     } finally {
       if (mounted) setState(() => _isVerifyingMobile = false);
@@ -715,8 +724,9 @@ class _TurfOwnerRegistrationScreenState
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() => _isEmailVerified = true);
-        if (mounted)
+        if (mounted) {
           ToastUtils.showSuccess(context, "Email Address Verified ✅");
+        }
       } else {
         final data = jsonDecode(response.body);
         if (mounted) {
@@ -729,14 +739,16 @@ class _TurfOwnerRegistrationScreenState
     } catch (e) {
       if (otp.length == 4) {
         setState(() => _isEmailVerified = true);
-        if (mounted)
+        if (mounted) {
           ToastUtils.showSuccess(context, "Email Address Verified ✅");
+        }
       } else {
-        if (mounted)
+        if (mounted) {
           ToastUtils.showError(
             context,
             "Please check backend terminal for OTP.",
           );
+        }
       }
     } finally {
       if (mounted) setState(() => _isVerifyingEmail = false);
@@ -889,32 +901,35 @@ class _TurfOwnerRegistrationScreenState
 
     // Step 1: OTP Verification check
     if (_currentStep == 1 && (!_isMobileVerified || !_isEmailVerified)) {
-      if (mounted)
+      if (mounted) {
         ToastUtils.showError(
           context,
           "Please verify both Mobile and Email OTP before proceeding.",
         );
+      }
       return;
     }
 
     // Step 2: Photos & Amenities check
     if (_currentStep == 2 && !_isStep2Valid) {
-      if (mounted)
+      if (mounted) {
         ToastUtils.showError(
           context,
           "Please upload at least 1 photo and select at least 1 facility before proceeding.",
         );
+      }
       return;
     }
 
     // Step 3: Save KYC, Amenities & Bank Details to Database before moving to Approval step
     if (_currentStep == 3) {
       if (!_isStep3Valid) {
-        if (mounted)
+        if (mounted) {
           ToastUtils.showError(
             context,
             "Please complete all KYC details and upload all documents before proceeding.",
           );
+        }
         return;
       }
       final amenitiesList = <String>[];

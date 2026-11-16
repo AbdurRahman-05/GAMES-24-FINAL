@@ -218,7 +218,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -253,7 +253,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36).withOpacity(0.12),
+                  color: const Color(0xFF154D36).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.shield_rounded, color: Color(0xFF154D36), size: 22),
@@ -460,7 +460,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF154D36).withOpacity(0.06) : Colors.transparent,
+          color: isSelected ? const Color(0xFF154D36).withValues(alpha: 0.06) : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
@@ -472,7 +472,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.12),
+                color: iconColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: iconColor, size: 18),

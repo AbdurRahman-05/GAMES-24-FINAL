@@ -179,8 +179,9 @@ class _HostMatchScreenState extends ConsumerState<HostMatchScreen> {
                             : FontWeight.w500,
                       ),
                       onSelected: (selected) {
-                        if (selected)
+                        if (selected) {
                           setState(() => _selectedSport = sport.name);
+                        }
                       },
                     ),
                   );

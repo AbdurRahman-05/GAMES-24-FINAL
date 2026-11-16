@@ -2224,12 +2224,15 @@ class _TurfOwnerSettingsScreenState
                           itemBuilder: (context, index) {
                             final item = filteredBookings[index];
                             Color statusColor = AppColors.success;
-                            if (item.status.toLowerCase().contains('confirmed'))
+                            if (item.status.toLowerCase().contains('confirmed')) {
                               statusColor = const Color(0xFFD4FF00);
-                            if (item.status.toLowerCase().contains('checked'))
+                            }
+                            if (item.status.toLowerCase().contains('checked')) {
                               statusColor = const Color(0xFF0284C7);
-                            if (item.status.toLowerCase().contains('cancel'))
+                            }
+                            if (item.status.toLowerCase().contains('cancel')) {
                               statusColor = AppColors.error;
+                            }
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),

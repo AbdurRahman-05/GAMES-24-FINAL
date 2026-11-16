@@ -495,7 +495,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: 200,
-                              errorBuilder: (_, __, ___) => const SizedBox(),
+                              errorBuilder: (_, _, _) => const SizedBox(),
                             ),
                           ),
                           Column(
@@ -504,9 +504,9 @@ class _BookingScreenState extends State<BookingScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.12),
+                                  color: Colors.white.withValues(alpha: 0.12),
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
                                 ),
                                 child: const Icon(
                                   Icons.stadium_rounded,
@@ -1971,6 +1971,8 @@ class _BookingScreenState extends State<BookingScreen> {
                           'teamName': _isOpenForChallenge ? tName : null,
                           'teamSize': _isOpenForChallenge ? tSize : null,
                         };
+
+                        if (!mounted) return;
 
                         // 1. Launch Cashfree Payment Checkout
                         final cashfreeRes = await CashfreeService.startCheckout(

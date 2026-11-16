@@ -2558,7 +2558,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
+                    color: Colors.black.withValues(alpha: 0.12),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -2592,9 +2592,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 vertical: 6,
               ),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.8),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 0.8),
               ),
               child: Text(
                 sports,

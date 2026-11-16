@@ -191,8 +191,9 @@ class _TurfOwnerProfileScreenState
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setDialogState(() => wkdayOpen = val);
+                              }
                             },
                           ),
                           const SizedBox(height: 10),
@@ -230,8 +231,9 @@ class _TurfOwnerProfileScreenState
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setDialogState(() => wkdayClose = val);
+                              }
                             },
                           ),
                         ],
@@ -338,8 +340,9 @@ class _TurfOwnerProfileScreenState
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setDialogState(() => wkendOpen = val);
+                              }
                             },
                           ),
                           const SizedBox(height: 10),
@@ -377,8 +380,9 @@ class _TurfOwnerProfileScreenState
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              if (val != null)
+                              if (val != null) {
                                 setDialogState(() => wkendClose = val);
+                              }
                             },
                           ),
                         ],

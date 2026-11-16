@@ -145,8 +145,9 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                         fontSize: 12,
                       ),
                       onSelected: (selected) {
-                        if (selected)
+                        if (selected) {
                           setState(() => _selectedSportFilter = null);
+                        }
                       },
                     ),
                   );
