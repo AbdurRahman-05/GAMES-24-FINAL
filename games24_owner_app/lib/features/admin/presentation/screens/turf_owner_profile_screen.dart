@@ -1940,7 +1940,7 @@ class _TurfOwnerProfileScreenState
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFFD4FF00),
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -1966,13 +1966,23 @@ class _TurfOwnerProfileScreenState
           icon: Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: const Color(0xFF141414),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+              border: Border.all(
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: const Icon(
               Icons.settings_rounded,
-              color: Color(0xFF141414),
+              color: Color(0xFFD4FF00),
               size: 18,
             ),
           ),

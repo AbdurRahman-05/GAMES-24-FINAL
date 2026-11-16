@@ -1642,18 +1642,21 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: isCheckedIn
-                            ? const Color(0xFFDCFCE7)
+                            ? const Color(0xFF142908)
                             : const Color(0xFF1C1C1C),
                         shape: BoxShape.circle,
+                        border: isCheckedIn
+                            ? Border.all(
+                                color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
+                              )
+                            : null,
                       ),
                       child: Icon(
                         isCheckedIn
                             ? Icons.check_circle_rounded
                             : Icons.confirmation_number_rounded,
                         size: 16,
-                        color: isCheckedIn
-                            ? const Color(0xFF16A34A)
-                            : const Color(0xFFD4FF00),
+                        color: const Color(0xFFD4FF00),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1669,6 +1672,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 13,
+                                    color: Colors.white,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1708,23 +1712,28 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        horizontal: 12,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: isCheckedIn
-                            ? const Color(0xFFDCFCE7)
-                            : Colors.white,
+                            ? const Color(0xFF142908)
+                            : const Color(0xFFD4FF00),
                         borderRadius: BorderRadius.circular(8),
+                        border: isCheckedIn
+                            ? Border.all(
+                                color: const Color(0xFFD4FF00).withValues(alpha: 0.4),
+                              )
+                            : null,
                       ),
                       child: Text(
                         isCheckedIn ? 'Checked In' : 'Tap Check-In',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
                           color: isCheckedIn
                               ? const Color(0xFFD4FF00)
-                              : Colors.white,
+                              : Colors.black,
                         ),
                       ),
                     ),
