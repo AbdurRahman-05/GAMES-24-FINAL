@@ -1250,39 +1250,29 @@ class _AdminTournamentManagerScreenState
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
-            Color(0xFF182412),
-            Color(0xFF2A3D14),
-            Color(0xFF88AC0E),
-            Color(0xFFD4FF00),
+            Color(0xFF131710),
+            Color(0xFF192215),
+            Color(0xFF22321C),
+            Color(0xFF2D4224),
           ],
-          stops: [0.0, 0.35, 0.75, 1.0],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFFD4FF00).withValues(alpha: 0.55),
-          width: 1.5,
+          color: const Color(0xFF3B522E),
+          width: 1.2,
         ),
         boxShadow: [
-          // Deep ambient 3D elevation shadow
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.8),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-            spreadRadius: 1,
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
-          // Directional lime bloom glow
           BoxShadow(
-            color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-          // Top specular rim light
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.15),
-            blurRadius: 2,
-            offset: const Offset(0, -1),
+            color: const Color(0xFF1D2E16).withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -1298,10 +1288,10 @@ class _AdminTournamentManagerScreenState
                     Container(
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.45),
+                        color: const Color(0xFF0D120B).withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: const Color(0xFF2A3A20),
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -1336,11 +1326,11 @@ class _AdminTournamentManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: const Color(0xFF0D120B).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: const Color(0xFFD4FF00).withValues(alpha: 0.6),
-                      width: 1.2,
+                      color: const Color(0xFF3B522E),
+                      width: 1.0,
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -1354,7 +1344,7 @@ class _AdminTournamentManagerScreenState
                     fit: BoxFit.scaleDown,
                     child: Text(
                       'FIFA / ICC Standard',
-                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF86EFAC)),
                     ),
                   ),
                 ),
@@ -1400,17 +1390,17 @@ class _AdminTournamentManagerScreenState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             decoration: BoxDecoration(
-              color: const Color(0xFF0A0F07).withValues(alpha: 0.75),
+              color: const Color(0xFF0A0E08).withValues(alpha: 0.75),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
-                width: 1.2,
+                color: const Color(0xFF2B3C21),
+                width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -1423,7 +1413,7 @@ class _AdminTournamentManagerScreenState
                 _buildStatDivider(),
                 _buildHeroMiniStat('Upcoming', '${tournState.upcomingCount}', const Color(0xFF60A5FA)),
                 _buildStatDivider(),
-                _buildHeroMiniStat('Completed', '${tournState.completedCount}', const Color(0xFFD4FF00)),
+                _buildHeroMiniStat('Completed', '${tournState.completedCount}', const Color(0xFF86EFAC)),
                 _buildStatDivider(),
                 _buildHeroMiniStat('Teams', '${tournState.totalParticipants}', const Color(0xFFFBBF24)),
               ],
