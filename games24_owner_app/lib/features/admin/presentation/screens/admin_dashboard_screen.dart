@@ -2450,408 +2450,559 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isLiveNow
+              ? const [
+                  Color(0xFF172412),
+                  Color(0xFF10160D),
+                  Color(0xFF0C100A),
+                ]
+              : const [
+                  Color(0xFF181A15),
+                  Color(0xFF12140F),
+                  Color(0xFF0E0F0C),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isLiveNow
-              ? const Color(0xFF16A34A)
-              : (isCompleted
-                    ? const Color(0xFF262626)
-                    : const Color(0xFF262626)),
+              ? const Color(0xFF22C55E).withValues(alpha: 0.8)
+              : const Color(0xFF262C20),
           width: isLiveNow ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isLiveNow
-                ? const Color(0xFF16A34A).withValues(alpha: 0.1)
-                : Colors.black.withValues(alpha: 0.025),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+                ? const Color(0xFF22C55E).withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.35),
+            blurRadius: isLiveNow ? 16 : 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: () => _openBookingDetailsSheet(context, booking),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Match Header Row
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3.5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: sportColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _getSportEmoji(booking.sport),
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            booking.sport,
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w800,
-                              color: sportColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3.5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: badgeBg,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isLiveNow) ...[
-                            Container(
-                              width: 5,
-                              height: 5,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF16A34A),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                          ],
-                          Text(
-                            badgeLabel,
-                            style: TextStyle(
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w800,
-                              color: badgeTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(19),
+        child: Stack(
+          children: [
+            // Left stadium sport accent stripe
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 4.5,
+                decoration: BoxDecoration(
+                  color: isLiveNow ? const Color(0xFF22C55E) : sportColor,
+                  borderRadius: const BorderRadius.horizontal(
+                    left: Radius.circular(20),
+                  ),
                 ),
               ),
-
-              // 2. Player Info & Schedule Breakdown
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Row(
+            ),
+            // Background sport watermark
+            Positioned(
+              right: 14,
+              top: 24,
+              child: IgnorePointer(
+                child: Icon(
+                  _getSportIcon(booking.sport),
+                  size: 64,
+                  color: sportColor.withValues(alpha: 0.04),
+                ),
+              ),
+            ),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(19),
+                onTap: () => _openBookingDetailsSheet(context, booking),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      radius: 19,
-                      backgroundColor: isCompleted
-                          ? const Color(0xFF262626)
-                          : sportColor.withValues(alpha: 0.12),
-                      child: Text(
-                        booking.customerName.isNotEmpty
-                            ? booking.customerName[0].toUpperCase()
-                            : 'P',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          color: isCompleted
-                              ? const Color(0xFFA1A1AA)
-                              : sportColor,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    // 1. Match Header Row
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 14, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Text(
-                            booking.customerName,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 4,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          _buildBookingScheduleDisplay(booking),
-                          const SizedBox(height: 3),
-                          Text(
-                            booking.courtName,
-                            style: const TextStyle(
-                              fontSize: 10.5,
-                              color: Color(0xFFA1A1AA),
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '₹${booking.amount.toInt()}',
-                          style: TextStyle(
-                            fontSize: 16.5,
-                            fontWeight: FontWeight.w900,
-                            color: isCompleted
-                                ? const Color(0xFFA1A1AA)
-                                : const Color(0xFFD4FF00),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // 3. Stadium Match Pass Perforation Line with Cut-outs
-              Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 14,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF141414),
-                      borderRadius: BorderRadius.horizontal(
-                        right: Radius.circular(7),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        const dashWidth = 4.0;
-                        const dashSpace = 4.0;
-                        final dashCount =
-                            (constraints.constrainWidth() /
-                                    (dashWidth + dashSpace))
-                                .floor();
-                        return Flex(
-                          direction: Axis.horizontal,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(
-                            dashCount,
-                            (_) => const SizedBox(
-                              width: dashWidth,
-                              height: 1.2,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF262626),
-                                ),
+                            decoration: BoxDecoration(
+                              color: sportColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(9),
+                              border: Border.all(
+                                color: sportColor.withValues(alpha: 0.3),
+                                width: 0.8,
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  Container(
-                    width: 7,
-                    height: 14,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF141414),
-                      borderRadius: BorderRadius.horizontal(
-                        left: Radius.circular(7),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // 4. Operational Action
-              Padding(
-                padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-                child: isCompleted
-                    ? Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF141414),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFF262626)),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Row(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  size: 15,
-                                  color: Color(0xFF16A34A),
-                                ),
-                                SizedBox(width: 6),
                                 Text(
-                                  'Match Completed & Closed',
+                                  _getSportEmoji(booking.sport),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  booking.sport.toUpperCase(),
                                   style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFFE4E4E7),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.6,
+                                    color: sportColor,
                                   ),
                                 ),
                               ],
                             ),
-                            Text(
-                              '₹${booking.amount.toInt()} Settled',
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFFD4FF00),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : isCancelled
-                    ? Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFECACA)),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.info_outline_rounded,
-                              size: 14,
-                              color: Color(0xFFDC2626),
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Slot Cancelled & Released',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFDC2626),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD4FF00),
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 9.5,
-                                  horizontal: 10,
-                                ),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 0,
-                              ),
-                              icon: const Icon(
-                                Icons.confirmation_number_outlined,
-                                size: 14,
-                                color: Colors.black,
-                              ),
-                              label: const FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  'Pass & Actions',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              onPressed: () =>
-                                  _openBookingDetailsSheet(context, booking),
-                            ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD4FF00),
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 9.5,
-                                  horizontal: 10,
-                                ),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                elevation: 0,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 9,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(9),
+                              border: Border.all(
+                                color: badgeTextColor.withValues(alpha: 0.35),
+                                width: 0.8,
                               ),
-                              icon: const Icon(
-                                Icons.call_rounded,
-                                size: 14,
-                                color: Colors.black,
-                              ),
-                              label: const FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  'Call',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.black,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 5.5,
+                                  height: 5.5,
+                                  decoration: BoxDecoration(
+                                    color: badgeTextColor,
+                                    shape: BoxShape.circle,
+                                    boxShadow: isLiveNow || isUpi
+                                        ? [
+                                            BoxShadow(
+                                              color: badgeTextColor.withValues(
+                                                alpha: 0.6,
+                                              ),
+                                              blurRadius: 4,
+                                            ),
+                                          ]
+                                        : null,
                                   ),
                                 ),
-                              ),
-                              onPressed: () {
-                                if (booking.customerPhone.isNotEmpty) {
-                                  PhoneDialer.call(
-                                    context,
-                                    booking.customerPhone,
-                                    customerName: booking.customerName,
-                                  );
-                                } else {
-                                  ToastUtils.showError(
-                                    context,
-                                    'No phone number available for this player',
-                                  );
-                                }
-                              },
+                                const SizedBox(width: 5),
+                                Text(
+                                  badgeLabel,
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                    color: badgeTextColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
+                    ),
+
+                    // 2. Player Info & Match Fixture
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 14, 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Squircle Player Badge
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  sportColor.withValues(alpha: 0.22),
+                                  sportColor.withValues(alpha: 0.08),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(13),
+                              border: Border.all(
+                                color: sportColor.withValues(alpha: 0.45),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                booking.customerName.isNotEmpty
+                                    ? booking.customerName[0].toUpperCase()
+                                    : 'P',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w900,
+                                  color: isCompleted
+                                      ? const Color(0xFFA1A1AA)
+                                      : sportColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  booking.customerName,
+                                  style: const TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -0.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                _buildBookingScheduleDisplay(booking),
+                                const SizedBox(height: 3),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.stadium_outlined,
+                                      size: 11,
+                                      color: Color(0xFF71717A),
+                                    ),
+                                    const SizedBox(width: 3.5),
+                                    Expanded(
+                                      child: Text(
+                                        booking.courtName,
+                                        style: const TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: Color(0xFFA1A1AA),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Fare Box Office Stub
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                'FARE',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                  color: Color(0xFF71717A),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '₹${booking.amount.toInt()}',
+                                style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                  color: isCompleted
+                                      ? const Color(0xFFA1A1AA)
+                                      : const Color(0xFFD4FF00),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // 3. Stadium Match Pass Perforation Line with Realistic Cutouts
+                    Row(
+                      children: [
+                        Container(
+                          width: 9,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF080808),
+                            borderRadius: const BorderRadius.horizontal(
+                              right: Radius.circular(9),
+                            ),
+                            border: Border.all(
+                              color: const Color(0xFF262C20),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              const dashWidth = 4.0;
+                              const dashSpace = 4.0;
+                              final dashCount =
+                                  (constraints.constrainWidth() /
+                                          (dashWidth + dashSpace))
+                                      .floor();
+                              return Flex(
+                                direction: Axis.horizontal,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: List.generate(
+                                  dashCount,
+                                  (_) => const SizedBox(
+                                    width: dashWidth,
+                                    height: 1.2,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFF262C20),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Container(
+                          width: 9,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF080808),
+                            borderRadius: const BorderRadius.horizontal(
+                              left: Radius.circular(9),
+                            ),
+                            border: Border.all(
+                              color: const Color(0xFF262C20),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // 4. Action Buttons Section
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                      child: isCompleted
+                          ? Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 9,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF121411),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFF22261E),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle_rounded,
+                                        size: 15,
+                                        color: Color(0xFF16A34A),
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Match Completed & Closed',
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFFE4E4E7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    '₹${booking.amount.toInt()} Settled',
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFFD4FF00),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : isCancelled
+                          ? Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 9,
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2A1215),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFF4A1A20),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline_rounded,
+                                    size: 14,
+                                    color: Color(0xFFDC2626),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Slot Cancelled & Released',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFFFB7185),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Row(
+                              children: [
+                                // Primary Action: View Match Pass & Actions
+                                Expanded(
+                                  flex: 3,
+                                  child: Material(
+                                    color: const Color(0xFFD4FF00),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () => _openBookingDetailsSheet(
+                                        context,
+                                        booking,
+                                      ),
+                                      child: Container(
+                                        height: 42,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.confirmation_number_rounded,
+                                              size: 15,
+                                              color: Colors.black,
+                                            ),
+                                            SizedBox(width: 6),
+                                            FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Text(
+                                                'Pass & Actions',
+                                                style: TextStyle(
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.black,
+                                                  letterSpacing: -0.1,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Secondary Action: Call Customer
+                                Expanded(
+                                  flex: 2,
+                                  child: Material(
+                                    color: const Color(0xFF14240A),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () {
+                                        if (booking.customerPhone.isNotEmpty) {
+                                          PhoneDialer.call(
+                                            context,
+                                            booking.customerPhone,
+                                            customerName: booking.customerName,
+                                          );
+                                        } else {
+                                          ToastUtils.showError(
+                                            context,
+                                            'No phone number available for this player',
+                                          );
+                                        }
+                                      },
+                                      child: Container(
+                                        height: 42,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: const Color(
+                                              0xFFD4FF00,
+                                            ).withValues(alpha: 0.6),
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.phone_in_talk_rounded,
+                                              size: 14,
+                                              color: Color(0xFFD4FF00),
+                                            ),
+                                            SizedBox(width: 5),
+                                            FittedBox(
+                                              fit: BoxFit.scaleDown,
+                                              child: Text(
+                                                'Call',
+                                                style: TextStyle(
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Color(0xFFD4FF00),
+                                                  letterSpacing: -0.1,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -3857,6 +4008,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     if (lower.contains('tennis')) return const Color(0xFF65A30D); // Tennis Lime
     if (lower.contains('basket')) return const Color(0xFFEA580C); // Warm Orange
     return const Color(0xFFD4FF00);
+  }
+
+  IconData _getSportIcon(String sport) {
+    final lower = sport.toLowerCase();
+    if (lower.contains('cricket')) return Icons.sports_cricket_rounded;
+    if (lower.contains('foot') || lower.contains('soccer')) {
+      return Icons.sports_soccer_rounded;
+    }
+    if (lower.contains('badminton') || lower.contains('tennis')) {
+      return Icons.sports_tennis_rounded;
+    }
+    if (lower.contains('basket')) return Icons.sports_basketball_rounded;
+    if (lower.contains('volley')) return Icons.sports_volleyball_rounded;
+    return Icons.sports_score_rounded;
   }
 
   // --- 8. BLOCKED ACCESS SCAFFOLD ---
