@@ -39,9 +39,9 @@ class Games24OwnerApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Gamez24 Owner',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.darkTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.dark,
       routerConfig: AppRouter.router,
     );
   }

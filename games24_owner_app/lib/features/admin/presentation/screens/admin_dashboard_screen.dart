@@ -127,12 +127,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final spotlightBanner = _buildMatchSpotlightBanner(context, profile);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: _buildProAppBar(context, profile),
       body: RefreshIndicator(
         onRefresh: _refreshRealtimeData,
         color: AppColors.primary,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0D0D0D),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
           padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 100),
@@ -167,13 +167,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   // --- 1. PRO APP BAR ---
   PreferredSizeWidget _buildProAppBar(BuildContext context, TurfProfileState profile) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
       scrolledUnderElevation: 0,
       titleSpacing: 16,
       toolbarHeight: 64,
       shape: const Border(
-        bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        bottom: BorderSide(color: Color(0xFF262626), width: 1),
       ),
       title: Row(
         children: [
@@ -182,21 +182,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             height: 42,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF154D36), Color(0xFF2D7A5B)],
+                colors: [Color(0xFFD4FF00), Color(0xFFAEEA00)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                  color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: const Center(
-              child: Icon(Icons.stadium_rounded, color: Colors.white, size: 24),
+              child: Icon(Icons.stadium_rounded, color: Color(0xFF141414), size: 24),
             ),
           ),
           const SizedBox(width: 12),
@@ -218,14 +218,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: const TextStyle(
                               fontSize: 15.5,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF0F172A),
+                              color: Colors.white,
                               letterSpacing: -0.3,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 4),
-                        const Icon(Icons.arrow_drop_down_circle_outlined, size: 16, color: Color(0xFF154D36)),
+                        const Icon(Icons.arrow_drop_down_circle_outlined, size: 16, color: Color(0xFFD4FF00)),
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -268,11 +268,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           icon: Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: const Color(0xFF154D36).withValues(alpha: 0.1),
+              color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF154D36).withValues(alpha: 0.2)),
+              border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.2)),
             ),
-            child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF154D36), size: 18),
+            child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFFD4FF00), size: 18),
           ),
         ),
         const SizedBox(width: 6),
@@ -309,7 +309,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFF141414),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
@@ -329,12 +329,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         children: [
                           Text(
                             'Your Turf Branches',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white),
                           ),
                           SizedBox(height: 2),
                           Text(
                             'Select a location or register another branch',
-                            style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                            style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -342,7 +342,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFFA1A1AA)),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -355,12 +355,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     child: Material(
-                      color: isCurrent ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+                      color: isCurrent ? const Color(0xFF1B2A06) : const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
-                          color: isCurrent ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
+                          color: isCurrent ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                           width: isCurrent ? 1.5 : 1.0,
                         ),
                       ),
@@ -369,12 +369,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       leading: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isCurrent ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+                          color: isCurrent ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
                           Icons.stadium_rounded,
-                          color: isCurrent ? Colors.white : const Color(0xFF475569),
+                          color: isCurrent ? Colors.white : const Color(0xFFA1A1AA),
                           size: 20,
                         ),
                       ),
@@ -382,7 +382,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         b.venueName,
                         style: TextStyle(
                           fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w700,
-                          color: const Color(0xFF0F172A),
+                          color: Colors.white,
                           fontSize: 14,
                         ),
                         maxLines: 1,
@@ -390,7 +390,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ),
                       subtitle: Text(
                         '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
-                        style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                        style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -414,7 +414,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   ToastUtils.showSuccess(context, 'Switched to branch: ${b.venueName}');
                                 }
                               },
-                              child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold)),
+                              child: const Text('Switch', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                             ),
                       ),
                     ),
@@ -432,15 +432,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             _showAddCourtSamePlaceDialog(context, profile);
                           },
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                            side: const BorderSide(color: Color(0xFFD4FF00), width: 1.5),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          icon: const Icon(Icons.sports_soccer_rounded, color: Color(0xFF154D36), size: 16),
+                          icon: const Icon(Icons.sports_soccer_rounded, color: Color(0xFFD4FF00), size: 16),
                           label: const FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               '+ Add Court (Same Place)',
-                              style: TextStyle(color: Color(0xFF154D36), fontWeight: FontWeight.w700, fontSize: 11.5),
+                              style: TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.w700, fontSize: 11.5),
                             ),
                           ),
                         ),
@@ -456,16 +456,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             _showAddBranchDialog(context, profile);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF154D36),
-                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFFD4FF00),
+                            foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           ),
-                          icon: const Icon(Icons.add_location_alt_rounded, color: Colors.white, size: 16),
+                          icon: const Icon(Icons.add_location_alt_rounded, color: Colors.black, size: 16),
                           label: const FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
                               '+ New Branch (Location)',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11.5),
+                              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 11.5),
                             ),
                           ),
                         ),
@@ -504,7 +504,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               children: [
                 const Text(
                   'Add additional courts or pitches in the same venue ground.',
-                  style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                  style: TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
                 ),
                 const SizedBox(height: 12),
                 TextField(
@@ -517,12 +517,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 const SizedBox(height: 14),
                 const Text(
                   'Supported Sports (Multi-Select) *',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   'Football & Cricket can share the same ground. Badminton & Pickleball require separate court types.',
-                  style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                  style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                 ),
                 const SizedBox(height: 8),
                 Wrap(
@@ -533,14 +533,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     return FilterChip(
                       label: Text(sport),
                       selected: isChecked,
-                      selectedColor: const Color(0xFF154D36),
+                      selectedColor: const Color(0xFFD4FF00),
                       checkmarkColor: Colors.white,
                       labelStyle: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isChecked ? Colors.white : const Color(0xFF334155),
+                        color: isChecked ? Colors.white : const Color(0xFFE4E4E7),
                       ),
-                      backgroundColor: const Color(0xFFF1F5F9),
+                      backgroundColor: const Color(0xFF1C1C1C),
                       onSelected: (selected) {
                         setDlgState(() {
                           if (selected) {
@@ -576,8 +576,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF154D36),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
               ),
               onPressed: () {
                 final cName = nameCtrl.text.trim();
@@ -634,7 +634,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             children: [
               Text(
                 'Primary Owner Phone: ${profile.ownerPhone}',
-                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF154D36)),
+                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFFD4FF00)),
               ),
               const SizedBox(height: 10),
               TextField(
@@ -676,8 +676,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF154D36),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFFD4FF00),
+              foregroundColor: Colors.black,
             ),
             onPressed: () async {
               final vName = nameCtrl.text.trim();
@@ -732,9 +732,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Widget _buildVenueHeaderPulseBar(TurfProfileState profile, String formattedDate) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.025),
@@ -751,7 +751,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               // Tactical Left Accent Ribbon
               Container(
                 width: 4,
-                color: const Color(0xFF154D36),
+                color: const Color(0xFFD4FF00),
               ),
               Expanded(
                 child: Padding(
@@ -761,10 +761,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Container(
                         padding: const EdgeInsets.all(7.5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: const Color(0xFF1C1C1C),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFF154D36)),
+                        child: const Icon(Icons.calendar_today_rounded, size: 15, color: Color(0xFFD4FF00)),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -776,7 +776,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                                 letterSpacing: -0.2,
                               ),
                             ),
@@ -785,7 +785,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               'Hours: ${profile.weekdayOpeningTime} – ${profile.weekdayClosingTime} • Floodlights Active',
                               style: const TextStyle(
                                 fontSize: 10.5,
-                                color: Color(0xFF64748B),
+                                color: Color(0xFFA1A1AA),
                                 fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -797,9 +797,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
+                          color: const Color(0xFF132204),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                          border: Border.all(color: const Color(0xFF262626)),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -811,7 +811,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF15803D),
+                                color: Color(0xFFD4FF00),
                               ),
                             ),
                           ],
@@ -836,7 +836,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+            colors: [Color(0xFF241A04), Color(0xFF2D2005)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -861,7 +861,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     color: Color(0xFFF59E0B),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.timer_outlined, color: Colors.white, size: 18),
+                  child: const Icon(Icons.timer_outlined, color: Color(0xFF141414), size: 18),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -905,7 +905,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF78350F),
+                      color: Color(0xFFFDE68A),
                     ),
                   ),
                   ElevatedButton.icon(
@@ -938,14 +938,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0F3825), Color(0xFF154D36)],
+          colors: [Color(0xFF141414), Color(0xFFD4FF00)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF154D36).withValues(alpha: 0.2),
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -981,8 +981,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       '• Live on Player App',
                       style: TextStyle(
                         fontSize: 10.5,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF86EFAC),
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFD4FF00),
                       ),
                     ),
                   ],
@@ -1100,7 +1100,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF0F172A),
+            color: Colors.white,
             letterSpacing: -0.3,
           ),
         ),
@@ -1111,18 +1111,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
-              colors: [Color(0xFF072115), Color(0xFF0C2E1F), Color(0xFF154D36)],
+              colors: [Color(0xFF141414), Color(0xFF181818), Color(0xFF1D2808)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             border: Border.all(
-              color: const Color(0xFF34D399).withValues(alpha: 0.25),
+              color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF154D36).withValues(alpha: 0.25),
-                blurRadius: 14,
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.12),
+                blurRadius: 16,
                 offset: const Offset(0, 5),
               ),
             ],
@@ -1147,10 +1147,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.14),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFFBBF24), size: 15),
+                            child: const Icon(Icons.currency_rupee_rounded, color: Color(0xFFD4FF00), size: 15),
                           ),
                           const SizedBox(width: 8),
                           const Expanded(
@@ -1158,9 +1158,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               'MONTHLY REVENUE (GMV)',
                               style: TextStyle(
                                 fontSize: 11.5,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFFCBD5E1),
-                                letterSpacing: 0.4,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFFD4FF00),
+                                letterSpacing: 0.6,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1168,9 +1168,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: const Color(0xFF1E1E1E),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                              border: Border.all(color: const Color(0xFF333333)),
                             ),
                             child: Text(
                               DateFormat('MMM yyyy').format(now),
@@ -1204,7 +1204,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         '${activeMonthList.length} total bookings • ₹1,100 / hr avg rate',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withValues(alpha: 0.85),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -1215,7 +1215,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           value: dynamicMonthRev > 0 ? (dynamicMonthRev / monthTarget).clamp(0.05, 1.0) : 0.05,
                           minHeight: 5.5,
                           backgroundColor: Colors.white.withValues(alpha: 0.15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4FF00)),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1226,9 +1226,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             child: Text(
                               '$targetPct% of Monthly Target Met',
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 10.5,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Colors.white.withValues(alpha: 0.85),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1239,11 +1239,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             onTap: () => _showEditMonthlyTargetDialog(profile),
                             borderRadius: BorderRadius.circular(6),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.14),
+                                color: const Color(0xFF1E1E1E),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                                border: Border.all(color: const Color(0xFF333333)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1257,7 +1257,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.edit_rounded, size: 10, color: Color(0xFF4ADE80)),
+                                  const Icon(Icons.edit_rounded, size: 10, color: Color(0xFFD4FF00)),
                                 ],
                               ),
                             ),
@@ -1281,18 +1281,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFFAFEFB), Color(0xFFF0FDF4)],
+                    colors: [Color(0xFF141414), Color(0xFF192508)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: const Color(0xFF86EFAC).withValues(alpha: 0.6),
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
                     width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF16A34A).withValues(alpha: 0.06),
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),
@@ -1315,7 +1315,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         child: Icon(
                           Icons.currency_rupee_rounded,
                           size: 72,
-                          color: const Color(0xFF16A34A).withValues(alpha: 0.05),
+                          color: const Color(0xFFD4FF00).withValues(alpha: 0.04),
                         ),
                       ),
                       Padding(
@@ -1328,21 +1328,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFF0F3D28), Color(0xFF16A34A)],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
+                                    color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF16A34A).withValues(alpha: 0.25),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
                                   ),
-                                  child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 13),
+                                  child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFFD4FF00), size: 13),
                                 ),
                                 const SizedBox(width: 7),
                                 const Expanded(
@@ -1351,7 +1340,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     style: TextStyle(
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF475569),
+                                      color: Colors.white,
                                       letterSpacing: -0.2,
                                     ),
                                     maxLines: 1,
@@ -1369,7 +1358,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
-                                  color: Color(0xFF0F172A),
+                                  color: Color(0xFFD4FF00),
                                   letterSpacing: -0.5,
                                 ),
                               ),
@@ -1378,9 +1367,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             const Text(
                               'Gross Collections',
                               style: TextStyle(
-                                fontSize: 9.5,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF94A3B8),
+                                color: Color(0xFFA1A1AA),
                               ),
                             ),
                           ],
@@ -1397,18 +1386,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFF8FCFF), Color(0xFFEFF8FF)],
+                    colors: [Color(0xFF141414), Color(0xFF0F1B26)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: const Color(0xFF7DD3FC).withValues(alpha: 0.6),
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
                     width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.06),
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),
@@ -1431,7 +1420,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         child: Icon(
                           Icons.radar_rounded,
                           size: 72,
-                          color: const Color(0xFF0284C7).withValues(alpha: 0.05),
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.04),
                         ),
                       ),
                       Padding(
@@ -1444,21 +1433,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFF075985), Color(0xFF0284C7)],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
+                                    color: const Color(0xFF0284C7).withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFF0284C7).withValues(alpha: 0.25),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
                                   ),
-                                  child: const Icon(Icons.stadium_rounded, color: Colors.white, size: 13),
+                                  child: const Icon(Icons.stadium_rounded, color: Color(0xFF38BDF8), size: 13),
                                 ),
                                 const SizedBox(width: 7),
                                 const Expanded(
@@ -1467,7 +1445,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     style: TextStyle(
                                       fontSize: 11.5,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF475569),
+                                      color: Colors.white,
                                       letterSpacing: -0.2,
                                     ),
                                     maxLines: 1,
@@ -1489,17 +1467,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     style: const TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.w900,
-                                      color: Color(0xFF0F172A),
+                                      color: Colors.white,
                                       letterSpacing: -0.5,
                                     ),
                                   ),
-                                  const SizedBox(width: 3),
+                                  const SizedBox(width: 4),
                                   const Text(
                                     'Free',
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(0xFF0284C7),
+                                      color: Color(0xFF38BDF8),
                                     ),
                                   ),
                                 ],
@@ -1509,9 +1487,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             const Text(
                               'Available to Book',
                               style: TextStyle(
-                                fontSize: 9.5,
+                                fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF94A3B8),
+                                color: Color(0xFFA1A1AA),
                               ),
                             ),
                           ],
@@ -1531,9 +1509,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF141414),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: const Color(0xFF262626)),
             ),
             child: Row(
               children: [
@@ -1552,11 +1530,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     children: [
                       const Text(
                         'Cancellations & Slot Reschedules',
-                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFE4E4E7)),
                       ),
                       Text(
                         '$dynamicCancelledCount cancelled • $dynamicShiftedCount rescheduled',
-                        style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                        style: const TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA)),
                       ),
                     ],
                   ),
@@ -1564,12 +1542,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: const Color(0xFF1C1C1C),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '$dynamicCancelledTotal Total',
-                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFFA1A1AA)),
                   ),
                 ),
               ],
@@ -1602,17 +1580,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: isLive ? const Color(0xFF16A34A) : const Color(0xFF154D36).withValues(alpha: 0.2),
+          color: isLive ? const Color(0xFF16A34A) : const Color(0xFFD4FF00).withValues(alpha: 0.2),
           width: isLive ? 1.5 : 1.2,
         ),
         boxShadow: [
           BoxShadow(
             color: isLive
                 ? const Color(0xFF16A34A).withValues(alpha: 0.12)
-                : const Color(0xFF154D36).withValues(alpha: 0.06),
+                : const Color(0xFFD4FF00).withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -1629,8 +1607,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isLive
-                      ? [const Color(0xFF0F3825), const Color(0xFF16A34A)]
-                      : [const Color(0xFF0F2E22), const Color(0xFF154D36)],
+                      ? [const Color(0xFF141414), const Color(0xFF16A34A)]
+                      : [const Color(0xFF0F2E22), const Color(0xFFD4FF00)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1644,17 +1622,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         width: 7,
                         height: 7,
                         decoration: BoxDecoration(
-                          color: isLive ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
+                          color: isLive ? const Color(0xFFD4FF00) : const Color(0xFFFBBF24),
                           shape: BoxShape.circle,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         isLive ? 'LIVE MATCH IN PROGRESS' : 'NEXT UP ON COURT',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                          color: isLive ? const Color(0xFFD4FF00) : Colors.white,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -1663,7 +1641,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -1710,7 +1688,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -1723,7 +1701,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     '${spotlight.sport} • ${spotlight.courtName}',
                                     style: const TextStyle(
                                       fontSize: 11,
-                                      color: Color(0xFF64748B),
+                                      color: Color(0xFFA1A1AA),
                                       fontWeight: FontWeight.w500,
                                     ),
                                     overflow: TextOverflow.ellipsis,
@@ -1742,7 +1720,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF154D36),
+                              color: Color(0xFFD4FF00),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -1753,7 +1731,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               fontWeight: FontWeight.w700,
                               color: spotlight.paymentMethod.toUpperCase().contains('CASH')
                                   ? const Color(0xFFB45309)
-                                  : const Color(0xFF15803D),
+                                  : const Color(0xFFD4FF00),
                             ),
                           ),
                         ],
@@ -1766,8 +1744,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     height: 38,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFD4FF00),
+                        foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         elevation: 0,
@@ -1815,7 +1793,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: Colors.white,
                   letterSpacing: -0.3,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -1874,16 +1852,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF154D36) : Colors.white,
+          color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
+            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF154D36).withValues(alpha: 0.2),
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -1898,14 +1876,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFF475569),
+                color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFF1F5F9),
+                color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -1913,7 +1891,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
-                  color: isSelected ? Colors.white : const Color(0xFF64748B),
+                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -1951,14 +1929,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.calendar_today_rounded, size: 11, color: Color(0xFF64748B)),
+            const Icon(Icons.calendar_today_rounded, size: 11, color: Color(0xFFA1A1AA)),
             const SizedBox(width: 4),
             Text(
               dateLabel.isNotEmpty ? dateLabel : 'Today',
               style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1E293B),
+                color: Colors.white,
               ),
             ),
             if (slotList.length > 1) ...[
@@ -1966,7 +1944,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                  color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -1974,7 +1952,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   style: const TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ),
@@ -1985,7 +1963,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
         if (slotList.length <= 1)
           Row(
             children: [
-              const Icon(Icons.access_time_rounded, size: 11.5, color: Color(0xFF154D36)),
+              const Icon(Icons.access_time_rounded, size: 11.5, color: Color(0xFFD4FF00)),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -1993,7 +1971,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ),
@@ -2006,21 +1984,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             children: slotList.map((slot) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: const Color(0xFFCBD5E1)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.access_time_rounded, size: 10, color: Color(0xFF334155)),
+                  const Icon(Icons.access_time_rounded, size: 10, color: Color(0xFFE4E4E7)),
                   const SizedBox(width: 3),
                   Text(
                     slot,
                     style: const TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E293B),
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -2049,28 +2027,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       badgeTextColor = const Color(0xFFDC2626);
       badgeLabel = 'CANCELLED';
     } else if (isCompleted) {
-      badgeBg = const Color(0xFFF1F5F9);
-      badgeTextColor = const Color(0xFF475569);
+      badgeBg = const Color(0xFF1C1C1C);
+      badgeTextColor = const Color(0xFFA1A1AA);
       badgeLabel = 'COMPLETED ✓';
     } else if (isLiveNow) {
       badgeBg = const Color(0xFFDCFCE7);
-      badgeTextColor = const Color(0xFF15803D);
+      badgeTextColor = const Color(0xFFD4FF00);
       badgeLabel = 'LIVE NOW 🟢';
     } else {
-      badgeBg = isUpi ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7);
-      badgeTextColor = isUpi ? const Color(0xFF15803D) : const Color(0xFFB45309);
+      badgeBg = isUpi ? const Color(0xFFDCFCE7) : const Color(0xFF2D2005);
+      badgeTextColor = isUpi ? const Color(0xFFD4FF00) : const Color(0xFFB45309);
       badgeLabel = isUpi ? 'PAID ONLINE' : 'PAY AT VENUE';
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isLiveNow
               ? const Color(0xFF16A34A)
-              : (isCompleted ? const Color(0xFFE2E8F0) : const Color(0xFFCBD5E1)),
+              : (isCompleted ? const Color(0xFF262626) : const Color(0xFF262626)),
           width: isLiveNow ? 1.5 : 1,
         ),
         boxShadow: [
@@ -2131,7 +2109,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFFA1A1AA),
                           ),
                         ),
                       ],
@@ -2217,13 +2195,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   children: [
                     CircleAvatar(
                       radius: 19,
-                      backgroundColor: isCompleted ? const Color(0xFFE2E8F0) : sportColor.withValues(alpha: 0.12),
+                      backgroundColor: isCompleted ? const Color(0xFF262626) : sportColor.withValues(alpha: 0.12),
                       child: Text(
                         booking.customerName.isNotEmpty ? booking.customerName[0].toUpperCase() : 'P',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: isCompleted ? const Color(0xFF475569) : sportColor,
+                          color: isCompleted ? const Color(0xFFA1A1AA) : sportColor,
                         ),
                       ),
                     ),
@@ -2237,7 +2215,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF0F172A),
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -2245,7 +2223,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           const SizedBox(height: 3),
                           Text(
                             booking.courtName,
-                            style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
+                            style: const TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA)),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -2259,7 +2237,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           style: TextStyle(
                             fontSize: 16.5,
                             fontWeight: FontWeight.w900,
-                            color: isCompleted ? const Color(0xFF475569) : const Color(0xFF154D36),
+                            color: isCompleted ? const Color(0xFFA1A1AA) : const Color(0xFFD4FF00),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -2272,15 +2250,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                                color: const Color(0xFF1C1C1C),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.call_rounded, size: 10, color: Color(0xFF475569)),
+                                  Icon(Icons.call_rounded, size: 10, color: Color(0xFFA1A1AA)),
                                   SizedBox(width: 3),
-                                  Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                                  Text('Call', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
                                 ],
                               ),
                             ),
@@ -2299,7 +2277,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     width: 7,
                     height: 14,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF8FAFC),
+                      color: Color(0xFF141414),
                       borderRadius: BorderRadius.horizontal(right: Radius.circular(7)),
                     ),
                   ),
@@ -2318,7 +2296,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               width: dashWidth,
                               height: 1.2,
                               child: DecoratedBox(
-                                decoration: BoxDecoration(color: Color(0xFFE2E8F0)),
+                                decoration: BoxDecoration(color: Color(0xFF262626)),
                               ),
                             ),
                           ),
@@ -2330,7 +2308,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     width: 7,
                     height: 14,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF8FAFC),
+                      color: Color(0xFF141414),
                       borderRadius: BorderRadius.horizontal(left: Radius.circular(7)),
                     ),
                   ),
@@ -2346,9 +2324,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: const Color(0xFF141414),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(color: const Color(0xFF262626)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2359,13 +2337,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 SizedBox(width: 6),
                                 Text(
                                   'Match Completed & Closed',
-                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                                  style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFE4E4E7)),
                                 ),
                               ],
                             ),
                             Text(
                               '₹${booking.amount.toInt()} Settled',
-                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
                             ),
                           ],
                         ),
@@ -2395,8 +2373,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             width: double.infinity,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF154D36),
-                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFFD4FF00),
+                                foregroundColor: Colors.black,
                                 padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -2434,7 +2412,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           maxHeight: MediaQuery.of(context).size.height * 0.88,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: Color(0xFF141414),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
@@ -2452,7 +2430,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     width: 38,
                     height: 4.5,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFCBD5E1),
+                      color: const Color(0xFF262626),
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
@@ -2469,12 +2447,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.all(9),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.confirmation_number_rounded,
-                              color: Color(0xFF154D36),
+                              color: Color(0xFFD4FF00),
                               size: 20,
                             ),
                           ),
@@ -2488,7 +2466,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   style: const TextStyle(
                                     fontSize: 15.5,
                                     fontWeight: FontWeight.w900,
-                                    color: Color(0xFF0F172A),
+                                    color: Colors.white,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -2497,7 +2475,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   '${booking.sport} • ${booking.courtName}',
                                   style: const TextStyle(
                                     fontSize: 11.5,
-                                    color: Color(0xFF64748B),
+                                    color: Color(0xFFA1A1AA),
                                     fontWeight: FontWeight.w600,
                                   ),
                                   overflow: TextOverflow.ellipsis,
@@ -2510,7 +2488,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     ),
                     IconButton(
                       onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFFA1A1AA)),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -2535,17 +2513,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     height: 46,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFD4FF00),
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: Colors.black),
                       label: const FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           'Gate Check-in (Open Scanner)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.black),
                         ),
                       ),
                       onPressed: () {
@@ -2560,8 +2538,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     height: 44,
                     child: OutlinedButton.icon(
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF334155),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        foregroundColor: const Color(0xFFE4E4E7),
+                        side: const BorderSide(color: Color(0xFF262626)),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       icon: const Icon(Icons.published_with_changes_rounded, size: 16),
@@ -2587,15 +2565,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     height: 46,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFD4FF00),
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18),
+                      icon: const Icon(Icons.qr_code_scanner_rounded, size: 18, color: Colors.black),
                       label: const Text(
                         'Open Gate Scanner',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.black),
                       ),
                       onPressed: () {
                         Navigator.pop(ctx);
@@ -2631,28 +2609,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     IconData statusIcon;
 
     if (isCancelled) {
-      statusBgColor = const Color(0xFFFEE2E2);
-      statusTextColor = const Color(0xFFDC2626);
+      statusBgColor = const Color(0xFF2A0D12);
+      statusTextColor = const Color(0xFFF87171);
       statusDisplay = 'CANCELLED';
       statusIcon = Icons.cancel_outlined;
     } else if (isCompleted) {
-      statusBgColor = const Color(0xFFF1F5F9);
-      statusTextColor = const Color(0xFF475569);
+      statusBgColor = const Color(0xFF1C1C1C);
+      statusTextColor = const Color(0xFFA1A1AA);
       statusDisplay = 'COMPLETED ✓';
       statusIcon = Icons.check_circle_outline_rounded;
     } else if (isCheckedIn) {
-      statusBgColor = const Color(0xFFDCFCE7);
-      statusTextColor = const Color(0xFF15803D);
+      statusBgColor = const Color(0xFF1A2A04);
+      statusTextColor = const Color(0xFFD4FF00);
       statusDisplay = 'CHECKED IN 🟢';
       statusIcon = Icons.verified_rounded;
     } else if (isLiveNow) {
-      statusBgColor = const Color(0xFFDCFCE7);
-      statusTextColor = const Color(0xFF15803D);
+      statusBgColor = const Color(0xFF1A2A04);
+      statusTextColor = const Color(0xFFD4FF00);
       statusDisplay = 'LIVE NOW 🟢';
       statusIcon = Icons.sensors_rounded;
     } else {
-      statusBgColor = const Color(0xFFEFF6FF);
-      statusTextColor = const Color(0xFF1D4ED8);
+      statusBgColor = const Color(0xFF0C2040);
+      statusTextColor = const Color(0xFF60A5FA);
       statusDisplay = 'CONFIRMED ✓';
       statusIcon = Icons.check_circle_rounded;
     }
@@ -2663,18 +2641,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+        border: Border.all(color: const Color(0xFF262626), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF154D36).withValues(alpha: 0.06),
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.06),
             blurRadius: 16,
             spreadRadius: 1,
             offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -2690,7 +2668,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
+                  colors: [Color(0xFF141414), Color(0xFF1D2808)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -2700,7 +2678,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -2719,7 +2697,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             fontSize: 10.5,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.2,
-                            color: Color(0xFF86EFAC),
+                            color: Color(0xFFD4FF00),
                           ),
                         ),
                         const SizedBox(height: 1),
@@ -2739,16 +2717,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFEF3C7),
+                      color: const Color(0xFF1C1C1C),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFFDE68A)),
+                      border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.5)),
                     ),
                     child: Text(
                       booking.id,
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF92400E),
+                        color: Color(0xFFD4FF00),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -2790,7 +2768,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                                 letterSpacing: -0.2,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -2803,7 +2781,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w500,
-                                color: Color(0xFF64748B),
+                                color: Color(0xFFA1A1AA),
                               ),
                             ),
                           ],
@@ -2824,9 +2802,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               vertical: 5,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF0FDF4),
+                              color: const Color(0xFF132204),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFBBF7D0)),
+                              border: Border.all(color: const Color(0xFF262626)),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -2834,7 +2812,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 Icon(
                                   Icons.call_rounded,
                                   size: 13,
-                                  color: Color(0xFF15803D),
+                                  color: Color(0xFFD4FF00),
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -2842,7 +2820,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF15803D),
+                                    color: Color(0xFFD4FF00),
                                   ),
                                 ),
                               ],
@@ -2857,9 +2835,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
+                      color: const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: const Color(0xFF262626)),
                     ),
                     child: Row(
                       children: [
@@ -2870,13 +2848,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               Container(
                                 padding: const EdgeInsets.all(7),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
                                   Icons.calendar_today_rounded,
                                   size: 15,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFFD4FF00),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -2890,7 +2868,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 0.5,
-                                        color: Color(0xFF94A3B8),
+                                        color: Color(0xFF71717A),
                                       ),
                                     ),
                                     const SizedBox(height: 1),
@@ -2899,7 +2877,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                       style: const TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF0F172A),
+                                        color: Colors.white,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -2914,7 +2892,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         Container(
                           width: 1,
                           height: 32,
-                          color: const Color(0xFFCBD5E1),
+                          color: const Color(0xFF262626),
                           margin: const EdgeInsets.symmetric(horizontal: 8),
                         ),
                         // Time column
@@ -2924,13 +2902,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               Container(
                                 padding: const EdgeInsets.all(7),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
                                   Icons.access_time_rounded,
                                   size: 15,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFFD4FF00),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -2944,7 +2922,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 0.5,
-                                        color: Color(0xFF94A3B8),
+                                        color: Color(0xFF71717A),
                                       ),
                                     ),
                                     const SizedBox(height: 1),
@@ -2953,7 +2931,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                       style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF154D36),
+                                        color: Color(0xFFD4FF00),
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -2974,16 +2952,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF1F2),
+                        color: const Color(0xFF241014),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFFECDD3)),
+                        border: Border.all(color: const Color(0xFF5C1D24)),
                       ),
                       child: Row(
                         children: [
                           const Icon(
                             Icons.sports_mma_rounded,
                             size: 14,
-                            color: Color(0xFFBE123C),
+                            color: Color(0xFFF87171),
                           ),
                           const SizedBox(width: 6),
                           const Text(
@@ -2991,7 +2969,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFFBE123C),
+                              color: Color(0xFFF87171),
                             ),
                           ),
                           Expanded(
@@ -3000,7 +2978,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF9F1239),
+                                color: Colors.white,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -3040,7 +3018,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                   height: 1.5,
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
-                                      color: Color(0xFFCBD5E1),
+                                      color: Color(0xFF2E2E2E),
                                     ),
                                   ),
                                 ),
@@ -3058,11 +3036,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       width: 12,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFF080808),
                         borderRadius: const BorderRadius.horizontal(
                           right: Radius.circular(11),
                         ),
-                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+                        border: Border.all(color: const Color(0xFF262626), width: 1.2),
                       ),
                     ),
                   ),
@@ -3073,11 +3051,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       width: 12,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFF080808),
                         borderRadius: const BorderRadius.horizontal(
                           left: Radius.circular(11),
                         ),
-                        border: Border.all(color: const Color(0xFFCBD5E1), width: 1.2),
+                        border: Border.all(color: const Color(0xFF262626), width: 1.2),
                       ),
                     ),
                   ),
@@ -3087,8 +3065,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
             // 4. TICKET LOWER STUB: PAYMENT, AMOUNT & BARCODE
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              color: const Color(0xFFFAFAFA),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+              color: const Color(0xFF101010),
               child: Column(
                 children: [
                   // Payment mode & Amount Row
@@ -3105,7 +3083,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFFA1A1AA),
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -3117,7 +3095,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                     ? Icons.payments_rounded
                                     : Icons.account_balance_wallet_rounded,
                                 size: 14,
-                                color: const Color(0xFF475569),
+                                color: const Color(0xFFD4FF00),
                               ),
                               const SizedBox(width: 5),
                               Text(
@@ -3125,7 +3103,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                                 style: const TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF334155),
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
@@ -3141,7 +3119,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFFA1A1AA),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -3150,7 +3128,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF154D36),
+                              color: Color(0xFFD4FF00),
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -3165,12 +3143,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
                           color: statusBgColor,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: statusTextColor.withValues(alpha: 0.25),
+                            color: statusTextColor.withValues(alpha: 0.4),
                           ),
                         ),
                         child: Row(
@@ -3182,7 +3160,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                               statusDisplay,
                               style: TextStyle(
                                 fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w900,
                                 color: statusTextColor,
                                 letterSpacing: 0.3,
                               ),
@@ -3195,15 +3173,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           _buildDecorativeBarcode(height: 18),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
                           Text(
                             '* ${booking.id} *',
                             style: const TextStyle(
-                              fontSize: 8.5,
+                              fontSize: 9,
                               fontWeight: FontWeight.w700,
                               fontFamily: 'monospace',
                               letterSpacing: 1.5,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
@@ -3232,7 +3210,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           height: height,
           margin: const EdgeInsets.symmetric(horizontal: 1.0),
           decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
+            color: const Color(0xFF71717A),
             borderRadius: BorderRadius.circular(0.5),
           ),
         );
@@ -3245,33 +3223,33 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              color: Color(0xFFF1F5F9),
+              color: Color(0xFF1C1C1C),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.event_available_rounded, size: 28, color: Color(0xFF64748B)),
+            child: const Icon(Icons.event_available_rounded, size: 28, color: Color(0xFFA1A1AA)),
           ),
           const SizedBox(height: 10),
           Text(
             _selectedFilter == 'Upcoming'
                 ? 'No more upcoming bookings today'
                 : 'No matching bookings in "$_selectedFilter"',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 4),
           Text(
             _selectedFilter == 'Upcoming'
                 ? 'All earlier scheduled matches for today are completed. Courts are ready for fresh walk-ins!'
                 : 'All courts are open for reservations. You can create offline walk-in bookings anytime.',
-            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+            style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -3314,12 +3292,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   Color _getSportColor(String sport) {
     final lower = sport.toLowerCase();
     if (lower.contains('cricket')) return const Color(0xFFD97706); // Warm Amber
-    if (lower.contains('foot') || lower.contains('soccer')) return const Color(0xFF15803D); // Grass Emerald
+    if (lower.contains('foot') || lower.contains('soccer')) return const Color(0xFFD4FF00); // Grass Emerald
     if (lower.contains('badminton')) return const Color(0xFF4338CA); // Court Indigo
     if (lower.contains('pickle')) return const Color(0xFF0284C7); // Cyan
     if (lower.contains('tennis')) return const Color(0xFF65A30D); // Tennis Lime
     if (lower.contains('basket')) return const Color(0xFFEA580C); // Warm Orange
-    return const Color(0xFF154D36);
+    return const Color(0xFFD4FF00);
   }
 
   // --- 8. BLOCKED ACCESS SCAFFOLD ---
@@ -3327,18 +3305,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
         title: Row(
           children: const [
-            Icon(Icons.stadium_rounded, color: Color(0xFF154D36), size: 24),
+            Icon(Icons.stadium_rounded, color: Color(0xFFD4FF00), size: 24),
             SizedBox(width: 8),
             Text(
               'Gamez24 Partner Hub',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
+                color: Colors.white,
               ),
             ),
           ],
@@ -3412,9 +3390,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  border: Border.all(color: const Color(0xFF262626)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
@@ -3444,8 +3422,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Total Amount Due', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
-                        Text('₹1,180 / month', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF166534))),
+                        Text('Total Amount Due', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text('₹1,180 / month', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFFD4FF00))),
                       ],
                     ),
                   ],
@@ -3456,8 +3434,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF166534),
-                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFFD4FF00),
+                    foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 2,
@@ -3511,10 +3489,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFF154D36), size: 22),
+              child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFD4FF00), size: 22),
             ),
             const SizedBox(width: 10),
             const Expanded(
@@ -3532,15 +3510,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           children: [
             const Text(
               'Gamez24 operates on a zero-convenience fee model for players. Turf owners subscribe monthly to list their turf and accept live bookings.',
-              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
             ),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
+                color: const Color(0xFF181818),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Column(
                 children: [
@@ -3576,14 +3554,14 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       Expanded(
                         child: Text(
                           'Total Subscription Due',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       SizedBox(width: 8),
                       Text(
                         '₹1,180 / mo',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF154D36)),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
                       ),
                     ],
                   ),
@@ -3618,8 +3596,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFFD4FF00),
+                  foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -3764,7 +3742,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   const SizedBox(height: 16),
                   const Text(
                     'Quick Presets:',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFA1A1AA)),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -3816,7 +3794,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 ),

@@ -19,12 +19,12 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  // --- Animation Phases across 5.5s (5500ms) ---
-  // Phase 1: 0.0s - 0.5s  -> (0.000 to 0.091) Black screen & stadium atmosphere
-  // Phase 2: 0.5s - 2.5s  -> (0.091 to 0.455) "GAMEZ24" letter-by-letter reveal
-  // Phase 3: 2.5s - 3.8s  -> (0.455 to 0.690) G24 symbol dynamic assembly
-  // Phase 4: 3.8s - 4.7s  -> (0.690 to 0.855) Complete official logo formation & glow hold
-  // Phase 5: 4.7s - 5.5s  -> (0.855 to 1.000) Smooth fade-out directly to Next Screen
+  // --- Animation Phases across 6.0s (6000ms) ---
+  // Phase 1: 0.0s - 0.5s  -> (0.000 to 0.083) Black screen & stadium atmosphere
+  // Phase 2: 0.5s - 2.5s  -> (0.083 to 0.417) "GAMEZ24" letter-by-letter reveal
+  // Phase 3: 2.5s - 3.8s  -> (0.417 to 0.633) G24 symbol dynamic assembly
+  // Phase 4: 3.8s - 4.5s  -> (0.633 to 0.750) Complete official logo formation
+  // Phase 5: 4.5s - 6.0s  -> (0.750 to 1.000) Seamless continuous symbol travel to next screen
 
   // Phase 1: Ambient background & center glow
   late Animation<double> _ambientGlow;
@@ -51,12 +51,16 @@ class _SplashScreenState extends State<SplashScreen>
   // Phase 4: Complete Logo formation pulse
   late Animation<double> _fullLogoPulse;
 
-  // Phase 5: Smooth fade-out directly into destination screen
-  late Animation<double> _splashFadeOut;
+  // Phase 5: Continuous transition to next screen
+  late Animation<double> _wordmarkFadeOut;
+  late Animation<double> _nextScreenFadeIn;
+  late Animation<double> _emblemYTransition;
+  late Animation<double> _splashBackgroundFadeOut;
 
   bool _navigationTriggered = false;
   late SharedPreferences _prefs;
   bool _prefsLoaded = false;
+  Widget _nextScreenWidget = const WelcomeScreen();
 
   // Sound Effects & Haptics
   AudioPlayer? _audioPlayer;
@@ -79,16 +83,16 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 5500),
+      duration: const Duration(milliseconds: 6000),
     );
 
     // =========================================================================
-    // PHASE 1: 0.0s - 0.5s (0.000 to 0.091)
+    // PHASE 1: 0.0s - 0.5s (0.000 to 0.083)
     // =========================================================================
     _ambientGlow = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.000, 0.091, curve: Curves.easeOut),
+        curve: const Interval(0.000, 0.083, curve: Curves.easeOut),
       ),
     );
 
@@ -100,14 +104,14 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     // =========================================================================
-    // PHASE 2: 0.5s - 2.5s (0.091 to 0.455)
+    // PHASE 2: 0.5s - 2.5s (0.083 to 0.417)
     // 7 Official Wordmark Letters: G -> a -> m -> e -> z -> 2 -> 4
     // =========================================================================
-    const letterStart = 0.091;
+    const letterStart = 0.083;
     const letterStep = 0.038;
     for (int i = 0; i < 7; i++) {
       final start = letterStart + (i * letterStep);
-      final end = math.min(0.430, start + 0.085);
+      final end = math.min(0.417, start + 0.085);
       _letterProgress.add(
         Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
@@ -119,105 +123,126 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     // =========================================================================
-    // PHASE 3: 2.5s - 3.8s (0.455 to 0.690)
+    // PHASE 3: 2.5s - 3.8s (0.417 to 0.633)
     // Symbol Elements Dynamic Assembly
     // =========================================================================
     _wordmarkShiftDown = Tween<double>(begin: 0.0, end: 68.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.440, 0.530, curve: Curves.easeOutCubic),
+        curve: const Interval(0.400, 0.490, curve: Curves.easeOutCubic),
       ),
     );
 
     _symbolElementsOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.455, 0.530, curve: Curves.easeIn),
+        curve: const Interval(0.417, 0.490, curve: Curves.easeIn),
       ),
     );
 
     _symbolArcProgress = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.455, 0.600, curve: Curves.easeOutBack),
+        curve: const Interval(0.417, 0.560, curve: Curves.easeOutBack),
       ),
     );
 
     _symbolArcRotation = Tween<double>(begin: -0.45, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.455, 0.600, curve: Curves.easeOutCubic),
+        curve: const Interval(0.417, 0.560, curve: Curves.easeOutCubic),
       ),
     );
 
     _symbolOutlineDraw = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.455, 0.590, curve: Curves.easeOutQuad),
+        curve: const Interval(0.417, 0.550, curve: Curves.easeOutQuad),
       ),
     );
 
     _symbolGSlide = Tween<double>(begin: -140.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.465, 0.590, curve: Curves.easeOutCubic),
+        curve: const Interval(0.430, 0.550, curve: Curves.easeOutCubic),
       ),
     );
 
     _symbolTwoSlide = Tween<double>(begin: 140.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.485, 0.610, curve: Curves.easeOutCubic),
+        curve: const Interval(0.450, 0.570, curve: Curves.easeOutCubic),
       ),
     );
 
     _symbolFourSlide = Tween<double>(begin: 150.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.505, 0.630, curve: Curves.easeOutBack),
+        curve: const Interval(0.470, 0.590, curve: Curves.easeOutBack),
       ),
     );
 
     _shockwaveProgress = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.560, 0.670, curve: Curves.easeOutQuad),
+        curve: const Interval(0.530, 0.630, curve: Curves.easeOutQuad),
       ),
     );
 
     _masterSymbolCrossfade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.570, 0.650, curve: Curves.easeIn),
+        curve: const Interval(0.530, 0.600, curve: Curves.easeIn),
       ),
     );
 
     _lightSweepPosition = Tween<double>(begin: -1.6, end: 2.2).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.590, 0.720, curve: Curves.easeInOutCubic),
+        curve: const Interval(0.550, 0.670, curve: Curves.easeInOutCubic),
       ),
     );
 
     // =========================================================================
-    // PHASE 4: 3.8s - 4.7s (0.690 to 0.855)
+    // PHASE 4: 3.8s - 4.5s (0.633 to 0.750)
     // Full Logo Formation Hold & Glow
     // =========================================================================
-    _fullLogoPulse = Tween<double>(begin: 1.0, end: 1.04).animate(
+    _fullLogoPulse = Tween<double>(begin: 1.0, end: 1.03).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.690, 0.855, curve: Curves.easeInOut),
+        curve: const Interval(0.633, 0.750, curve: Curves.easeInOut),
       ),
     );
 
     // =========================================================================
-    // PHASE 5: 4.7s - 5.5s (0.855 to 1.000)
-    // Smooth cinematic fade-out directly into destination screen
+    // PHASE 5: 4.5s - 6.0s (0.750 to 1.000)
+    // Seamless Continuous Symbol Travel to Destination Screen
     // =========================================================================
-    _splashFadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
+    _wordmarkFadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.855, 1.000, curve: Curves.easeInOut),
+        curve: const Interval(0.750, 0.830, curve: Curves.easeIn),
+      ),
+    );
+
+    _splashBackgroundFadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.780, 0.940, curve: Curves.easeInOut),
+      ),
+    );
+
+    _nextScreenFadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.790, 0.970, curve: Curves.easeIn),
+      ),
+    );
+
+    _emblemYTransition = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.750, 0.960, curve: Curves.easeInOutCubic),
       ),
     );
 
@@ -225,19 +250,23 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.addListener(() {
       final v = _controller.value;
       for (int i = 0; i < 7; i++) {
-        final threshold = 0.091 + (i * 0.038);
+        final threshold = 0.083 + (i * 0.038);
         if (v >= threshold && !_triggeredHaptics.contains(i)) {
           _triggeredHaptics.add(i);
           HapticFeedback.lightImpact();
         }
       }
-      if (v >= 0.455 && !_triggeredHaptics.contains(100)) {
+      if (v >= 0.417 && !_triggeredHaptics.contains(100)) {
         _triggeredHaptics.add(100);
         HapticFeedback.mediumImpact();
       }
-      if (v >= 0.690 && !_triggeredHaptics.contains(200)) {
+      if (v >= 0.633 && !_triggeredHaptics.contains(200)) {
         _triggeredHaptics.add(200);
         HapticFeedback.heavyImpact();
+      }
+      if (v >= 0.750 && !_triggeredHaptics.contains(300)) {
+        _triggeredHaptics.add(300);
+        HapticFeedback.selectionClick();
       }
     });
 
@@ -275,6 +304,22 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       _prefs = await SharedPreferences.getInstance();
       _prefsLoaded = true;
+
+      final isLoggedIn = _prefs.getBool('is_logged_in') ?? false;
+      final mobileNumber = _prefs.getString('mobileNumber');
+      final hasSeenWelcome = _prefs.getBool('has_seen_welcome') ?? false;
+
+      if (mounted) {
+        setState(() {
+          if (isLoggedIn && mobileNumber != null && mobileNumber.isNotEmpty) {
+            _nextScreenWidget = const MainLayout();
+          } else if (hasSeenWelcome) {
+            _nextScreenWidget = const LoginScreen();
+          } else {
+            _nextScreenWidget = const WelcomeScreen();
+          }
+        });
+      }
     } catch (e) {
       debugPrint('SplashScreen: Error preloading prefs: $e');
     }
@@ -309,7 +354,7 @@ class _SplashScreenState extends State<SplashScreen>
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 450),
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -343,111 +388,166 @@ class _SplashScreenState extends State<SplashScreen>
     // Center symbol top position
     final centerSymbolTop = (screenSize.height - initialSymbolHeight) / 2 - 45;
 
+    // Target position on destination screen header
+    final targetSymbolTop = topPadding + 24 + 12;
+    const targetSymbolHeight = 80.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFF050505),
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
-          return Opacity(
-            opacity: _splashFadeOut.value,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // ===============================================================
-                // LAYER 1: Cinematic Stadium Background (Lights & Particles)
-                // ===============================================================
-                CustomPaint(
-                  painter: _StadiumAtmospherePainter(
-                    lightIntensity: _stadiumLights.value,
-                    glowIntensity: _ambientGlow.value,
-                    particleTick: _controller.value,
+          final currentTop = (centerSymbolTop * (1.0 - _emblemYTransition.value)) +
+              (targetSymbolTop * _emblemYTransition.value);
+          final currentHeight = (initialSymbolHeight * (1.0 - _emblemYTransition.value)) +
+              (targetSymbolHeight * _emblemYTransition.value);
+          final currentWidth = currentHeight * 2.113;
+
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // Layer 1: Next Screen Underneath
+              if (_controller.value >= 0.75)
+                Opacity(
+                  opacity: _nextScreenFadeIn.value,
+                  child: IgnorePointer(
+                    ignoring: _controller.value < 0.98,
+                    child: _nextScreenWidget,
                   ),
                 ),
 
-                // Center Neon Lime Radial Glow Bloom
-                Center(
-                  child: Container(
-                    width: initialSymbolWidth * 1.5,
-                    height: initialSymbolHeight * 1.5,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          const Color(0xFFD4FF00).withValues(
-                            alpha: 0.16 * _ambientGlow.value,
-                          ),
-                          const Color(0xFF00E676).withValues(
-                            alpha: 0.08 * _ambientGlow.value,
-                          ),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.45, 1.0],
+              // Layer 2: Stadium Background & Lights
+              if (_splashBackgroundFadeOut.value > 0.0)
+                Opacity(
+                  opacity: _splashBackgroundFadeOut.value,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CustomPaint(
+                        painter: _StadiumAtmospherePainter(
+                          lightIntensity: _stadiumLights.value,
+                          glowIntensity: _ambientGlow.value,
+                          particleTick: _controller.value,
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-
-                // ===============================================================
-                // LAYER 2: Shockwave Energy Ring at Component Lock-in
-                // ===============================================================
-                if (_shockwaveProgress.value > 0.0 && _shockwaveProgress.value < 1.0)
-                  Positioned(
-                    top: centerSymbolTop + (initialSymbolHeight / 2),
-                    left: screenSize.width / 2,
-                    child: CustomPaint(
-                      painter: _ShockwavePainter(
-                        progress: _shockwaveProgress.value,
-                        baseRadius: initialSymbolWidth * 0.45,
-                      ),
-                    ),
-                  ),
-
-                // ===============================================================
-                // LAYER 3: Phase 2 "Gamez24" Letter-by-Letter Wordmark Reveal
-                // Positioned below the G24 symbol, using exact official typography
-                // ===============================================================
-                if (_controller.value >= 0.091)
-                  Positioned(
-                    top: centerSymbolTop +
-                        initialSymbolHeight +
-                        18.0 -
-                        (45.0 * (1.0 - (_wordmarkShiftDown.value / 72.0))),
-                    left: (screenSize.width - wordmarkWidth) / 2,
-                    width: wordmarkWidth,
-                    height: wordmarkHeight,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        for (int i = 0; i < 7; i++)
-                          _buildLetterLayer(i, wordmarkWidth, wordmarkHeight),
-
-                        if (_controller.value >= 0.42)
-                          Opacity(
-                            opacity: math.min(1.0, (_controller.value - 0.42) * 5.0),
-                            child: Image.asset(
-                              'assets/images/wm_full.png',
-                              fit: BoxFit.contain,
+                      Center(
+                        child: Container(
+                          width: initialSymbolWidth * 1.5,
+                          height: initialSymbolHeight * 1.5,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                const Color(0xFFD4FF00).withValues(
+                                  alpha: 0.18 * _ambientGlow.value,
+                                ),
+                                const Color(0xFF00E676).withValues(
+                                  alpha: 0.08 * _ambientGlow.value,
+                                ),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
                             ),
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Layer 3: Shockwave Energy Ring
+              if (_shockwaveProgress.value > 0.0 &&
+                  _shockwaveProgress.value < 1.0 &&
+                  _splashBackgroundFadeOut.value > 0.5)
+                Positioned(
+                  top: centerSymbolTop + (initialSymbolHeight / 2),
+                  left: screenSize.width / 2,
+                  child: CustomPaint(
+                    painter: _ShockwavePainter(
+                      progress: _shockwaveProgress.value,
+                      baseRadius: initialSymbolWidth * 0.45,
+                    ),
+                  ),
+                ),
+
+              // Layer 4: Phase 2 "Gamez24" Wordmark Letter-by-Letter
+              if (_wordmarkFadeOut.value > 0.0 && _controller.value >= 0.083)
+                Positioned(
+                  top: centerSymbolTop +
+                      initialSymbolHeight +
+                      18.0 -
+                      (42.0 * (1.0 - (_wordmarkShiftDown.value / 68.0))),
+                  left: (screenSize.width - wordmarkWidth) / 2,
+                  width: wordmarkWidth,
+                  height: wordmarkHeight + 40,
+                  child: Opacity(
+                    opacity: _wordmarkFadeOut.value,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: wordmarkWidth,
+                          height: wordmarkHeight,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              for (int i = 0; i < 7; i++)
+                                _buildLetterLayer(i, wordmarkWidth, wordmarkHeight),
+                              if (_masterSymbolCrossfade.value > 0.0)
+                                Opacity(
+                                  opacity: _masterSymbolCrossfade.value,
+                                  child: Image.asset(
+                                    'assets/images/wm_full.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Opacity(
+                          opacity: math.min(1.0, math.max(0.0, (_controller.value - 0.35) * 4.0)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Text(
+                              'SPORTS VENUE ECOSYSTEM',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 3.0,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
+                ),
 
-                // ===============================================================
-                // LAYER 4: Centered Official G24 Symbol Assembly
-                // ===============================================================
-                if (_controller.value >= 0.455)
-                  Positioned(
-                    top: centerSymbolTop,
-                    left: (screenSize.width - initialSymbolWidth) / 2,
-                    width: initialSymbolWidth,
-                    height: initialSymbolHeight,
+              // Layer 5: Traveling G24 Symbol
+              if (_controller.value >= 0.417)
+                Positioned(
+                  top: currentTop,
+                  left: (screenSize.width - currentWidth) / 2,
+                  width: currentWidth,
+                  height: currentHeight,
+                  child: Hero(
+                    tag: 'gamez24_logo_emblem',
                     child: Transform.scale(
-                      scale: _fullLogoPulse.value,
+                      scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          if (_masterSymbolCrossfade.value < 1.0) ...[
+                          if (_masterSymbolCrossfade.value < 1.0 && _emblemYTransition.value == 0.0) ...[
                             CustomPaint(
                               painter: _CircularOutlineDrawPainter(
                                 progress: _symbolOutlineDraw.value,
@@ -528,7 +628,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     boxShadow: [
                                       BoxShadow(
                                         color: const Color(0xFFD4FF00).withValues(
-                                          alpha: 0.22 * _ambientGlow.value,
+                                          alpha: 0.22 * _ambientGlow.value * (1.0 - _emblemYTransition.value),
                                         ),
                                         blurRadius: 28,
                                         spreadRadius: 2,
@@ -546,13 +646,14 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                   ),
+                ),
 
-                // ===============================================================
-                // LAYER 5: Floating Sound FX Toggle (Top-Right)
-                // ===============================================================
-                Positioned(
-                  top: topPadding + 16,
-                  right: 20,
+              // Floating Sound FX Toggle (Top-Right)
+              Positioned(
+                top: topPadding + 16,
+                right: 20,
+                child: Opacity(
+                  opacity: (1.0 - _nextScreenFadeIn.value).clamp(0.0, 1.0),
                   child: GestureDetector(
                     onTap: _toggleMute,
                     child: Container(
@@ -573,8 +674,8 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       ),

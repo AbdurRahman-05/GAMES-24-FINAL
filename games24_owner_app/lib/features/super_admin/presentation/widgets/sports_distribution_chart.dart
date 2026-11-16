@@ -31,7 +31,7 @@ class SportsDistributionChart extends StatelessWidget {
             label: 'Football (7v7 & 5v5)',
             percentage: 42,
             bookings: '1,040 slots',
-            color: const Color(0xFF154D36),
+            color: const Color(0xFFD4FF00),
             icon: Icons.sports_soccer_rounded,
           ),
           const SizedBox(height: 12),

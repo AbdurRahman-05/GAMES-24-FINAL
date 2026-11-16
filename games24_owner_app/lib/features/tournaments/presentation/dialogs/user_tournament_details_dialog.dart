@@ -435,7 +435,7 @@ class _UserTournamentDetailsDialogState
                     // Description & Rules
                     const Text('Description', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     const SizedBox(height: 4),
-                    Text(t.description, style: const TextStyle(fontSize: 12, color: Colors.black87)),
+                    Text(t.description, style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
                     const SizedBox(height: 12),
                     const Text('Rules & Regulations', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                     const SizedBox(height: 4),

@@ -973,15 +973,15 @@ class _TurfOwnerRegistrationScreenState
       children: [
         CircleAvatar(
           radius: 11,
-          backgroundColor: isActive ? AppColors.primary : Colors.grey[300],
+          backgroundColor: isActive ? AppColors.primary : const Color(0xFF262626),
           child: isCurrent
-              ? const Icon(Icons.edit, size: 11, color: Colors.white)
+              ? const Icon(Icons.edit, size: 11, color: Colors.black)
               : Text(
                   '${index + 1}',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
-                    color: isActive ? Colors.white : Colors.grey[700],
+                    color: isActive ? Colors.black : const Color(0xFFA1A1AA),
                   ),
                 ),
         ),
@@ -991,7 +991,7 @@ class _TurfOwnerRegistrationScreenState
           style: TextStyle(
             fontSize: 9,
             fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-            color: isActive ? AppColors.primary : Colors.grey[600],
+            color: isActive ? AppColors.primary : const Color(0xFF71717A),
           ),
         ),
       ],
@@ -1004,7 +1004,7 @@ class _TurfOwnerRegistrationScreenState
       child: Container(
         height: 2,
         margin: const EdgeInsets.symmetric(horizontal: 2),
-        color: isActive ? AppColors.primary : Colors.grey[300],
+        color: isActive ? AppColors.primary : const Color(0xFF262626),
       ),
     );
   }
@@ -1447,7 +1447,7 @@ class _TurfOwnerRegistrationScreenState
                                 child: Container(
                                   padding: const EdgeInsets.all(2),
                                   decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
-                                  child: const Icon(Icons.close_rounded, color: Colors.white, size: 14),
+                                  child: const Icon(Icons.close_rounded, color: Color(0xFF141414), size: 14),
                                 ),
                               ),
                             ),
@@ -1557,7 +1557,7 @@ class _TurfOwnerRegistrationScreenState
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
-                  color: isSelected ? AppColors.primary : const Color(0xFFE5E7EB),
+                  color: isSelected ? AppColors.primary : const Color(0xFF262626),
                 ),
               ),
               onSelected: (selected) {
@@ -1877,7 +1877,7 @@ class _TurfOwnerRegistrationScreenState
             color: AppColors.warning,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.shield_outlined, color: Colors.white, size: 54),
+          child: const Icon(Icons.shield_outlined, color: Color(0xFF141414), size: 54),
         ),
         const SizedBox(height: 24),
         Text(
@@ -2356,7 +2356,7 @@ class _TurfOwnerRegistrationScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
@@ -2374,14 +2374,14 @@ class _TurfOwnerRegistrationScreenState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.info_outline_rounded, size: 14, color: Colors.orange[800]),
+                  Icon(Icons.info_outline_rounded, size: 14, color: Colors.amber[400]),
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
                       _getStepIncompleteMessage(),
                       style: TextStyle(
                         fontSize: 11.5,
-                        color: Colors.orange[900],
+                        color: Colors.amber[300],
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,

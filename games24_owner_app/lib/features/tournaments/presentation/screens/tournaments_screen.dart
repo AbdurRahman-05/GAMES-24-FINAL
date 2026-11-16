@@ -359,9 +359,9 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/host-match'),
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Host Match', style: TextStyle(fontWeight: FontWeight.bold)),
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.add_rounded, color: Colors.black),
+        label: const Text('Host Match', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
       ),
     );
   }

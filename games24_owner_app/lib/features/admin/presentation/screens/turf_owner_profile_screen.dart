@@ -247,9 +247,9 @@ class _TurfOwnerProfileScreenState
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
+                      color: const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: const Color(0xFF262626)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +261,7 @@ class _TurfOwnerProfileScreenState
                             Expanded(
                               child: Text(
                                 'Day & Night Slot Tariffs (All Time Costs)',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A)),
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -329,7 +329,7 @@ class _TurfOwnerProfileScreenState
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
@@ -481,7 +481,7 @@ class _TurfOwnerProfileScreenState
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Colors.black,
               ),
               onPressed: () {
                 final sportName = nameCtrl.text.trim().isEmpty ? selectedSportName : nameCtrl.text.trim();
@@ -589,7 +589,7 @@ class _TurfOwnerProfileScreenState
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: Colors.black,
             ),
             onPressed: () {
               final bRate = double.tryParse(baseRateCtrl.text) ?? sport.hourlyRate;
@@ -676,9 +676,9 @@ class _TurfOwnerProfileScreenState
                       labelStyle: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isChecked ? Colors.white : const Color(0xFF334155),
+                        color: isChecked ? Colors.white : const Color(0xFFE4E4E7),
                       ),
-                      backgroundColor: const Color(0xFFF1F5F9),
+                      backgroundColor: const Color(0xFF1C1C1C),
                       onSelected: (selected) {
                         setDialogState(() {
                           if (selected) {
@@ -717,7 +717,7 @@ class _TurfOwnerProfileScreenState
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Colors.black,
               ),
               onPressed: () {
                 final sportsList = selectedSports.toList();
@@ -802,7 +802,7 @@ class _TurfOwnerProfileScreenState
           maxChildSize: 0.98,
           builder: (context, scrollCtrl) => Container(
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Color(0xFF141414),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
@@ -908,7 +908,7 @@ class _TurfOwnerProfileScreenState
                               avatar: const Icon(Icons.add, size: 16, color: Colors.black87),
                               label: const Text('Add Sport', style: TextStyle(color: Colors.black87)),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.black87)),
-                              backgroundColor: Colors.white,
+                              backgroundColor: const Color(0xFF0D0D0D),
                               onPressed: () {
                                 final ctrl = TextEditingController();
                                 showDialog(
@@ -994,7 +994,7 @@ class _TurfOwnerProfileScreenState
                           avatar: const Icon(Icons.add, size: 16),
                           label: const Text('Add Other Amenity'),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: BorderSide(color: Colors.grey.shade400)),
-                          backgroundColor: Colors.white,
+                          backgroundColor: const Color(0xFF0D0D0D),
                           onPressed: () {
                             final ctrl = TextEditingController();
                             showDialog(
@@ -1077,7 +1077,7 @@ class _TurfOwnerProfileScreenState
                           icon: const Icon(Icons.save_rounded),
                           label: const Text('Save Court Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary, foregroundColor: Colors.white,
+                            backgroundColor: AppColors.primary, foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           ),
@@ -1196,7 +1196,7 @@ class _TurfOwnerProfileScreenState
                 actions: [
                   TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
                   ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.black),
                     onPressed: () { Navigator.pop(ctx); setCardState(() {}); },
                     child: const Text('Save Image'),
                   ),
@@ -1235,7 +1235,7 @@ class _TurfOwnerProfileScreenState
     final profile = ref.watch(turfProfileProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: _buildProAppBar(context, profile),
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
@@ -1258,7 +1258,7 @@ class _TurfOwnerProfileScreenState
 
   PreferredSizeWidget _buildProAppBar(BuildContext context, TurfProfileState profile) {
     return AppBar(
-      backgroundColor: const Color(0xFF072115),
+      backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
       scrolledUnderElevation: 0,
       titleSpacing: 0,
@@ -1306,16 +1306,16 @@ class _TurfOwnerProfileScreenState
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36),
+                  color: const Color(0xFFD4FF00),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFF34D399).withValues(alpha: 0.4)),
+                  border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.4)),
                 ),
                 child: const Text(
                   'PRO',
                   style: TextStyle(
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF4ADE80),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ),
@@ -1325,7 +1325,7 @@ class _TurfOwnerProfileScreenState
           Text(
             '${profile.venueName} • Madurai Regional Hub',
             style: const TextStyle(
-              color: Color(0xFF86EFAC),
+              color: Color(0xFFD4FF00),
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -1345,7 +1345,7 @@ class _TurfOwnerProfileScreenState
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
-            child: const Icon(Icons.settings_rounded, color: Colors.white, size: 18),
+            child: const Icon(Icons.settings_rounded, color: Color(0xFF141414), size: 18),
           ),
           tooltip: 'Venue Settings & Operations',
           onPressed: () => context.push('/admin/settings'),
@@ -1419,7 +1419,7 @@ class _TurfOwnerProfileScreenState
                             ),
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
-                              color: const Color(0xFF34D399).withValues(alpha: 0.6),
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.6),
                               width: 1.5,
                             ),
                             boxShadow: [
@@ -1457,7 +1457,7 @@ class _TurfOwnerProfileScreenState
                             child: const Icon(
                               Icons.check_rounded,
                               size: 11,
-                              color: Colors.white,
+                              color: Color(0xFF141414),
                             ),
                           ),
                         ),
@@ -1492,20 +1492,20 @@ class _TurfOwnerProfileScreenState
                                   color: const Color(0xFF10B981).withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
-                                    color: const Color(0xFF34D399).withValues(alpha: 0.45),
+                                    color: const Color(0xFFD4FF00).withValues(alpha: 0.45),
                                   ),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.verified_user_rounded, size: 11, color: Color(0xFF4ADE80)),
+                                    Icon(Icons.verified_user_rounded, size: 11, color: Color(0xFFD4FF00)),
                                     SizedBox(width: 3.5),
                                     Text(
                                       'VERIFIED',
                                       style: TextStyle(
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w900,
-                                        color: Color(0xFF4ADE80),
+                                        color: Color(0xFFD4FF00),
                                         letterSpacing: 0.4,
                                       ),
                                     ),
@@ -1518,13 +1518,13 @@ class _TurfOwnerProfileScreenState
                           // Owner badge line
                           Row(
                             children: [
-                              const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFF86EFAC)),
+                              const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFFD4FF00)),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   'Owner: ${profile.ownerName} • ${profile.ownerPhone}',
                                   style: const TextStyle(
-                                    color: Color(0xFF86EFAC),
+                                    color: Color(0xFFD4FF00),
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -1538,7 +1538,7 @@ class _TurfOwnerProfileScreenState
                           // Location badge line
                           Row(
                             children: [
-                              const Icon(Icons.location_on_rounded, size: 12, color: Color(0xFF34D399)),
+                              const Icon(Icons.location_on_rounded, size: 12, color: Color(0xFFD4FF00)),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -1570,7 +1570,7 @@ class _TurfOwnerProfileScreenState
                         label: 'Arenas',
                         value: '${profile.courts.length}',
                         tag: 'Active',
-                        accentColor: const Color(0xFF34D399),
+                        accentColor: const Color(0xFFD4FF00),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1601,7 +1601,7 @@ class _TurfOwnerProfileScreenState
                         label: 'Status',
                         value: isActive ? 'LIVE' : 'HOLD',
                         tag: isActive ? 'Player App' : 'Expired',
-                        accentColor: isActive ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
+                        accentColor: isActive ? const Color(0xFFD4FF00) : const Color(0xFFF87171),
                         isLiveIndicator: isActive,
                       ),
                     ),
@@ -1746,7 +1746,7 @@ class _TurfOwnerProfileScreenState
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isActive
-              ? (isEndingSoon ? const Color(0xFFFBBF24).withValues(alpha: 0.6) : const Color(0xFF34D399).withValues(alpha: 0.5))
+              ? (isEndingSoon ? const Color(0xFFFBBF24).withValues(alpha: 0.6) : const Color(0xFFD4FF00).withValues(alpha: 0.5))
               : const Color(0xFFF87171).withValues(alpha: 0.5),
           width: 1.2,
         ),
@@ -1985,9 +1985,9 @@ class _TurfOwnerProfileScreenState
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
+          color: const Color(0xFF181818),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Column(
           children: [
@@ -2002,7 +2002,7 @@ class _TurfOwnerProfileScreenState
                       Flexible(
                         child: Text(
                           item.id,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF111827)),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -2013,12 +2013,12 @@ class _TurfOwnerProfileScreenState
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
+                    color: const Color(0xFF1B2A06),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     item.status.toUpperCase(),
-                    style: const TextStyle(color: Color(0xFF166534), fontSize: 9.5, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Color(0xFFD4FF00), fontSize: 9.5, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -2051,7 +2051,7 @@ class _TurfOwnerProfileScreenState
                   children: [
                     Text(
                       '₹${item.totalAmount.toInt()}',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF166534)),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
                     ),
                     const Text('₹1000 + 18% GST', style: TextStyle(fontSize: 10, color: Colors.grey)),
                   ],
@@ -2065,7 +2065,7 @@ class _TurfOwnerProfileScreenState
                 Flexible(
                   child: Text(
                     'Receipt: #${item.receiptNumber}',
-                    style: const TextStyle(fontSize: 10.5, color: Color(0xFF6B7280), fontFamily: 'monospace'),
+                    style: const TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA), fontFamily: 'monospace'),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -2134,19 +2134,19 @@ class _TurfOwnerProfileScreenState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Expanded(child: Text('Total Paid', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
-                Text('₹${item.totalAmount.toInt()}.00', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF166534))),
+                Text('₹${item.totalAmount.toInt()}.00', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFFD4FF00))),
               ],
             ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
+                color: const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
                 'Gamez24 Platform Services Ltd.\nGSTIN: 33AAACG2424F1Z9\nHSN/SAC: 998314',
-                style: TextStyle(fontSize: 10, color: Color(0xFF6B7280)),
+                style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA)),
               ),
             ),
           ],
@@ -2169,7 +2169,7 @@ class _TurfOwnerProfileScreenState
       builder: (ctx) => Container(
         height: MediaQuery.of(context).size.height * 0.85,
         decoration: const BoxDecoration(
-          color: Color(0xFFF8FAFC),
+          color: Color(0xFF141414),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -2192,11 +2192,11 @@ class _TurfOwnerProfileScreenState
                   Container(
                     padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF166534).withValues(alpha: 0.1),
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.workspace_premium_rounded,
-                        color: Color(0xFF166534), size: 20),
+                        color: Color(0xFFD4FF00), size: 20),
                   ),
                   const SizedBox(width: 10),
                   const Expanded(
@@ -2205,7 +2205,7 @@ class _TurfOwnerProfileScreenState
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F172A),
+                        color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2228,9 +2228,9 @@ class _TurfOwnerProfileScreenState
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: const Color(0xFF262626)),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.02),
@@ -2251,7 +2251,7 @@ class _TurfOwnerProfileScreenState
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0F172A),
+                                  color: Colors.white,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -2271,7 +2271,7 @@ class _TurfOwnerProfileScreenState
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: profile.isSubscriptionActive
-                                      ? const Color(0xFF15803D)
+                                      ? const Color(0xFFD4FF00)
                                       : const Color(0xFFB91C1C),
                                 ),
                               ),
@@ -2283,7 +2283,7 @@ class _TurfOwnerProfileScreenState
                           'Zero fee for players — owners pay a monthly ₹1,000 + 18% GST (₹1,180) platform subscription to keep their venue discoverable.',
                           style: TextStyle(
                               fontSize: 11.5,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFFA1A1AA),
                               height: 1.4),
                         ),
                         const SizedBox(height: 14),
@@ -2292,9 +2292,9 @@ class _TurfOwnerProfileScreenState
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: const Color(0xFF141414),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: const Color(0xFF262626)),
                           ),
                           child: Column(
                             children: [
@@ -2304,7 +2304,7 @@ class _TurfOwnerProfileScreenState
                                     child: Text(
                                       'Monthly Listing Fee',
                                       style: TextStyle(
-                                          fontSize: 12, color: Color(0xFF475569)),
+                                          fontSize: 12, color: Color(0xFFA1A1AA)),
                                     ),
                                   ),
                                   Text(
@@ -2312,7 +2312,7 @@ class _TurfOwnerProfileScreenState
                                     style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF0F172A)),
+                                        color: Colors.white),
                                   ),
                                 ],
                               ),
@@ -2323,7 +2323,7 @@ class _TurfOwnerProfileScreenState
                                     child: Text(
                                       'GST (18% Applicable)',
                                       style: TextStyle(
-                                          fontSize: 12, color: Color(0xFF475569)),
+                                          fontSize: 12, color: Color(0xFFA1A1AA)),
                                     ),
                                   ),
                                   Text(
@@ -2331,7 +2331,7 @@ class _TurfOwnerProfileScreenState
                                     style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF0F172A)),
+                                        color: Colors.white),
                                   ),
                                 ],
                               ),
@@ -2344,7 +2344,7 @@ class _TurfOwnerProfileScreenState
                                       style: TextStyle(
                                           fontSize: 12.5,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF0F172A)),
+                                          color: Colors.white),
                                     ),
                                   ),
                                   SizedBox(width: 8),
@@ -2353,7 +2353,7 @@ class _TurfOwnerProfileScreenState
                                     style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w900,
-                                        color: Color(0xFF166534)),
+                                        color: Color(0xFFD4FF00)),
                                   ),
                                 ],
                               ),
@@ -2366,8 +2366,8 @@ class _TurfOwnerProfileScreenState
                           width: double.infinity,
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF166534),
-                              foregroundColor: Colors.white,
+                              backgroundColor: const Color(0xFFD4FF00),
+                              foregroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(vertical: 13),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
@@ -2421,7 +2421,7 @@ class _TurfOwnerProfileScreenState
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0F172A),
+                                  color: Colors.white,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -2435,13 +2435,13 @@ class _TurfOwnerProfileScreenState
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFDCFCE7),
+                          color: const Color(0xFF1B2A06),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '${profile.subscriptionHistory.length} Paid',
                           style: const TextStyle(
-                              color: Color(0xFF166534),
+                              color: Color(0xFFD4FF00),
                               fontSize: 10.5,
                               fontWeight: FontWeight.bold),
                         ),
@@ -2454,9 +2454,9 @@ class _TurfOwnerProfileScreenState
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFF141414),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: const Color(0xFF262626)),
                       ),
                       child: const Center(
                         child: Text(
@@ -2528,17 +2528,17 @@ class _TurfOwnerProfileScreenState
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFF0FDF4), Color(0xFFDCFCE7)],
+                        colors: [Color(0xFF1B2A06), Color(0xFFDCFCE7)],
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                      border: Border.all(color: const Color(0xFF262626)),
                     ),
                     child: Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.all(7),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF154D36),
+                            color: const Color(0xFFD4FF00),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.calendar_month_rounded, size: 16, color: Colors.white),
@@ -2550,12 +2550,12 @@ class _TurfOwnerProfileScreenState
                             children: [
                               const Text(
                                 'Weekdays',
-                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
+                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white),
                               ),
                               const SizedBox(height: 1),
                               const Text(
                                 'Mon - Fri',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF166534)),
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFD4FF00)),
                               ),
                               const SizedBox(height: 1),
                               Text(
@@ -2570,7 +2570,7 @@ class _TurfOwnerProfileScreenState
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF154D36),
+                            color: const Color(0xFFD4FF00),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -2592,10 +2592,10 @@ class _TurfOwnerProfileScreenState
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+                        colors: [Color(0xFF241A04), Color(0xFF2D2005)],
                       ),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFDE68A)),
+                      border: Border.all(color: const Color(0xFFD4FF00)),
                     ),
                     child: Row(
                       children: [
@@ -2614,7 +2614,7 @@ class _TurfOwnerProfileScreenState
                             children: [
                               const Text(
                                 'Weekends',
-                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
+                                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white),
                               ),
                               const SizedBox(height: 1),
                               const Text(
@@ -2804,7 +2804,7 @@ class _TurfOwnerProfileScreenState
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade200),
               ),
@@ -2812,7 +2812,7 @@ class _TurfOwnerProfileScreenState
                 children: [
                   Icon(Icons.sports_soccer_rounded, size: 36, color: Colors.grey.shade400),
                   const SizedBox(height: 8),
-                  const Text('No sports listed yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B))),
+                  const Text('No sports listed yet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFA1A1AA))),
                   const SizedBox(height: 4),
                   const Text('Tap "+ Add Sport" to list supported sports with pricing tiers', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
                 ],
@@ -2879,7 +2879,7 @@ class _TurfOwnerProfileScreenState
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade200),
               ),
@@ -2887,7 +2887,7 @@ class _TurfOwnerProfileScreenState
                 children: [
                   Icon(Icons.stadium_rounded, size: 36, color: Colors.grey.shade400),
                   const SizedBox(height: 8),
-                  const Text('No arenas or courts registered', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B))),
+                  const Text('No arenas or courts registered', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFA1A1AA))),
                   const SizedBox(height: 4),
                   const Text('Add pitches and courts so players can book specific turfs', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
                 ],
@@ -2954,7 +2954,7 @@ class _TurfOwnerProfileScreenState
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.grey.shade200),
               ),
@@ -2962,7 +2962,7 @@ class _TurfOwnerProfileScreenState
                 children: [
                   Icon(Icons.check_circle_outline_rounded, size: 32, color: Colors.grey.shade400),
                   const SizedBox(height: 6),
-                  const Text('No amenities selected', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF64748B))),
+                  const Text('No amenities selected', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFA1A1AA))),
                   const SizedBox(height: 2),
                   const Text('Tap "Manage" to select facilities like Parking, Floodlights, Restrooms', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey)),
                 ],
@@ -2986,7 +2986,7 @@ class _TurfOwnerProfileScreenState
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: theme.accent.withValues(alpha: 0.22), width: 1.2),
         boxShadow: [
@@ -3035,7 +3035,7 @@ class _TurfOwnerProfileScreenState
                           ),
                         ],
                       ),
-                      child: Icon(theme.icon, color: Colors.white, size: 24),
+                      child: Icon(theme.icon, color: const Color(0xFF141414), size: 24),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -3050,7 +3050,7 @@ class _TurfOwnerProfileScreenState
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 15,
-                                    color: Color(0xFF0F172A),
+                                    color: Colors.white,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -3092,8 +3092,9 @@ class _TurfOwnerProfileScreenState
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
+                        color: const Color(0xFF1C1C1C),
                         borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF2E2E2E)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
@@ -3101,7 +3102,7 @@ class _TurfOwnerProfileScreenState
                           Text(
                             '₹${sport.hourlyRate.toStringAsFixed(0)}',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: Color(0xFFD4FF00),
                               fontWeight: FontWeight.w900,
                               fontSize: 14,
                               letterSpacing: -0.2,
@@ -3110,7 +3111,7 @@ class _TurfOwnerProfileScreenState
                           const Text(
                             '/hour base',
                             style: TextStyle(
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFFA1A1AA),
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
                             ),
@@ -3121,7 +3122,7 @@ class _TurfOwnerProfileScreenState
                   ],
                 ),
               ),
-              Divider(height: 1, color: Colors.grey.shade100),
+              const Divider(height: 1, color: Color(0xFF262626)),
               // Pricing Breakdown Strip & Quick Edit
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -3131,7 +3132,7 @@ class _TurfOwnerProfileScreenState
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: const Color(0xFF141414),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: Colors.grey.shade200),
                         ),
@@ -3142,7 +3143,7 @@ class _TurfOwnerProfileScreenState
                             Expanded(
                               child: Text(
                                 'Wkday: ₹${sport.weekdayRate.toStringAsFixed(0)}',
-                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFF334155)),
+                                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700, color: Color(0xFFE4E4E7)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -3155,9 +3156,9 @@ class _TurfOwnerProfileScreenState
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFBEB),
+                          color: const Color(0xFF241A04),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFFDE68A)),
+                          border: Border.all(color: const Color(0xFFD4FF00)),
                         ),
                         child: Row(
                           children: [
@@ -3198,7 +3199,7 @@ class _TurfOwnerProfileScreenState
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200, width: 1.2),
         boxShadow: [
@@ -3216,7 +3217,7 @@ class _TurfOwnerProfileScreenState
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: const Color(0xFF141414),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
               border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
             ),
@@ -3240,7 +3241,7 @@ class _TurfOwnerProfileScreenState
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.stadium_rounded, color: Colors.white, size: 24),
+                  child: const Icon(Icons.stadium_rounded, color: Color(0xFF141414), size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -3255,7 +3256,7 @@ class _TurfOwnerProfileScreenState
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 15,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -3264,9 +3265,9 @@ class _TurfOwnerProfileScreenState
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFDCFCE7),
+                              color: const Color(0xFF1B2A06),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFF86EFAC)),
+                              border: Border.all(color: const Color(0xFFD4FF00)),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -3278,7 +3279,7 @@ class _TurfOwnerProfileScreenState
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
-                                    color: Color(0xFF15803D),
+                                    color: Color(0xFFD4FF00),
                                     letterSpacing: 0.4,
                                   ),
                                 ),
@@ -3294,7 +3295,7 @@ class _TurfOwnerProfileScreenState
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                                color: const Color(0xFF1C1C1C),
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
@@ -3302,7 +3303,7 @@ class _TurfOwnerProfileScreenState
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF475569),
+                                  color: Color(0xFFA1A1AA),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -3314,7 +3315,7 @@ class _TurfOwnerProfileScreenState
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                                color: const Color(0xFF1C1C1C),
                                 borderRadius: BorderRadius.circular(5),
                               ),
                               child: Text(
@@ -3322,7 +3323,7 @@ class _TurfOwnerProfileScreenState
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF64748B),
+                                  color: Color(0xFFA1A1AA),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -3378,7 +3379,7 @@ class _TurfOwnerProfileScreenState
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF475569),
+                      color: Color(0xFFA1A1AA),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -3461,7 +3462,7 @@ class _TurfOwnerProfileScreenState
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF1E293B),
+              color: Colors.white,
             ),
           ),
           const SizedBox(width: 6),
@@ -3524,7 +3525,7 @@ class _TurfOwnerProfileScreenState
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: isChecked ? info.bgColor : const Color(0xFFF8FAFC),
+                          color: isChecked ? info.bgColor : const Color(0xFF141414),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isChecked
@@ -3551,7 +3552,7 @@ class _TurfOwnerProfileScreenState
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: isChecked ? FontWeight.w700 : FontWeight.w500,
-                              color: isChecked ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                              color: isChecked ? Colors.white : const Color(0xFFA1A1AA),
                             ),
                           ),
                           onChanged: (val) {
@@ -3580,7 +3581,7 @@ class _TurfOwnerProfileScreenState
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 ),
@@ -3614,7 +3615,7 @@ class _TurfOwnerProfileScreenState
         ),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: const Color(0xFF34D399).withValues(alpha: 0.35),
+          color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
           width: 1.2,
         ),
         boxShadow: [
@@ -3644,10 +3645,10 @@ class _TurfOwnerProfileScreenState
                           Container(
                             padding: const EdgeInsets.all(6),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF34D399).withValues(alpha: 0.2),
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.track_changes_rounded, size: 16, color: Color(0xFF34D399)),
+                            child: const Icon(Icons.track_changes_rounded, size: 16, color: Color(0xFFD4FF00)),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -3660,7 +3661,7 @@ class _TurfOwnerProfileScreenState
                                     fontSize: 11,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
-                                    color: Color(0xFFCBD5E1),
+                                    color: Colors.white,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -3671,7 +3672,7 @@ class _TurfOwnerProfileScreenState
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: pct >= 100 ? const Color(0xFF4ADE80) : const Color(0xFF86EFAC),
+                                    color: pct >= 100 ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -3685,8 +3686,8 @@ class _TurfOwnerProfileScreenState
                     const SizedBox(width: 6),
                     FilledButton.tonal(
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF34D399).withValues(alpha: 0.18),
-                        foregroundColor: const Color(0xFF4ADE80),
+                        backgroundColor: const Color(0xFFD4FF00).withValues(alpha: 0.18),
+                        foregroundColor: const Color(0xFFD4FF00),
                         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                         visualDensity: VisualDensity.compact,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -3730,7 +3731,7 @@ class _TurfOwnerProfileScreenState
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF94A3B8),
+                              color: Color(0xFF71717A),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -3751,7 +3752,7 @@ class _TurfOwnerProfileScreenState
                         children: [
                           const Text(
                             'Goal: ',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600),
+                            style: TextStyle(fontSize: 11, color: Color(0xFF71717A), fontWeight: FontWeight.w600),
                           ),
                           Text(
                             '₹${NumberFormat('#,##,###').format(target.toInt())}',
@@ -3773,7 +3774,7 @@ class _TurfOwnerProfileScreenState
                     value: progress > 0 ? progress.clamp(0.05, 1.0) : 0.05,
                     minHeight: 7,
                     backgroundColor: Colors.white.withValues(alpha: 0.14),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4ADE80)),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4FF00)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -3791,7 +3792,7 @@ class _TurfOwnerProfileScreenState
                     const SizedBox(width: 6),
                     Text(
                       'Target ${_formatTargetLabel(target)}',
-                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF4ADE80)),
+                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
                     ),
                   ],
                 ),
@@ -3857,7 +3858,7 @@ class _TurfOwnerProfileScreenState
                   const SizedBox(height: 16),
                   const Text(
                     'Quick Presets:',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFFA1A1AA)),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -3909,7 +3910,7 @@ class _TurfOwnerProfileScreenState
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                 ),
@@ -3988,7 +3989,7 @@ _SportTheme _getSportTheme(String name) {
       icon: Icons.sports_tennis_rounded,
       gradient: [Color(0xFFB45309), Color(0xFFF59E0B)],
       accent: Color(0xFFD97706),
-      lightBg: Color(0xFFFFFBEB),
+      lightBg: Color(0xFF241A04),
     );
   } else if (lower.contains('tennis') || lower.contains('padel') || lower.contains('pickle')) {
     return const _SportTheme(
@@ -4014,9 +4015,9 @@ _SportTheme _getSportTheme(String name) {
   }
   return const _SportTheme(
     icon: Icons.sports_rounded,
-    gradient: [Color(0xFF1E293B), Color(0xFF475569)],
-    accent: Color(0xFF334155),
-    lightBg: Color(0xFFF8FAFC),
+    gradient: [Colors.white, Color(0xFFA1A1AA)],
+    accent: Color(0xFFE4E4E7),
+    lightBg: Color(0xFF141414),
   );
 }
 
@@ -4056,7 +4057,7 @@ _AmenityInfo _getAmenityInfo(String name) {
     return const _AmenityInfo(
       icon: Icons.highlight_rounded,
       color: Color(0xFFD97706),
-      bgColor: Color(0xFFFFFBEB),
+      bgColor: Color(0xFF241A04),
     );
   } else if (lower.contains('changing') || lower.contains('room')) {
     return const _AmenityInfo(
@@ -4085,8 +4086,8 @@ _AmenityInfo _getAmenityInfo(String name) {
   } else if (lower.contains('locker')) {
     return const _AmenityInfo(
       icon: Icons.lock_rounded,
-      color: Color(0xFF475569),
-      bgColor: Color(0xFFF8FAFC),
+      color: Color(0xFFA1A1AA),
+      bgColor: Color(0xFF141414),
     );
   } else if (lower.contains('seat') || lower.contains('dugout') || lower.contains('stand')) {
     return const _AmenityInfo(
@@ -4098,6 +4099,6 @@ _AmenityInfo _getAmenityInfo(String name) {
   return const _AmenityInfo(
     icon: Icons.verified_rounded,
     color: Color(0xFF059669),
-    bgColor: Color(0xFFF0FDF4),
+    bgColor: Color(0xFF1B2A06),
   );
 }

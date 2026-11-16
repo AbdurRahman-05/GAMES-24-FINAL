@@ -26,14 +26,14 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
     final bool isDisabled = onPressed == null && !isLoading;
-    final bool isDark = theme.brightness == Brightness.dark;
 
     Color textColor;
     if (isDisabled) {
-      textColor = isDark ? Colors.white38 : Colors.grey[500]!;
-    } else if (type == AppButtonType.primary || type == AppButtonType.secondary) {
+      textColor = Colors.white38;
+    } else if (type == AppButtonType.primary) {
+      textColor = Colors.black; // Optimal contrast on Neon Lime (#D4FF00)
+    } else if (type == AppButtonType.secondary) {
       textColor = Colors.white;
     } else {
       textColor = AppColors.primary;
@@ -44,12 +44,14 @@ class AppButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isLoading) ...[
-          const SizedBox(
+          SizedBox(
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                type == AppButtonType.primary ? Colors.black : Colors.white,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -62,7 +64,7 @@ class AppButton extends StatelessWidget {
             text,
             style: theme.textTheme.titleMedium?.copyWith(
               color: textColor,
-              fontWeight: FontWeight.w600,
+              fontWeight: type == AppButtonType.primary ? FontWeight.w800 : FontWeight.w600,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -74,20 +76,20 @@ class AppButton extends StatelessWidget {
     Decoration? decoration;
     if (isDisabled) {
       decoration = BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[200],
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
         border: type == AppButtonType.outline
-            ? Border.all(color: isDark ? Colors.white12 : Colors.grey[300]!, width: 1.5)
+            ? Border.all(color: Colors.white12, width: 1.5)
             : null,
       );
     } else if (type == AppButtonType.primary) {
       decoration = BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 12,
+            color: AppColors.primary.withValues(alpha: 0.28),
+            blurRadius: 14,
             offset: const Offset(0, 4),
           ),
         ],
@@ -96,6 +98,13 @@ class AppButton extends StatelessWidget {
       decoration = BoxDecoration(
         color: AppColors.secondary,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       );
     } else if (type == AppButtonType.outline) {
       decoration = BoxDecoration(

@@ -30,7 +30,6 @@ class AppTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,7 +38,10 @@ class AppTextField extends StatelessWidget {
         if (label != null) ...[
           Text(
             label!,
-            style: theme.textTheme.titleSmall,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 8),
         ],
@@ -49,28 +51,33 @@ class AppTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           maxLines: maxLines,
-          style: theme.textTheme.bodyLarge,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+            hintStyle: const TextStyle(
+              color: Color(0xFF71717A),
+              fontSize: 14,
             ),
             errorText: errorText,
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20) : null,
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20, color: const Color(0xFFA1A1AA)) : null,
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: isDark ? AppColors.cardDark : Colors.white,
+            fillColor: const Color(0xFF181818),
             contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              borderSide: const BorderSide(
+                color: Color(0xFF262626),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+              borderSide: const BorderSide(
+                color: Color(0xFF262626),
               ),
             ),
             focusedBorder: OutlineInputBorder(

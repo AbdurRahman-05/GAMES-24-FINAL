@@ -256,12 +256,12 @@ class _AdminSlotManagerScreenState
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: _buildProAppBar(context, profile),
       body: RefreshIndicator(
         onRefresh: _loadRealtimeSlots,
         color: AppColors.primary,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0D0D0D),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(
@@ -338,25 +338,25 @@ class _AdminSlotManagerScreenState
     TurfProfileState profile,
   ) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
       scrolledUnderElevation: 0,
       toolbarHeight: 64,
       titleSpacing: 0,
       shape: const Border(
-        bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        bottom: BorderSide(color: Color(0xFF262626), width: 1),
       ),
       leading: IconButton(
         icon: Container(
           padding: const EdgeInsets.all(7),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
+            color: const Color(0xFF1C1C1C),
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(
             Icons.arrow_back_ios_new_rounded,
             size: 16,
-            color: Color(0xFF1E293B),
+            color: Colors.white,
           ),
         ),
         onPressed: () {
@@ -375,7 +375,7 @@ class _AdminSlotManagerScreenState
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF0F172A),
+              color: Colors.white,
               letterSpacing: -0.3,
             ),
           ),
@@ -415,7 +415,7 @@ class _AdminSlotManagerScreenState
           icon: Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+              color: const Color(0xFF1C1C1C),
               borderRadius: BorderRadius.circular(10),
             ),
             child: _isRefreshing
@@ -424,13 +424,13 @@ class _AdminSlotManagerScreenState
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Color(0xFF154D36),
+                      color: Color(0xFFD4FF00),
                     ),
                   )
                 : const Icon(
                     Icons.sync_rounded,
                     size: 18,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
           ),
         ),
@@ -462,14 +462,14 @@ class _AdminSlotManagerScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
+          colors: [Color(0xFF0D0D0D), Color(0xFFD4FF00)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF154D36).withValues(alpha: 0.25),
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -500,8 +500,8 @@ class _AdminSlotManagerScreenState
                     'Operating Schedule',
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFE2E8F0),
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -581,7 +581,7 @@ class _AdminSlotManagerScreenState
                 _buildHeroMiniStat(
                   'Available',
                   '$availableCount',
-                  const Color(0xFF4ADE80),
+                  const Color(0xFFD4FF00),
                 ),
                 _buildStatDivider(),
                 _buildHeroMiniStat(
@@ -605,7 +605,7 @@ class _AdminSlotManagerScreenState
                 _buildHeroMiniStat(
                   'Passed',
                   '$passedCount',
-                  const Color(0xFF94A3B8),
+                  const Color(0xFF71717A),
                 ),
               ],
             ),
@@ -669,7 +669,7 @@ class _AdminSlotManagerScreenState
               style: TextStyle(
                 fontSize: 14.5,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+                color: Colors.white,
                 letterSpacing: -0.3,
               ),
             ),
@@ -678,7 +678,7 @@ class _AdminSlotManagerScreenState
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                color: Color(0xFFA1A1AA),
               ),
             ),
           ],
@@ -712,19 +712,19 @@ class _AdminSlotManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF154D36) : Colors.white,
+                    color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF154D36)
-                          : const Color(0xFFE2E8F0),
+                          ? const Color(0xFFD4FF00)
+                          : const Color(0xFF262626),
                       width: isSelected ? 1.5 : 1,
                     ),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
                               color: const Color(
-                                0xFF154D36,
+                                0xFFD4FF00,
                               ).withValues(alpha: 0.2),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
@@ -754,7 +754,7 @@ class _AdminSlotManagerScreenState
                               fontWeight: FontWeight.w800,
                               color: isSelected
                                   ? Colors.white
-                                  : const Color(0xFF0F172A),
+                                  : Colors.white,
                             ),
                           ),
                           Text(
@@ -763,7 +763,7 @@ class _AdminSlotManagerScreenState
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: isSelected
-                                  ? const Color(0xFF86EFAC)
+                                  ? const Color(0xFFD4FF00)
                                   : const Color(0xFF16A34A),
                             ),
                           ),
@@ -790,9 +790,9 @@ class _AdminSlotManagerScreenState
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -813,7 +813,7 @@ class _AdminSlotManagerScreenState
                     const Icon(
                       Icons.event_rounded,
                       size: 16,
-                      color: Color(0xFF154D36),
+                      color: Color(0xFFD4FF00),
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -822,7 +822,7 @@ class _AdminSlotManagerScreenState
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -839,7 +839,7 @@ class _AdminSlotManagerScreenState
                 tooltip: 'Select Custom Date',
                 icon: const Icon(
                   Icons.calendar_month_rounded,
-                  color: Color(0xFF154D36),
+                  color: Color(0xFFD4FF00),
                   size: 20,
                 ),
                 onPressed: () async {
@@ -856,7 +856,7 @@ class _AdminSlotManagerScreenState
                           colorScheme: const ColorScheme.light(
                             primary: AppColors.primary,
                             onPrimary: Colors.white,
-                            onSurface: Color(0xFF0F172A),
+                            onSurface: Colors.white,
                           ),
                         ),
                         child: child!,
@@ -937,20 +937,20 @@ class _AdminSlotManagerScreenState
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF154D36)
-                          : const Color(0xFFF8FAFC),
+                          ? const Color(0xFFD4FF00)
+                          : const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF154D36)
-                            : const Color(0xFFE2E8F0),
+                            ? const Color(0xFFD4FF00)
+                            : const Color(0xFF262626),
                         width: isSelected ? 1.5 : 1,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
                                 color: const Color(
-                                  0xFF154D36,
+                                  0xFFD4FF00,
                                 ).withValues(alpha: 0.25),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
@@ -968,7 +968,7 @@ class _AdminSlotManagerScreenState
                             fontWeight: FontWeight.w700,
                             color: isSelected
                                 ? Colors.white.withValues(alpha: 0.8)
-                                : const Color(0xFF64748B),
+                                : const Color(0xFFA1A1AA),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -979,7 +979,7 @@ class _AdminSlotManagerScreenState
                             fontWeight: FontWeight.w900,
                             color: isSelected
                                 ? Colors.white
-                                : const Color(0xFF0F172A),
+                                : Colors.white,
                           ),
                         ),
                       ],
@@ -1006,11 +1006,11 @@ class _AdminSlotManagerScreenState
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF154D36).withValues(alpha: 0.1)
-              : const Color(0xFFF1F5F9),
+              ? const Color(0xFFD4FF00).withValues(alpha: 0.1)
+              : const Color(0xFF1C1C1C),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? const Color(0xFF154D36) : Colors.transparent,
+            color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
           ),
         ),
         child: Text(
@@ -1019,8 +1019,8 @@ class _AdminSlotManagerScreenState
             fontSize: 10.5,
             fontWeight: FontWeight.w700,
             color: isSelected
-                ? const Color(0xFF154D36)
-                : const Color(0xFF475569),
+                ? const Color(0xFFD4FF00)
+                : const Color(0xFFA1A1AA),
           ),
         ),
       ),
@@ -1041,7 +1041,7 @@ class _AdminSlotManagerScreenState
       physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
-          _buildFilterPill('All', totalCount, const Color(0xFF154D36)),
+          _buildFilterPill('All', totalCount, const Color(0xFFD4FF00)),
           const SizedBox(width: 8),
           _buildFilterPill(
             'Available',
@@ -1055,7 +1055,7 @@ class _AdminSlotManagerScreenState
           const SizedBox(width: 8),
           _buildFilterPill('Offers', offerCount, const Color(0xFF0284C7)),
           const SizedBox(width: 8),
-          _buildFilterPill('Passed', passedCount, const Color(0xFF64748B)),
+          _buildFilterPill('Passed', passedCount, const Color(0xFFA1A1AA)),
         ],
       ),
     );
@@ -1072,7 +1072,7 @@ class _AdminSlotManagerScreenState
           color: isSelected ? color : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : const Color(0xFFE2E8F0),
+            color: isSelected ? color : const Color(0xFF262626),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
@@ -1093,7 +1093,7 @@ class _AdminSlotManagerScreenState
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFF475569),
+                color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 6),
@@ -1102,7 +1102,7 @@ class _AdminSlotManagerScreenState
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.white.withValues(alpha: 0.25)
-                    : const Color(0xFFF1F5F9),
+                    : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
@@ -1110,7 +1110,7 @@ class _AdminSlotManagerScreenState
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
-                  color: isSelected ? Colors.white : const Color(0xFF64748B),
+                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -1131,7 +1131,7 @@ class _AdminSlotManagerScreenState
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A),
+                color: Colors.white,
                 letterSpacing: -0.3,
               ),
             ),
@@ -1141,7 +1141,7 @@ class _AdminSlotManagerScreenState
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                color: Color(0xFFA1A1AA),
               ),
             ),
           ],
@@ -1152,7 +1152,7 @@ class _AdminSlotManagerScreenState
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Icon(Icons.touch_app_rounded, size: 12, color: Color(0xFF64748B)),
+              Icon(Icons.touch_app_rounded, size: 12, color: Color(0xFFA1A1AA)),
               SizedBox(width: 3),
               Flexible(
                 child: Text(
@@ -1160,7 +1160,7 @@ class _AdminSlotManagerScreenState
                   style: TextStyle(
                     fontSize: 9.5,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFFA1A1AA),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1245,11 +1245,11 @@ class _AdminSlotManagerScreenState
 
     if (isBooked) {
       if (isPast) {
-        cardBg = const Color(0xFFF1F5F9);
-        borderColor = const Color(0xFFCBD5E1);
-        titleColor = const Color(0xFF1E293B);
-        statusBadgeBg = const Color(0xFFE2E8F0);
-        statusBadgeText = const Color(0xFF334155);
+        cardBg = const Color(0xFF1C1C1C);
+        borderColor = const Color(0xFF262626);
+        titleColor = Colors.white;
+        statusBadgeBg = const Color(0xFF262626);
+        statusBadgeText = const Color(0xFFE4E4E7);
         statusTitle = booking != null
             ? '${booking.customerName} • Done'
             : 'Booked • Completed';
@@ -1264,11 +1264,11 @@ class _AdminSlotManagerScreenState
         statusIcon = Icons.confirmation_number_rounded;
       }
     } else if (isPast) {
-      cardBg = const Color(0xFFF8FAFC);
-      borderColor = const Color(0xFFE2E8F0);
-      titleColor = const Color(0xFF94A3B8);
-      statusBadgeBg = const Color(0xFFF1F5F9);
-      statusBadgeText = const Color(0xFF64748B);
+      cardBg = const Color(0xFF141414);
+      borderColor = const Color(0xFF262626);
+      titleColor = const Color(0xFF71717A);
+      statusBadgeBg = const Color(0xFF1C1C1C);
+      statusBadgeText = const Color(0xFFA1A1AA);
       statusTitle = 'Time Passed';
       statusIcon = Icons.history_rounded;
     } else if (isBlocked) {
@@ -1281,28 +1281,28 @@ class _AdminSlotManagerScreenState
         statusTitle = 'Already Booked';
         statusIcon = Icons.bookmark_added_rounded;
       } else {
-        cardBg = const Color(0xFFFFFBEB);
-        borderColor = const Color(0xFFFDE68A);
+        cardBg = const Color(0xFF241A04);
+        borderColor = const Color(0xFFD4FF00);
         titleColor = const Color(0xFF92400E);
-        statusBadgeBg = const Color(0xFFFEF3C7);
+        statusBadgeBg = const Color(0xFF2D2005);
         statusBadgeText = const Color(0xFFD97706);
         statusTitle = 'Under Maintenance';
         statusIcon = Icons.build_circle_rounded;
       }
     } else if (offerTag != null && offerTag.isNotEmpty) {
-      cardBg = const Color(0xFFF0FDF4);
-      borderColor = const Color(0xFFBBF7D0);
+      cardBg = const Color(0xFF1B2A06);
+      borderColor = const Color(0xFF262626);
       titleColor = const Color(0xFF14532D);
       statusBadgeBg = const Color(0xFFDCFCE7);
-      statusBadgeText = const Color(0xFF15803D);
+      statusBadgeText = const Color(0xFFD4FF00);
       statusTitle = 'Special Offer';
       statusIcon = Icons.local_offer_rounded;
     } else {
       cardBg = Colors.white;
-      borderColor = const Color(0xFFE2E8F0);
-      titleColor = const Color(0xFF0F172A);
+      borderColor = const Color(0xFF262626);
+      titleColor = Colors.white;
       statusBadgeBg = const Color(0xFFDCFCE7);
-      statusBadgeText = const Color(0xFF15803D);
+      statusBadgeText = const Color(0xFFD4FF00);
       statusTitle = 'Available';
       statusIcon = Icons.check_circle_rounded;
     }
@@ -1378,7 +1378,7 @@ class _AdminSlotManagerScreenState
                       decoration: BoxDecoration(
                         color: offerTag != null
                             ? const Color(0xFFDCFCE7)
-                            : const Color(0xFFF1F5F9),
+                            : const Color(0xFF1C1C1C),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Icon(
@@ -1387,8 +1387,8 @@ class _AdminSlotManagerScreenState
                             : Icons.more_horiz_rounded,
                         size: 13,
                         color: offerTag != null
-                            ? const Color(0xFF15803D)
-                            : const Color(0xFF64748B),
+                            ? const Color(0xFFD4FF00)
+                            : const Color(0xFFA1A1AA),
                       ),
                     ),
                   ),
@@ -1445,8 +1445,8 @@ class _AdminSlotManagerScreenState
                 fontSize: 9,
                 fontWeight: FontWeight.w500,
                 color: (isPast && !isBooked)
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
+                    ? const Color(0xFF71717A)
+                    : const Color(0xFFA1A1AA),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1485,7 +1485,7 @@ class _AdminSlotManagerScreenState
         builder: (context, setModalState) {
           return Container(
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Color(0xFF141414),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             padding: EdgeInsets.fromLTRB(
@@ -1503,7 +1503,7 @@ class _AdminSlotManagerScreenState
                     width: 44,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFCBD5E1),
+                      color: const Color(0xFF262626),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -1521,12 +1521,12 @@ class _AdminSlotManagerScreenState
                               Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFDCFCE7),
+                                  color: const Color(0xFF1B2A06),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: const Icon(
                                   Icons.tune_rounded,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFFD4FF00),
                                   size: 16,
                                 ),
                               ),
@@ -1537,7 +1537,7 @@ class _AdminSlotManagerScreenState
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
-                                    color: Color(0xFF0F172A),
+                                    color: Colors.white,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -1549,26 +1549,26 @@ class _AdminSlotManagerScreenState
                             'Date: ${DateFormat('dd MMM yyyy').format(_selectedDate)} • Set slot availability',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF71717A)),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const Divider(height: 1, color: Color(0xFF1C1C1C)),
                 const SizedBox(height: 16),
 
                 _buildStatusSelectionTile(
                   icon: Icons.build_circle_rounded,
                   accentColor: const Color(0xFFD97706),
-                  bgColor: const Color(0xFFFEF3C7),
+                  bgColor: const Color(0xFF2D2005),
                   title: 'Under Maintenance',
                   subtitle: 'Grass repair, pitch rolling, floodlights or venue maintenance hold.',
                   badgeText: 'Maintenance',
@@ -1591,7 +1591,7 @@ class _AdminSlotManagerScreenState
 
                 _buildStatusSelectionTile(
                   icon: Icons.check_circle_rounded,
-                  accentColor: const Color(0xFF15803D),
+                  accentColor: const Color(0xFFD4FF00),
                   bgColor: const Color(0xFFDCFCE7),
                   title: 'Available',
                   subtitle: 'Open for players to book online on the Gamez24 Player App.',
@@ -1609,7 +1609,7 @@ class _AdminSlotManagerScreenState
                         onPressed: () => Navigator.pop(ctx),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          side: const BorderSide(color: Color(0xFF262626)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1619,7 +1619,7 @@ class _AdminSlotManagerScreenState
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFFA1A1AA),
                           ),
                         ),
                       ),
@@ -1634,8 +1634,8 @@ class _AdminSlotManagerScreenState
                           style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF154D36),
-                          foregroundColor: Colors.white,
+                          backgroundColor: const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -1710,10 +1710,10 @@ class _AdminSlotManagerScreenState
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? bgColor.withValues(alpha: 0.35) : const Color(0xFFF8FAFC),
+          color: isSelected ? bgColor.withValues(alpha: 0.35) : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? accentColor : const Color(0xFFE2E8F0),
+            color: isSelected ? accentColor : const Color(0xFF262626),
             width: isSelected ? 1.8 : 1,
           ),
         ),
@@ -1739,7 +1739,7 @@ class _AdminSlotManagerScreenState
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -1765,7 +1765,7 @@ class _AdminSlotManagerScreenState
                     subtitle,
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF64748B),
+                      color: Color(0xFFA1A1AA),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1781,7 +1781,7 @@ class _AdminSlotManagerScreenState
                 shape: BoxShape.circle,
                 color: isSelected ? accentColor : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? accentColor : const Color(0xFFCBD5E1),
+                  color: isSelected ? accentColor : const Color(0xFF262626),
                   width: 2,
                 ),
               ),
@@ -1790,7 +1790,7 @@ class _AdminSlotManagerScreenState
                       child: Icon(
                         Icons.check,
                         size: 13,
-                        color: Colors.white,
+                        color: Color(0xFF141414),
                       ),
                     )
                   : null,
@@ -1809,20 +1809,20 @@ class _AdminSlotManagerScreenState
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
         decoration: BoxDecoration(
-          color: const Color(0xFFDCFCE7),
+          color: const Color(0xFF1B2A06),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.bolt_rounded, size: 11, color: Color(0xFF15803D)),
+            const Icon(Icons.bolt_rounded, size: 11, color: Color(0xFFD4FF00)),
             const SizedBox(width: 3),
             Text(
               '$percent% OFF ${label.isNotEmpty ? "• $label" : ""}',
               style: const TextStyle(
                 fontSize: 9.5,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF15803D),
+                color: Color(0xFFD4FF00),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1837,7 +1837,7 @@ class _AdminSlotManagerScreenState
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
         decoration: BoxDecoration(
-          color: const Color(0xFFDCFCE7),
+          color: const Color(0xFF1B2A06),
           borderRadius: BorderRadius.circular(6),
         ),
         child: Row(
@@ -1848,7 +1848,7 @@ class _AdminSlotManagerScreenState
               style: const TextStyle(
                 decoration: TextDecoration.lineThrough,
                 fontSize: 9,
-                color: Color(0xFF64748B),
+                color: Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 4),
@@ -1857,7 +1857,7 @@ class _AdminSlotManagerScreenState
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF15803D),
+                color: Color(0xFFD4FF00),
               ),
             ),
           ],
@@ -1882,22 +1882,22 @@ class _AdminSlotManagerScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              color: Color(0xFFF1F5F9),
+              color: Color(0xFF1C1C1C),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.event_busy_rounded,
               size: 28,
-              color: Color(0xFF64748B),
+              color: Color(0xFFA1A1AA),
             ),
           ),
           const SizedBox(height: 12),
@@ -1906,13 +1906,13 @@ class _AdminSlotManagerScreenState
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1E293B),
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 4),
           const Text(
             'Try selecting "All" or a different date to view scheduled slots.',
-            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+            style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1930,7 +1930,7 @@ class _AdminSlotManagerScreenState
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -1948,7 +1948,7 @@ class _AdminSlotManagerScreenState
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE2E8F0),
+                      color: const Color(0xFF262626),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -1962,12 +1962,12 @@ class _AdminSlotManagerScreenState
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFDCFCE7),
+                            color: const Color(0xFF1B2A06),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(
                             Icons.confirmation_number_rounded,
-                            color: Color(0xFF15803D),
+                            color: Color(0xFFD4FF00),
                             size: 20,
                           ),
                         ),
@@ -1980,14 +1980,14 @@ class _AdminSlotManagerScreenState
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                               ),
                             ),
                             Text(
                               '${booking.sport} • ${booking.courtName}',
                               style: const TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF64748B),
+                                color: Color(0xFFA1A1AA),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -2001,7 +2001,7 @@ class _AdminSlotManagerScreenState
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
+                        color: const Color(0xFF1B2A06),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -2009,7 +2009,7 @@ class _AdminSlotManagerScreenState
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF15803D),
+                          color: Color(0xFFD4FF00),
                         ),
                       ),
                     ),
@@ -2019,9 +2019,9 @@ class _AdminSlotManagerScreenState
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Column(
                     children: [
@@ -2056,8 +2056,8 @@ class _AdminSlotManagerScreenState
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF154D36),
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFD4FF00),
+                      foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -2086,13 +2086,13 @@ class _AdminSlotManagerScreenState
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: const Color(0xFF64748B)),
+            Icon(icon, size: 14, color: const Color(0xFFA1A1AA)),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontSize: 11.5,
-                color: Color(0xFF64748B),
+                color: Color(0xFFA1A1AA),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -2105,7 +2105,7 @@ class _AdminSlotManagerScreenState
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF0F172A),
+              color: Colors.white,
             ),
             textAlign: TextAlign.end,
             overflow: TextOverflow.ellipsis,
@@ -2121,7 +2121,7 @@ class _AdminSlotManagerScreenState
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2149,7 +2149,7 @@ class _AdminSlotManagerScreenState
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 16,
-                              color: Color(0xFF0F172A),
+                              color: Colors.white,
                             ),
                           ),
                           Text(
@@ -2163,7 +2163,7 @@ class _AdminSlotManagerScreenState
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                        icon: const Icon(Icons.close, color: Color(0xFFA1A1AA)),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ],
@@ -2174,12 +2174,12 @@ class _AdminSlotManagerScreenState
                   leading: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFDCFCE7),
+                      color: const Color(0xFF1B2A06),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.bolt_rounded,
-                      color: Color(0xFF15803D),
+                      color: Color(0xFFD4FF00),
                       size: 18,
                     ),
                   ),
@@ -2292,7 +2292,7 @@ class _AdminSlotManagerScreenState
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2338,7 +2338,7 @@ class _AdminSlotManagerScreenState
                         width: 36,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE2E8F0),
+                          color: const Color(0xFF262626),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -2352,7 +2352,7 @@ class _AdminSlotManagerScreenState
                           style: const TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
-                            color: Color(0xFF0F172A),
+                            color: Colors.white,
                           ),
                         ),
                         IconButton(
@@ -2374,8 +2374,8 @@ class _AdminSlotManagerScreenState
                               padding: const EdgeInsets.symmetric(vertical: 9),
                               decoration: BoxDecoration(
                                 color: sheetOfferType == 'percent'
-                                    ? const Color(0xFF154D36)
-                                    : const Color(0xFFF1F5F9),
+                                    ? const Color(0xFFD4FF00)
+                                    : const Color(0xFF1C1C1C),
                                 borderRadius: const BorderRadius.only(
                                   topLeft: Radius.circular(10),
                                   bottomLeft: Radius.circular(10),
@@ -2389,7 +2389,7 @@ class _AdminSlotManagerScreenState
                                   fontWeight: FontWeight.w800,
                                   color: sheetOfferType == 'percent'
                                       ? Colors.white
-                                      : const Color(0xFF475569),
+                                      : const Color(0xFFA1A1AA),
                                 ),
                               ),
                             ),
@@ -2403,8 +2403,8 @@ class _AdminSlotManagerScreenState
                               padding: const EdgeInsets.symmetric(vertical: 9),
                               decoration: BoxDecoration(
                                 color: sheetOfferType == 'price'
-                                    ? const Color(0xFF154D36)
-                                    : const Color(0xFFF1F5F9),
+                                    ? const Color(0xFFD4FF00)
+                                    : const Color(0xFF1C1C1C),
                                 borderRadius: const BorderRadius.only(
                                   topRight: Radius.circular(10),
                                   bottomRight: Radius.circular(10),
@@ -2418,7 +2418,7 @@ class _AdminSlotManagerScreenState
                                   fontWeight: FontWeight.w800,
                                   color: sheetOfferType == 'price'
                                       ? Colors.white
-                                      : const Color(0xFF475569),
+                                      : const Color(0xFFA1A1AA),
                                 ),
                               ),
                             ),
@@ -2550,9 +2550,9 @@ class _AdminSlotManagerScreenState
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
+                        color: const Color(0xFF141414),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: const Color(0xFF262626)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2562,13 +2562,13 @@ class _AdminSlotManagerScreenState
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF64748B),
+                              color: Color(0xFFA1A1AA),
                             ),
                           ),
                           const SizedBox(height: 8),
                           _buildOfferContent(
                             buildOfferString(),
-                            const Color(0xFF15803D),
+                            const Color(0xFFD4FF00),
                           ),
                         ],
                       ),
@@ -2579,8 +2579,8 @@ class _AdminSlotManagerScreenState
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF154D36),
-                          foregroundColor: Colors.white,
+                          backgroundColor: const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -2642,7 +2642,7 @@ class _AdminSlotManagerScreenState
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2672,7 +2672,7 @@ class _AdminSlotManagerScreenState
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE2E8F0),
+                        color: const Color(0xFF262626),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -2683,12 +2683,12 @@ class _AdminSlotManagerScreenState
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                          color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.schedule_rounded,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                           size: 22,
                         ),
                       ),
@@ -2702,21 +2702,21 @@ class _AdminSlotManagerScreenState
                               style: TextStyle(
                                 fontSize: 16.5,
                                 fontWeight: FontWeight.w900,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                               ),
                             ),
                             Text(
                               'Auto-splits into 1-hour slots & syncs across platforms',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFF64748B),
+                                color: Color(0xFFA1A1AA),
                               ),
                             ),
                           ],
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                        icon: const Icon(Icons.close, color: Color(0xFFA1A1AA)),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -2735,7 +2735,7 @@ class _AdminSlotManagerScreenState
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF334155),
+                                color: Color(0xFFE4E4E7),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -2746,9 +2746,9 @@ class _AdminSlotManagerScreenState
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: const Color(0xFFCBD5E1),
+                                  color: const Color(0xFF262626),
                                 ),
-                                color: const Color(0xFFF8FAFC),
+                                color: const Color(0xFF141414),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
@@ -2756,7 +2756,7 @@ class _AdminSlotManagerScreenState
                                   isExpanded: true,
                                   icon: const Icon(
                                     Icons.keyboard_arrow_down_rounded,
-                                    color: Color(0xFF154D36),
+                                    color: Color(0xFFD4FF00),
                                   ),
                                   items: _scheduleTimeOptions.map((time) {
                                     return DropdownMenuItem<String>(
@@ -2792,7 +2792,7 @@ class _AdminSlotManagerScreenState
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF334155),
+                                color: Color(0xFFE4E4E7),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -2803,9 +2803,9 @@ class _AdminSlotManagerScreenState
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: const Color(0xFFCBD5E1),
+                                  color: const Color(0xFF262626),
                                 ),
-                                color: const Color(0xFFF8FAFC),
+                                color: const Color(0xFF141414),
                               ),
                               child: DropdownButtonHideUnderline(
                                 child: DropdownButton<String>(
@@ -2813,7 +2813,7 @@ class _AdminSlotManagerScreenState
                                   isExpanded: true,
                                   icon: const Icon(
                                     Icons.keyboard_arrow_down_rounded,
-                                    color: Color(0xFF154D36),
+                                    color: Color(0xFFD4FF00),
                                   ),
                                   items: _scheduleTimeOptions.map((time) {
                                     return DropdownMenuItem<String>(
@@ -2847,7 +2847,7 @@ class _AdminSlotManagerScreenState
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: const Color(0xFF1C1C1C),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
@@ -2857,7 +2857,7 @@ class _AdminSlotManagerScreenState
                           children: [
                             const Icon(
                               Icons.auto_awesome_rounded,
-                              color: Color(0xFF154D36),
+                              color: Color(0xFFD4FF00),
                               size: 15,
                             ),
                             const SizedBox(width: 6),
@@ -2866,7 +2866,7 @@ class _AdminSlotManagerScreenState
                               style: const TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF154D36),
+                                color: Color(0xFFD4FF00),
                               ),
                             ),
                           ],
@@ -2885,10 +2885,10 @@ class _AdminSlotManagerScreenState
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: const Color(0xFF141414),
                                     borderRadius: BorderRadius.circular(6),
                                     border: Border.all(
-                                      color: const Color(0xFFCBD5E1),
+                                      color: const Color(0xFF262626),
                                     ),
                                   ),
                                   child: Text(
@@ -2896,7 +2896,7 @@ class _AdminSlotManagerScreenState
                                     style: const TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1E293B),
+                                      color: Colors.white,
                                     ),
                                   ),
                                 );
@@ -2914,8 +2914,8 @@ class _AdminSlotManagerScreenState
                     height: 48,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFD4FF00),
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -2954,7 +2954,7 @@ class _AdminSlotManagerScreenState
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: Color(0xFF141414),
                                 strokeWidth: 2,
                               ),
                             )

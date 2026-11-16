@@ -523,9 +523,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         .toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0C2B1E),
+        backgroundColor: const Color(0xFF0D0D0D),
         elevation: 0,
         titleSpacing: 0,
         leading: IconButton(
@@ -563,7 +563,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
           IconButton(
             visualDensity: VisualDensity.compact,
             tooltip: 'Switch Camera',
-            icon: const Icon(Icons.flip_camera_ios_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.flip_camera_ios_rounded, color: Color(0xFF141414), size: 20),
             onPressed: () => _scannerController.switchCamera(),
           ),
           const SizedBox(width: 4),
@@ -604,7 +604,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF154D36), width: 2),
+        border: Border.all(color: const Color(0xFFD4FF00), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.12),
@@ -718,7 +718,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFF86EFAC)),
+                    Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFFD4FF00)),
                     SizedBox(width: 6),
                     Text(
                       'Align QR code inside box to check in',
@@ -738,9 +738,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -754,11 +754,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         children: [
           const Row(
             children: [
-              Icon(Icons.pin_rounded, size: 16, color: Color(0xFF154D36)),
+              Icon(Icons.pin_rounded, size: 16, color: Color(0xFFD4FF00)),
               SizedBox(width: 6),
               Text(
                 'Manual Pass Verification',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
               ),
             ],
           ),
@@ -771,17 +771,17 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
                     hintText: 'Enter Pass ID (e.g. G24-BK-0001)',
-                    hintStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF94A3B8)),
+                    hintStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF71717A)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                     filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
+                    fillColor: const Color(0xFF141414),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      borderSide: const BorderSide(color: Color(0xFF262626)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: Color(0xFF154D36), width: 1.5),
+                      borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 1.5),
                     ),
                   ),
                 ),
@@ -789,8 +789,8 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               const SizedBox(width: 8),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFFD4FF00),
+                  foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -841,7 +841,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       return Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFBEB),
+          color: const Color(0xFF241A04),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: const Color(0xFFFCD34D), width: 1.5),
           boxShadow: [
@@ -863,7 +863,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     color: Color(0xFFD97706),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.hourglass_top_rounded, color: Colors.white, size: 22),
+                  child: const Icon(Icons.hourglass_top_rounded, color: Color(0xFF141414), size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -890,9 +890,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
+                    color: const Color(0xFF2D2005),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    border: Border.all(color: const Color(0xFFD4FF00)),
                   ),
                   child: Text(
                     '#$bookingId',
@@ -912,12 +912,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFEF3C7), Color(0xFFFFFBEB)],
+                  colors: [Color(0xFF2D2005), Color(0xFF241A04)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                border: Border.all(color: const Color(0xFFD4FF00)),
               ),
               child: Column(
                 children: [
@@ -926,7 +926,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     children: [
                       const Text(
                         'Check-In Opens At:',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78350F)),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFDE68A)),
                       ),
                       Text(
                         opensAt.isNotEmpty ? opensAt : '20 min before slot',
@@ -941,7 +941,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       children: [
                         const Text(
                           'Time Until Unlocks:',
-                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF78350F)),
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFFDE68A)),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -963,11 +963,11 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     children: [
                       const Text(
                         'Booked Slot:',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF78350F)),
+                        style: TextStyle(fontSize: 12, color: Color(0xFFFDE68A)),
                       ),
                       Text(
                         timeSlot,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
                       ),
                     ],
                   ),
@@ -980,9 +980,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -992,7 +992,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   Expanded(
                     child: Text(
                       'Pass is valid & confirmed. Gate verification opens 10-20 minutes before slot start. Only booking time details are shown for early scans.',
-                      style: TextStyle(fontSize: 11, color: Color(0xFF475569), height: 1.35),
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), height: 1.35),
                     ),
                   ),
                 ],
@@ -1054,7 +1054,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     color: Color(0xFFEA580C),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 22),
+                  child: const Icon(Icons.warning_amber_rounded, color: Color(0xFF141414), size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1167,9 +1167,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
+        color: const Color(0xFF132204),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF86EFAC), width: 1.5),
+        border: Border.all(color: const Color(0xFFD4FF00), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF16A34A).withValues(alpha: 0.1),
@@ -1191,7 +1191,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 ),
                 child: Icon(
                   isReEntry ? Icons.replay_rounded : Icons.check_rounded,
-                  color: Colors.white,
+                  color: const Color(0xFF141414),
                   size: 24,
                 ),
               ),
@@ -1205,7 +1205,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF15803D),
+                        color: Color(0xFFD4FF00),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -1213,7 +1213,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                       isReEntry
                           ? 'Slot ${slotIndex ?? 2} of ${totalSlots ?? 2} Verified ($checkedInAt) • Returning Player'
                           : 'Verified at gate ($checkedInAt) • Valid Pass',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF166534), fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 11.5, color: Color(0xFFD4FF00), fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -1221,7 +1221,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
+                  color: const Color(0xFF1B2A06),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -1229,7 +1229,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF15803D),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ),
@@ -1240,18 +1240,18 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFDCFCE7),
+                color: const Color(0xFF1B2A06),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF86EFAC)),
+                border: Border.all(color: const Color(0xFFD4FF00)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.sync_rounded, size: 16, color: Color(0xFF15803D)),
+                  const Icon(Icons.sync_rounded, size: 16, color: Color(0xFFD4FF00)),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Multi-slot pass: Session ${slotIndex ?? 2} of ${totalSlots ?? 2} checked in successfully.',
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                     ),
                   ),
                 ],
@@ -1259,7 +1259,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             ),
           ],
           const SizedBox(height: 16),
-          const Divider(height: 1, color: Color(0xFFBBF7D0)),
+          const Divider(height: 1, color: Color(0xFF262626)),
           const SizedBox(height: 14),
 
           _buildDetailRow('Customer Name', customer),
@@ -1277,8 +1277,8 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             width: double.infinity,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF154D36),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
@@ -1342,12 +1342,12 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF475569))),
+          Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF0F172A)),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
             ),
@@ -1372,7 +1372,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF0F172A),
+                  color: Colors.white,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1381,7 +1381,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
             const SizedBox(width: 8),
             Text(
               '${bookings.length} Available',
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFA1A1AA)),
             ),
           ],
         ),
@@ -1401,10 +1401,10 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isCheckedIn ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
+                    color: isCheckedIn ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                   ),
                 ),
                 child: Row(
@@ -1412,13 +1412,13 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: isCheckedIn ? const Color(0xFFDCFCE7) : const Color(0xFFF1F5F9),
+                        color: isCheckedIn ? const Color(0xFFDCFCE7) : const Color(0xFF1C1C1C),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         isCheckedIn ? Icons.check_circle_rounded : Icons.confirmation_number_rounded,
                         size: 16,
-                        color: isCheckedIn ? const Color(0xFF16A34A) : const Color(0xFF154D36),
+                        color: isCheckedIn ? const Color(0xFF16A34A) : const Color(0xFFD4FF00),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -1439,19 +1439,19 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF1F5F9),
+                                  color: const Color(0xFF1C1C1C),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   b.id,
-                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
+                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA)),
                                 ),
                               ),
                             ],
                           ),
                           Text(
                             '${b.sport} • ${b.effectiveTimeSlot}',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                            style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1461,7 +1461,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: isCheckedIn ? const Color(0xFFDCFCE7) : const Color(0xFF0F172A),
+                        color: isCheckedIn ? const Color(0xFFDCFCE7) : Colors.white,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -1469,7 +1469,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
-                          color: isCheckedIn ? const Color(0xFF15803D) : Colors.white,
+                          color: isCheckedIn ? const Color(0xFFD4FF00) : Colors.white,
                         ),
                       ),
                     ),

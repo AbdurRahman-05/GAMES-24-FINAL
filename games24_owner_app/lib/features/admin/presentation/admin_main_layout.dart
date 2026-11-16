@@ -15,9 +15,6 @@ class AdminMainLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return PopScope(
       canPop: currentIndex == 0,
       onPopInvokedWithResult: (didPop, result) {
@@ -27,11 +24,11 @@ class AdminMainLayout extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: isDark ? AppColors.backgroundDark : const Color(0xFFF8FAFC),
+        backgroundColor: const Color(0xFF080808),
         extendBody: true,
         body: child,
         bottomNavigationBar: Container(
-          color: isDark ? AppColors.backgroundDark : Colors.white,
+          color: const Color(0xFF080808),
           child: SafeArea(
             top: false,
             child: Padding(
@@ -39,22 +36,22 @@ class AdminMainLayout extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.cardDark : Colors.white,
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: isDark ? Colors.white12 : const Color(0xFFE2E8F0),
+                    color: const Color(0xFF262626),
                     width: 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Colors.black.withValues(alpha: 0.6),
                       blurRadius: 18,
                       spreadRadius: 1,
                       offset: const Offset(0, 6),
                     ),
                     BoxShadow(
-                      color: const Color(0xFF154D36).withValues(alpha: 0.08),
-                      blurRadius: 8,
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      blurRadius: 12,
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -124,19 +121,12 @@ class AdminMainLayout extends StatelessWidget {
           horizontal: 2,
         ),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-                  colors: [Color(0xFF0F3825), Color(0xFF154D36)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isSelected ? null : Colors.transparent,
+          color: isSelected ? AppColors.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF154D36).withValues(alpha: 0.35),
+                    color: AppColors.primary.withValues(alpha: 0.35),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -149,8 +139,8 @@ class AdminMainLayout extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: isSelected ? 22 : 19,
-              color: isSelected ? Colors.white : const Color(0xFF64748B),
+              size: isSelected ? 21 : 19,
+              color: isSelected ? Colors.black : const Color(0xFF71717A),
             ),
             const SizedBox(height: 2),
             Padding(
@@ -160,7 +150,7 @@ class AdminMainLayout extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF475569),
+                    color: isSelected ? Colors.black : const Color(0xFF71717A),
                     fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
                     fontSize: isSelected ? 10.5 : 9.5,
                     letterSpacing: -0.2,

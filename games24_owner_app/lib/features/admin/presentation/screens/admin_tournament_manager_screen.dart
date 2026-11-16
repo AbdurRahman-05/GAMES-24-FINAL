@@ -250,7 +250,7 @@ class _AdminTournamentManagerScreenState
 
         return Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFF141414),
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           constraints: BoxConstraints(
@@ -266,7 +266,7 @@ class _AdminTournamentManagerScreenState
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFCBD5E1),
+                      color: const Color(0xFF262626),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -279,10 +279,10 @@ class _AdminTournamentManagerScreenState
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
+                        color: const Color(0xFF1B2A06),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.groups_rounded, color: Color(0xFF15803D), size: 22),
+                      child: const Icon(Icons.groups_rounded, color: Color(0xFFD4FF00), size: 22),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -294,7 +294,7 @@ class _AdminTournamentManagerScreenState
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
-                              color: Color(0xFF0F172A),
+                              color: Colors.white,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -302,13 +302,13 @@ class _AdminTournamentManagerScreenState
                           const SizedBox(height: 2),
                           Text(
                             'Registered Squads: ${teams.length} / ${t.maxTeams} Teams • Fee: ₹${t.teamEntryFee.toInt()}',
-                            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                            style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                      icon: const Icon(Icons.close_rounded, color: Color(0xFF71717A)),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -320,22 +320,22 @@ class _AdminTournamentManagerScreenState
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: const Color(0xFF262626)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildStatCol('Slots Filled', '${teams.length}/${t.maxTeams}', const Color(0xFF154D36)),
-                    Container(width: 1, height: 26, color: const Color(0xFFCBD5E1)),
-                    _buildStatCol('Collected Fees', '₹${totalFees.toInt()}', const Color(0xFF15803D)),
-                    Container(width: 1, height: 26, color: const Color(0xFFCBD5E1)),
+                    _buildStatCol('Slots Filled', '${teams.length}/${t.maxTeams}', const Color(0xFFD4FF00)),
+                    Container(width: 1, height: 26, color: const Color(0xFF262626)),
+                    _buildStatCol('Collected Fees', '₹${totalFees.toInt()}', const Color(0xFFD4FF00)),
+                    Container(width: 1, height: 26, color: const Color(0xFF262626)),
                     _buildStatCol('Slots Left', '${(t.maxTeams - teams.length).clamp(0, t.maxTeams)} Open', const Color(0xFFD97706)),
                   ],
                 ),
               ),
-              const Divider(color: Color(0xFFF1F5F9), height: 16),
+              const Divider(color: Color(0xFF1C1C1C), height: 16),
 
               // Teams List
               Expanded(
@@ -349,21 +349,21 @@ class _AdminTournamentManagerScreenState
                               Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFFF1F5F9),
+                                  color: Color(0xFF1C1C1C),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.groups_outlined, size: 48, color: Color(0xFF94A3B8)),
+                                child: const Icon(Icons.groups_outlined, size: 48, color: Color(0xFF71717A)),
                               ),
                               const SizedBox(height: 16),
                               const Text(
                                 'No Squads Registered Yet',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                               const SizedBox(height: 8),
                               const Text(
                                 'When players register for this tournament from the Gamez24 app, their squad name, captain phone, roster count, and payment info will appear here immediately.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 12.5, color: Color(0xFF64748B), height: 1.4),
+                                style: TextStyle(fontSize: 12.5, color: Color(0xFFA1A1AA), height: 1.4),
                               ),
                             ],
                           ),
@@ -379,9 +379,9 @@ class _AdminTournamentManagerScreenState
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: const Color(0xFF141414),
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(color: const Color(0xFF262626)),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.03),
@@ -398,12 +398,12 @@ class _AdminTournamentManagerScreenState
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFF154D36),
+                                        color: const Color(0xFFD4FF00),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
                                         '#${idx + 1}',
-                                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900),
+                                        style: const TextStyle(color: Color(0xFF141414), fontSize: 11, fontWeight: FontWeight.w900),
                                       ),
                                     ),
                                     const SizedBox(width: 8),
@@ -413,7 +413,7 @@ class _AdminTournamentManagerScreenState
                                         style: const TextStyle(
                                           fontSize: 14.5,
                                           fontWeight: FontWeight.w900,
-                                          color: Color(0xFF0F172A),
+                                          color: Colors.white,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -422,16 +422,16 @@ class _AdminTournamentManagerScreenState
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFDCFCE7),
+                                        color: const Color(0xFF1B2A06),
                                         borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: const Color(0xFF86EFAC)),
+                                        border: Border.all(color: const Color(0xFFD4FF00)),
                                       ),
                                       child: Text(
                                         team.paymentStatus.isNotEmpty ? team.paymentStatus : 'Paid',
                                         style: const TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,
-                                          color: Color(0xFF15803D),
+                                          color: Color(0xFFD4FF00),
                                         ),
                                       ),
                                     ),
@@ -443,32 +443,32 @@ class _AdminTournamentManagerScreenState
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF8FAFC),
+                                    color: const Color(0xFF141414),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Column(
                                     children: [
                                       Row(
                                         children: [
-                                          const Icon(Icons.person_rounded, size: 14, color: Color(0xFF154D36)),
+                                          const Icon(Icons.person_rounded, size: 14, color: Color(0xFFD4FF00)),
                                           const SizedBox(width: 6),
-                                          const Text('Captain: ', style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                                          const Text('Captain: ', style: TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600)),
                                           Expanded(
                                             child: Text(
                                               team.captainName.isNotEmpty ? team.captainName : 'Captain',
-                                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFE2E8F0),
+                                              color: const Color(0xFF262626),
                                               borderRadius: BorderRadius.circular(6),
                                             ),
                                             child: Text(
                                               '👥 ${team.playerCount} Players',
-                                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFE4E4E7)),
                                             ),
                                           ),
                                         ],
@@ -477,13 +477,13 @@ class _AdminTournamentManagerScreenState
                                         const SizedBox(height: 6),
                                         Row(
                                           children: [
-                                            const Icon(Icons.phone_rounded, size: 14, color: Color(0xFF154D36)),
+                                            const Icon(Icons.phone_rounded, size: 14, color: Color(0xFFD4FF00)),
                                             const SizedBox(width: 6),
-                                            const Text('Phone: ', style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                                            const Text('Phone: ', style: TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600)),
                                             Expanded(
                                               child: Text(
                                                 team.captainPhone,
-                                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
@@ -493,7 +493,7 @@ class _AdminTournamentManagerScreenState
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(
                                                     content: Text('Phone ${team.captainPhone} copied!'),
-                                                    backgroundColor: const Color(0xFF154D36),
+                                                    backgroundColor: const Color(0xFFD4FF00),
                                                     duration: const Duration(seconds: 2),
                                                   ),
                                                 );
@@ -502,9 +502,9 @@ class _AdminTournamentManagerScreenState
                                                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                                 child: Row(
                                                   children: [
-                                                    Icon(Icons.copy_rounded, size: 13, color: Color(0xFF154D36)),
+                                                    Icon(Icons.copy_rounded, size: 13, color: Color(0xFFD4FF00)),
                                                     SizedBox(width: 3),
-                                                    Text('Copy', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                                                    Text('Copy', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                                                   ],
                                                 ),
                                               ),
@@ -516,13 +516,13 @@ class _AdminTournamentManagerScreenState
                                         const SizedBox(height: 6),
                                         Row(
                                           children: [
-                                            const Icon(Icons.email_outlined, size: 14, color: Color(0xFF154D36)),
+                                            const Icon(Icons.email_outlined, size: 14, color: Color(0xFFD4FF00)),
                                             const SizedBox(width: 6),
-                                            const Text('Email: ', style: TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+                                            const Text('Email: ', style: TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600)),
                                             Expanded(
                                               child: Text(
                                                 team.captainEmail,
-                                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: Color(0xFF0F172A)),
+                                                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500, color: Colors.white),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
@@ -533,13 +533,13 @@ class _AdminTournamentManagerScreenState
                                         const SizedBox(height: 6),
                                         Row(
                                           children: [
-                                            const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF64748B)),
+                                            const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFFA1A1AA)),
                                             const SizedBox(width: 6),
-                                            const Text('Registered: ', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                                            const Text('Registered: ', style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA))),
                                             Expanded(
                                               child: Text(
                                                 team.registrationDate.contains('T') ? team.registrationDate.split('T')[0] : team.registrationDate,
-                                                style: const TextStyle(fontSize: 11, color: Color(0xFF475569)),
+                                                style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
@@ -567,7 +567,7 @@ class _AdminTournamentManagerScreenState
       children: [
         Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: color)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+        Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -580,7 +580,7 @@ class _AdminTournamentManagerScreenState
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -604,7 +604,7 @@ class _AdminTournamentManagerScreenState
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
+                      color: Colors.white,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -621,7 +621,7 @@ class _AdminTournamentManagerScreenState
               decoration: InputDecoration(
                 labelText: 'Live Score / Current Status',
                 hintText: 'e.g. 142/3 (16.2 ov) or 2 - 1 (68\')',
-                prefixIcon: const Icon(Icons.sports_score_rounded, color: Color(0xFF154D36)),
+                prefixIcon: const Icon(Icons.sports_score_rounded, color: Color(0xFFD4FF00)),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -632,7 +632,7 @@ class _AdminTournamentManagerScreenState
               decoration: InputDecoration(
                 labelText: 'Match Commentary Update',
                 hintText: 'e.g. Huge six over long on! Need 14 runs from 12 balls.',
-                prefixIcon: const Icon(Icons.record_voice_over_rounded, color: Color(0xFF154D36)),
+                prefixIcon: const Icon(Icons.record_voice_over_rounded, color: Color(0xFFD4FF00)),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -642,8 +642,8 @@ class _AdminTournamentManagerScreenState
               height: 48,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFFD4FF00),
+                  foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
@@ -697,7 +697,7 @@ class _AdminTournamentManagerScreenState
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -728,7 +728,7 @@ class _AdminTournamentManagerScreenState
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFFD4FF00),
                                 ),
                               ),
                               Text(
@@ -736,7 +736,7 @@ class _AdminTournamentManagerScreenState
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF0F172A),
+                                  color: Colors.white,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -754,7 +754,7 @@ class _AdminTournamentManagerScreenState
                     // Scores Section
                     Text(
                       isCricket ? 'Batting & Innings Scores' : 'Current Match Score',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA)),
                     ),
                     const SizedBox(height: 8),
 
@@ -764,9 +764,9 @@ class _AdminTournamentManagerScreenState
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
+                              color: const Color(0xFF141414),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(color: const Color(0xFF262626)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -812,9 +812,9 @@ class _AdminTournamentManagerScreenState
                           child: Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF8FAFC),
+                              color: const Color(0xFF141414),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: const Color(0xFFE2E8F0)),
+                              border: Border.all(color: const Color(0xFF262626)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -860,7 +860,7 @@ class _AdminTournamentManagerScreenState
                     const SizedBox(height: 16),
 
                     // Winner Selection
-                    const Text('Declare Winner Team (Advances in Bracket):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                    const Text('Declare Winner Team (Advances in Bracket):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
                     const SizedBox(height: 6),
                     DropdownButtonFormField<String>(
                       initialValue: selectedWinner,
@@ -881,13 +881,13 @@ class _AdminTournamentManagerScreenState
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: const Color(0xFF1C1C1C),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('⚡ Log Key Match Event (Real-time)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                          const Text('⚡ Log Key Match Event (Real-time)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                           const SizedBox(height: 6),
                           Row(
                             children: [
@@ -985,8 +985,8 @@ class _AdminTournamentManagerScreenState
                             icon: const Icon(Icons.done_all_rounded, size: 16),
                             label: const Text('Save Result & Advance', style: TextStyle(fontWeight: FontWeight.bold)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF154D36),
-                              foregroundColor: Colors.white,
+                              backgroundColor: const Color(0xFFD4FF00),
+                              foregroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                             ),
                             onPressed: () {
@@ -1028,7 +1028,7 @@ class _AdminTournamentManagerScreenState
     final tournState = ref.watch(adminTournamentProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: _buildExecutiveAppBar(context),
       body: Column(
         children: [
@@ -1055,12 +1055,12 @@ class _AdminTournamentManagerScreenState
   // --- 1. PRO EXECUTIVE APP BAR ---
   PreferredSizeWidget _buildExecutiveAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       titleSpacing: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Color(0xFF0F172A)),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
         onPressed: () {
           if (Navigator.of(context).canPop()) {
             context.pop();
@@ -1079,7 +1079,7 @@ class _AdminTournamentManagerScreenState
             style: TextStyle(
               fontSize: 15.5,
               fontWeight: FontWeight.w900,
-              color: Color(0xFF0F172A),
+              color: Colors.white,
               letterSpacing: -0.3,
             ),
             maxLines: 1,
@@ -1103,7 +1103,7 @@ class _AdminTournamentManagerScreenState
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
+                    color: Color(0xFFA1A1AA),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1118,8 +1118,8 @@ class _AdminTournamentManagerScreenState
           padding: const EdgeInsets.only(right: 12),
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF154D36),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFFD4FF00),
+              foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -1149,7 +1149,7 @@ class _AdminTournamentManagerScreenState
 
     return Container(
       width: double.infinity,
-      color: Colors.white,
+      color: const Color(0xFF141414),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -1170,12 +1170,12 @@ class _AdminTournamentManagerScreenState
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF1F5F9),
+                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF1C1C1C),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -1188,7 +1188,7 @@ class _AdminTournamentManagerScreenState
                       Icon(
                         item['icon'] as IconData,
                         size: 14,
-                        color: isSelected ? Colors.white : const Color(0xFF64748B),
+                        color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                       ),
                       const SizedBox(width: 5),
                       Text(
@@ -1196,7 +1196,7 @@ class _AdminTournamentManagerScreenState
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? Colors.white : const Color(0xFF475569),
+                          color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                         ),
                       ),
                     ],
@@ -1249,14 +1249,14 @@ class _AdminTournamentManagerScreenState
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0C2B1E), Color(0xFF154D36)],
+          colors: [Color(0xFF0D0D0D), Color(0xFFD4FF00)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF154D36).withValues(alpha: 0.3),
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -1286,7 +1286,7 @@ class _AdminTournamentManagerScreenState
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFE2E8F0),
+                          color: Colors.white,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -1342,13 +1342,13 @@ class _AdminTournamentManagerScreenState
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildHeroMiniStat('Total', '${tournState.totalTournaments}', const Color(0xFFE2E8F0)),
+                _buildHeroMiniStat('Total', '${tournState.totalTournaments}', const Color(0xFF262626)),
                 _buildStatDivider(),
                 _buildHeroMiniStat('Live Now', '${tournState.liveCount}', const Color(0xFFF87171)),
                 _buildStatDivider(),
                 _buildHeroMiniStat('Upcoming', '${tournState.upcomingCount}', const Color(0xFF60A5FA)),
                 _buildStatDivider(),
-                _buildHeroMiniStat('Completed', '${tournState.completedCount}', const Color(0xFF4ADE80)),
+                _buildHeroMiniStat('Completed', '${tournState.completedCount}', const Color(0xFFD4FF00)),
                 _buildStatDivider(),
                 _buildHeroMiniStat('Teams', '${tournState.totalParticipants}', const Color(0xFFFBBF24)),
               ],
@@ -1365,7 +1365,7 @@ class _AdminTournamentManagerScreenState
       children: [
         Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
         const SizedBox(height: 1),
-        Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF94A3B8), fontWeight: FontWeight.w600)),
+        Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF71717A), fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -1376,7 +1376,7 @@ class _AdminTournamentManagerScreenState
 
   Widget _buildFilterPillsBar(AdminTournamentState tournState) {
     final filters = [
-      {'label': 'All', 'count': tournState.totalTournaments, 'color': const Color(0xFF154D36)},
+      {'label': 'All', 'count': tournState.totalTournaments, 'color': const Color(0xFFD4FF00)},
       {'label': 'Live Now', 'count': tournState.liveCount, 'color': const Color(0xFFDC2626)},
       {'label': 'Upcoming', 'count': tournState.upcomingCount, 'color': const Color(0xFF2563EB)},
       {'label': 'Completed', 'count': tournState.completedCount, 'color': const Color(0xFF16A34A)},
@@ -1400,7 +1400,7 @@ class _AdminTournamentManagerScreenState
                   color: isSelected ? color : Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? color : const Color(0xFFE2E8F0),
+                    color: isSelected ? color : const Color(0xFF262626),
                     width: isSelected ? 1.5 : 1,
                   ),
                 ),
@@ -1408,7 +1408,7 @@ class _AdminTournamentManagerScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (f['label'] == 'Live Now' && isSelected) ...[
-                      Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                      Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF141414), shape: BoxShape.circle)),
                       const SizedBox(width: 4),
                     ],
                     Text(
@@ -1416,14 +1416,14 @@ class _AdminTournamentManagerScreenState
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                        color: isSelected ? Colors.white : const Color(0xFF475569),
+                        color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                       ),
                     ),
                     const SizedBox(width: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFF1F5F9),
+                        color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFF1C1C1C),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -1431,7 +1431,7 @@ class _AdminTournamentManagerScreenState
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
-                          color: isSelected ? Colors.white : const Color(0xFF64748B),
+                          color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                         ),
                       ),
                     ),
@@ -1450,36 +1450,36 @@ class _AdminTournamentManagerScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: const Color(0xFF154D36).withValues(alpha: 0.08),
+              color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.emoji_events_outlined, size: 36, color: Color(0xFF154D36)),
+            child: const Icon(Icons.emoji_events_outlined, size: 36, color: Color(0xFFD4FF00)),
           ),
           const SizedBox(height: 12),
           Text(
             'No $_activeFilter Tournaments Found',
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
           ),
           const SizedBox(height: 4),
           const Text(
             'Create your next championship or tournament to start accepting team registrations.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+            style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
           ),
           const SizedBox(height: 14),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF154D36),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFFD4FF00),
+              foregroundColor: Colors.black,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1500,9 +1500,9 @@ class _AdminTournamentManagerScreenState
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isLive ? const Color(0xFFFECDD3) : const Color(0xFFE2E8F0), width: isLive ? 1.5 : 1),
+        border: Border.all(color: isLive ? const Color(0xFFFECDD3) : const Color(0xFF262626), width: isLive ? 1.5 : 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -1526,8 +1526,8 @@ class _AdminTournamentManagerScreenState
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     height: 120,
-                    color: const Color(0xFF154D36),
-                    child: const Center(child: Icon(Icons.stadium_rounded, color: Colors.white, size: 40)),
+                    color: const Color(0xFFD4FF00),
+                    child: const Center(child: Icon(Icons.stadium_rounded, color: Color(0xFF141414), size: 40)),
                   ),
                 ),
               ),
@@ -1572,13 +1572,13 @@ class _AdminTournamentManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isLive ? const Color(0xFFDC2626) : const Color(0xFF154D36),
+                    color: isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
                       if (isLive) ...[
-                        Container(width: 6, height: 6, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                        Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF141414), shape: BoxShape.circle)),
                         const SizedBox(width: 4),
                       ],
                       Text(
@@ -1629,9 +1629,9 @@ class _AdminTournamentManagerScreenState
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
+                          color: const Color(0xFF2D2005),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFFFDE68A)),
+                          border: Border.all(color: const Color(0xFFD4FF00)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -1653,7 +1653,7 @@ class _AdminTournamentManagerScreenState
                     const SizedBox(width: 8),
                     Text(
                       '₹${t.teamEntryFee.toInt()} / Team',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
                     ),
                   ],
                 ),
@@ -1675,12 +1675,12 @@ class _AdminTournamentManagerScreenState
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.groups_rounded, size: 14, color: Color(0xFF154D36)),
+                                  const Icon(Icons.groups_rounded, size: 14, color: Color(0xFFD4FF00)),
                                   const SizedBox(width: 4),
                                   Flexible(
                                     child: Text(
                                       'Registrations: ${t.registeredTeamsCount}/${t.maxTeams} Teams',
-                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF154D36)),
+                                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFD4FF00)),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -1692,7 +1692,7 @@ class _AdminTournamentManagerScreenState
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFDCFCE7),
+                                color: const Color(0xFF1B2A06),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Row(
@@ -1700,9 +1700,9 @@ class _AdminTournamentManagerScreenState
                                 children: [
                                   Text(
                                     'View Squads (${t.registeredTeams.length})',
-                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                                   ),
-                                  const Icon(Icons.chevron_right_rounded, size: 12, color: Color(0xFF15803D)),
+                                  const Icon(Icons.chevron_right_rounded, size: 12, color: Color(0xFFD4FF00)),
                                 ],
                               ),
                             ),
@@ -1714,9 +1714,9 @@ class _AdminTournamentManagerScreenState
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 6,
-                            backgroundColor: const Color(0xFFF1F5F9),
+                            backgroundColor: const Color(0xFF1C1C1C),
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFF154D36),
+                              progress >= 0.8 ? const Color(0xFF16A34A) : const Color(0xFFD4FF00),
                             ),
                           ),
                         ),
@@ -1732,8 +1732,8 @@ class _AdminTournamentManagerScreenState
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFF154D36),
-                          foregroundColor: Colors.white,
+                          backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
@@ -1752,13 +1752,13 @@ class _AdminTournamentManagerScreenState
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0F172A),
+                          backgroundColor: Colors.white,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
-                        icon: const Icon(Icons.groups_rounded, size: 14, color: Color(0xFF4ADE80)),
+                        icon: const Icon(Icons.groups_rounded, size: 14, color: Color(0xFFD4FF00)),
                         label: Text(
                           'Teams (${t.registeredTeams.length})',
                           style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
@@ -1778,9 +1778,9 @@ class _AdminTournamentManagerScreenState
                     Expanded(
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF154D36),
+                          foregroundColor: const Color(0xFFD4FF00),
                           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          side: const BorderSide(color: Color(0xFF262626)),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         icon: const Icon(Icons.account_tree_rounded, size: 14),
@@ -1867,7 +1867,7 @@ class _AdminTournamentManagerScreenState
               title: '2. Sport & Format Setup',
               icon: Icons.sports_soccer_rounded,
               children: [
-                const Text('Choose Sport Type:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                const Text('Choose Sport Type:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
                 const SizedBox(height: 8),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -1881,9 +1881,9 @@ class _AdminTournamentManagerScreenState
                           avatar: Text(s['emoji']!, style: const TextStyle(fontSize: 13)),
                           label: Text(s['name']!, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600)),
                           selected: isSelected,
-                          selectedColor: const Color(0xFF154D36),
-                          labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFF334155)),
-                          backgroundColor: const Color(0xFFF1F5F9),
+                          selectedColor: const Color(0xFFD4FF00),
+                          labelStyle: TextStyle(color: isSelected ? Colors.white : const Color(0xFFE4E4E7)),
+                          backgroundColor: const Color(0xFF1C1C1C),
                           onSelected: (val) {
                             if (val) setState(() => _selectedSport = s['name']!);
                           },
@@ -1893,7 +1893,7 @@ class _AdminTournamentManagerScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text('Tournament Format:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                const Text('Tournament Format:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _selectedType,
@@ -2062,9 +2062,9 @@ class _AdminTournamentManagerScreenState
                     return Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4),
+                        color: const Color(0xFF132204),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFBBF7D0)),
+                        border: Border.all(color: const Color(0xFF262626)),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2073,10 +2073,10 @@ class _AdminTournamentManagerScreenState
                             children: [
                               Icon(Icons.auto_awesome_rounded, color: Color(0xFF16A34A), size: 15),
                               SizedBox(width: 6),
-                              Text('Projected Gross Pool:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF166534))),
+                              Text('Projected Gross Pool:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                             ],
                           ),
-                          Text('₹${NumberFormat('#,##,###').format(gross.toInt())}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF15803D))),
+                          Text('₹${NumberFormat('#,##,###').format(gross.toInt())}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFFD4FF00))),
                         ],
                       ),
                     );
@@ -2092,8 +2092,8 @@ class _AdminTournamentManagerScreenState
               height: 48,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFFD4FF00),
+                  foregroundColor: Colors.black,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -2120,9 +2120,9 @@ class _AdminTournamentManagerScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -2136,7 +2136,7 @@ class _AdminTournamentManagerScreenState
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: const Color(0xFF154D36)),
+              Icon(icon, size: 16, color: const Color(0xFFD4FF00)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -2144,7 +2144,7 @@ class _AdminTournamentManagerScreenState
                   style: const TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -2161,13 +2161,15 @@ class _AdminTournamentManagerScreenState
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      prefixIcon: Icon(icon, size: 16, color: const Color(0xFF64748B)),
-      labelStyle: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
-      hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+      filled: true,
+      fillColor: const Color(0xFF181818),
+      prefixIcon: Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
+      labelStyle: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
+      hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF71717A)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFCBD5E1))),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF154D36), width: 1.5)),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 1.5)),
     );
   }
 
@@ -2182,22 +2184,22 @@ class _AdminTournamentManagerScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.event_rounded, size: 16, color: Color(0xFF154D36)),
+            const Icon(Icons.event_rounded, size: 16, color: Color(0xFFD4FF00)),
             const SizedBox(width: 6),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF64748B))),
+                  Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFFA1A1AA))),
                   Text(
                     _formatDate(date),
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -2216,12 +2218,12 @@ class _AdminTournamentManagerScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.live_tv_rounded, size: 40, color: Color(0xFF94A3B8)),
+            const Icon(Icons.live_tv_rounded, size: 40, color: Color(0xFF71717A)),
             const SizedBox(height: 8),
-            const Text('No tournaments available to manage fixtures.', style: TextStyle(color: Color(0xFF64748B))),
+            const Text('No tournaments available to manage fixtures.', style: TextStyle(color: Color(0xFFA1A1AA))),
             const SizedBox(height: 12),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF154D36), foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4FF00), foregroundColor: Colors.black),
               onPressed: () => _tabController.animateTo(1),
               child: const Text('Create Tournament'),
             ),
@@ -2243,23 +2245,23 @@ class _AdminTournamentManagerScreenState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Live Arena Console & Fixtures', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF0F172A))),
-                    Text('Update scores & trigger knockouts in real-time.', style: TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                    Text('Live Arena Console & Fixtures', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Colors.white)),
+                    Text('Update scores & trigger knockouts in real-time.', style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA))),
                   ],
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
+                  color: const Color(0xFF1B2A06),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF86EFAC)),
+                  border: Border.all(color: const Color(0xFFD4FF00)),
                 ),
                 child: const Row(
                   children: [
                     Icon(Icons.sensors_rounded, color: Color(0xFF16A34A), size: 12),
                     SizedBox(width: 4),
-                    Text('SYNC ACTIVE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF15803D))),
+                    Text('SYNC ACTIVE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                   ],
                 ),
               ),
@@ -2272,9 +2274,9 @@ class _AdminTournamentManagerScreenState
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: const Color(0xFF262626)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.02),
@@ -2290,24 +2292,24 @@ class _AdminTournamentManagerScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(t.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A)), overflow: TextOverflow.ellipsis),
+                        child: Text(t.title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Colors.white), overflow: TextOverflow.ellipsis),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF154D36).withValues(alpha: 0.1),
+                          color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(t.tournamentType.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                        child: Text(t.tournamentType.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('${t.sportType} • ${t.registeredTeams.length} Registered Teams • ${t.fixtures.length} Fixtures', style: const TextStyle(fontSize: 10.5, color: Color(0xFF64748B))),
+                  Text('${t.sportType} • ${t.registeredTeams.length} Registered Teams • ${t.fixtures.length} Fixtures', style: const TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA))),
                   const SizedBox(height: 12),
 
                   // Engine Selector Chips
-                  const Text('⚡ Generate / Switch Fixture Engine:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                  const Text('⚡ Generate / Switch Fixture Engine:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                   const SizedBox(height: 6),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -2315,7 +2317,7 @@ class _AdminTournamentManagerScreenState
                     child: Row(
                       children: [
                         ActionChip(
-                          avatar: const Icon(Icons.alt_route_rounded, size: 12, color: Color(0xFF154D36)),
+                          avatar: const Icon(Icons.alt_route_rounded, size: 12, color: Color(0xFFD4FF00)),
                           label: const Text('Seeded Knockout', style: TextStyle(fontSize: 10)),
                           onPressed: () {
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Seeded Knockout');
@@ -2350,8 +2352,8 @@ class _AdminTournamentManagerScreenState
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF154D36),
-                          foregroundColor: Colors.white,
+                          backgroundColor: const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         icon: const Icon(Icons.auto_awesome_rounded, size: 14),
@@ -2364,7 +2366,7 @@ class _AdminTournamentManagerScreenState
                     )
                   else ...[
                     // Interactive Visual Bracket View
-                    const Text('🏆 Visual Tournament Bracket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF154D36))),
+                    const Text('🏆 Visual Tournament Bracket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD4FF00))),
                     const SizedBox(height: 8),
                     TournamentBracketView(
                       tournament: t,
@@ -2383,10 +2385,10 @@ class _AdminTournamentManagerScreenState
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isLiveFix ? const Color(0xFFFEF2F2) : (hasWinner ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC)),
+                          color: isLiveFix ? const Color(0xFFFEF2F2) : (hasWinner ? const Color(0xFF1B2A06) : const Color(0xFF141414)),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: isLiveFix ? const Color(0xFFFECDD3) : (hasWinner ? const Color(0xFFBBF7D0) : const Color(0xFFE2E8F0)),
+                            color: isLiveFix ? const Color(0xFFFECDD3) : (hasWinner ? const Color(0xFF262626) : const Color(0xFF262626)),
                           ),
                         ),
                         child: Column(
@@ -2399,9 +2401,9 @@ class _AdminTournamentManagerScreenState
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('${fix.matchNumber} • ${fix.stage}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
-                                      Text('${fix.teamA} vs ${fix.teamB}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)), overflow: TextOverflow.ellipsis),
-                                      Text('${fix.timeSlot} • ${fix.courtName}', style: const TextStyle(fontSize: 9.5, color: Color(0xFF64748B))),
+                                      Text('${fix.matchNumber} • ${fix.stage}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                      Text('${fix.teamA} vs ${fix.teamB}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white), overflow: TextOverflow.ellipsis),
+                                      Text('${fix.timeSlot} • ${fix.courtName}', style: const TextStyle(fontSize: 9.5, color: Color(0xFFA1A1AA))),
                                     ],
                                   ),
                                 ),
@@ -2411,18 +2413,22 @@ class _AdminTournamentManagerScreenState
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: isLiveFix ? const Color(0xFFDC2626) : (hasWinner ? const Color(0xFF16A34A) : const Color(0xFF154D36)),
+                                        color: isLiveFix ? const Color(0xFFDC2626) : (hasWinner ? const Color(0xFF16A34A) : const Color(0xFFD4FF00)),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
                                         '${fix.scoreA} - ${fix.scoreB}',
-                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                        style: TextStyle(
+                                          color: (isLiveFix || hasWinner) ? Colors.white : Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     InkWell(
                                       onTap: () => _showUpdateMatchResultDialog(t, fix),
-                                      child: const Text('Edit Score ➔', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF154D36))),
+                                      child: const Text('Edit Score ➔', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                                     ),
                                   ],
                                 ),
@@ -2434,12 +2440,12 @@ class _AdminTournamentManagerScreenState
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFDCFCE7),
+                                  color: const Color(0xFF1B2A06),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced ➔)" : "(CHAMPION 🥇)"}',
-                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF15803D)),
+                                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                                 ),
                               ),
                             ],
@@ -2465,13 +2471,13 @@ class _AdminTournamentManagerScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Tournament Financial Performance', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF0F172A))),
+          const Text('Tournament Financial Performance', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Colors.white)),
           const SizedBox(height: 12),
 
           // 2x2 Bento Financial Grid
           Row(
             children: [
-              Expanded(child: _buildAnalyticsMetricCard('Gross Entry Fees', '₹${NumberFormat('#,##,###').format(tournState.totalRevenue.toInt())}', Icons.payments_rounded, const Color(0xFF154D36))),
+              Expanded(child: _buildAnalyticsMetricCard('Gross Entry Fees', '₹${NumberFormat('#,##,###').format(tournState.totalRevenue.toInt())}', Icons.payments_rounded, const Color(0xFFD4FF00))),
               const SizedBox(width: 8),
               Expanded(child: _buildAnalyticsMetricCard('Total Competitions', '${tournState.totalTournaments}', Icons.emoji_events_rounded, const Color(0xFF0284C7))),
             ],
@@ -2490,14 +2496,14 @@ class _AdminTournamentManagerScreenState
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF141414),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: const Color(0xFF262626)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Revenue & Settlement Split', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A))),
+                const Text('Revenue & Settlement Split', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
                 const SizedBox(height: 10),
                 _buildFinanceRow('Venue Net Share (90%)', '₹${NumberFormat('#,##,###').format((tournState.totalRevenue * 0.90).toInt())}', isBold: true),
                 const Divider(height: 16),
@@ -2516,9 +2522,9 @@ class _AdminTournamentManagerScreenState
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2534,7 +2540,7 @@ class _AdminTournamentManagerScreenState
           const SizedBox(height: 8),
           Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color)),
           const SizedBox(height: 1),
-          Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -2544,15 +2550,15 @@ class _AdminTournamentManagerScreenState
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 11.5, color: isBold ? const Color(0xFF0F172A) : const Color(0xFF64748B), fontWeight: isBold ? FontWeight.bold : FontWeight.w500)),
+        Text(label, style: TextStyle(fontSize: 11.5, color: isBold ? Colors.white : const Color(0xFFA1A1AA), fontWeight: isBold ? FontWeight.bold : FontWeight.w500)),
         if (isStatus)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(6)),
-            child: Text(value, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF15803D))),
+            decoration: BoxDecoration(color: const Color(0xFF1B2A06), borderRadius: BorderRadius.circular(6)),
+            child: Text(value, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
           )
         else
-          Text(value, style: TextStyle(fontSize: 12, fontWeight: isBold ? FontWeight.w900 : FontWeight.w700, color: const Color(0xFF0F172A))),
+          Text(value, style: TextStyle(fontSize: 12, fontWeight: isBold ? FontWeight.w900 : FontWeight.w700, color: Colors.white)),
       ],
     );
   }

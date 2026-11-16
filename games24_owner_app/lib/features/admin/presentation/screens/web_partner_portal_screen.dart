@@ -66,7 +66,7 @@ class _WebPartnerPortalScreenState
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: Colors.black,
             ),
             onPressed: () => context.go('/main'),
             icon: const Icon(Icons.phone_android_rounded, size: 16),

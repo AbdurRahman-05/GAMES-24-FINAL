@@ -144,93 +144,62 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Top Curved Stadium Header with official logo_master.png
-            ClipPath(
-              clipper: _HeaderCurveClipper(),
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 16,
-                  bottom: 32,
-                  left: 24,
-                  right: 24,
-                ),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF071C13), // Deep Stadium Midnight Pitch
-                      Color(0xFF0E3825), // Stadium Turf Dark Green
-                    ],
-                  ),
-                ),
-                child: Center(
+      backgroundColor: const Color(0xFF080808),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 12),
+
+              // Official Games24 Brand Logo with Shared Element Hero Tag
+              Center(
+                child: Hero(
+                  tag: 'gamez24_logo_emblem',
                   child: Image.asset(
-                    'assets/images/logo_master.png',
-                    height: 75,
+                    'assets/images/logo.png',
+                    height: 80,
                     fit: BoxFit.contain,
                   ),
                 ),
               ),
-            ),
+              const SizedBox(height: 16),
 
-            // Main Content Body
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Header Titles
-                  const Text(
-                    'Partner Login',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF0F172A),
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      'Enter your registered mobile number and OTP to manage court slots, tariffs & matchday bookings.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF64748B),
-                        height: 1.45,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+              // Header Titles
+              const Text(
+                'Partner Login',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Enter your verified mobile number and OTP to manage court slots, revenue & player bookings.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFA1A1AA),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
 
               // Pending Registration status banner if exists
               if (_hasPendingRegistration) ...[
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFFDE68A)),
+                    color: const Color(0xFF241A04),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF92400E)),
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.hourglass_top_rounded, color: Color(0xFFB45309), size: 20),
-                      ),
+                      const Icon(Icons.hourglass_top_rounded, color: Color(0xFFFBBF24), size: 24),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -238,23 +207,19 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           children: [
                             const Text(
                               'Pending Verification Notice',
-                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF92400E)),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD4FF00)),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               'Your venue (${_pendingVenueName ?? 'Application'}${_pendingTrackingCode != null ? ' • $_pendingTrackingCode' : ''}) is waiting for Super Admin audit.',
-                              style: const TextStyle(fontSize: 11.5, color: Color(0xFF78350F)),
+                              style: const TextStyle(fontSize: 11.5, color: Color(0xFFD4FF00)),
                             ),
                           ],
                         ),
                       ),
                       TextButton(
                         onPressed: () => context.go('/register'),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        child: const Text('View Status', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFFB45309))),
+                        child: const Text('View Status', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD4FF00))),
                       ),
                     ],
                   ),
@@ -262,18 +227,18 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 const SizedBox(height: 20),
               ],
 
-              // Clean Form Card
+              // Clean Form Card (Dark Premium Pitch Black style)
               Container(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  color: const Color(0xFF141414),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF262626)),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 18,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -286,35 +251,35 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF334155),
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        color: const Color(0xFF1C1C1C),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2E2E2E)),
                       ),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
                             decoration: const BoxDecoration(
-                              border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
+                              border: Border(right: BorderSide(color: Color(0xFF2E2E2E))),
                             ),
                             child: const Row(
                               children: [
                                 Text(
                                   '+91',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.bold,
                                     fontSize: 14,
-                                    color: Color(0xFF0F172A),
+                                    color: Colors.white,
                                   ),
                                 ),
                                 SizedBox(width: 4),
-                                Icon(Icons.arrow_drop_down, size: 18, color: Color(0xFF64748B)),
+                                Icon(Icons.arrow_drop_down, size: 18, color: Color(0xFFA1A1AA)),
                               ],
                             ),
                           ),
@@ -325,11 +290,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                               style: const TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF0F172A),
+                                color: Colors.white,
                               ),
                               decoration: const InputDecoration(
                                 hintText: 'Enter 10-digit number',
-                                hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+                                hintStyle: TextStyle(color: Color(0xFF71717A), fontSize: 13.5),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                               ),
@@ -341,47 +306,34 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                     const SizedBox(height: 18),
 
                     // OTP Input
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Login OTP',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF334155),
-                          ),
-                        ),
-                        Text(
-                          'Test OTP: 1234',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF047857),
-                          ),
-                        ),
-                      ],
+                    const Text(
+                      'Login OTP',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        color: const Color(0xFF1C1C1C),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2E2E2E)),
                       ),
                       child: TextField(
                         controller: _otpController,
                         keyboardType: TextInputType.number,
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.5,
-                          color: Color(0xFF0F172A),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 2.0,
+                          color: Colors.white,
                         ),
                         decoration: const InputDecoration(
-                          prefixIcon: Icon(Icons.lock_outline_rounded, color: Color(0xFF154D36), size: 20),
+                          prefixIcon: Icon(Icons.lock_outline_rounded, color: Color(0xFFD4FF00), size: 20),
                           hintText: 'Enter 4-digit OTP',
-                          hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5, letterSpacing: 0),
+                          hintStyle: TextStyle(color: Color(0xFF71717A), fontSize: 13.5, letterSpacing: 0),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                         ),
@@ -394,19 +346,19 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFECACA)),
+                          color: Colors.red.shade900.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.red.shade700),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.error_outline_rounded, color: Color(0xFFDC2626), size: 20),
+                            Icon(Icons.error_outline_rounded, color: Colors.red.shade400, size: 20),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 _errorMessage!,
-                                style: const TextStyle(color: Color(0xFF991B1B), fontSize: 12, fontWeight: FontWeight.w600),
+                                style: TextStyle(color: Colors.red.shade200, fontSize: 12),
                               ),
                             ),
                           ],
@@ -415,18 +367,18 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                       const SizedBox(height: 16),
                     ],
 
-                    // Primary Login Button
+                    // Primary Login Button (Official Logo Neon Lime #D4FF00)
                     SizedBox(
                       width: double.infinity,
-                      height: 52,
+                      height: 50,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _onAdminLogin,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF154D36),
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFFA7F3D0),
+                          backgroundColor: const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
+                          disabledBackgroundColor: const Color(0xFF2A3305),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
                         ),
@@ -436,7 +388,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                 height: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                                 ),
                               )
                             : const Row(
@@ -446,12 +398,13 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                     'Login to Dashboard',
                                     style: TextStyle(
                                       fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.3,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.4,
+                                      color: Colors.black,
                                     ),
                                   ),
                                   SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward_rounded, size: 18),
+                                  Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.black),
                                 ],
                               ),
                       ),
@@ -464,13 +417,13 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               // Register New Turf Card
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  color: const Color(0xFF141414),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF262626)),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.03),
-                      blurRadius: 14,
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -479,7 +432,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => context.push('/register'),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
@@ -487,12 +440,12 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               Icons.add_business_rounded,
-                              color: Color(0xFF154D36),
+                              color: Color(0xFFD4FF00),
                               size: 22,
                             ),
                           ),
@@ -504,9 +457,9 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                 Text(
                                   'New Turf Owner? Register Venue',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.bold,
                                     fontSize: 14,
-                                    color: Color(0xFF0F172A),
+                                    color: Colors.white,
                                   ),
                                 ),
                                 SizedBox(height: 2),
@@ -514,8 +467,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                   '4-step onboarding & instant verification',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFF64748B),
-                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFFA1A1AA),
                                   ),
                                 ),
                               ],
@@ -523,7 +475,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           ),
                           const Icon(
                             Icons.chevron_right_rounded,
-                            color: Color(0xFF94A3B8),
+                            color: Color(0xFF71717A),
                           ),
                         ],
                       ),
@@ -531,53 +483,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Security & Trust Footnote
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.shield_outlined, size: 14, color: Color(0xFF94A3B8)),
-                  SizedBox(width: 6),
-                  Text(
-                    'Encrypted Operator Access • Gamez24 Partner OS',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF64748B),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
             ],
           ),
         ),
-      ],
-    ),
-  ),
-);
-  }
-}
-
-/// Custom Clipper to render the curved stadium banner header
-class _HeaderCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.lineTo(0, size.height - 28);
-    // Smooth quadratic curve dipping down in the center
-    path.quadraticBezierTo(
-      size.width / 2,
-      size.height,
-      size.width,
-      size.height - 28,
+      ),
     );
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
   }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

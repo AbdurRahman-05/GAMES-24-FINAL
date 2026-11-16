@@ -149,7 +149,7 @@ class MatchCard extends StatelessWidget {
                       onPressed: match.isFull ? null : onJoinTap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

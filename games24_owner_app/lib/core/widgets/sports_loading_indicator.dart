@@ -27,7 +27,7 @@ class _SportsLoadingIndicatorState extends State<SportsLoadingIndicator>
   int _currentIconIndex = 0;
 
   static const List<_SportsIconData> _sportsIcons = [
-    _SportsIconData(icon: Icons.sports_soccer_rounded, color: Color(0xFF154D36), label: 'Football'),
+    _SportsIconData(icon: Icons.sports_soccer_rounded, color: Color(0xFFD4FF00), label: 'Football'),
     _SportsIconData(icon: Icons.sports_cricket_rounded, color: Color(0xFFD96B43), label: 'Cricket'),
     _SportsIconData(icon: Icons.sports_tennis_rounded, color: Color(0xFFEAB308), label: 'Badminton'),
     _SportsIconData(icon: Icons.sports_basketball_rounded, color: Color(0xFFEA580C), label: 'Basketball'),

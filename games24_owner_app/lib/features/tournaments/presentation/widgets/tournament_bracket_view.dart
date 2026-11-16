@@ -441,7 +441,7 @@ class TournamentBracketView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: isWinner ? Colors.green : Colors.grey.shade200,
+              color: isWinner ? const Color(0xFF16A34A) : const Color(0xFF262626),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -449,7 +449,7 @@ class TournamentBracketView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: isWinner ? Colors.white : Colors.black87,
+                color: isWinner ? Colors.white : const Color(0xFFA1A1AA),
               ),
             ),
           ),
