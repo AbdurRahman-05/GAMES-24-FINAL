@@ -911,10 +911,13 @@ class _AdminSlotManagerScreenState
                     builder: (context, child) {
                       return Theme(
                         data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.light(
+                          colorScheme: const ColorScheme.dark(
                             primary: AppColors.primary,
-                            onPrimary: Colors.white,
+                            onPrimary: Colors.black,
+                            surface: Color(0xFF141414),
                             onSurface: Colors.white,
+                            surfaceContainerHigh: Color(0xFF1E1E1E),
+                            onSurfaceVariant: Color(0xFFA1A1AA),
                           ),
                         ),
                         child: child!,
