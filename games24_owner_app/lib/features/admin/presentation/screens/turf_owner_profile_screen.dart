@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -3799,23 +3800,26 @@ class _TurfOwnerProfileScreenState
                     child: Text(
                       'Registered Arenas & Courts',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: Colors.white,
+                        letterSpacing: -0.2,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
+                      horizontal: 7.5,
+                      vertical: 2.5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F766E).withValues(alpha: 0.12),
+                      color: const Color(0xFF132213),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: const Color(0xFF0F766E).withValues(alpha: 0.25),
+                        color: const Color(0xFF2D5C2E),
+                        width: 0.8,
                       ),
                     ),
                     child: Text(
@@ -3823,7 +3827,7 @@ class _TurfOwnerProfileScreenState
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF0F766E),
+                        color: Color(0xFF86EFAC),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -3832,59 +3836,73 @@ class _TurfOwnerProfileScreenState
                 ],
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
             FilledButton.tonalIcon(
-              icon: const Icon(Icons.add_location_alt_outlined, size: 14),
+              icon: const Icon(Icons.add_circle_outline_rounded, size: 14),
               label: const Text(
-                'Add',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
+                'Add Arena',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(
-                  0xFF0F766E,
-                ).withValues(alpha: 0.12),
-                foregroundColor: const Color(0xFF0F766E),
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                backgroundColor: const Color(0xFF1B2A17),
+                foregroundColor: const Color(0xFF86EFAC),
+                side: const BorderSide(color: Color(0xFF38522A), width: 0.8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 visualDensity: VisualDensity.compact,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(9),
                 ),
               ),
-              onPressed: () => _showAddVenueCourtDialog(profile),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _showAddVenueCourtDialog(profile);
+              },
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         if (profile.courts.isEmpty)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF141414),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF171E15), Color(0xFF10140E)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: const Color(0xFF283622), width: 1.2),
             ),
             child: Column(
               children: [
-                Icon(
-                  Icons.stadium_rounded,
-                  size: 36,
-                  color: Colors.grey.shade400,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E2B19),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF354B28)),
+                  ),
+                  child: const Icon(
+                    Icons.stadium_rounded,
+                    size: 32,
+                    color: Color(0xFF86EFAC),
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 const Text(
                   'No arenas or courts registered',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: Color(0xFFA1A1AA),
+                    fontSize: 14,
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   'Add pitches and courts so players can book specific turfs',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                 ),
               ],
             ),
@@ -4272,64 +4290,166 @@ class _TurfOwnerProfileScreenState
     );
   }
 
+  void _confirmRemoveCourt(TurfCourtVenueItem court) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF141812),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Color(0xFF2B3A24), width: 1.2),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A1515),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF552222)),
+              ),
+              child: const Icon(
+                Icons.delete_forever_rounded,
+                color: Color(0xFFF87171),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Remove Arena',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to remove "${court.name}"? Players will no longer be able to select and book this arena.',
+          style: const TextStyle(
+            color: Color(0xFFA1A1AA),
+            fontSize: 13,
+            height: 1.4,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFFA1A1AA),
+            ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(9),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(turfProfileProvider.notifier).removeCourtVenue(court.id);
+              ToastUtils.showSuccess(context, "Removed arena: ${court.name}");
+            },
+            child: const Text(
+              'Remove',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCreativeCourtCard(
     TurfProfileState profile,
     TurfCourtVenueItem court,
   ) {
+    IconData sportIcon = Icons.stadium_rounded;
+    final sportLower = court.sport.toLowerCase();
+    if (sportLower.contains('cricket')) {
+      sportIcon = Icons.sports_cricket_rounded;
+    } else if (sportLower.contains('football') ||
+        sportLower.contains('soccer')) {
+      sportIcon = Icons.sports_soccer_rounded;
+    } else if (sportLower.contains('badminton') ||
+        sportLower.contains('tennis')) {
+      sportIcon = Icons.sports_tennis_rounded;
+    } else if (sportLower.contains('basket')) {
+      sportIcon = Icons.sports_basketball_rounded;
+    }
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1.2),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF171E15), Color(0xFF10140E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF283622),
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Arena Header Strip
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF141414),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(15),
-              ),
-              border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
-            ),
+          // 1. TOP HEADER: Sport Icon + Arena Name + Live Active + Rate Pill
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 11),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Sport / Arena Badge
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
+                      colors: [Color(0xFF24361C), Color(0xFF172413)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(
+                      color: const Color(0xFF3C562E),
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0F766E).withValues(alpha: 0.3),
-                        blurRadius: 6,
+                        color: const Color(0xFF2E4622).withValues(alpha: 0.35),
+                        blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.stadium_rounded,
-                    color: Color(0xFF141414),
+                  child: Icon(
+                    sportIcon,
+                    color: const Color(0xFF86EFAC),
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: 12),
+
+                // Name & Active Status & Sport/Surface Chips
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -4341,23 +4461,26 @@ class _TurfOwnerProfileScreenState
                               court.name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w800,
-                                fontSize: 15,
+                                fontSize: 15.5,
                                 color: Colors.white,
+                                letterSpacing: -0.2,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 8),
+                          // Live Active Pill
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
+                              horizontal: 6.5,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1B2A06),
+                              color: const Color(0xFF132213),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
-                                color: const Color(0xFFD4FF00),
+                                color: const Color(0xFF2D5C2E),
+                                width: 0.8,
                               ),
                             ),
                             child: const Row(
@@ -4365,7 +4488,7 @@ class _TurfOwnerProfileScreenState
                               children: [
                                 CircleAvatar(
                                   radius: 2.5,
-                                  backgroundColor: Color(0xFF16A34A),
+                                  backgroundColor: Color(0xFF4ADE80),
                                 ),
                                 SizedBox(width: 4),
                                 Text(
@@ -4373,7 +4496,7 @@ class _TurfOwnerProfileScreenState
                                   style: TextStyle(
                                     fontSize: 9,
                                     fontWeight: FontWeight.w900,
-                                    color: Color(0xFFD4FF00),
+                                    color: Color(0xFF86EFAC),
                                     letterSpacing: 0.4,
                                   ),
                                 ),
@@ -4382,55 +4505,57 @@ class _TurfOwnerProfileScreenState
                           ),
                         ],
                       ),
-                      const SizedBox(height: 3),
-                      Row(
+                      const SizedBox(height: 6),
+                      // Sport & Surface Micro Tags
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
                         children: [
-                          Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 1.5,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1C2518),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: const Color(0xFF2E3D29),
+                                width: 0.8,
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1C),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(
-                                court.sport.isNotEmpty
-                                    ? court.sport
-                                    : 'Multi-Sport',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFFA1A1AA),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                            ),
+                            child: Text(
+                              court.sport.isNotEmpty
+                                  ? court.sport
+                                  : 'Multi-Sport',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFFCBD5E1),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 1.5,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1C2518),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: const Color(0xFF2E3D29),
+                                width: 0.8,
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1C),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: Text(
-                                court.surface.isNotEmpty
-                                    ? court.surface
-                                    : 'Synthetic Turf',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFA1A1AA),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                            ),
+                            child: Text(
+                              court.surface.isNotEmpty
+                                  ? court.surface
+                                  : 'Synthetic Turf',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF94A3B8),
                               ),
                             ),
                           ),
@@ -4439,34 +4564,44 @@ class _TurfOwnerProfileScreenState
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
+
+                // Sleek Rate Display Pill
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E2C1A), Color(0xFF141F11)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.25),
+                      color: const Color(0xFF384F2B),
+                      width: 1,
                     ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '₹${court.hourlyRate.toStringAsFixed(0)}',
                         style: const TextStyle(
-                          color: AppColors.primary,
+                          color: Color(0xFFD4FF00),
                           fontWeight: FontWeight.w900,
-                          fontSize: 14,
+                          fontSize: 15,
+                          letterSpacing: -0.3,
                         ),
                       ),
                       const Text(
                         '/hour',
                         style: TextStyle(
-                          color: Color(0xFF065F46),
-                          fontSize: 9,
+                          color: Color(0xFF86EFAC),
+                          fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -4476,88 +4611,155 @@ class _TurfOwnerProfileScreenState
               ],
             ),
           ),
+
+          // 2. TIMINGS / OPERATING HOURS BANNER
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Container(
+              width: double.infinity,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 7.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF12170F),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF222F1B),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.schedule_rounded,
+                    size: 13,
+                    color: Color(0xFF86EFAC),
+                  ),
+                  const SizedBox(width: 7),
+                  const Text(
+                    'Operating Hours: ',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF94A3B8),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      court.timings.isNotEmpty
+                          ? court.timings
+                          : '06:00 AM – 11:00 PM',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE2E8F0),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Hairline separator
+          Container(
+            height: 1,
+            color: const Color(0xFF222E1B),
+          ),
+
+          // 3. ACTION BUTTONS: Edit Arena & Remove
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                Icon(
-                  Icons.schedule_rounded,
-                  size: 14,
-                  color: Colors.grey.shade600,
-                ),
-                const SizedBox(width: 6),
+                // Edit Arena
                 Expanded(
-                  child: Text(
-                    'Operating Hours: ${court.timings.isNotEmpty ? court.timings : '06:00 AM - 11:00 PM'}',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFA1A1AA),
+                  flex: 3,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _showEditVenueCourtDialog(profile, court);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8.5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF20311A), Color(0xFF172513)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF3E5A2D),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.edit_note_rounded,
+                            size: 16,
+                            color: Color(0xFF86EFAC),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Edit Arena',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF86EFAC),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: Colors.grey.shade100),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.edit_rounded, size: 14),
-                  label: const Text(
-                    'Edit Arena',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                const SizedBox(width: 10),
+
+                // Remove Arena
+                Expanded(
+                  flex: 2,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _confirmRemoveCourt(court);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF241414),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF4C2222),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.delete_outline_rounded,
+                            size: 15,
+                            color: Color(0xFFF87171),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            'Remove',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFF87171),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.4),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.04),
-                  ),
-                  onPressed: () => _showEditVenueCourtDialog(profile, court),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.delete_outline_rounded, size: 14),
-                  label: const Text(
-                    'Remove',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: BorderSide(
-                      color: AppColors.error.withValues(alpha: 0.3),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    backgroundColor: AppColors.error.withValues(alpha: 0.04),
-                  ),
-                  onPressed: () {
-                    ref
-                        .read(turfProfileProvider.notifier)
-                        .removeCourtVenue(court.id);
-                    ToastUtils.showSuccess(
-                      context,
-                      "Removed arena: ${court.name}",
-                    );
-                  },
                 ),
               ],
             ),
