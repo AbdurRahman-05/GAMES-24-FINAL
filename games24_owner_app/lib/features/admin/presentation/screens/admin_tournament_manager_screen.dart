@@ -1061,10 +1061,26 @@ class _AdminTournamentManagerScreenState
     return AppBar(
       backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
+      scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
+      toolbarHeight: 64,
       titleSpacing: 0,
+      shape: const Border(
+        bottom: BorderSide(color: Color(0xFF1E281A), width: 1),
+      ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+        icon: Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1C1C1C),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 15,
+            color: Colors.white,
+          ),
+        ),
         onPressed: () {
           if (Navigator.of(context).canPop()) {
             context.pop();
@@ -1081,14 +1097,15 @@ class _AdminTournamentManagerScreenState
           const Text(
             'Championship & Leagues',
             style: TextStyle(
-              fontSize: 15.5,
-              fontWeight: FontWeight.w900,
+              fontSize: 14.5,
+              fontWeight: FontWeight.w800,
               color: Colors.white,
               letterSpacing: -0.3,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
+          const SizedBox(height: 1),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1096,7 +1113,7 @@ class _AdminTournamentManagerScreenState
                 width: 6,
                 height: 6,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF10B981),
+                  color: Color(0xFF4ADE80),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -1119,23 +1136,55 @@ class _AdminTournamentManagerScreenState
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD4FF00),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          padding: const EdgeInsets.only(right: 14),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(9),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _tabController.animateTo(1);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF22351B), Color(0xFF172513)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(
+                  color: const Color(0xFF3E5A2D),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2A4020).withValues(alpha: 0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add_rounded,
+                    size: 15,
+                    color: Color(0xFF86EFAC),
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'New Tourney',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF86EFAC),
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            icon: const Icon(Icons.add_rounded, size: 14),
-            label: const Text(
-              'New Tourney',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-            ),
-            onPressed: () => _tabController.animateTo(1),
           ),
         ),
       ],
