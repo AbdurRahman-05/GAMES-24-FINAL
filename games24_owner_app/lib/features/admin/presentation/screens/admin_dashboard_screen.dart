@@ -433,7 +433,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       color: isCurrent
                           ? const Color(0xFF1B2A06)
                           : const Color(0xFF141414),
-                      borderRadius: BorderRadius.circular(14),
+                      clipBehavior: Clip.antiAlias,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
