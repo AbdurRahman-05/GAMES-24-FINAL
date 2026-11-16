@@ -359,20 +359,37 @@ class _TurfOwnerSettingsScreenState
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF04140D), Color(0xFF0D0D0D), Color(0xFFD4FF00)],
+          colors: [
+            Color(0xFF182412),
+            Color(0xFF2A3D14),
+            Color(0xFF88AC0E),
+            Color(0xFFD4FF00),
+          ],
+          stops: [0.0, 0.35, 0.75, 1.0],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
-          width: 1.2,
+          color: const Color(0xFFD4FF00).withValues(alpha: 0.55),
+          width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.8),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+            spreadRadius: 1,
+          ),
+          BoxShadow(
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.15),
+            blurRadius: 2,
+            offset: const Offset(0, -1),
           ),
         ],
       ),

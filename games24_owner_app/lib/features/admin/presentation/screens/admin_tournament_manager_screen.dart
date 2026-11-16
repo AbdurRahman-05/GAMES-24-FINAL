@@ -1246,19 +1246,43 @@ class _AdminTournamentManagerScreenState
   Widget _buildHeroBentoOperations(AdminTournamentState tournState) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0D0D0D), Color(0xFFD4FF00)],
+          colors: [
+            Color(0xFF182412),
+            Color(0xFF2A3D14),
+            Color(0xFF88AC0E),
+            Color(0xFFD4FF00),
+          ],
+          stops: [0.0, 0.35, 0.75, 1.0],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFFD4FF00).withValues(alpha: 0.55),
+          width: 1.5,
+        ),
         boxShadow: [
+          // Deep ambient 3D elevation shadow
           BoxShadow(
-            color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.8),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+            spreadRadius: 1,
+          ),
+          // Directional lime bloom glow
+          BoxShadow(
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+          // Top specular rim light
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.15),
+            blurRadius: 2,
+            offset: const Offset(0, -1),
           ),
         ],
       ),
@@ -1272,21 +1296,32 @@ class _AdminTournamentManagerScreenState
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: const Icon(Icons.emoji_events_rounded, color: Color(0xFFFBBF24), size: 16),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 9),
                     const Flexible(
                       child: Text(
                         'Tournament Command Hub',
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
@@ -1299,16 +1334,27 @@ class _AdminTournamentManagerScreenState
               Flexible(
                 fit: FlexFit.loose,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: const FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       'FIFA / ICC Standard',
-                      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFFD4FF00)),
                     ),
                   ),
                 ),
@@ -1319,25 +1365,54 @@ class _AdminTournamentManagerScreenState
           Text(
             '₹${NumberFormat('#,##,###').format(tournState.totalRevenue.toInt())}',
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 25,
               fontWeight: FontWeight.w900,
               color: Colors.white,
               letterSpacing: -0.5,
+              shadows: [
+                Shadow(
+                  color: Colors.black54,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 3),
           Text(
             'Gross Tournament Revenue • ${tournState.tournaments.length} Active Competitions',
-            style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w600,
+              shadows: const [
+                Shadow(
+                  color: Colors.black45,
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 14),
 
-          // Mini Metric Counter Bar
+          // 3D Recessed Tactical Mini Metric Counter Bar
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFF0A0F07).withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,

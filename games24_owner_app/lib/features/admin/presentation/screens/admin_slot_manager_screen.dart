@@ -460,19 +460,43 @@ class _AdminSlotManagerScreenState
         : profile.weekdayClosingTime;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0D0D0D), Color(0xFFD4FF00)],
+          colors: [
+            Color(0xFF182412),
+            Color(0xFF2A3D14),
+            Color(0xFF88AC0E),
+            Color(0xFFD4FF00),
+          ],
+          stops: [0.0, 0.35, 0.75, 1.0],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFFD4FF00).withValues(alpha: 0.55),
+          width: 1.5,
+        ),
         boxShadow: [
+          // Deep ambient 3D elevation shadow
           BoxShadow(
-            color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: 0.8),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+            spreadRadius: 1,
+          ),
+          // Directional lime bloom glow
+          BoxShadow(
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+          // Top specular rim light
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.15),
+            blurRadius: 2,
+            offset: const Offset(0, -1),
           ),
         ],
       ),
@@ -485,10 +509,20 @@ class _AdminSlotManagerScreenState
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: const EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       Icons.schedule_rounded,
@@ -496,46 +530,55 @@ class _AdminSlotManagerScreenState
                       size: 16,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 9),
                   const Text(
                     'Operating Schedule',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
               ),
               InkWell(
                 onTap: () => _openEditScheduleDialog(context, opening, closing),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4.5,
+                    horizontal: 11,
+                    vertical: 5.5,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.black.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.25),
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.6),
+                      width: 1.2,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 5,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.edit_calendar_rounded,
-                        color: Colors.white,
-                        size: 12,
+                        color: Color(0xFFD4FF00),
+                        size: 13,
                       ),
-                      SizedBox(width: 4),
+                      SizedBox(width: 5),
                       Text(
                         'Edit Hours',
                         style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
                       ),
@@ -545,16 +588,23 @@ class _AdminSlotManagerScreenState
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             opening == '24 Hours'
                 ? 'Open 24 Hours (All Day)'
                 : '$opening – $closing',
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 23,
               fontWeight: FontWeight.w900,
               color: Colors.white,
               letterSpacing: -0.4,
+              shadows: [
+                Shadow(
+                  color: Colors.black54,
+                  blurRadius: 6,
+                  offset: Offset(0, 2),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 3),
@@ -562,19 +612,36 @@ class _AdminSlotManagerScreenState
             'Auto-divided into $totalSlots hourly bookable slots • Synced with Player App',
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white.withValues(alpha: 0.75),
-              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w600,
+              shadows: const [
+                Shadow(
+                  color: Colors.black45,
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 14),
 
-          // Mini Metric Counter Bar inside Hero Card
+          // 3D Recessed Tactical Mini Metric Counter Bar inside Hero Card
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              color: const Color(0xFF0A0F07).withValues(alpha: 0.75),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
