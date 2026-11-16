@@ -229,16 +229,66 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
       width: double.infinity,
       height: widget.height,
       errorBuilder: (_, __, ___) => Container(
-        color: const Color(0xFFF3F4F6),
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        height: widget.height,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            Icon(Icons.sports_soccer_rounded, size: 36, color: Colors.grey.shade400),
-            const SizedBox(height: 4),
-            Text(
-              'Turf Photo',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+            Opacity(
+              opacity: 0.22,
+              child: Image.asset(
+                'assets/images/wm_full.png',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: widget.height,
+                errorBuilder: (_, __, ___) => const SizedBox(),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                  ),
+                  child: const Icon(
+                    Icons.stadium_rounded,
+                    size: 30,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'GAMEZ24 VENUE',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Delight',
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Verified Sports Arena',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.white.withOpacity(0.7),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

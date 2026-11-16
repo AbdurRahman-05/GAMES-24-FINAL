@@ -8,6 +8,7 @@ import 'core/constants/app_constants.dart';
 import 'booking_manager.dart';
 import 'challenge_manager.dart';
 import 'booking_qr_pass_modal.dart';
+import 'services/cashfree_service.dart';
 
 class BookingScreen extends StatefulWidget {
   final int? turfId;
@@ -446,9 +447,15 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _buildHeroImage() {
-    final images = (widget.photoUrls != null && widget.photoUrls!.isNotEmpty)
-        ? widget.photoUrls!
-        : [widget.imageUrl];
+    final rawImages = (widget.photoUrls != null && widget.photoUrls!.isNotEmpty)
+        ? widget.photoUrls!.map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
+        : <String>[];
+
+    final images = rawImages.isNotEmpty
+        ? rawImages
+        : [(widget.imageUrl.trim().isNotEmpty && widget.imageUrl.trim().startsWith('http'))
+            ? widget.imageUrl.trim()
+            : 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -469,11 +476,58 @@ class _BookingScreenState extends State<BookingScreen> {
                     images[index],
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
-                      color: Colors.grey.shade200,
-                      child: const Icon(
-                        Icons.sports_soccer_rounded,
-                        size: 48,
-                        color: Colors.grey,
+                      width: double.infinity,
+                      height: 200,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Opacity(
+                            opacity: 0.2,
+                            child: Image.asset(
+                              'assets/images/wm_full.png',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: 200,
+                              errorBuilder: (_, __, ___) => const SizedBox(),
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.12),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                                ),
+                                child: const Icon(
+                                  Icons.stadium_rounded,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                widget.turfName.toUpperCase(),
+                                style: const TextStyle(
+                                  fontFamily: 'Delight',
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -1903,38 +1957,65 @@ class _BookingScreenState extends State<BookingScreen> {
                             ? _teamSizeController.text.trim()
                             : 'Open Squad';
 
-                        final res = await http.post(
-                          Uri.parse(
-                            '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/book',
-                          ),
-                          headers: {'Content-Type': 'application/json'},
-                          body: jsonEncode({
-                            'customerName': customerName,
-                            'customerPhone': customerPhone,
-                            'sport': _selectedSport,
-                            'courtName': _selectedCourt ?? '${widget.turfName} Main Arena',
-                            'date': selectedDate,
-                            'timeSlot': combinedSlot,
-                            'timeSlots': sortedSlots,
-                            'amount': courtFee.toDouble(),
-                            'paymentMethod': 'UPI (GPay)',
-                            'isOpenMatch': _isOpenForChallenge,
-                            'teamName': _isOpenForChallenge ? tName : null,
-                            'teamSize': _isOpenForChallenge ? tSize : null,
-                          }),
+                        final bookingPayload = {
+                          'customerName': customerName,
+                          'customerPhone': customerPhone,
+                          'sport': _selectedSport,
+                          'courtName': _selectedCourt ?? '${widget.turfName} Main Arena',
+                          'date': selectedDate,
+                          'timeSlot': combinedSlot,
+                          'timeSlots': sortedSlots,
+                          'amount': courtFee.toDouble(),
+                          'paymentMethod': 'Cashfree UPI',
+                          'isOpenMatch': _isOpenForChallenge,
+                          'teamName': _isOpenForChallenge ? tName : null,
+                          'teamSize': _isOpenForChallenge ? tSize : null,
+                        };
+
+                        // 1. Launch Cashfree Payment Checkout
+                        final cashfreeRes = await CashfreeService.startCheckout(
+                          context: context,
+                          amount: courtFee.toDouble(),
+                          customerPhone: customerPhone,
+                          customerName: customerName,
+                          turfId: effectiveTurfId,
+                          bookingPayload: bookingPayload,
                         );
 
-                        if (res.statusCode == 200 || res.statusCode == 201) {
-                          Map<String, dynamic> bookingObj = {};
-                          try {
-                            final resData = jsonDecode(res.body);
-                            final Map<String, dynamic> rawMap = resData is Map<String, dynamic>
-                                ? resData
-                                : (resData is Map ? Map<String, dynamic>.from(resData) : {});
-                            bookingObj = (rawMap['booking'] is Map)
-                                ? Map<String, dynamic>.from(rawMap['booking'])
-                                : Map<String, dynamic>.from(rawMap);
+                        if (cashfreeRes == null || !cashfreeRes.success) {
+                          // Payment cancelled or failed
+                          return;
+                        }
 
+                        Map<String, dynamic> bookingObj = {};
+                        http.Response? res;
+                        if (cashfreeRes.booking != null) {
+                          bookingObj = Map<String, dynamic>.from(cashfreeRes.booking!);
+                        } else {
+                          // Fallback direct confirmation
+                          res = await http.post(
+                            Uri.parse(
+                              '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/book',
+                            ),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode(bookingPayload),
+                          );
+
+                          if (res.statusCode == 200 || res.statusCode == 201) {
+                            try {
+                              final resData = jsonDecode(res.body);
+                              final Map<String, dynamic> rawMap = resData is Map<String, dynamic>
+                                  ? resData
+                                  : (resData is Map ? Map<String, dynamic>.from(resData) : {});
+                              bookingObj = (rawMap['booking'] is Map)
+                                  ? Map<String, dynamic>.from(rawMap['booking'])
+                                  : Map<String, dynamic>.from(rawMap);
+                            } catch (_) {}
+                          }
+                        }
+
+                        if (bookingObj.isNotEmpty || cashfreeRes.success) {
+                          try {
                             final targetTurfId = bookingObj['turfId'] ??
                                 bookingObj['verifiedAdminId'] ??
                                 _resolvedTurfId ??
@@ -1953,7 +2034,7 @@ class _BookingScreenState extends State<BookingScreen> {
                             bookingObj['customerPhone'] = customerPhone;
                             bookingObj['sport'] = _selectedSport;
                             bookingObj['amount'] = courtFee.toDouble();
-                            bookingObj['paymentMethod'] = 'UPI (GPay)';
+                            bookingObj['paymentMethod'] = 'Cashfree (UPI)';
 
                             if (bookingObj['date'] == null) {
                               bookingObj['date'] = selectedDate;
@@ -2010,13 +2091,22 @@ class _BookingScreenState extends State<BookingScreen> {
                             return;
                           }
                         } else {
-                          final json = jsonDecode(res.body);
+                          String errorMsg = cashfreeRes.message;
+                          if (res != null && res.body.isNotEmpty) {
+                            try {
+                              final json = jsonDecode(res.body);
+                              if (json['message'] != null) {
+                                errorMsg = json['message'].toString();
+                              }
+                            } catch (_) {}
+                          }
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  json['message'] ??
-                                      'Booking failed. Slot may already be booked.',
+                                  errorMsg.isNotEmpty
+                                      ? errorMsg
+                                      : 'Booking failed. Slot may already be booked.',
                                 ),
                                 backgroundColor: const Color(0xFFDC2626),
                                 behavior: SnackBarBehavior.floating,

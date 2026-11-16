@@ -237,3 +237,55 @@ model Tournament {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }
+
+model PaymentOrder {
+  id               Int      @id @default(autoincrement())
+  orderId          String   @unique // e.g. "order_g24_..."
+  turfId           Int?
+  bookingId        Int?
+  customerPhone    String
+  customerName     String
+  customerEmail    String?
+  orderAmount      Float
+  orderCurrency    String   @default("INR")
+  paymentSessionId String?
+  orderStatus      String   @default("ACTIVE") // ACTIVE, PAID, EXPIRED, FAILED
+  paymentMethod    String?  // UPI, CARD, NETBANKING
+  referenceId      String?  // Cashfree CF Payment ID or Reference ID
+  cfPaymentId      String?
+  bookingPayload   Json?    // Serialized booking request
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model CelebrationBooking {
+  id            Int      @id @default(autoincrement())
+  bookingCode   String?  @unique // e.g. "G24-CEL-0012"
+  packageId     String?  // "c1", "c2", "c3"
+  packageTitle  String
+  turfId        Int?
+  turfName      String
+  customerName  String
+  customerPhone String
+  eventDate     String
+  eventTimeSlot String
+  guestCount    Int      @default(25)
+  totalAmount   Float
+  notes         String?
+  status        String   @default("PENDING") // PENDING, CONFIRMED, COMPLETED, CANCELLED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PlayerNotification {
+  id        Int      @id @default(autoincrement())
+  userPhone String
+  title     String
+  message   String
+  type      String   @default("general") // booking, challenge, team, celebration, offer, general
+  isRead    Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

@@ -208,6 +208,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
     );
 
     try {
+      final ownerPhone = ref.read(turfProfileProvider).ownerPhone;
       final res = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/toggle-block'),
         headers: {'Content-Type': 'application/json'},
@@ -216,6 +217,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
           'timeSlot': slot,
           'reason': reason,
           'action': action,
+          'ownerPhone': ownerPhone,
         }),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
@@ -239,6 +241,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
 
     toggleBlockSlot(slot, dateKey);
     try {
+      final ownerPhone = ref.read(turfProfileProvider).ownerPhone;
       final res = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/toggle-block'),
         headers: {'Content-Type': 'application/json'},
@@ -246,6 +249,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
           'date': dateKey,
           'timeSlot': slot,
           'reason': 'Blocked by Turf Owner',
+          'ownerPhone': ownerPhone,
         }),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
@@ -673,6 +677,7 @@ class OwnerTurfBranchItem {
   final double monthRevenue;
   final int monthTotalBookings;
   final bool isActive;
+  final bool isPending;
 
   const OwnerTurfBranchItem({
     required this.id,
@@ -686,6 +691,7 @@ class OwnerTurfBranchItem {
     required this.monthRevenue,
     required this.monthTotalBookings,
     required this.isActive,
+    this.isPending = false,
   });
 
   factory OwnerTurfBranchItem.fromJson(Map<String, dynamic> json) => OwnerTurfBranchItem(
@@ -700,6 +706,9 @@ class OwnerTurfBranchItem {
     monthRevenue: double.tryParse(json['monthRevenue']?.toString() ?? '') ?? 0.0,
     monthTotalBookings: int.tryParse(json['monthTotalBookings']?.toString() ?? '') ?? 0,
     isActive: json['isActive'] == true,
+    isPending: json['isPending'] == true ||
+        json['status'] == 'PENDING_APPROVAL' ||
+        ((json['id'] is num) && (json['id'] as num) < 0),
   );
 }
 
@@ -1182,6 +1191,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     required String alternativePhone,
     double? dayRate,
     double? nightRate,
+    List<String>? photoUrls,
   }) async {
     try {
       final res = await http.post(
@@ -1195,17 +1205,12 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           'alternativePhone': alternativePhone,
           'dayRate': dayRate ?? 1000.0,
           'nightRate': nightRate ?? 1400.0,
+          'photoUrls': photoUrls ?? [],
         }),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
-        final json = jsonDecode(res.body);
-        final newBranchId = json['branch']?['id'];
-        if (newBranchId != null) {
-          final intId = (newBranchId is num) ? newBranchId.toInt() : int.tryParse(newBranchId.toString()) ?? 0;
-          await switchBranch(intId);
-        } else {
-          await fetchVerifiedAdminByPhone(state.ownerPhone);
-        }
+        // Refresh to get updated branches list including the newly submitted pending application
+        await fetchVerifiedAdminByPhone(state.ownerPhone);
         return true;
       }
     } catch (e) {

@@ -3,990 +3,1164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gamez24 — Next-Gen Sports Turf Booking & Venue Operating System</title>
-  <meta name="description" content="Discover, book, and play on top sports turfs with zero convenience fees. Powerful matchday scheduling, QR gate check-ins, and revenue management for turf owners.">
+  <title>Gamez24 — Sports Turf Booking & Venue Operating System</title>
+  <meta name="description" content="Matchday turf booking with zero convenience fees for players. Dynamic slot scheduling, QR gate check-ins, and 0% commission revenue controls for venue operators.">
   <link rel="icon" type="image/png" href="assets/logo.png">
 
-  <!-- Tailwind CSS CDN + Google Fonts -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & Space Grotesk -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
+  <!-- Pinned, Secure Lucide Icons v0.468.0 (pinned to prevent supply-chain vulnerabilities) -->
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Pinned Tailwind CSS v3.4.16 -->
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
             display: ['"Space Grotesk"', 'sans-serif'],
           },
           colors: {
-            emerald: {
-              950: '#04140D',
-              900: '#0C2B1E',
-              800: '#154D36',
-              700: '#196144',
-              500: '#10B981',
-              400: '#34D399',
+            pitch: {
+              950: '#030E07',
+              900: '#06170E',
+              850: '#0B2316',
+              800: '#0F2F1E',
+              700: '#16432B',
+              600: '#1C5738',
+              500: '#00D06C',
+              400: '#10B981',
+              300: '#34D399',
             },
-            terracotta: '#D96B43',
-            gold: '#EAB308',
-          },
-          animation: {
-            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'float': 'float 6s ease-in-out infinite',
-          },
-          keyframes: {
-            float: {
-              '0%, 100%': { transform: 'translateY(0)' },
-              '50%': { transform: 'translateY(-10px)' },
+            signal: {
+              green: '#00E575',
+              amber: '#F59E0B',
+              blue: '#3B82F6',
+              red: '#EF4444',
             }
           }
         }
       }
-    }
+    };
   </script>
 
   <style>
-    .turf-grid-bg {
-      background-image: radial-gradient(rgba(52, 211, 153, 0.12) 1px, transparent 1px),
-                        radial-gradient(rgba(52, 211, 153, 0.05) 1px, transparent 1px);
-      background-size: 32px 32px;
-      background-position: 0 0, 16px 16px;
+    /* Architectural Custom Styling & Strict Craft Standards */
+    :root {
+      --color-bg-base: #030E07;
+      --color-surface: #06170E;
+      --color-surface-elevated: #0B2316;
+      --color-border: rgba(22, 67, 43, 0.6);
+      --color-border-bright: rgba(0, 229, 117, 0.35);
+      --color-accent: #00E575;
+      --color-accent-hover: #00FF82;
+      --color-text-main: #F8FAFC;
+      --color-text-muted: #94A3B8;
     }
-    .glass-card {
-      background: rgba(12, 43, 30, 0.55);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(52, 211, 153, 0.18);
+
+    ::selection {
+      background: #00E575;
+      color: #030E07;
     }
-    .glass-card-hover {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    ::-webkit-scrollbar {
+      width: 8px;
     }
-    .glass-card-hover:hover {
-      transform: translateY(-4px);
-      border-color: rgba(52, 211, 153, 0.4);
-      box-shadow: 0 20px 30px -10px rgba(16, 185, 129, 0.15);
+    ::-webkit-scrollbar-track {
+      background: #030E07;
     }
-    .glow-radial {
-      background: radial-gradient(circle, rgba(52, 211, 153, 0.2) 0%, rgba(4, 20, 13, 0) 70%);
+    ::-webkit-scrollbar-thumb {
+      background: #16432B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00E575;
+    }
+
+    /* Subtle pitch markings grid */
+    .pitch-grid {
+      background-image: 
+        linear-gradient(to right, rgba(22, 67, 43, 0.25) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(22, 67, 43, 0.25) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .card-surface {
+      background-color: #071A10;
+      border: 1px solid rgba(22, 67, 43, 0.7);
+    }
+    .card-surface:hover {
+      border-color: rgba(0, 229, 117, 0.4);
+    }
+
+    .spec-table th, .spec-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(22, 67, 43, 0.5);
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #06170E;
+      border: 1px solid #16432B;
+      border-radius: 9999px;
+      height: 8px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #00E575;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 229, 117, 0.4);
+      border: 2px solid #030E07;
     }
   </style>
 </head>
-<body class="bg-[#04140D] text-slate-100 font-sans selection:bg-emerald-500 selection:text-black antialiased relative overflow-x-hidden">
+<body class="bg-pitch-950 text-slate-100 font-sans antialiased selection:bg-signal-green selection:text-black">
 
-  <!-- Background Ambience Glows -->
-  <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[550px] glow-radial pointer-events-none -z-10"></div>
-  <div class="fixed top-[40%] right-[-10%] w-[600px] h-[600px] glow-radial opacity-60 pointer-events-none -z-10"></div>
-
-  <!-- 1. Header / Navbar -->
-  <header class="sticky top-0 z-50 backdrop-blur-md bg-[#04140D]/80 border-b border-emerald-900/40">
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-50 bg-pitch-950/95 backdrop-blur-md border-b border-pitch-700/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
       <!-- Brand Logo -->
-      <a href="#" class="flex items-center gap-3 group">
-        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-800 p-0.5 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-          <div class="w-full h-full bg-[#0C2B1E] rounded-[10px] flex items-center justify-center overflow-hidden">
-            <img src="assets/logo.png" alt="Gamez24 Logo" class="w-8 h-8 object-contain">
-          </div>
+      <a href="#" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 p-1 flex items-center justify-center">
+          <img src="assets/logo.png" alt="Gamez24" class="w-7 h-7 object-contain">
         </div>
         <div class="flex flex-col">
-          <span class="font-display font-black text-2xl tracking-tight text-white flex items-center gap-1">
-            Gamez<span class="text-emerald-400">24</span>
+          <span class="font-display font-black text-2xl tracking-tight text-white leading-none">
+            Gamez<span class="text-signal-green">24</span>
           </span>
-          <span class="text-[10px] font-bold tracking-wider text-emerald-400/80 uppercase -mt-1">Play & Operate</span>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase mt-1">Pitch & Venue OS</span>
         </div>
       </a>
 
-      <!-- Desktop Navigation Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
-        <a href="#features" class="hover:text-emerald-400 transition-colors">Features</a>
-        <a href="#player-app" class="hover:text-emerald-400 transition-colors">Player App</a>
-        <a href="#owner-app" class="hover:text-emerald-400 transition-colors">Turf Owner Hub</a>
-        <a href="#simulator" class="hover:text-emerald-400 transition-colors">Live Simulator</a>
-        <a href="#calculator" class="hover:text-emerald-400 transition-colors">Earnings Calc</a>
-        <a href="#pricing" class="hover:text-emerald-400 transition-colors">Pricing</a>
+      <!-- Desktop Links -->
+      <nav class="hidden lg:flex items-center gap-8 text-sm font-semibold text-slate-300">
+        <a href="#platform" class="hover:text-signal-green transition-colors">Platform</a>
+        <a href="#sports" class="hover:text-signal-green transition-colors">Supported Sports</a>
+        <a href="#simulator" class="hover:text-signal-green transition-colors">Tactical Simulator</a>
+        <a href="#calculator" class="hover:text-signal-green transition-colors">Revenue Calculator</a>
+        <a href="#commercials" class="hover:text-signal-green transition-colors">Licensing</a>
+        <a href="#faq" class="hover:text-signal-green transition-colors">FAQ</a>
       </nav>
 
-      <!-- CTA Buttons -->
+      <!-- Action Buttons -->
       <div class="flex items-center gap-3">
-        <a href="https://play.google.com/store/apps/details?id=com.gamez24.ownerapp" target="_blank" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-900/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-800/80 transition-all">
-          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-          <span>Partner Login</span>
+        <a href="https://play.google.com/store/apps/details?id=com.gamez24.ownerapp" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-pitch-850 text-slate-200 border border-pitch-700 hover:border-signal-green hover:text-white transition-all">
+          <i data-lucide="shield-check" class="w-4 h-4 text-signal-green"></i>
+          <span>Partner Portal</span>
         </a>
-        <a href="#download" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-emerald-400 text-[#04140D] shadow-lg shadow-emerald-500/25 hover:shadow-emerald-400/40 hover:scale-[1.02] active:scale-[0.98] transition-all">
-          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        <a href="#download" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-signal-green text-pitch-950 hover:bg-pitch-300 active:scale-95 transition-all">
+          <i data-lucide="download" class="w-4 h-4"></i>
           <span>Pre-Register</span>
         </a>
       </div>
     </div>
   </header>
 
-  <!-- 2. Hero Section -->
-  <section class="relative pt-12 pb-20 md:pt-20 md:pb-32 turf-grid-bg">
+  <!-- Hero Section -->
+  <section class="relative pt-14 pb-20 md:pt-24 md:pb-32 pitch-grid border-b border-pitch-700/40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
         
-        <!-- Left Column: Copy & CTAs -->
+        <!-- Left: Pitch Positioning -->
         <div class="lg:col-span-7 flex flex-col items-start text-left">
-          <!-- Announcement Pill -->
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-900/50 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-6 backdrop-blur-md">
-            <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span>Google Play Pre-Registration is Now Live</span>
-            <span class="text-emerald-500">•</span>
-            <span class="text-gold font-black">Madurai Hub</span>
-          </div>
-
-          <!-- Headline -->
-          <h1 class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white tracking-tight leading-[1.1] mb-6">
-            The Ultimate Sports Turf & <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-gold bg-clip-text text-transparent">Venue Operating System</span>
+          
+          <h1 class="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white tracking-tight leading-[1.08] mb-6">
+            The matchday operating system for sports turfs and players.
           </h1>
 
-          <!-- Subtitle -->
           <p class="text-base sm:text-lg text-slate-300 font-normal leading-relaxed mb-8 max-w-2xl">
-            Empowering athletes with instant slot bookings, zero convenience fees, and digital QR matchday passes — while equipping venue operators with dynamic pricing, real-time maintenance blocks, and offline booking controls.
+            Direct slot reservation with zero convenience fees for players and squads. Unified turf control for arena operators: dynamic weekday-weekend tariffs, instant maintenance blocks, offline walk-in logging, and zero-commission revenue settlement.
           </p>
 
-          <!-- CTAs & Badges -->
+          <!-- CTAs -->
           <div class="flex flex-wrap items-center gap-4 mb-10 w-full sm:w-auto">
-            <a href="#download" class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-[#04140D] font-black text-sm tracking-wide shadow-xl shadow-emerald-500/30 hover:shadow-emerald-400/50 hover:scale-[1.02] transition-all">
-              <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+            <a href="#download" class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-7 py-4 rounded-xl bg-signal-green text-pitch-950 font-black text-sm tracking-wide hover:bg-pitch-300 transition-all shadow-lg shadow-pitch-950">
+              <i data-lucide="play" class="w-4 h-4 fill-current"></i>
               <span>Pre-Register on Google Play</span>
             </a>
-            <a href="#simulator" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-emerald-950/80 text-white font-bold text-sm border border-emerald-500/30 hover:bg-emerald-900/50 hover:border-emerald-400/50 transition-all">
-              <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i>
-              <span>Try Interactive Simulator</span>
+            <a href="#simulator" class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl bg-pitch-850 text-white font-bold text-sm border border-pitch-700 hover:border-signal-green transition-all">
+              <i data-lucide="sliders" class="w-4 h-4 text-signal-green"></i>
+              <span>Launch Tactical Simulator</span>
             </a>
           </div>
 
-          <!-- Feature Bullets Mini -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-6 border-t border-emerald-900/60 w-full">
-            <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
-              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-              <span>₹0 Convenience Fee</span>
+          <!-- Technical Specs Highlights -->
+          <div class="grid grid-cols-3 gap-6 pt-6 border-t border-pitch-700/60 w-full max-w-lg">
+            <div>
+              <div class="text-xs font-black text-white uppercase tracking-wider">₹0 Fee</div>
+              <div class="text-xs text-slate-400 mt-1">Direct player pricing</div>
             </div>
-            <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
-              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-              <span>24/7 Floodlit Slots</span>
+            <div>
+              <div class="text-xs font-black text-white uppercase tracking-wider">0.3s Scan</div>
+              <div class="text-xs text-slate-400 mt-1">Encrypted QR gate pass</div>
             </div>
-            <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
-              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-              <span>0.5s QR Entry Pass</span>
+            <div>
+              <div class="text-xs font-black text-white uppercase tracking-wider">0% Cut</div>
+              <div class="text-xs text-slate-400 mt-1">Zero booking commission</div>
             </div>
           </div>
+
         </div>
 
-        <!-- Right Column: Interactive Device Mockup -->
-        <div class="lg:col-span-5 flex justify-center relative">
-          <!-- Backing glow halo -->
-          <div class="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full scale-75 -z-10"></div>
+        <!-- Right: High-Precision Dual Device Terminal -->
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="w-full max-w-[380px] rounded-3xl p-4 bg-pitch-900 border border-pitch-700 shadow-2xl">
+            
+            <!-- Terminal Header -->
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-pitch-700">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-signal-green"></span>
+                <span class="text-xs font-black text-slate-200 uppercase tracking-wider">Live System Preview</span>
+              </div>
+              <div class="flex bg-pitch-950 p-0.5 rounded-lg border border-pitch-700 text-xs font-bold">
+                <button id="tabPlayer" onclick="setTerminalTab('player')" class="px-3 py-1 rounded bg-signal-green text-pitch-950 font-black transition-all">Player</button>
+                <button id="tabOwner" onclick="setTerminalTab('owner')" class="px-3 py-1 rounded text-slate-400 hover:text-white transition-all">Owner</button>
+              </div>
+            </div>
 
-          <!-- Phone Mockup Container -->
-          <div class="w-[320px] sm:w-[340px] rounded-[44px] p-3.5 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 shadow-2xl shadow-emerald-950/80 border border-slate-700/80 animate-float">
-            <!-- Screen Bezel -->
-            <div class="bg-[#0C2B1E] rounded-[36px] overflow-hidden border border-emerald-600/30 relative flex flex-col h-[610px]">
+            <!-- TAB 1: Player View -->
+            <div id="viewPlayer" class="space-y-3">
               
-              <!-- Phone Dynamic Island / Camera Notch -->
-              <div class="w-full pt-3 pb-2 flex justify-center bg-[#071F15] relative z-20">
-                <div class="w-24 h-4 bg-black rounded-full flex items-center justify-end px-2">
-                  <div class="w-2 h-2 rounded-full bg-emerald-500/60 animate-pulse"></div>
+              <!-- Matchday Pass -->
+              <div class="p-3.5 rounded-2xl bg-pitch-850 border border-pitch-700 text-left">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-[10px] font-black uppercase tracking-wider text-signal-green">Matchday Entry Pass</span>
+                  <span class="text-[10px] font-bold text-slate-400">Pitch 1 • Football 5s</span>
                 </div>
-              </div>
-
-              <!-- Top Mode Toggle in Mockup -->
-              <div class="px-4 py-2.5 bg-[#071F15] border-b border-emerald-800/40 flex justify-between items-center">
-                <span class="text-[11px] font-black text-emerald-300 flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> LIVE PREVIEW
-                </span>
-                <div class="flex bg-emerald-950 p-0.5 rounded-lg border border-emerald-500/20 text-[10px] font-bold">
-                  <button id="togglePlayerBtn" onclick="switchMockup('player')" class="px-2.5 py-1 rounded-md bg-emerald-500 text-black font-extrabold transition-all">Player</button>
-                  <button id="toggleOwnerBtn" onclick="switchMockup('owner')" class="px-2.5 py-1 rounded-md text-slate-300 hover:text-white transition-all">Owner</button>
-                </div>
-              </div>
-
-              <!-- SCREEN CONTENT 1: Player App View -->
-              <div id="playerMockupView" class="flex-1 overflow-y-auto p-4 space-y-3.5 text-left transition-opacity duration-300">
-                <!-- Venue Card -->
-                <div class="rounded-2xl p-3 bg-gradient-to-br from-emerald-900/90 to-emerald-950 border border-emerald-500/30 shadow-lg">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="px-2 py-0.5 rounded-md bg-emerald-400/20 text-emerald-300 text-[10px] font-extrabold uppercase">Verified Turf</span>
-                    <span class="text-gold font-black text-xs">⭐ 4.9 (320)</span>
+                <div class="flex items-center gap-3">
+                  <div class="w-14 h-14 bg-white rounded-lg p-1 flex items-center justify-center shrink-0">
+                    <i data-lucide="qr-code" class="w-12 h-12 text-black"></i>
                   </div>
-                  <h4 class="text-sm font-black text-white">Madurai Regional Arena</h4>
-                  <p class="text-[11px] text-slate-300 flex items-center gap-1 mt-0.5">
-                    <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i> Madurai, Tamil Nadu
-                  </p>
-                  <div class="flex items-center gap-2 mt-3 pt-2 border-t border-emerald-800/40">
-                    <span class="text-xs font-black text-white">₹1,200<span class="text-[10px] font-normal text-slate-400">/hr</span></span>
-                    <span class="text-[10px] font-bold text-emerald-400 ml-auto bg-emerald-500/10 px-2 py-0.5 rounded-md">20% OFF TODAY</span>
-                  </div>
-                </div>
-
-                <!-- Matchday QR Pass Card -->
-                <div class="rounded-2xl p-3 bg-[#081F15] border border-emerald-700/40">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">YOUR GATE PASS</span>
-                    <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-bold">CONFIRMED</span>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-white p-1 rounded-lg flex items-center justify-center shrink-0">
-                      <i data-lucide="qr-code" class="w-10 h-10 text-black"></i>
-                    </div>
-                    <div>
-                      <div class="text-xs font-bold text-white">07:00 PM - 08:00 PM</div>
-                      <div class="text-[10px] text-slate-400">Pitch 1 • Football 5s</div>
-                      <div class="text-[10px] font-mono text-emerald-400 font-bold">PASS #GZ-8492</div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Available Slots Pill -->
-                <div class="rounded-xl p-2.5 bg-emerald-950/60 border border-emerald-500/20">
-                  <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Today's Quick Book</div>
-                  <div class="grid grid-cols-2 gap-1.5">
-                    <div class="p-2 rounded-lg bg-emerald-900/60 border border-emerald-500/30 text-center">
-                      <div class="text-[10px] font-bold text-emerald-300">08:00 PM - 09:00 PM</div>
-                      <div class="text-[9px] text-gold font-bold">₹1,400 (Night)</div>
-                    </div>
-                    <div class="p-2 rounded-lg bg-emerald-900/60 border border-emerald-500/30 text-center">
-                      <div class="text-[10px] font-bold text-emerald-300">09:00 PM - 10:00 PM</div>
-                      <div class="text-[9px] text-gold font-bold">₹1,400 (Night)</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- SCREEN CONTENT 2: Owner App View -->
-              <div id="ownerMockupView" class="hidden flex-1 overflow-y-auto p-4 space-y-3.5 text-left transition-opacity duration-300">
-                <!-- Revenue Target Card -->
-                <div class="rounded-2xl p-3 bg-gradient-to-br from-[#061B12] to-[#0D3625] border border-emerald-500/30 shadow-lg">
-                  <div class="flex justify-between items-center mb-1">
-                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wide">MONTHLY GMV TARGET</span>
-                    <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300">41% MET</span>
-                  </div>
-                  <div class="text-xl font-display font-black text-white">₹20,600</div>
-                  <div class="w-full bg-emerald-950 h-1.5 rounded-full mt-2 overflow-hidden border border-emerald-500/20">
-                    <div class="bg-gradient-to-r from-emerald-400 to-emerald-300 h-full w-[41%] rounded-full"></div>
-                  </div>
-                  <div class="flex justify-between text-[9px] font-bold text-slate-400 mt-1">
-                    <span>17 Bookings Logged</span>
-                    <span>Target: ₹50,000</span>
-                  </div>
-                </div>
-
-                <!-- Slot Management Live Control -->
-                <div class="rounded-2xl p-3 bg-[#081F15] border border-emerald-700/40">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-extrabold text-slate-300 uppercase tracking-wider">SLOT CONTROLLER</span>
-                    <span class="text-[9px] text-emerald-400 font-bold">Tap to update</span>
-                  </div>
-                  <!-- Slot items -->
-                  <div class="space-y-1.5">
-                    <div class="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-                      <div>
-                        <div class="text-[10px] font-bold text-white">05:00 PM - 06:00 PM</div>
-                        <div class="text-[9px] text-emerald-400 font-semibold">Available • Open Online</div>
-                      </div>
-                      <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500 text-black">OPEN</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-between">
-                      <div>
-                        <div class="text-[10px] font-bold text-white">06:00 PM - 07:00 PM</div>
-                        <div class="text-[9px] text-amber-400 font-semibold">Under Maintenance • Turf Repair</div>
-                      </div>
-                      <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-400 text-black">MAINT.</span>
-                    </div>
-                    <div class="p-2 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-between">
-                      <div>
-                        <div class="text-[10px] font-bold text-white">07:00 PM - 08:00 PM</div>
-                        <div class="text-[9px] text-blue-300 font-semibold">Already Booked • Walk-In Cash</div>
-                      </div>
-                      <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-400 text-black">OFFLINE</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Operator License Badge -->
-                <div class="rounded-xl p-2.5 bg-emerald-950/80 border border-emerald-500/20 flex items-center justify-between">
                   <div>
-                    <div class="text-[10px] font-black text-white">GAMEZ24 VENUE LICENSE</div>
-                    <div class="text-[9px] text-emerald-400 font-semibold">23 Days Left • Active</div>
+                    <div class="text-sm font-black text-white">07:00 PM – 08:00 PM</div>
+                    <div class="text-xs text-slate-300">Madurai Regional Arena</div>
+                    <div class="text-[10px] font-mono font-bold text-signal-green mt-0.5">PASS #GZ-84920-VERIFIED</div>
                   </div>
-                  <i data-lucide="badge-check" class="w-5 h-5 text-emerald-400"></i>
                 </div>
               </div>
 
-              <!-- Bottom Bar inside Mockup -->
-              <div class="p-3 bg-[#071F15] border-t border-emerald-800/40 text-center">
-                <span class="text-[10px] font-semibold text-slate-400">Gamez24 Core OS v2.0 • Madurai</span>
+              <!-- Available Realtime Slot Pill -->
+              <div class="p-3.5 rounded-2xl bg-pitch-850 border border-pitch-700 text-left">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Upcoming Open Slots</div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="p-2 rounded-xl bg-pitch-900 border border-pitch-700">
+                    <div class="font-bold text-white">08:00 PM - 09:00 PM</div>
+                    <div class="text-signal-green font-bold text-[11px] mt-0.5">₹1,400 (Night Floodlight)</div>
+                  </div>
+                  <div class="p-2 rounded-xl bg-pitch-900 border border-pitch-700">
+                    <div class="font-bold text-white">09:00 PM - 10:00 PM</div>
+                    <div class="text-signal-green font-bold text-[11px] mt-0.5">₹1,400 (Night Floodlight)</div>
+                  </div>
+                </div>
               </div>
+
+              <!-- Player Guarantee -->
+              <div class="p-3 rounded-xl bg-pitch-950 border border-pitch-700/70 flex items-center gap-2.5 text-xs text-slate-300 text-left">
+                <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+                <span>Direct venue rate. Zero extra booking charges.</span>
+              </div>
+
             </div>
+
+            <!-- TAB 2: Owner View -->
+            <div id="viewOwner" class="hidden space-y-3">
+              
+              <!-- Monthly GMV Target Card -->
+              <div class="p-3.5 rounded-2xl bg-pitch-850 border border-pitch-700 text-left">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-300">Monthly Revenue Goal</span>
+                  <span class="text-[10px] font-bold text-signal-green bg-pitch-700/60 px-2 py-0.5 rounded">Target Active</span>
+                </div>
+                <div class="text-2xl font-display font-black text-white">₹64,800</div>
+                <div class="w-full bg-pitch-950 h-2 rounded-full mt-2 overflow-hidden border border-pitch-700">
+                  <div class="bg-signal-green h-full w-[65%] rounded-full"></div>
+                </div>
+                <div class="flex justify-between text-[10px] font-bold text-slate-400 mt-1">
+                  <span>54 Match Bookings</span>
+                  <span>Goal: ₹1,00,000</span>
+                </div>
+              </div>
+
+              <!-- Tactical Slot Manager -->
+              <div class="p-3.5 rounded-2xl bg-pitch-850 border border-pitch-700 text-left">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Slot Manager Actions</div>
+                <div class="space-y-2 text-xs">
+                  <div class="p-2 rounded-xl bg-pitch-900 border border-pitch-700 flex justify-between items-center">
+                    <div>
+                      <div class="font-bold text-white">05:00 PM – 06:00 PM</div>
+                      <div class="text-[10px] text-signal-green">Open on Player App</div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-signal-green/20 text-signal-green text-[10px] font-bold">AVAILABLE</span>
+                  </div>
+                  <div class="p-2 rounded-xl bg-pitch-900 border border-pitch-700 flex justify-between items-center">
+                    <div>
+                      <div class="font-bold text-white">06:00 PM – 07:00 PM</div>
+                      <div class="text-[10px] text-signal-amber">Pitch Net Repair</div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-signal-amber/20 text-signal-amber text-[10px] font-bold">MAINTENANCE</span>
+                  </div>
+                  <div class="p-2 rounded-xl bg-pitch-900 border border-pitch-700 flex justify-between items-center">
+                    <div>
+                      <div class="font-bold text-white">07:00 PM – 08:00 PM</div>
+                      <div class="text-[10px] text-signal-blue">Offline Phone Walk-in</div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-signal-blue/20 text-signal-blue text-[10px] font-bold">BOOKED</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Operator License Status -->
+              <div class="p-2.5 rounded-xl bg-pitch-950 border border-pitch-700 flex justify-between items-center text-xs text-left">
+                <div>
+                  <div class="font-black text-white">Turf Partner License</div>
+                  <div class="text-[10px] text-slate-400">Monthly billing active • 0% commission</div>
+                </div>
+                <i data-lucide="badge-check" class="w-5 h-5 text-signal-green"></i>
+              </div>
+
+            </div>
+
           </div>
         </div>
 
       </div>
+
     </div>
   </section>
 
-  <!-- 3. Metrics / Proof Ribbon -->
-  <section class="border-y border-emerald-900/40 bg-emerald-950/60 py-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        <div>
-          <div class="font-display font-black text-3xl sm:text-4xl text-white mb-1">50+</div>
-          <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Verified Sports Arenas</div>
-          <p class="text-[11px] text-slate-400 mt-1">Football, Cricket, Badminton & Turf Nets</p>
-        </div>
-        <div>
-          <div class="font-display font-black text-3xl sm:text-4xl text-emerald-400 mb-1">10,000+</div>
-          <div class="text-xs font-bold uppercase tracking-wider text-slate-300">Match Slots Booked</div>
-          <p class="text-[11px] text-slate-400 mt-1">With 0 double-booking collisions</p>
-        </div>
-        <div>
-          <div class="font-display font-black text-3xl sm:text-4xl text-gold mb-1">₹0</div>
-          <div class="text-xs font-bold uppercase tracking-wider text-slate-300">Player Convenience Fees</div>
-          <p class="text-[11px] text-slate-400 mt-1">100% of price goes to venue usage</p>
-        </div>
-        <div>
-          <div class="font-display font-black text-3xl sm:text-4xl text-white mb-1">99.9%</div>
-          <div class="text-xs font-bold uppercase tracking-wider text-emerald-400">Platform Uptime</div>
-          <p class="text-[11px] text-slate-400 mt-1">Enterprise PostgreSQL backend cloud</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Dual Pillars: For Players vs For Turf Owners -->
-  <section id="features" class="py-20 md:py-28 relative">
+  <!-- Platform Capabilities Section -->
+  <section id="platform" class="py-20 md:py-28 bg-pitch-950 border-b border-pitch-700/40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <!-- Section Header -->
-      <div class="text-center max-w-3xl mx-auto mb-16">
-        <span class="text-xs font-black uppercase tracking-wider text-emerald-400 bg-emerald-900/40 px-3.5 py-1.5 rounded-full border border-emerald-500/20">Two Apps. One Seamless Ecosystem.</span>
-        <h2 class="font-display font-black text-3xl sm:text-4xl text-white mt-4 tracking-tight">
-          Engineered for Players. Built for Turf Operators.
+      <div class="max-w-3xl mb-16 text-left">
+        <h2 class="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+          Engineered for athlete convenience. Built for arena profitability.
         </h2>
-        <p class="text-slate-300 text-sm sm:text-base mt-3">
-          A synchronized mobile suite connecting athletes looking for game time with arena managers aiming for full facility utilization.
+        <p class="text-slate-300 text-sm sm:text-base mt-4 leading-relaxed">
+          Traditional sports aggregators take between 15% and 25% of every booking, hold payouts for weeks, and slap convenience fees onto players. Gamez24 replaces middleman friction with direct software infrastructure.
         </p>
       </div>
 
-      <!-- Two Big Pillars -->
+      <!-- Two Architectural Columns -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         <!-- Pillar 1: Player Experience -->
-        <div id="player-app" class="glass-card rounded-3xl p-8 lg:p-10 border border-emerald-500/25 relative overflow-hidden group">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
+        <div class="p-8 sm:p-10 rounded-3xl card-surface text-left">
           
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
-              <i data-lucide="zap" class="w-6 h-6"></i>
+          <div class="flex items-center gap-3 pb-6 mb-6 border-b border-pitch-700/60">
+            <div class="w-12 h-12 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <i data-lucide="activity" class="w-6 h-6"></i>
             </div>
             <div>
-              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">For Players & Squads</span>
-              <h3 class="text-2xl font-black text-white">Gamez24 Player App</h3>
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Player App System</div>
+              <h3 class="text-2xl font-black text-white">Gamez24 Player</h3>
             </div>
           </div>
 
-          <p class="text-slate-300 text-sm mb-6 leading-relaxed">
-            Eliminate back-and-forth phone calls and awkward cash handling. Discover, reserve, split costs, and unlock arenas right from your smartphone.
-          </p>
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-black text-white">Live 24-Hour Availability Matrix</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">View all open morning, evening, and late-night floodlight hours in real time. Locked slots prevent accidental collisions.</p>
+              </div>
+            </div>
 
-          <div class="space-y-4">
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="clock-4" class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0"></i>
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="qr-code" class="w-4 h-4"></i>
+              </div>
               <div>
-                <h5 class="text-xs font-black text-white">Real-Time 24-Hour Slot Matrix</h5>
-                <p class="text-[11px] text-slate-400">Instant visibility of open day and night floodlight slots with live cutoff timers.</p>
+                <h4 class="text-sm font-black text-white">Cryptographic QR Matchday Pass</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Every confirmed booking generates an authenticated entry token for immediate 0.3s gate check-in at the venue.</p>
               </div>
             </div>
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="trophy" class="w-5 h-5 text-gold mt-0.5 shrink-0"></i>
+
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="trophy" class="w-4 h-4"></i>
+              </div>
               <div>
-                <h5 class="text-xs font-black text-white">Tournament & Bracket Hub</h5>
-                <p class="text-[11px] text-slate-400">Register private team tournaments or public tournaments with real-time captain roster sync.</p>
+                <h4 class="text-sm font-black text-white">Tournament & Roster Engine</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Create private invitation matches or register for public knockout cups with full captain contact integration.</p>
               </div>
             </div>
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="qr-code" class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0"></i>
-              <div>
-                <h5 class="text-xs font-black text-white">Instant QR Entry Voucher</h5>
-                <p class="text-[11px] text-slate-400">Arrive at the gate and flash your encrypted pass for 1-second barcode check-in.</p>
+
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="credit-card" class="w-4 h-4"></i>
               </div>
-            </div>
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="award" class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0"></i>
               <div>
-                <h5 class="text-xs font-black text-white">Gamer Badges & Points</h5>
-                <p class="text-[11px] text-slate-400">Earn "First Kickoff", "Weekend Warrior", and "Grand Master" badges as you log bookings.</p>
+                <h4 class="text-sm font-black text-white">Zero Surcharges on Payment</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">No convenience fees, handling surcharges, or payment gateway inflation. Pay only the venue's hourly rate.</p>
               </div>
             </div>
           </div>
+
         </div>
 
-        <!-- Pillar 2: Turf Owner Operations -->
-        <div id="owner-app" class="glass-card rounded-3xl p-8 lg:p-10 border border-emerald-500/25 relative overflow-hidden group">
-          <div class="absolute top-0 right-0 w-32 h-32 bg-gold/10 rounded-full blur-2xl group-hover:bg-gold/20 transition-all"></div>
+        <!-- Pillar 2: Owner Hub -->
+        <div class="p-8 sm:p-10 rounded-3xl card-surface text-left">
           
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 rounded-2xl bg-gold/20 border border-gold/40 flex items-center justify-center text-gold">
-              <i data-lucide="building-2" class="w-6 h-6"></i>
+          <div class="flex items-center gap-3 pb-6 mb-6 border-b border-pitch-700/60">
+            <div class="w-12 h-12 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <i data-lucide="layout-grid" class="w-6 h-6"></i>
             </div>
             <div>
-              <span class="text-xs font-bold text-gold uppercase tracking-wider">For Turf Venue Owners</span>
-              <h3 class="text-2xl font-black text-white">Gamez24 Owner App</h3>
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Venue Command System</div>
+              <h3 class="text-2xl font-black text-white">Gamez24 Owner</h3>
             </div>
           </div>
 
-          <p class="text-slate-300 text-sm mb-6 leading-relaxed">
-            The all-in-one command desk for sports facility operators. Track your daily collections, prevent double-bookings, and validate matchday entries.
-          </p>
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-black text-white">3-State Slot Control</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Switch any hour between Open, Under Maintenance (surface repair/rain), or Already Booked (phone call or cash walk-ins).</p>
+              </div>
+            </div>
 
-          <div class="space-y-4">
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="sliders-horizontal" class="w-5 h-5 text-gold mt-0.5 shrink-0"></i>
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="scan-line" class="w-4 h-4"></i>
+              </div>
               <div>
-                <h5 class="text-xs font-black text-white">1-Click Slot Maintenance & Offline Booking</h5>
-                <p class="text-[11px] text-slate-400">Mark slots as Under Maintenance for repairs or Already Booked for phone/walk-in cash customers.</p>
+                <h4 class="text-sm font-black text-white">Gate Pass QR Scanner with Alert Chimes</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Integrated high-speed camera scanner validates customer digital passes and plays audible chime alerts upon gate entry.</p>
               </div>
             </div>
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="scan-line" class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0"></i>
+
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="calendar-days" class="w-4 h-4"></i>
+              </div>
               <div>
-                <h5 class="text-xs font-black text-white">Gate Pass QR Scanner with Audio Chime</h5>
-                <p class="text-[11px] text-slate-400">Built-in barcode scanner instantly verifies bookings and signals valid entry with alert sounds.</p>
+                <h4 class="text-sm font-black text-white">Dynamic 4-Way Rate Configuration</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Establish distinct pricing rules for Weekdays (Mon-Fri), Weekends (Sat-Sun), Day hours, and Night floodlight hours.</p>
               </div>
             </div>
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="calendar-days" class="w-5 h-5 text-gold mt-0.5 shrink-0"></i>
-              <div>
-                <h5 class="text-xs font-black text-white">All-Time Tariffs (Weekday, Weekend, Day, Night)</h5>
-                <p class="text-[11px] text-slate-400">Configure separate pricing for Mon-Fri vs Sat-Sun, and daytime vs night floodlight hours.</p>
+
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-8 rounded-lg bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green shrink-0 mt-0.5">
+                <i data-lucide="target" class="w-4 h-4"></i>
               </div>
-            </div>
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-emerald-950/40 border border-emerald-800/30">
-              <i data-lucide="receipt" class="w-5 h-5 text-emerald-400 mt-0.5 shrink-0"></i>
               <div>
-                <h5 class="text-xs font-black text-white">Monthly Revenue Target (Goal Tracking)</h5>
-                <p class="text-[11px] text-slate-400">Set custom monthly GMV goals (e.g. ₹50k - ₹100k) with real-time percentage badges.</p>
+                <h4 class="text-sm font-black text-white">Monthly GMV Target Tracking</h4>
+                <p class="text-xs text-slate-400 mt-1 leading-relaxed">Define monthly turnover targets (e.g. ₹50k, ₹100k, ₹200k) with persistent performance progress bars across sessions.</p>
               </div>
             </div>
           </div>
+
         </div>
 
       </div>
+
     </div>
   </section>
 
-  <!-- 5. Interactive Slot Manager Simulator -->
-  <section id="simulator" class="py-20 bg-emerald-950/30 border-t border-emerald-900/40 relative">
+  <!-- Supported Sports Technical Specifications -->
+  <section id="sports" class="py-20 md:py-28 pitch-grid border-b border-pitch-700/40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="text-center max-w-2xl mx-auto mb-12">
-        <span class="text-xs font-black uppercase tracking-wider text-emerald-400 bg-emerald-900/40 px-3.5 py-1.5 rounded-full border border-emerald-500/20">Try It Yourself</span>
-        <h2 class="font-display font-black text-3xl sm:text-4xl text-white mt-3">Interactive Slot Status Simulator</h2>
-        <p class="text-slate-300 text-sm mt-2">
-          Experience how turf owners control availability. Click any slot below to toggle its status between <span class="text-emerald-400 font-bold">Available</span>, <span class="text-amber-400 font-bold">Under Maintenance</span>, and <span class="text-blue-400 font-bold">Already Booked</span>.
+      <div class="max-w-3xl mb-14 text-left">
+        <h2 class="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+          Engineered for every sporting discipline.
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base mt-3">
+          Configured for official match standards, pitch specifications, and multi-court facility management.
         </p>
       </div>
 
-      <!-- Simulator Board Container -->
-      <div class="max-w-4xl mx-auto glass-card rounded-3xl p-6 sm:p-8 border border-emerald-500/30 shadow-2xl">
-        <!-- Simulator Bar -->
-        <div class="flex flex-wrap items-center justify-between pb-6 mb-6 border-b border-emerald-800/40 gap-4">
-          <div class="flex items-center gap-3">
-            <div class="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-400">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Football -->
+        <div class="p-6 rounded-2xl card-surface text-left">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <!-- SVG Football Pitch Marker -->
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="m4.93 4.93 4.24 4.24"></path>
+                <path d="m14.83 9.17 4.24-4.24"></path>
+                <path d="m14.83 14.83 4.24 4.24"></path>
+                <path d="m9.17 14.83-4.24 4.24"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">FIFA STANDARDS</span>
+          </div>
+          <h3 class="text-lg font-black text-white">Football 5s & 7s</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            36m × 18m and 50m × 30m artificial turf specifications. Optimized for Monofilament grass with silica and rubber infill.
+          </p>
+          <div class="mt-4 pt-4 border-t border-pitch-700/60 flex justify-between text-[11px] font-mono text-slate-300">
+            <span>Dimensions: 36m × 18m</span>
+            <span class="text-signal-green">50mm Pile</span>
+          </div>
+        </div>
+
+        <!-- Cricket -->
+        <div class="p-6 rounded-2xl card-surface text-left">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <!-- SVG Cricket Wicket & Stumps -->
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="6" y1="20" x2="6" y2="4"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="18" y1="20" x2="18" y2="4"></line>
+                <line x1="4" y1="4" x2="20" y2="4"></line>
+              </svg>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">CAGE TURF</span>
+          </div>
+          <h3 class="text-lg font-black text-white">Box Cricket & Turf Nets</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            60ft × 30ft heavy-gauge perimeter netted cages with 22-yard synthetic pitch mats and anti-glare vertical floodlighting.
+          </p>
+          <div class="mt-4 pt-4 border-t border-pitch-700/60 flex justify-between text-[11px] font-mono text-slate-300">
+            <span>Enclosure: 60ft × 30ft</span>
+            <span class="text-signal-green">22 Yards</span>
+          </div>
+        </div>
+
+        <!-- Badminton -->
+        <div class="p-6 rounded-2xl card-surface text-left">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <!-- SVG Badminton Shuttlecock -->
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a4 4 0 0 0-4 4c0 3 4 8 4 8s4-5 4-8a4 4 0 0 0-4-4z"></path>
+                <path d="M8 6h8"></path>
+                <circle cx="12" cy="19" r="3"></circle>
+              </svg>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">BWF GRADE 1</span>
+          </div>
+          <h3 class="text-lg font-black text-white">Badminton Courts</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            13.4m × 6.1m regulation courts with 4.5mm BWF synthetic PVC mats, wooden spring sub-base, and 500-lux glare-free illumination.
+          </p>
+          <div class="mt-4 pt-4 border-t border-pitch-700/60 flex justify-between text-[11px] font-mono text-slate-300">
+            <span>Dimensions: 13.4m × 6.1m</span>
+            <span class="text-signal-green">4.5mm Mat</span>
+          </div>
+        </div>
+
+        <!-- Pickleball & Tennis -->
+        <div class="p-6 rounded-2xl card-surface text-left">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <!-- SVG Tennis / Racquet -->
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="9" r="6"></circle>
+                <path d="m16.5 13.5 4.5 7.5"></path>
+                <path d="M12 15v6"></path>
+              </svg>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">USAPA SPECS</span>
+          </div>
+          <h3 class="text-lg font-black text-white">Pickleball & Tennis</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            44ft × 20ft regulation pickleball playing zones with 7-layer cushioned acrylic surfacing and non-slip tournament line markings.
+          </p>
+          <div class="mt-4 pt-4 border-t border-pitch-700/60 flex justify-between text-[11px] font-mono text-slate-300">
+            <span>Court: 44ft × 20ft</span>
+            <span class="text-signal-green">Acrylic Cushion</span>
+          </div>
+        </div>
+
+        <!-- Basketball -->
+        <div class="p-6 rounded-2xl card-surface text-left">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <!-- SVG Basketball Court Hoop -->
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <path d="M12 3a15.3 15.3 0 0 1 4 18 15.3 15.3 0 0 1-4-18"></path>
+              </svg>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">FIBA COMPLIANT</span>
+          </div>
+          <h3 class="text-lg font-black text-white">Basketball Half & Full</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Modular interlocking polypropylene tiles or polyurethane indoor hardwood flooring with official 10ft breakaway rims.
+          </p>
+          <div class="mt-4 pt-4 border-t border-pitch-700/60 flex justify-between text-[11px] font-mono text-slate-300">
+            <span>Dimensions: 28m × 15m</span>
+            <span class="text-signal-green">10ft Rim</span>
+          </div>
+        </div>
+
+        <!-- Volleyball -->
+        <div class="p-6 rounded-2xl card-surface text-left">
+          <div class="flex items-center justify-between mb-4">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
+              <!-- SVG Volleyball Net -->
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                <line x1="12" y1="6" x2="12" y2="18"></line>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+              </svg>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">FIVB STANDARDS</span>
+          </div>
+          <h3 class="text-lg font-black text-white">Volleyball Arenas</h3>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            18m × 9m sand or synthetic indoor configurations with tension-regulated official posts and safety padding.
+          </p>
+          <div class="mt-4 pt-4 border-t border-pitch-700/60 flex justify-between text-[11px] font-mono text-slate-300">
+            <span>Dimensions: 18m × 9m</span>
+            <span class="text-signal-green">2.43m Net</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Interactive Tactical Slot Simulator -->
+  <section id="simulator" class="py-20 md:py-28 bg-pitch-950 border-b border-pitch-700/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="max-w-3xl mb-12 text-left">
+        <h2 class="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+          Tactical Slot Status Controller
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base mt-3">
+          Test the turf operator's 3-state slot engine. Click any slot to toggle between Available (online booking enabled), Under Maintenance (rain/repair shutdown), and Already Booked (walk-in cash/phone customer lock).
+        </p>
+      </div>
+
+      <div class="p-6 sm:p-8 rounded-3xl card-surface">
+        
+        <!-- Bar Controls -->
+        <div class="flex flex-wrap items-center justify-between pb-6 mb-6 border-b border-pitch-700 gap-4">
+          <div class="flex items-center gap-3 text-left">
+            <div class="w-10 h-10 rounded-xl bg-pitch-850 border border-pitch-700 flex items-center justify-center text-signal-green">
               <i data-lucide="calendar" class="w-5 h-5"></i>
             </div>
             <div>
               <div class="text-sm font-black text-white">Madurai Regional Arena • Pitch 1</div>
-              <div class="text-xs text-slate-400">Selected Date: <span class="text-emerald-300 font-bold">Today (Live)</span></div>
+              <div class="text-xs text-slate-400">Matchday Slot Matrix • Live Interactive Board</div>
             </div>
           </div>
 
           <!-- Legend -->
-          <div class="flex items-center gap-3 text-xs font-bold">
-            <span class="flex items-center gap-1.5 text-emerald-300"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Available</span>
-            <span class="flex items-center gap-1.5 text-amber-300"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Maintenance</span>
-            <span class="flex items-center gap-1.5 text-blue-300"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Already Booked</span>
+          <div class="flex items-center gap-4 text-xs font-bold">
+            <span class="flex items-center gap-1.5 text-signal-green"><span class="w-2.5 h-2.5 rounded-full bg-signal-green"></span> Available</span>
+            <span class="flex items-center gap-1.5 text-signal-amber"><span class="w-2.5 h-2.5 rounded-full bg-signal-amber"></span> Maintenance</span>
+            <span class="flex items-center gap-1.5 text-signal-blue"><span class="w-2.5 h-2.5 rounded-full bg-signal-blue"></span> Already Booked</span>
           </div>
         </div>
 
-        <!-- Slot Grid (Interactive) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5" id="interactiveSlotGrid">
-          <!-- Populated by JS -->
+        <!-- Dynamic Grid Container -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5" id="simGrid">
+          <!-- Populated by JavaScript -->
         </div>
 
-        <div class="mt-6 pt-4 border-t border-emerald-800/30 flex items-center justify-between text-xs text-slate-400">
-          <span>💡 Tap any slot to test the 3-state operator switch.</span>
-          <button onclick="resetSimulator()" class="text-emerald-400 hover:text-emerald-300 font-bold underline flex items-center gap-1">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset Grid
+        <!-- Controller Footer -->
+        <div class="mt-6 pt-5 border-t border-pitch-700 flex flex-wrap items-center justify-between text-xs text-slate-400 gap-4">
+          <span>Click any card to cycle its state in real time. Changes reflect immediately across connected client apps.</span>
+          <button onclick="resetSimulator()" class="text-signal-green font-bold hover:underline flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset Grid</span>
           </button>
         </div>
+
       </div>
 
     </div>
   </section>
 
-  <!-- 6. Interactive Turf Owner Earnings Calculator -->
-  <section id="calculator" class="py-20 md:py-28 relative">
+  <!-- Interactive Turf Owner Revenue & Commission Calculator -->
+  <section id="calculator" class="py-20 md:py-28 pitch-grid border-b border-pitch-700/40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        <!-- Left: Explainer -->
+        
+        <!-- Left: Commercial Model -->
         <div class="lg:col-span-5 text-left">
-          <span class="text-xs font-black uppercase tracking-wider text-gold bg-gold/10 px-3.5 py-1.5 rounded-full border border-gold/30">Venue Profit Engine</span>
-          <h2 class="font-display font-black text-3xl sm:text-4xl text-white mt-4 tracking-tight">
-            Calculate Your Turf's Monthly Earnings
+          
+          <h2 class="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+            Calculate your monthly venue profits.
           </h2>
-          <p class="text-slate-300 text-sm mt-3 leading-relaxed">
-            See how much more revenue your facility keeps with Gamez24's zero-commission player model compared to legacy aggregators who take a 15% - 25% bite out of every match.
+
+          <p class="text-slate-300 text-sm mt-4 leading-relaxed">
+            See exactly how much revenue your sports facility retains under Gamez24's zero-commission software model versus traditional aggregators charging 15% to 22% cuts on every match.
           </p>
 
           <div class="mt-8 space-y-4">
-            <div class="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/20">
-              <div class="text-xs font-bold text-slate-400 uppercase">Flat Operator Fee</div>
-              <div class="text-2xl font-black text-emerald-400 mt-0.5">₹1,180 <span class="text-xs text-slate-400 font-normal">/ month (GST Included)</span></div>
-              <p class="text-[11px] text-slate-400 mt-1">Unlimited bookings, 0% commission, complete customer data ownership.</p>
+            <div class="p-5 rounded-2xl bg-pitch-900 border border-pitch-700">
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Flat Partner Fee</div>
+              <div class="text-2xl font-display font-black text-signal-green mt-1">₹1,180 <span class="text-xs font-normal text-slate-400">/ month (GST Included)</span></div>
+              <div class="text-xs text-slate-300 mt-2 leading-relaxed">Unlimited slot bookings. Zero commission per transaction. Direct UPI customer settlement.</div>
             </div>
-            <div class="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/20">
-              <div class="text-xs font-bold text-slate-400 uppercase">Average Commission Saved</div>
-              <div class="text-2xl font-black text-gold mt-0.5">₹15,000 - ₹35,000 <span class="text-xs text-slate-400 font-normal">/ month</span></div>
-              <p class="text-[11px] text-slate-400 mt-1">Money that stays directly in your turf bank account.</p>
+
+            <div class="p-5 rounded-2xl bg-pitch-900 border border-pitch-700">
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Average Commission Saved</div>
+              <div class="text-2xl font-display font-black text-signal-amber mt-1">₹18,000 – ₹45,000 <span class="text-xs font-normal text-slate-400">/ month</span></div>
+              <div class="text-xs text-slate-300 mt-2 leading-relaxed">Money that remains directly in your turf bank account rather than aggregator deductions.</div>
             </div>
           </div>
+
         </div>
 
-        <!-- Right: Calculator Widget -->
+        <!-- Right: Interactive Sliders Engine -->
         <div class="lg:col-span-7">
-          <div class="glass-card rounded-3xl p-6 sm:p-8 border border-emerald-500/30 shadow-2xl">
-            <h3 class="text-lg font-black text-white mb-6 flex items-center gap-2">
-              <i data-lucide="calculator" class="w-5 h-5 text-emerald-400"></i>
-              Revenue & Commission Estimator
-            </h3>
+          <div class="p-6 sm:p-8 rounded-3xl card-surface text-left">
+            
+            <div class="flex items-center justify-between pb-6 mb-6 border-b border-pitch-700">
+              <div class="flex items-center gap-2">
+                <i data-lucide="calculator" class="w-5 h-5 text-signal-green"></i>
+                <h3 class="text-lg font-black text-white">Revenue & Savings Engine</h3>
+              </div>
+              <span class="text-xs font-mono text-slate-400">MODEL: 2026 AUDITED</span>
+            </div>
 
-            <!-- Sliders -->
             <div class="space-y-6">
-              <!-- Slider 1: Hourly Rate -->
+              
+              <!-- Slider 1 -->
               <div>
                 <div class="flex justify-between text-xs font-bold mb-2">
-                  <span class="text-slate-300">Average Hourly Rate (₹)</span>
-                  <span class="text-emerald-400 font-black text-sm" id="rateVal">₹1,200</span>
+                  <span class="text-slate-300">Average Hourly Tariff (₹)</span>
+                  <span class="text-signal-green font-black text-sm" id="calcRateLabel">₹1,200</span>
                 </div>
-                <input type="range" id="rateInput" min="600" max="2500" step="100" value="1200" class="w-full h-2 bg-emerald-950 rounded-lg appearance-none cursor-pointer accent-emerald-400">
-                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                  <span>₹600/hr</span>
-                  <span>₹2,500/hr</span>
+                <input type="range" id="calcRateInput" min="600" max="2500" step="100" value="1200" class="w-full">
+                <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                  <span>₹600/hr (Base)</span>
+                  <span>₹2,500/hr (Peak)</span>
                 </div>
               </div>
 
-              <!-- Slider 2: Hours Booked Per Day -->
+              <!-- Slider 2 -->
               <div>
                 <div class="flex justify-between text-xs font-bold mb-2">
-                  <span class="text-slate-300">Average Booked Hours / Day</span>
-                  <span class="text-emerald-400 font-black text-sm" id="hoursVal">6 Hours</span>
+                  <span class="text-slate-300">Booked Hours Per Day</span>
+                  <span class="text-signal-green font-black text-sm" id="calcHoursLabel">6 Hours</span>
                 </div>
-                <input type="range" id="hoursInput" min="2" max="18" step="1" value="6" class="w-full h-2 bg-emerald-950 rounded-lg appearance-none cursor-pointer accent-emerald-400">
-                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                  <span>2 hrs (Low)</span>
-                  <span>18 hrs (High Peak)</span>
+                <input type="range" id="calcHoursInput" min="2" max="18" step="1" value="6" class="w-full">
+                <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                  <span>2 Hours</span>
+                  <span>18 Hours</span>
                 </div>
               </div>
 
-              <!-- Slider 3: Days Active Per Month -->
+              <!-- Slider 3 -->
               <div>
                 <div class="flex justify-between text-xs font-bold mb-2">
-                  <span class="text-slate-300">Operating Days / Month</span>
-                  <span class="text-emerald-400 font-black text-sm" id="daysVal">30 Days</span>
+                  <span class="text-slate-300">Operating Days Per Month</span>
+                  <span class="text-signal-green font-black text-sm" id="calcDaysLabel">30 Days</span>
                 </div>
-                <input type="range" id="daysInput" min="20" max="31" step="1" value="30" class="w-full h-2 bg-emerald-950 rounded-lg appearance-none cursor-pointer accent-emerald-400">
+                <input type="range" id="calcDaysInput" min="20" max="31" step="1" value="30" class="w-full">
+                <div class="flex justify-between text-[10px] font-mono text-slate-500 mt-1">
+                  <span>20 Days</span>
+                  <span>31 Days</span>
+                </div>
               </div>
+
             </div>
 
-            <!-- Result Box -->
-            <div class="mt-8 pt-6 border-t border-emerald-800/40 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div class="p-4 rounded-2xl bg-emerald-900/40 border border-emerald-500/40 text-left">
-                <span class="text-[10px] font-black uppercase tracking-wider text-emerald-300">ESTIMATED MONTHLY GMV</span>
-                <div class="font-display font-black text-2xl sm:text-3xl text-white mt-1" id="projectedGmv">₹2,16,000</div>
-                <span class="text-[10px] text-slate-400">Total matchday collections</span>
+            <!-- Financial Output Cards -->
+            <div class="mt-8 pt-6 border-t border-pitch-700 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <div class="p-4 rounded-2xl bg-pitch-900 border border-pitch-700">
+                <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">MONTHLY GMV (TURNOVER)</div>
+                <div class="text-2xl sm:text-3xl font-display font-black text-white mt-1" id="resGmv">₹2,16,000</div>
+                <div class="text-[11px] text-slate-400 mt-1">Direct matchday customer bookings</div>
               </div>
-              <div class="p-4 rounded-2xl bg-gold/10 border border-gold/40 text-left">
-                <span class="text-[10px] font-black uppercase tracking-wider text-gold">SAVED VS 20% COMMISSIONS</span>
-                <div class="font-display font-black text-2xl sm:text-3xl text-gold mt-1" id="projectedSavings">₹42,020</div>
-                <span class="text-[10px] text-slate-300">Extra profit saved in your pocket</span>
+
+              <div class="p-4 rounded-2xl bg-pitch-900 border border-signal-green/40">
+                <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-signal-green">EXTRA PROFIT SAVED VS 20% CUT</div>
+                <div class="text-2xl sm:text-3xl font-display font-black text-signal-green mt-1" id="resSavings">₹42,020</div>
+                <div class="text-[11px] text-slate-300 mt-1">Directly retained by your venue</div>
               </div>
+
             </div>
+
           </div>
         </div>
+
       </div>
 
     </div>
   </section>
 
-  <!-- 7. Supported Sports Grid -->
-  <section class="py-16 bg-emerald-950/40 border-y border-emerald-900/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="text-xs font-black uppercase tracking-wider text-emerald-400 mb-2">Multi-Sport Venue Infrastructure</h2>
-      <p class="font-display font-black text-2xl sm:text-3xl text-white mb-8">Designed for Any Court, Pitch or Arena</p>
-      
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-        <div class="p-4 rounded-2xl glass-card text-center hover:border-emerald-400/50 transition-all">
-          <div class="text-3xl mb-2">⚽</div>
-          <div class="text-xs font-black text-white">Football 5s & 7s</div>
-          <div class="text-[10px] text-slate-400">FIFA Artificial Turf</div>
-        </div>
-        <div class="p-4 rounded-2xl glass-card text-center hover:border-emerald-400/50 transition-all">
-          <div class="text-3xl mb-2">🏏</div>
-          <div class="text-xs font-black text-white">Box Cricket</div>
-          <div class="text-[10px] text-slate-400">Turf Nets & Pitch</div>
-        </div>
-        <div class="p-4 rounded-2xl glass-card text-center hover:border-emerald-400/50 transition-all">
-          <div class="text-3xl mb-2">🏸</div>
-          <div class="text-xs font-black text-white">Badminton</div>
-          <div class="text-[10px] text-slate-400">BWF Synthetic Mats</div>
-        </div>
-        <div class="p-4 rounded-2xl glass-card text-center hover:border-emerald-400/50 transition-all">
-          <div class="text-3xl mb-2">🎾</div>
-          <div class="text-xs font-black text-white">Pickleball & Tennis</div>
-          <div class="text-[10px] text-slate-400">Hardcourt & Acrylic</div>
-        </div>
-        <div class="p-4 rounded-2xl glass-card text-center hover:border-emerald-400/50 transition-all">
-          <div class="text-3xl mb-2">🏀</div>
-          <div class="text-xs font-black text-white">Basketball</div>
-          <div class="text-[10px] text-slate-400">Indoor & Outdoor Hoops</div>
-        </div>
-        <div class="p-4 rounded-2xl glass-card text-center hover:border-emerald-400/50 transition-all">
-          <div class="text-3xl mb-2">🏐</div>
-          <div class="text-xs font-black text-white">Volleyball</div>
-          <div class="text-[10px] text-slate-400">Sand & Hardcourt</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 8. Pricing Comparison Table -->
-  <section id="pricing" class="py-20 md:py-28 relative">
+  <!-- Commercials & Licensing Comparison -->
+  <section id="commercials" class="py-20 md:py-28 bg-pitch-950 border-b border-pitch-700/40">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       
-      <div class="text-center max-w-2xl mx-auto mb-14">
-        <span class="text-xs font-black uppercase tracking-wider text-emerald-400 bg-emerald-900/40 px-3.5 py-1.5 rounded-full border border-emerald-500/20">Transparent Business Model</span>
-        <h2 class="font-display font-black text-3xl sm:text-4xl text-white mt-3">Why Gamez24 Wins for Everyone</h2>
-        <p class="text-slate-300 text-sm mt-2">
-          Say goodbye to predatory booking cuts. We empower venues to grow their community while keeping 100% of player payments.
+      <div class="max-w-3xl mb-14 text-left">
+        <h2 class="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+          Transparent economics for sports operators.
+        </h2>
+        <p class="text-slate-300 text-sm sm:text-base mt-3">
+          No hidden deductions, delayed reconciliations, or per-booking cuts.
         </p>
       </div>
 
-      <!-- Comparison Card -->
-      <div class="glass-card rounded-3xl overflow-hidden border border-emerald-500/30 shadow-2xl">
-        <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-emerald-800/40">
-          
-          <!-- Column 1: Legacy Aggregators -->
-          <div class="p-6 sm:p-8 text-left bg-black/30">
-            <div class="text-xs font-bold text-red-400 uppercase tracking-wider">Traditional Aggregators</div>
-            <h4 class="text-xl font-black text-white mt-1">15% – 25% Cut</h4>
-            <p class="text-xs text-slate-400 mt-2 mb-6">Venues lose massive profits on high-volume days.</p>
-            <ul class="space-y-3 text-xs text-slate-300">
-              <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-red-400 shrink-0"></i> Aggressive player convenience charges</li>
-              <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-red-400 shrink-0"></i> Venues don't own customer phone contacts</li>
-              <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-red-400 shrink-0"></i> Delayed weekly payouts with deductions</li>
-              <li class="flex items-center gap-2"><i data-lucide="x" class="w-4 h-4 text-red-400 shrink-0"></i> Clunky paper / register gate check-ins</li>
-            </ul>
-          </div>
-
-          <!-- Column 2: Gamez24 Owner Hub (Featured) -->
-          <div class="p-6 sm:p-8 text-left bg-gradient-to-b from-emerald-900/80 to-emerald-950 border-2 border-emerald-400 relative">
-            <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-emerald-400 text-black text-[10px] font-black uppercase tracking-wider shadow">
-              RECOMMENDED PARTNER
-            </div>
-            <div class="text-xs font-bold text-emerald-300 uppercase tracking-wider mt-1">Gamez24 Operator Hub</div>
-            <h4 class="text-2xl font-black text-white mt-1">₹1,180 <span class="text-xs text-slate-400 font-normal">/ mo (all-in)</span></h4>
-            <p class="text-xs text-emerald-200/80 mt-2 mb-6">₹1,000 + 18% GST with downloadable tax invoices.</p>
-            <ul class="space-y-3 text-xs text-white font-medium">
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> <strong>0% Commission</strong> on all bookings</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Instant payments direct to your UPI/Bank</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> 1-Click Maintenance & Offline booking</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Gate Pass QR Scanner with Audio Chime</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Full customer directory & booking audit</li>
-            </ul>
-          </div>
-
-          <!-- Column 3: Gamez24 Players -->
-          <div class="p-6 sm:p-8 text-left bg-black/30">
-            <div class="text-xs font-bold text-emerald-400 uppercase tracking-wider">For Players & Squads</div>
-            <h4 class="text-xl font-black text-white mt-1">100% Free</h4>
-            <p class="text-xs text-slate-400 mt-2 mb-6">Zero surcharge. Pay only the real hourly turf tariff.</p>
-            <ul class="space-y-3 text-xs text-slate-300">
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Instant slot lock in under 15 seconds</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Encrypted matchday QR gate vouchers</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Tournament registration & live scorecards</li>
-              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-400 shrink-0"></i> Gamified player badges & perks</li>
-            </ul>
-          </div>
-
+      <div class="grid grid-cols-1 md:grid-cols-3 rounded-3xl overflow-hidden border border-pitch-700 card-surface">
+        
+        <!-- Model 1: Legacy Aggregators -->
+        <div class="p-8 text-left border-b md:border-b-0 md:border-r border-pitch-700 bg-pitch-950">
+          <div class="text-xs font-bold text-signal-red uppercase tracking-wider">Traditional Aggregators</div>
+          <div class="text-xl font-black text-white mt-2">15% – 25% Cut</div>
+          <div class="text-xs text-slate-400 mt-1 mb-6">Aggregators extract high fees on every match.</div>
+          <ul class="space-y-3.5 text-xs text-slate-300">
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="x" class="w-4 h-4 text-signal-red shrink-0"></i>
+              <span>High booking convenience fees on players</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="x" class="w-4 h-4 text-signal-red shrink-0"></i>
+              <span>Customer phone data withheld from venues</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="x" class="w-4 h-4 text-signal-red shrink-0"></i>
+              <span>Delayed weekly payouts with bank deductions</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="x" class="w-4 h-4 text-signal-red shrink-0"></i>
+              <span>No walk-in cash customer slot management</span>
+            </li>
+          </ul>
         </div>
+
+        <!-- Model 2: Gamez24 Partner Hub (Featured) -->
+        <div class="p-8 text-left border-b md:border-b-0 md:border-r border-signal-green bg-pitch-900 relative">
+          <div class="text-xs font-black text-signal-green uppercase tracking-wider">Gamez24 Operator Hub</div>
+          <div class="text-2xl font-black text-white mt-2">₹1,180 <span class="text-xs font-normal text-slate-400">/ month</span></div>
+          <div class="text-xs text-slate-300 mt-1 mb-6">Flat ₹1,000 + 18% GST with verified tax invoice.</div>
+          <ul class="space-y-3.5 text-xs text-white">
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span><strong>0% Commission</strong> on all bookings</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>Instant customer payments direct to your UPI</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>1-Click Maintenance & Offline cash booking</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>High-speed Gate QR camera scanner & audio alerts</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>Full customer directory & booking audit history</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Model 3: Players -->
+        <div class="p-8 text-left bg-pitch-950">
+          <div class="text-xs font-bold text-signal-green uppercase tracking-wider">Players & Squads</div>
+          <div class="text-xl font-black text-white mt-2">100% Free</div>
+          <div class="text-xs text-slate-400 mt-1 mb-6">No signup fee, no ticketing charge.</div>
+          <ul class="space-y-3.5 text-xs text-slate-300">
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>Zero convenience charges at checkout</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>Instant encrypted matchday gate voucher</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>Private & public tournament bracket hub</span>
+            </li>
+            <li class="flex items-center gap-2.5">
+              <i data-lucide="check" class="w-4 h-4 text-signal-green shrink-0"></i>
+              <span>Player ratings, match badges, and squad points</span>
+            </li>
+          </ul>
+        </div>
+
       </div>
 
     </div>
   </section>
 
-  <!-- 9. App Pre-Registration & Download Section -->
-  <section id="download" class="py-20 bg-gradient-to-b from-[#04140D] via-emerald-950/80 to-[#04140D] border-t border-emerald-900/40 relative">
+  <!-- Pre-Registration / Download -->
+  <section id="download" class="py-20 md:py-28 pitch-grid border-b border-pitch-700/40">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       
-      <div class="glass-card rounded-[36px] p-8 sm:p-14 border border-emerald-500/40 relative overflow-hidden">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-700 mx-auto flex items-center justify-center shadow-xl shadow-emerald-500/30 mb-6">
+      <div class="p-8 sm:p-14 rounded-3xl card-surface border border-signal-green/40">
+        
+        <div class="w-16 h-16 rounded-2xl bg-pitch-850 border border-pitch-700 mx-auto flex items-center justify-center mb-6">
           <img src="assets/logo.png" alt="Gamez24" class="w-10 h-10 object-contain">
         </div>
 
         <h2 class="font-display font-black text-3xl sm:text-5xl text-white tracking-tight">
-          Be the First on the Pitch.
+          Secure your pitch access.
         </h2>
+
         <p class="text-slate-300 text-sm sm:text-base max-w-xl mx-auto mt-4 leading-relaxed">
-          Pre-register now on the Google Play Store to receive exclusive inaugural slot booking offers and priority turf owner onboarding across Madurai & South India.
+          Pre-register on Google Play for launch day perks, exclusive tournament invitations, and expedited venue operator onboarding across Madurai and South India.
         </p>
 
-        <!-- Pre-Registration Buttons -->
+        <!-- Official Buttons -->
         <div class="flex flex-wrap items-center justify-center gap-4 mt-8">
-          <!-- Owner App Play Store -->
-          <a href="https://play.google.com/store/apps/details?id=com.gamez24.ownerapp" target="_blank" class="inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-white text-black font-black text-xs uppercase tracking-wider hover:bg-slate-200 transition-all shadow-xl">
-            <i data-lucide="smartphone" class="w-5 h-5 text-emerald-700"></i>
+          
+          <a href="https://play.google.com/store/apps/details?id=com.gamez24.ownerapp" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-white text-pitch-950 font-black text-xs uppercase tracking-wider hover:bg-slate-200 transition-all">
+            <i data-lucide="smartphone" class="w-5 h-5 text-pitch-900"></i>
             <div class="text-left">
-              <div class="text-[9px] font-bold text-slate-500 leading-none">PRE-REGISTER (OWNER)</div>
+              <div class="text-[9px] font-bold text-slate-600 leading-none">PRE-REGISTER (OWNER)</div>
               <div class="text-xs font-black">Google Play Store</div>
             </div>
           </a>
 
-          <!-- Player App Play Store -->
-          <a href="https://play.google.com/store/apps/details?id=com.gamez24.player" target="_blank" class="inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-400 text-[#04140D] font-black text-xs uppercase tracking-wider hover:scale-[1.02] transition-all shadow-xl shadow-emerald-500/30">
+          <a href="https://play.google.com/store/apps/details?id=com.gamez24.player" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-signal-green text-pitch-950 font-black text-xs uppercase tracking-wider hover:bg-pitch-300 transition-all">
             <i data-lucide="play" class="w-5 h-5 fill-current"></i>
             <div class="text-left">
-              <div class="text-[9px] font-bold text-emerald-950 leading-none">PRE-REGISTER (PLAYER)</div>
+              <div class="text-[9px] font-bold text-pitch-900 leading-none">PRE-REGISTER (PLAYER)</div>
               <div class="text-xs font-black">Google Play Store</div>
             </div>
           </a>
 
-          <!-- Web Portal Direct -->
-          <a href="/partner-portal" class="inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-emerald-950/80 text-white font-bold text-xs uppercase tracking-wider border border-emerald-500/30 hover:bg-emerald-900/60 transition-all">
-            <i data-lucide="globe" class="w-5 h-5 text-emerald-400"></i>
+          <a href="https://play.google.com/store/apps/details?id=com.gamez24.ownerapp" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-pitch-850 text-white font-bold text-xs uppercase tracking-wider border border-pitch-700 hover:border-signal-green transition-all">
+            <i data-lucide="globe" class="w-5 h-5 text-signal-green"></i>
             <div class="text-left">
-              <div class="text-[9px] font-bold text-slate-400 leading-none">DESKTOP DESK</div>
-              <div class="text-xs font-black">Owner Web Console</div>
+              <div class="text-[9px] font-bold text-slate-400 leading-none">OPERATOR ACCESS</div>
+              <div class="text-xs font-black">Partner Web Desk</div>
             </div>
           </a>
+
         </div>
 
-        <div class="mt-8 flex flex-wrap justify-center items-center gap-6 text-xs text-slate-400">
-          <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i> Verified by Google Play Protect</span>
-          <span class="flex items-center gap-1.5"><i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i> 256-Bit SSL End-to-End Encryption</span>
-          <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-4 h-4 text-emerald-400"></i> GST Compliant Invoicing</span>
+        <div class="mt-8 pt-6 border-t border-pitch-700/60 flex flex-wrap justify-center items-center gap-8 text-xs text-slate-400">
+          <span class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4 text-signal-green"></i> Verified by Google Play Protect</span>
+          <span class="flex items-center gap-2"><i data-lucide="lock" class="w-4 h-4 text-signal-green"></i> 256-Bit SSL End-to-End Encryption</span>
+          <span class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-signal-green"></i> GST Tax Compliant Invoicing</span>
         </div>
+
       </div>
 
     </div>
   </section>
 
-  <!-- 10. FAQ Section -->
-  <section class="py-16 border-t border-emerald-900/40">
+  <!-- FAQ Accordion -->
+  <section id="faq" class="py-20 md:py-28 bg-pitch-950 border-b border-pitch-700/40">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-xs font-black uppercase tracking-wider text-emerald-400 text-center mb-2">Got Questions?</h2>
-      <h3 class="font-display font-black text-2xl sm:text-3xl text-white text-center mb-10">Frequently Asked Questions</h3>
+      
+      <div class="max-w-2xl mb-12 text-left">
+        <h2 class="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+          Frequently asked operational questions.
+        </h2>
+      </div>
 
-      <div class="space-y-3.5 text-left">
-        <details class="glass-card rounded-2xl p-4 cursor-pointer group">
+      <div class="space-y-4 text-left">
+        
+        <details class="p-5 rounded-2xl card-surface group cursor-pointer">
           <summary class="text-sm font-bold text-white flex justify-between items-center list-none">
             <span>How does the Turf Owner ₹1,180/mo subscription work?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-emerald-400 group-open:rotate-180 transition-transform"></i>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-signal-green group-open:rotate-180 transition-transform"></i>
           </summary>
-          <p class="text-xs text-slate-300 mt-3 pt-3 border-t border-emerald-800/40 leading-relaxed">
-            Venue owners pay a flat ₹1,000 + 18% GST (₹1,180 total) per month for unlimited bookings, QR barcode validation, schedule management, and instant player discovery. Gamez24 charges <strong>zero commission</strong> on individual customer match bookings.
-          </p>
+          <div class="text-xs text-slate-300 mt-3 pt-3 border-t border-pitch-700/60 leading-relaxed">
+            Venue owners pay a flat ₹1,000 + 18% GST (₹1,180 total) per month for unlimited bookings, QR gate ticket validation, schedule maintenance, and player discovery. Gamez24 charges zero commission on individual player bookings.
+          </div>
         </details>
 
-        <details class="glass-card rounded-2xl p-4 cursor-pointer group">
+        <details class="p-5 rounded-2xl card-surface group cursor-pointer">
           <summary class="text-sm font-bold text-white flex justify-between items-center list-none">
-            <span>What happens when an owner marks a slot as "Already Booked"?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-emerald-400 group-open:rotate-180 transition-transform"></i>
+            <span>What occurs when an operator sets a slot to "Already Booked"?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-signal-green group-open:rotate-180 transition-transform"></i>
           </summary>
-          <p class="text-xs text-slate-300 mt-3 pt-3 border-t border-emerald-800/40 leading-relaxed">
-            If a customer books via direct phone call or walks in with cash, the owner taps the slot, selects <strong>"Already Booked"</strong>, and confirms. The slot card turns blue in the owner app and is instantly locked from the Player App so no double-booking can ever occur.
-          </p>
+          <div class="text-xs text-slate-300 mt-3 pt-3 border-t border-pitch-700/60 leading-relaxed">
+            When a customer reserves via phone call or walks in with cash, the operator selects "Already Booked". The slot turns blue on the owner dashboard and is instantly removed from the Player App, preventing duplicate reservations.
+          </div>
         </details>
 
-        <details class="glass-card rounded-2xl p-4 cursor-pointer group">
+        <details class="p-5 rounded-2xl card-surface group cursor-pointer">
           <summary class="text-sm font-bold text-white flex justify-between items-center list-none">
-            <span>Can owners configure separate Weekday, Weekend, Day, and Night rates?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-emerald-400 group-open:rotate-180 transition-transform"></i>
+            <span>Can operators configure separate Weekday, Weekend, Day, and Night tariffs?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-signal-green group-open:rotate-180 transition-transform"></i>
           </summary>
-          <p class="text-xs text-slate-300 mt-3 pt-3 border-t border-emerald-800/40 leading-relaxed">
-            Yes! In the Operating Timings modal, owners set independent tariffs for Weekdays (Mon - Fri), Weekends (Sat - Sun), Day slots (06:00 AM - 06:00 PM), and Night floodlight slots (06:00 PM - 12:00 AM).
-          </p>
+          <div class="text-xs text-slate-300 mt-3 pt-3 border-t border-pitch-700/60 leading-relaxed">
+            Yes. In the Operating Timings modal, operators establish independent hourly rates for Weekdays (Monday through Friday), Weekends (Saturday and Sunday), Day hours (06:00 AM – 06:00 PM), and Night floodlight hours (06:00 PM – 12:00 AM).
+          </div>
         </details>
 
-        <details class="glass-card rounded-2xl p-4 cursor-pointer group">
+        <details class="p-5 rounded-2xl card-surface group cursor-pointer">
           <summary class="text-sm font-bold text-white flex justify-between items-center list-none">
-            <span>Where can I find the Google Play Privacy Policy?</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 text-emerald-400 group-open:rotate-180 transition-transform"></i>
+            <span>Where can I inspect the Google Play Developer privacy policy?</span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-signal-green group-open:rotate-180 transition-transform"></i>
           </summary>
-          <p class="text-xs text-slate-300 mt-3 pt-3 border-t border-emerald-800/40 leading-relaxed">
-            Our full privacy policy is published at <a href="privacy-policy.html" class="text-emerald-400 underline font-bold">privacy-policy.html</a>. It complies with all Google Play Developer Program policies regarding data safety, contact info, and permission handling.
-          </p>
+          <div class="text-xs text-slate-300 mt-3 pt-3 border-t border-pitch-700/60 leading-relaxed">
+            The full compliance policy is published at <a href="privacy-policy.html" class="text-signal-green underline font-bold">privacy-policy.html</a>. It strictly complies with Google Play Developer Data Safety guidelines regarding user contacts, scan telemetry, and payment security.
+          </div>
         </details>
+
       </div>
 
     </div>
   </section>
 
-  <!-- 11. Footer -->
-  <footer class="border-t border-emerald-900/60 bg-[#020A06] py-14">
+  <!-- Footer -->
+  <footer class="bg-pitch-950 py-14">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
       <div class="grid grid-cols-1 md:grid-cols-4 gap-10 text-left">
         
-        <!-- Brand Info -->
-        <div class="md:col-span-1 space-y-4">
-          <div class="flex items-center gap-2.5">
+        <!-- Brand -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-3">
             <img src="assets/logo.png" alt="Gamez24" class="w-7 h-7 object-contain">
-            <span class="font-display font-black text-xl text-white">Gamez<span class="text-emerald-400">24</span></span>
+            <span class="font-display font-black text-xl text-white">Gamez<span class="text-signal-green">24</span></span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
-            Next-generation sports turf booking, match scheduling, and facility operating system for India.
+            Sports turf scheduling, encrypted gate verification, and facility operating system for India.
           </p>
-          <div class="text-[11px] text-emerald-400/80 font-bold">
-            📍 Madurai Regional Hub, Tamil Nadu
+          <div class="text-xs font-mono text-signal-green">
+            Madurai Regional Hub, Tamil Nadu
           </div>
         </div>
 
-        <!-- Links: Platform -->
+        <!-- Platform Links -->
         <div>
           <div class="text-xs font-black uppercase text-white tracking-wider mb-4">Platform</div>
           <ul class="space-y-2.5 text-xs text-slate-400">
-            <li><a href="#features" class="hover:text-emerald-400 transition-colors">Features & OS</a></li>
-            <li><a href="#player-app" class="hover:text-emerald-400 transition-colors">Player App</a></li>
-            <li><a href="#owner-app" class="hover:text-emerald-400 transition-colors">Turf Owner Hub</a></li>
-            <li><a href="#simulator" class="hover:text-emerald-400 transition-colors">Live Slot Simulator</a></li>
-            <li><a href="#calculator" class="hover:text-emerald-400 transition-colors">Revenue Calculator</a></li>
+            <li><a href="#platform" class="hover:text-signal-green transition-colors">Platform Architecture</a></li>
+            <li><a href="#sports" class="hover:text-signal-green transition-colors">Court Specifications</a></li>
+            <li><a href="#simulator" class="hover:text-signal-green transition-colors">Tactical Simulator</a></li>
+            <li><a href="#calculator" class="hover:text-signal-green transition-colors">Revenue Engine</a></li>
           </ul>
         </div>
 
-        <!-- Links: Operator & Legal -->
+        <!-- Legal Links -->
         <div>
           <div class="text-xs font-black uppercase text-white tracking-wider mb-4">Legal & Compliance</div>
           <ul class="space-y-2.5 text-xs text-slate-400">
-            <li><a href="privacy-policy.html" class="hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
-            <li><a href="terms.html" class="hover:text-emerald-400 transition-colors">Terms of Service</a></li>
-            <li><a href="#pricing" class="hover:text-emerald-400 transition-colors">Operator Licensing</a></li>
-            <li><a href="#" class="hover:text-emerald-400 transition-colors">Super Admin Audit</a></li>
+            <li><a href="privacy-policy.html" class="hover:text-signal-green transition-colors">Privacy Policy</a></li>
+            <li><a href="terms.html" class="hover:text-signal-green transition-colors">Terms of Service</a></li>
+            <li><a href="#commercials" class="hover:text-signal-green transition-colors">Operator Licensing</a></li>
           </ul>
         </div>
 
-        <!-- Contact & Direct Onboarding -->
+        <!-- Venue Contact -->
         <div>
           <div class="text-xs font-black uppercase text-white tracking-wider mb-4">Venue Onboarding</div>
-          <p class="text-xs text-slate-400 mb-3">Own a football, box cricket, or badminton facility in Madurai?</p>
-          <a href="mailto:partner@gamez24.in" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300">
-            <i data-lucide="mail" class="w-4 h-4"></i> partner@gamez24.in
+          <p class="text-xs text-slate-400 mb-3">Operating a football, cricket, or badminton arena in Madurai?</p>
+          <a href="mailto:partner@gamez24.in" class="inline-flex items-center gap-2 text-xs font-bold text-signal-green hover:underline">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+            <span>partner@gamez24.in</span>
           </a>
-          <div class="mt-4 pt-4 border-t border-emerald-950 flex gap-3 text-slate-400">
-            <a href="#" class="w-8 h-8 rounded-lg bg-emerald-950 border border-emerald-800/40 flex items-center justify-center hover:text-emerald-400"><i data-lucide="instagram" class="w-4 h-4"></i></a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-emerald-950 border border-emerald-800/40 flex items-center justify-center hover:text-emerald-400"><i data-lucide="twitter" class="w-4 h-4"></i></a>
-            <a href="#" class="w-8 h-8 rounded-lg bg-emerald-950 border border-emerald-800/40 flex items-center justify-center hover:text-emerald-400"><i data-lucide="phone" class="w-4 h-4"></i></a>
-          </div>
         </div>
 
       </div>
 
       <!-- Copyright -->
-      <div class="mt-12 pt-6 border-t border-emerald-900/40 flex flex-wrap justify-between items-center text-xs text-slate-500 gap-4">
+      <div class="mt-12 pt-6 border-t border-pitch-700/60 flex flex-wrap justify-between items-center text-xs text-slate-500 gap-4">
         <div>© 2026 Gamez24 Platform Services Ltd. All rights reserved.</div>
         <div class="flex gap-4">
-          <a href="privacy-policy.html" class="hover:text-emerald-400">Privacy</a>
+          <a href="privacy-policy.html" class="hover:text-signal-green">Privacy Policy</a>
           <span>•</span>
-          <a href="terms.html" class="hover:text-emerald-400">Terms</a>
+          <a href="terms.html" class="hover:text-signal-green">Terms of Service</a>
           <span>•</span>
-          <span class="text-emerald-400 font-bold">Package: com.gamez24.ownerapp</span>
+          <span class="text-slate-400">Package: com.gamez24.ownerapp</span>
         </div>
       </div>
+
     </div>
   </footer>
 
-  <!-- Interactive Scripts -->
+  <!-- Interactive Scripts (No Emojis, Pinned Lucide Icons) -->
   <script>
     // Initialize Lucide icons
-    lucide.createIcons();
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
 
-    // 1. Phone Mockup Toggle
-    function switchMockup(mode) {
-      const playerView = document.getElementById('playerMockupView');
-      const ownerView = document.getElementById('ownerMockupView');
-      const playerBtn = document.getElementById('togglePlayerBtn');
-      const ownerBtn = document.getElementById('toggleOwnerBtn');
+    // 1. Device Preview Tab Switcher
+    function setTerminalTab(tab) {
+      const viewPlayer = document.getElementById('viewPlayer');
+      const viewOwner = document.getElementById('viewOwner');
+      const tabPlayer = document.getElementById('tabPlayer');
+      const tabOwner = document.getElementById('tabOwner');
 
-      if (mode === 'player') {
-        playerView.classList.remove('hidden');
-        ownerView.classList.add('hidden');
-        playerBtn.className = "px-2.5 py-1 rounded-md bg-emerald-500 text-black font-extrabold transition-all";
-        ownerBtn.className = "px-2.5 py-1 rounded-md text-slate-300 hover:text-white transition-all";
+      if (tab === 'player') {
+        viewPlayer.classList.remove('hidden');
+        viewOwner.classList.add('hidden');
+        tabPlayer.className = "px-3 py-1 rounded bg-signal-green text-pitch-950 font-black transition-all";
+        tabOwner.className = "px-3 py-1 rounded text-slate-400 hover:text-white transition-all";
       } else {
-        playerView.classList.add('hidden');
-        ownerView.classList.remove('hidden');
-        ownerBtn.className = "px-2.5 py-1 rounded-md bg-emerald-500 text-black font-extrabold transition-all";
-        playerBtn.className = "px-2.5 py-1 rounded-md text-slate-300 hover:text-white transition-all";
+        viewPlayer.classList.add('hidden');
+        viewOwner.classList.remove('hidden');
+        tabOwner.className = "px-3 py-1 rounded bg-signal-green text-pitch-950 font-black transition-all";
+        tabPlayer.className = "px-3 py-1 rounded text-slate-400 hover:text-white transition-all";
       }
     }
 
-    // 2. Interactive Slot Simulator
-    const defaultSlots = [
-      { time: '04:00 PM - 05:00 PM', status: 'available' },
-      { time: '05:00 PM - 06:00 PM', status: 'available' },
-      { time: '06:00 PM - 07:00 PM', status: 'maintenance' },
-      { time: '07:00 PM - 08:00 PM', status: 'booked' },
-      { time: '08:00 PM - 09:00 PM', status: 'available' },
-      { time: '09:00 PM - 10:00 PM', status: 'booked' },
-      { time: '10:00 PM - 11:00 PM', status: 'available' },
-      { time: '11:00 PM - 12:00 AM', status: 'maintenance' }
+    // 2. Tactical Slot Simulator (Available -> Maintenance -> Booked)
+    const tacticalSlots = [
+      { time: '04:00 PM – 05:00 PM', status: 'available' },
+      { time: '05:00 PM – 06:00 PM', status: 'available' },
+      { time: '06:00 PM – 07:00 PM', status: 'maintenance' },
+      { time: '07:00 PM – 08:00 PM', status: 'booked' },
+      { time: '08:00 PM – 09:00 PM', status: 'available' },
+      { time: '09:00 PM – 10:00 PM', status: 'booked' },
+      { time: '10:00 PM – 11:00 PM', status: 'available' },
+      { time: '11:00 PM – 12:00 AM', status: 'maintenance' }
     ];
 
-    let currentSlots = JSON.parse(JSON.stringify(defaultSlots));
+    let currentTacticalSlots = JSON.parse(JSON.stringify(tacticalSlots));
 
-    function renderSlots() {
-      const grid = document.getElementById('interactiveSlotGrid');
+    function renderSimulator() {
+      const grid = document.getElementById('simGrid');
+      if (!grid) return;
       grid.innerHTML = '';
 
-      currentSlots.forEach((slot, index) => {
-        const card = document.createElement('div');
-        let cardBg = '';
-        let badgeBg = '';
-        let badgeText = '';
-        let statusTitle = '';
-        let hint = '';
+      currentTacticalSlots.forEach((slot, index) => {
+        const item = document.createElement('div');
+        let borderClass = 'border-pitch-700 bg-pitch-900';
+        let badgeClass = 'bg-signal-green/20 text-signal-green';
+        let statusTitle = 'AVAILABLE';
+        let desc = 'Open on Player App';
 
-        if (slot.status === 'available') {
-          cardBg = 'bg-white/5 border-emerald-500/30 hover:border-emerald-400';
-          badgeBg = 'bg-emerald-500/20 text-emerald-400';
-          statusTitle = 'Available';
-          hint = 'Tap to block / book';
-        } else if (slot.status === 'maintenance') {
-          cardBg = 'bg-amber-950/20 border-amber-500/40 hover:border-amber-400';
-          badgeBg = 'bg-amber-500/20 text-amber-400';
-          statusTitle = 'Maintenance';
-          hint = 'Under Repair • Tap to edit';
-        } else {
-          cardBg = 'bg-blue-950/20 border-blue-500/40 hover:border-blue-400';
-          badgeBg = 'bg-blue-500/20 text-blue-300';
-          statusTitle = 'Already Booked';
-          hint = 'Booked Offline • Tap to edit';
+        if (slot.status === 'maintenance') {
+          borderClass = 'border-signal-amber/40 bg-pitch-900';
+          badgeClass = 'bg-signal-amber/20 text-signal-amber';
+          statusTitle = 'MAINTENANCE';
+          desc = 'Pitch Net Repair';
+        } else if (slot.status === 'booked') {
+          borderClass = 'border-signal-blue/40 bg-pitch-900';
+          badgeClass = 'bg-signal-blue/20 text-signal-blue';
+          statusTitle = 'OFFLINE BOOKED';
+          desc = 'Walk-in / Phone Lock';
         }
 
-        card.className = `p-3 rounded-2xl border ${cardBg} cursor-pointer transition-all hover:scale-[1.02] text-left select-none`;
-        card.innerHTML = `
-          <div class="text-[11px] font-extrabold text-white mb-2 leading-tight">${slot.time}</div>
-          <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${badgeBg}">${statusTitle}</span>
-          <div class="text-[9px] text-slate-400 mt-2 font-medium">${hint}</div>
+        item.className = `p-3.5 rounded-2xl border ${borderClass} cursor-pointer hover:border-signal-green transition-all select-none text-left`;
+        item.innerHTML = `
+          <div class="text-xs font-bold text-white mb-2">${slot.time}</div>
+          <span class="inline-block px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider ${badgeClass}">${statusTitle}</span>
+          <div class="text-[10px] text-slate-400 mt-2">${desc}</div>
         `;
 
-        card.onclick = () => {
-          // Cycle through states: available -> maintenance -> booked -> available
+        item.onclick = () => {
           if (slot.status === 'available') {
             slot.status = 'maintenance';
           } else if (slot.status === 'maintenance') {
@@ -994,56 +1168,58 @@
           } else {
             slot.status = 'available';
           }
-          renderSlots();
+          renderSimulator();
         };
 
-        grid.appendChild(card);
+        grid.appendChild(item);
       });
     }
 
     function resetSimulator() {
-      currentSlots = JSON.parse(JSON.stringify(defaultSlots));
-      renderSlots();
+      currentTacticalSlots = JSON.parse(JSON.stringify(tacticalSlots));
+      renderSimulator();
     }
 
-    renderSlots();
+    renderSimulator();
 
-    // 3. Earnings Calculator
-    const rateInput = document.getElementById('rateInput');
-    const hoursInput = document.getElementById('hoursInput');
-    const daysInput = document.getElementById('daysInput');
+    // 3. Revenue Calculator
+    const calcRateInput = document.getElementById('calcRateInput');
+    const calcHoursInput = document.getElementById('calcHoursInput');
+    const calcDaysInput = document.getElementById('calcDaysInput');
 
-    const rateVal = document.getElementById('rateVal');
-    const hoursVal = document.getElementById('hoursVal');
-    const daysVal = document.getElementById('daysVal');
+    const calcRateLabel = document.getElementById('calcRateLabel');
+    const calcHoursLabel = document.getElementById('calcHoursLabel');
+    const calcDaysLabel = document.getElementById('calcDaysLabel');
 
-    const projectedGmv = document.getElementById('projectedGmv');
-    const projectedSavings = document.getElementById('projectedSavings');
+    const resGmv = document.getElementById('resGmv');
+    const resSavings = document.getElementById('resSavings');
 
-    function calculateEarnings() {
-      const rate = parseInt(rateInput.value, 10);
-      const hours = parseInt(hoursInput.value, 10);
-      const days = parseInt(daysInput.value, 10);
+    function updateCalculator() {
+      if (!calcRateInput || !calcHoursInput || !calcDaysInput) return;
+      const rate = parseInt(calcRateInput.value, 10);
+      const hours = parseInt(calcHoursInput.value, 10);
+      const days = parseInt(calcDaysInput.value, 10);
 
-      rateVal.textContent = `₹${rate.toLocaleString('en-IN')}`;
-      hoursVal.textContent = `${hours} Hours`;
-      daysVal.textContent = `${days} Days`;
+      calcRateLabel.textContent = `₹${rate.toLocaleString('en-IN')}`;
+      calcHoursLabel.textContent = `${hours} Hours`;
+      calcDaysLabel.textContent = `${days} Days`;
 
       const monthlyGmv = rate * hours * days;
-      // Legacy aggregators charge ~20% = monthlyGmv * 0.20
-      // Gamez24 charges ₹1,180
-      const legacyCommission = Math.round(monthlyGmv * 0.20);
-      const gamez24Savings = Math.max(0, legacyCommission - 1180);
+      // Traditional 20% aggregator take
+      const traditionalCut = Math.round(monthlyGmv * 0.20);
+      // Gamez24 flat licensing ₹1,180
+      const netSavings = Math.max(0, traditionalCut - 1180);
 
-      projectedGmv.textContent = `₹${monthlyGmv.toLocaleString('en-IN')}`;
-      projectedSavings.textContent = `₹${gamez24Savings.toLocaleString('en-IN')}`;
+      resGmv.textContent = `₹${monthlyGmv.toLocaleString('en-IN')}`;
+      resSavings.textContent = `₹${netSavings.toLocaleString('en-IN')}`;
     }
 
-    rateInput.oninput = calculateEarnings;
-    hoursInput.oninput = calculateEarnings;
-    daysInput.oninput = calculateEarnings;
-    calculateEarnings();
+    if (calcRateInput && calcHoursInput && calcDaysInput) {
+      calcRateInput.oninput = updateCalculator;
+      calcHoursInput.oninput = updateCalculator;
+      calcDaysInput.oninput = updateCalculator;
+      updateCalculator();
+    }
   </script>
 </body>
 </html>
-

@@ -7,6 +7,7 @@ import {
   VerifiedAdmin,
   SystemStats,
   getVerifiedAdmins,
+  getVerifiedAdminById,
   getStats,
   toggleTurfBookingHold,
   deleteVerifiedAdmin,
@@ -123,6 +124,26 @@ export default function AdminsPage() {
       showToast(err.message || 'Failed to toggle account hold status', 'error');
     } finally {
       setActionLoadingId(null);
+    }
+  };
+
+  const handleInspect = async (admin: VerifiedAdmin) => {
+    setSelectedAdmin(admin);
+    try {
+      const full = await getVerifiedAdminById(admin.id);
+      setSelectedAdmin(full);
+    } catch (e) {
+      console.error('Error fetching admin details:', e);
+    }
+  };
+
+  const handleReloadSelectedAdmin = async (adminId: number) => {
+    try {
+      const full = await getVerifiedAdminById(adminId);
+      setSelectedAdmin(full);
+      loadAdmins();
+    } catch (e) {
+      console.error('Error reloading admin:', e);
     }
   };
 
@@ -356,7 +377,7 @@ export default function AdminsPage() {
                       {/* Inspect Button */}
                       <button
                         type="button"
-                        onClick={() => setSelectedAdmin(admin)}
+                        onClick={() => handleInspect(admin)}
                         className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#182033] hover:bg-indigo-600 hover:text-white text-indigo-300 border border-indigo-500/20 transition-all flex items-center gap-1"
                       >
                         <span>Inspect</span>
@@ -404,6 +425,7 @@ export default function AdminsPage() {
             setSelectedAdmin(null);
             setDeleteConfirmAdmin(adm);
           }}
+          onBranchUpdated={() => handleReloadSelectedAdmin(selectedAdmin.id)}
         />
       )}
 

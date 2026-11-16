@@ -334,12 +334,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             const Divider(height: 1, color: Color(0xFFE5E7EB)),
                         itemBuilder: (context, index) {
                           final option = options.elementAt(index);
-                          final imgUrl =
-                              option['imageUrl'] ??
-                              ((option['photoUrls'] is List &&
-                                      (option['photoUrls'] as List).isNotEmpty)
-                                  ? (option['photoUrls'] as List).first
-                                  : 'https://picsum.photos/seed/turf1/800/400');
+                          final rawList = (option['photoUrls'] is List)
+                              ? (option['photoUrls'] as List).map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList()
+                              : <String>[];
+                          final imgUrl = (option['imageUrl'] != null && option['imageUrl'].toString().trim().isNotEmpty)
+                              ? option['imageUrl'].toString().trim()
+                              : (rawList.isNotEmpty ? rawList.first : 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=400&q=80');
                           return ListTile(
                             leading: ClipRRect(
                               borderRadius: BorderRadius.circular(8),

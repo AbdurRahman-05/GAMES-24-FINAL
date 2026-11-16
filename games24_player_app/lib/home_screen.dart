@@ -13,6 +13,7 @@ import 'package:games24_player_app/match_scorecard_screen.dart';
 import 'package:games24_player_app/match_score_manager.dart';
 import 'package:games24_player_app/match_schedule_screen.dart';
 import 'package:games24_player_app/location_manager.dart';
+import 'package:games24_player_app/core/widgets/turf_card_carousel.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
@@ -2456,9 +2457,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ? (turf['amenities'] as List).map((e) => e.toString()).toList()
             : ['Floodlights', 'Parking', 'Restroom'];
 
-        final List<String> photoUrls = (turf['photoUrls'] is List)
-            ? (turf['photoUrls'] as List).map((e) => e.toString()).toList()
-            : [turf['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
+        final List<String> rawPhotos = (turf['photoUrls'] is List)
+            ? (turf['photoUrls'] as List).map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList()
+            : <String>[];
+
+        String resolvedImg = '';
+        if (turf['imageUrl'] != null && turf['imageUrl'].toString().trim().isNotEmpty) {
+          resolvedImg = turf['imageUrl'].toString().trim();
+        } else if (rawPhotos.isNotEmpty) {
+          resolvedImg = rawPhotos.first;
+        } else {
+          resolvedImg = 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80';
+        }
+
+        final List<String> photoUrls = rawPhotos.isNotEmpty ? rawPhotos : [resolvedImg];
 
         final sportsStr = (turf['sports'] is List)
             ? (turf['sports'] as List).join(' • ')
@@ -2474,7 +2486,7 @@ class _HomeScreenState extends State<HomeScreen> {
             name: turf['venueName'] ?? turf['name'] ?? 'Turf Arena',
             price: turf['price'] ?? '₹1,200',
             location: turf['location'] ?? 'Madurai',
-            imageUrl: turf['imageUrl'] ?? photoUrls.first,
+            imageUrl: resolvedImg,
             photoUrls: photoUrls,
             amenities: tags,
             openingTime: turf['openingTime'] ?? '06:00 AM',
@@ -2508,6 +2520,10 @@ class _HomeScreenState extends State<HomeScreen> {
     List<dynamic>? sportsList,
     required List<String> tags,
   }) {
+    final effectiveImageUrl = (imageUrl.trim().isNotEmpty && imageUrl.trim().startsWith('http'))
+        ? imageUrl.trim()
+        : 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -2523,86 +2539,92 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Header
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: Image.network(
-                  imageUrl,
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Container(
-                    height: 180,
-                    color: Colors.grey.shade200,
-                    child: const Icon(
-                      Icons.sports_soccer,
-                      size: 48,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
+          // Image Header with Multi-Photo Carousel
+          TurfCardCarousel(
+            photoUrls: photoUrls,
+            fallbackImageUrl: effectiveImageUrl,
+            height: 180,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
+            ),
+            topTrailing: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
               ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 14),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        ' ($reviews)',
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                ],
               ),
-              Positioned(
-                bottom: 12,
-                left: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    sports,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    rating,
                     style: const TextStyle(
-                      fontSize: 12,
                       fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
                   ),
+                  Text(
+                    ' ($reviews)',
+                    style: const TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            bottomLeading: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white.withOpacity(0.2), width: 0.8),
+              ),
+              child: Text(
+                sports,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingScreen(
+                    turfId: turfId,
+                    turfName: name,
+                    imageUrl: effectiveImageUrl,
+                    photoUrls: photoUrls,
+                    amenities: amenities,
+                    openingTime: openingTime,
+                    closingTime: closingTime,
+                    price: price,
+                    location: location,
+                    sports: sports.split(' • '),
+                    sportsList: sportsList,
+                  ),
+                ),
+              );
+            },
           ),
 
           // Details

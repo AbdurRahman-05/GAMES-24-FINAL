@@ -10,11 +10,27 @@ import { SuperAdminController } from './super-admin.controller.js';
 import { SuperAdminService } from './super-admin.service.js';
 import { TurfController } from './turf.controller.js';
 import { TurfService } from './turf.service.js';
+import { CashfreeController } from './cashfree.controller.js';
+import { CashfreeService } from './cashfree.service.js';
 
 @Module({
   imports: [],
-  controllers: [AppController, AuthController, UploadController, SuperAdminController, TurfController],
-  providers: [AppService, AuthService, PrismaService, SuperAdminService, TurfService],
+  controllers: [
+    AppController,
+    AuthController,
+    UploadController,
+    SuperAdminController,
+    TurfController,
+    CashfreeController,
+  ],
+  providers: [
+    AppService,
+    AuthService,
+    PrismaService,
+    SuperAdminService,
+    TurfService,
+    CashfreeService,
+  ],
 })
 export class AppModule {}
 
