@@ -4046,6 +4046,17 @@ class _TurfOwnerProfileScreenState
           ),
         const SizedBox(height: 20),
 
+        // 2B. TURF BRANCH LOCATIONS (Show ONLY when branches exist)
+        if (profile.branches.length > 1 ||
+            profile.branches.any((b) =>
+                b.isPending ||
+                b.status == 'PENDING_APPROVAL' ||
+                b.venueName.trim().toLowerCase() !=
+                    profile.venueName.trim().toLowerCase())) ...[
+          _buildBranchesSection(profile),
+          const SizedBox(height: 20),
+        ],
+
         // 3. AMENITIES & FACILITIES (Curated Amenity Badges with Manage Dialog)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -4929,6 +4940,566 @@ class _TurfOwnerProfileScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // --- 2B. TURF BRANCHES & OTHER VENUES ---
+  Widget _buildBranchesSection(TurfProfileState profile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  const Flexible(
+                    child: Text(
+                      'Registered Turf Branches',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: Colors.white,
+                        letterSpacing: -0.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7.5,
+                      vertical: 2.5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF132213),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFF2D5C2E),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      '${profile.branches.length} Locations',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF86EFAC),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FilledButton.tonalIcon(
+              icon: const Icon(Icons.add_location_alt_rounded, size: 14),
+              label: const Text(
+                'Add Branch',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF1B2A17),
+                foregroundColor: const Color(0xFF86EFAC),
+                side: const BorderSide(color: Color(0xFF38522A), width: 0.8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                visualDensity: VisualDensity.compact,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(9),
+                ),
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _showAddBranchDialog(profile);
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...profile.branches.map((b) => _buildBranchCard(profile, b)),
+      ],
+    );
+  }
+
+  Widget _buildBranchCard(TurfProfileState profile, OwnerTurfBranchItem b) {
+    final isCurrent = b.id == profile.verifiedAdminId ||
+        (b.venueName.trim().toLowerCase() ==
+            profile.venueName.trim().toLowerCase());
+    final isPending = b.isPending || b.status == 'PENDING_APPROVAL';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isCurrent ? const Color(0xFF122212) : const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isCurrent
+              ? const Color(0xFF22C55E).withValues(alpha: 0.6)
+              : (isPending
+                  ? const Color(0xFFF59E0B).withValues(alpha: 0.4)
+                  : const Color(0xFF262626)),
+          width: isCurrent ? 1.4 : 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isCurrent
+                ? const Color(0xFF22C55E).withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left Emblem
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isCurrent
+                  ? const Color(0xFF16A34A).withValues(alpha: 0.2)
+                  : (isPending
+                      ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
+                      : const Color(0xFF222222)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isCurrent
+                    ? const Color(0xFF22C55E).withValues(alpha: 0.4)
+                    : (isPending
+                        ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
+                        : const Color(0xFF333333)),
+              ),
+            ),
+            child: Icon(
+              isPending
+                  ? Icons.hourglass_top_rounded
+                  : Icons.storefront_rounded,
+              color: isCurrent
+                  ? const Color(0xFF22C55E)
+                  : (isPending
+                      ? const Color(0xFFFBBF24)
+                      : const Color(0xFFA1A1AA)),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // Details Column
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        b.venueName,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    if (isPending)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2B1D05),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color:
+                                const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: const Text(
+                          'PENDING APPROVAL',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFFFBBF24),
+                          ),
+                        ),
+                      )
+                    else if (isCurrent)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF142B14),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color:
+                                const Color(0xFF22C55E).withValues(alpha: 0.4),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: const Text(
+                          'ACTIVE',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF86EFAC),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_rounded,
+                      size: 11,
+                      color: Color(0xFF71717A),
+                    ),
+                    const SizedBox(width: 3),
+                    Flexible(
+                      child: Text(
+                        b.neighborhoodArea.isNotEmpty
+                            ? b.neighborhoodArea
+                            : (b.streetAddress.isNotEmpty
+                                ? b.streetAddress
+                                : 'Arena Branch'),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFA1A1AA),
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                if (isPending) ...[
+                  const SizedBox(height: 3),
+                  const Text(
+                    'Super Admin verification in progress',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFFBBF24),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Right Action
+          if (isCurrent)
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: Color(0xFF22C55E),
+                size: 20,
+              ),
+            )
+          else
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF262626),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
+                ),
+                visualDensity: VisualDensity.compact,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () async {
+                HapticFeedback.mediumImpact();
+                await ref
+                    .read(turfProfileProvider.notifier)
+                    .switchBranch(b.id);
+                if (mounted) {
+                  if (isPending) {
+                    ToastUtils.showInfo(
+                      context,
+                      'Switched view to "${b.venueName}" (Under Verification)',
+                    );
+                  } else {
+                    ToastUtils.showSuccess(
+                      context,
+                      'Switched active venue to "${b.venueName}"',
+                    );
+                  }
+                }
+              },
+              child: const Text(
+                'Switch',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _showAddBranchDialog(TurfProfileState profile) {
+    final venueNameCtrl = TextEditingController();
+    final areaCtrl = TextEditingController();
+    final addressCtrl = TextEditingController();
+    final altPhoneCtrl = TextEditingController();
+    final dayRateCtrl = TextEditingController(text: '1000');
+    final nightRateCtrl = TextEditingController(text: '1400');
+    final Set<String> selectedSports = {'Cricket', 'Football'};
+    final availableSports = [
+      'Cricket',
+      'Football',
+      'Pickle ball',
+      'Badminton',
+      'Tennis',
+      'Volleyball',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF141414),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFF262626)),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.add_location_alt_rounded,
+                  color: Color(0xFF22C55E),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  'Register New Branch',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Branch Location & Details',
+                    style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: venueNameCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: const InputDecoration(
+                      labelText: 'Branch Venue Name *',
+                      hintText: 'e.g. Kanna Turf (Branch 2)',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: areaCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: const InputDecoration(
+                      labelText: 'Neighborhood / Area *',
+                      hintText: 'e.g. Anna Nagar West',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: addressCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: const InputDecoration(
+                      labelText: 'Street Address',
+                      hintText: 'e.g. 14, Main Road',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: altPhoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    decoration: const InputDecoration(
+                      labelText: 'Branch Manager Phone (Optional)',
+                      hintText: 'e.g. 9876543210',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: dayRateCtrl,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Day Rate (₹/hr)',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: nightRateCtrl,
+                          keyboardType: TextInputType.number,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Night Rate (₹/hr)',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Offered Sports',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: availableSports.map((sport) {
+                      final isSelected = selectedSports.contains(sport);
+                      return FilterChip(
+                        label: Text(
+                          sport,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isSelected ? Colors.black : Colors.white,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: const Color(0xFFD4FF00),
+                        backgroundColor: const Color(0xFF1E1E1E),
+                        checkmarkColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: isSelected
+                                ? const Color(0xFFD4FF00)
+                                : const Color(0xFF2E2E2E),
+                          ),
+                        ),
+                        onSelected: (val) {
+                          setDialogState(() {
+                            if (val) {
+                              selectedSports.add(sport);
+                            } else if (selectedSports.length > 1) {
+                              selectedSports.remove(sport);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFFA1A1AA)),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                final vName = venueNameCtrl.text.trim();
+                final vArea = areaCtrl.text.trim();
+                if (vName.isEmpty || vArea.isEmpty) {
+                  ToastUtils.showError(
+                    context,
+                    'Please enter branch name and area',
+                  );
+                  return;
+                }
+                Navigator.pop(ctx);
+                final ok = await ref
+                    .read(turfProfileProvider.notifier)
+                    .addNewBranch(
+                      venueName: vName,
+                      neighborhoodArea: vArea,
+                      streetAddress: addressCtrl.text.trim(),
+                      alternativePhone: altPhoneCtrl.text.trim(),
+                      dayRate:
+                          double.tryParse(dayRateCtrl.text.trim()) ?? 1000.0,
+                      nightRate:
+                          double.tryParse(nightRateCtrl.text.trim()) ?? 1400.0,
+                      sports: selectedSports.toList(),
+                    );
+                if (ok && mounted) {
+                  ToastUtils.showSuccess(
+                    context,
+                    'Branch "$vName" registered! Super Admin verification in progress.',
+                  );
+                }
+              },
+              child: const Text(
+                'Submit Branch',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

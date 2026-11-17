@@ -113,6 +113,16 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
   }
 
   Future<void> fetchSlotsForDate(int adminId, String dateKey) async {
+    if (adminId <= 0) {
+      setSlotsForDate(
+        dateKey,
+        booked: {},
+        blocked: {},
+        offers: {},
+        blockedReasons: {},
+      );
+      return;
+    }
     try {
       final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs/$adminId/slots?date=$dateKey&role=owner'));
       if (res.statusCode == 200) {
@@ -1393,9 +1403,22 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
 
   Future<void> fetchVerifiedAdminByPhone(String phone, {int? turfId}) async {
     try {
+      // Guard: If currently viewing a pending branch and no specific turfId was requested,
+      // do not overwrite the pending branch view with the default primary turf!
+      final isCurrentlyPending = state.isPendingApproval ||
+          state.branchStatus == 'PENDING_APPROVAL' ||
+          (state.verifiedAdminId != null && state.verifiedAdminId! < 0);
+      if (isCurrentlyPending && turfId == null) {
+        return;
+      }
+
       final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
-      final url = turfId != null
-          ? '${ApiConfig.baseUrl}/auth/verified-admin/$clean?turfId=$turfId'
+      final effectiveTurfId = turfId ??
+          (state.verifiedAdminId != null && state.verifiedAdminId! > 0
+              ? state.verifiedAdminId
+              : (state.turfId > 0 ? state.turfId : null));
+      final url = effectiveTurfId != null
+          ? '${ApiConfig.baseUrl}/auth/verified-admin/$clean?turfId=$effectiveTurfId'
           : '${ApiConfig.baseUrl}/auth/verified-admin/$clean';
       final res = await http.get(Uri.parse(url));
       if (res.statusCode == 200) {
@@ -1436,8 +1459,27 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
 
     // If switching to pending branch, isolate metrics completely (0 bookings, 0 revenue)
     if (targetBranch.isPending || branchId < 0) {
+      final branchCourts = [
+        TurfCourtVenueItem(
+          id: 'BR-${targetBranch.id}',
+          name: targetBranch.venueName,
+          sport: targetBranch.sports.isNotEmpty
+              ? targetBranch.sports.first
+              : 'Cricket',
+          surface: targetBranch.surface.isNotEmpty
+              ? targetBranch.surface
+              : 'Synthetic Turf',
+          hourlyRate: targetBranch.dayRate > 0
+              ? targetBranch.dayRate.toInt()
+              : 1000,
+          timings: targetBranch.timings.isNotEmpty
+              ? targetBranch.timings
+              : '05:00 AM - 11:00 PM',
+        ),
+      ];
       state = state.copyWith(
         verifiedAdminId: branchId,
+        turfId: branchId,
         venueName: targetBranch.venueName,
         area: targetBranch.neighborhoodArea,
         address: targetBranch.streetAddress,
@@ -1455,18 +1497,29 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         cancelledTotal: 0,
         shiftedCount: 0,
         bookingHistory: const [],
-        courts: const [],
+        courts: branchCourts,
         slotsBadge: '0% Full',
         revenueBadge: '₹0 GMV',
         todayBookingsGrowth: '0% Today',
         branches: state.branches
-            .map<OwnerTurfBranchItem>((b) => b.copyWith(isActive: b.id == branchId))
+            .map<OwnerTurfBranchItem>(
+              (b) => b.copyWith(isActive: b.id == branchId),
+            )
             .toList(),
       );
       return;
     }
 
-    state = state.copyWith(branchStatus: targetBranch.status);
+    state = state.copyWith(
+      branchStatus: targetBranch.status,
+      verifiedAdminId: branchId,
+      turfId: branchId,
+      branches: state.branches
+          .map<OwnerTurfBranchItem>(
+            (b) => b.copyWith(isActive: b.id == branchId),
+          )
+          .toList(),
+    );
     await fetchVerifiedAdminByPhone(state.ownerPhone, turfId: branchId);
   }
 

@@ -101,13 +101,26 @@ class _AdminSlotManagerScreenState
     try {
       final profile = ref.read(turfProfileProvider);
       final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+
+      // 1. Fetch slots for the current active turf / branch
       await ref
           .read(adminSlotProvider.notifier)
           .fetchSlotsForDate(adminId, _getDateKey(_selectedDate));
-      if (profile.ownerPhone.isNotEmpty) {
+
+      // 2. Only re-fetch profile if NOT viewing a pending branch, AND pass the active branch ID!
+      final isPendingBranch = profile.isPendingApproval ||
+          profile.branchStatus == 'PENDING_APPROVAL' ||
+          (profile.verifiedAdminId != null && profile.verifiedAdminId! < 0);
+
+      if (profile.ownerPhone.isNotEmpty && !isPendingBranch) {
+        final activeTurfId = profile.verifiedAdminId ??
+            (profile.turfId > 0 ? profile.turfId : null);
         await ref
             .read(turfProfileProvider.notifier)
-            .fetchVerifiedAdminByPhone(profile.ownerPhone);
+            .fetchVerifiedAdminByPhone(
+              profile.ownerPhone,
+              turfId: activeTurfId,
+            );
       }
     } catch (e) {
       debugPrint("Error loading realtime slots: $e");
@@ -280,6 +293,47 @@ class _AdminSlotManagerScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (profile.isPendingApproval ||
+                  profile.branchStatus == 'PENDING_APPROVAL' ||
+                  (profile.verifiedAdminId != null &&
+                      profile.verifiedAdminId! < 0)) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF261906),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.hourglass_top_rounded,
+                        color: Color(0xFFFBBF24),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Branch "${profile.venueName}" is pending Super Admin verification. You can configure and review slots here.',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFFFBBF24),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+
               // 1. Hero Operating Schedule & Live KPI Bento Card
               _buildHeroScheduleCard(
                 context,
@@ -392,8 +446,13 @@ class _AdminSlotManagerScreenState
               Container(
                 width: 6,
                 height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF16A34A),
+                decoration: BoxDecoration(
+                  color: profile.isPendingApproval ||
+                          profile.branchStatus == 'PENDING_APPROVAL' ||
+                          (profile.verifiedAdminId != null &&
+                              profile.verifiedAdminId! < 0)
+                      ? const Color(0xFFF59E0B)
+                      : const Color(0xFF16A34A),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -401,12 +460,22 @@ class _AdminSlotManagerScreenState
               Flexible(
                 child: Text(
                   profile.venueName.isNotEmpty
-                      ? '${profile.venueName} • Live Controls'
+                      ? (profile.isPendingApproval ||
+                              profile.branchStatus == 'PENDING_APPROVAL' ||
+                              (profile.verifiedAdminId != null &&
+                                  profile.verifiedAdminId! < 0)
+                          ? '${profile.venueName} • Under Verification'
+                          : '${profile.venueName} • Live Controls')
                       : 'Live Operating Control',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF16A34A),
+                    color: profile.isPendingApproval ||
+                            profile.branchStatus == 'PENDING_APPROVAL' ||
+                            (profile.verifiedAdminId != null &&
+                                profile.verifiedAdminId! < 0)
+                        ? const Color(0xFFFBBF24)
+                        : const Color(0xFF16A34A),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
