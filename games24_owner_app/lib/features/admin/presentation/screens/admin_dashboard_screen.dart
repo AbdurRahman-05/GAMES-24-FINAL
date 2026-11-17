@@ -508,7 +508,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
           top: false,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).padding.bottom + 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -548,11 +548,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                         children: [
                           Row(
                             children: [
-                              const Flexible(
+                              const Expanded(
                                 child: Text(
                                   'Turf Branches & Venues',
                                   style: TextStyle(
-                                    fontSize: 15.5,
+                                    fontSize: 15.0,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     letterSpacing: -0.3,
@@ -1004,7 +1004,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
           top: false,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+            padding: EdgeInsets.fromLTRB(16, 14, 16, MediaQuery.of(ctx).padding.bottom + 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1121,12 +1121,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                               children: [
                                 Row(
                                   children: [
-                                    const Flexible(
+                                    const Expanded(
                                       child: Text(
                                         'Clone Current Branch Details',
                                         style: TextStyle(
                                           fontWeight: FontWeight.w900,
-                                          fontSize: 13.5,
+                                          fontSize: 13.0,
                                           color: Colors.white,
                                         ),
                                         maxLines: 1,

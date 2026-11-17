@@ -61,7 +61,10 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
           backgroundColor: const Color(0xFF080808),
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFD4FF00)),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFFD4FF00),
+            ),
             onPressed: () => Navigator.maybePop(context),
           ),
           title: const Text(
@@ -127,13 +130,16 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
     String subtitle = 'Check out upcoming tournaments to participate!';
     if (_selectedTabIndex == 0) {
       title = 'No Live Tournaments Running';
-      subtitle = 'Check the Upcoming tab to find and register for new tournaments.';
+      subtitle =
+          'Check the Upcoming tab to find and register for new tournaments.';
     } else if (_selectedTabIndex == 1) {
       title = 'No Upcoming Tournaments';
-      subtitle = 'New tournaments will appear here soon. Create one to get started!';
+      subtitle =
+          'New tournaments will appear here soon. Create one to get started!';
     } else if (_selectedTabIndex == 2) {
       title = 'No Registered Tournaments';
-      subtitle = 'You have not joined any tournaments yet. Join one or create your own!';
+      subtitle =
+          'You have not joined any tournaments yet. Join one or create your own!';
     }
 
     return Center(
@@ -147,7 +153,9 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF141A0A),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                border: Border.all(
+                  color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                ),
               ),
               child: const Icon(
                 Icons.emoji_events_rounded,
@@ -183,14 +191,27 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4FF00),
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                icon: const Icon(Icons.add_rounded, size: 18, color: Colors.black),
+                icon: const Icon(
+                  Icons.add_rounded,
+                  size: 18,
+                  color: Colors.black,
+                ),
                 label: const Text(
                   'Create Tournament',
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13.5, color: Colors.black),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13.5,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             if (_selectedTabIndex == 2)
@@ -204,13 +225,21 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFD4FF00),
                       side: const BorderSide(color: Color(0xFFD4FF00)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     icon: const Icon(Icons.explore_outlined, size: 18),
                     label: const Text(
                       'Browse Upcoming',
-                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                   ElevatedButton.icon(
@@ -218,14 +247,27 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD4FF00),
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
-                    icon: const Icon(Icons.add_rounded, size: 18, color: Colors.black),
+                    icon: const Icon(
+                      Icons.add_rounded,
+                      size: 18,
+                      color: Colors.black,
+                    ),
                     label: const Text(
                       'Create Tournament',
-                      style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.black),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ],
@@ -447,7 +489,11 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.how_to_reg_rounded, color: Colors.white, size: 12),
+                              Icon(
+                                Icons.how_to_reg_rounded,
+                                color: Colors.white,
+                                size: 12,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'Registered Team',
@@ -631,7 +677,11 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black),
+                          const Icon(
+                            Icons.arrow_forward_ios,
+                            size: 16,
+                            color: Colors.black,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             buttonText,

@@ -40,13 +40,8 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.black,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        textStyle: const TextStyle(
-          fontWeight: FontWeight.w900,
-          fontSize: 14,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -156,14 +151,8 @@ class AppTheme {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: const Color(0xFF181818),
-      hintStyle: const TextStyle(
-        color: Color(0xFF71717A),
-        fontSize: 13.5,
-      ),
-      labelStyle: const TextStyle(
-        color: Color(0xFFA1A1AA),
-        fontSize: 13.5,
-      ),
+      hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 13.5),
+      labelStyle: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13.5),
       floatingLabelStyle: const TextStyle(
         color: AppColors.primary,
         fontSize: 13.5,

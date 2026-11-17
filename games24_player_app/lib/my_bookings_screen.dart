@@ -287,7 +287,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: const Color(0xFF1F2916),
-            border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+            border: Border.all(
+              color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -448,11 +450,15 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         : 'https://picsum.photos/seed/${bookingId ?? 'football'}/600/200';
     final amount = (booking['amount'] ?? 1200).toString();
     final paymentMethod = (booking['paymentMethod'] ?? 'UPI').toString();
-    final formalBookingCode = booking['bookingCode']?.toString() ??
+    final formalBookingCode =
+        booking['bookingCode']?.toString() ??
         booking['bookingId']?.toString() ??
-        (bookingId != null ? 'G24-BK-${bookingId.toString().padLeft(4, '0')}' : 'G24-BK-0001');
+        (bookingId != null
+            ? 'G24-BK-${bookingId.toString().padLeft(4, '0')}'
+            : 'G24-BK-0001');
 
-    final bool isOpenChallenge = booking['isOpenMatch'] == true || booking['is_open_match'] == true;
+    final bool isOpenChallenge =
+        booking['isOpenMatch'] == true || booking['is_open_match'] == true;
     final String? teamName = booking['teamName']?.toString();
     final String? opponentName = booking['opponentName']?.toString();
 
@@ -591,7 +597,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             isOpenChallenge
                                 ? Icons.sports_mma_rounded
                                 : Icons.lock_outline_rounded,
-                            color: isOpenChallenge ? const Color(0xFFEF4444) : Colors.white,
+                            color: isOpenChallenge
+                                ? const Color(0xFFEF4444)
+                                : Colors.white,
                             size: 11,
                           ),
                           const SizedBox(width: 4),
@@ -600,7 +608,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 ? 'OPEN CHALLENGE'
                                 : 'PRIVATE BOOKING',
                             style: TextStyle(
-                              color: isOpenChallenge ? const Color(0xFFEF4444) : Colors.white,
+                              color: isOpenChallenge
+                                  ? const Color(0xFFEF4444)
+                                  : Colors.white,
                               fontSize: 9.5,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -723,7 +733,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 ),
                 const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isOpenChallenge
                         ? const Color(0xFF2D1214)
@@ -751,8 +764,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         child: Text(
                           isOpenChallenge
                               ? (teamName != null && teamName.isNotEmpty
-                                  ? 'Open Challenge: $teamName vs ${opponentName?.isNotEmpty == true ? opponentName : 'Waiting for Opponent'}'
-                                  : 'Open Challenge Match (Public Challenge)')
+                                    ? 'Open Challenge: $teamName vs ${opponentName?.isNotEmpty == true ? opponentName : 'Waiting for Opponent'}'
+                                    : 'Open Challenge Match (Public Challenge)')
                               : 'Private Booking • Friendly / Practice Match',
                           style: TextStyle(
                             fontSize: 11.5,
@@ -772,23 +785,34 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   ValueListenableBuilder<int>(
                     valueListenable: MatchScoreManager().liveStateNotifier,
                     builder: (context, _, child) {
-                      final liveState = MatchScoreManager().getLiveStateSync(bookingId.toString());
-                      final results = MatchScoreManager().getAllResultsForBooking(bookingId.toString());
-                      final isLive = liveState != null && liveState.isLive;
-                      final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
-                        dateStr: dateStr,
-                        timeSlot: timeSlot,
+                      final liveState = MatchScoreManager().getLiveStateSync(
+                        bookingId.toString(),
                       );
+                      final results = MatchScoreManager()
+                          .getAllResultsForBooking(bookingId.toString());
+                      final isLive = liveState != null && liveState.isLive;
+                      final remainingSlotMins =
+                          BookingManager.getRemainingSlotMinutes(
+                            dateStr: dateStr,
+                            timeSlot: timeSlot,
+                          );
                       final isSlotActive = remainingSlotMins > 0;
 
                       if (isLive) {
                         return Container(
                           margin: const EdgeInsets.only(top: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF2D1214),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                            border: Border.all(
+                              color: const Color(
+                                0xFFEF4444,
+                              ).withValues(alpha: 0.4),
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -813,7 +837,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               if (liveState.liveScoreSummary.isNotEmpty) ...[
                                 const Spacer(),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFEF4444),
                                     borderRadius: BorderRadius.circular(6),
@@ -834,11 +861,18 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       } else if (isSlotActive && results.isNotEmpty) {
                         return Container(
                           margin: const EdgeInsets.only(top: 12),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1F2916),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                            border: Border.all(
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.35),
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -862,7 +896,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               ),
                               const Spacer(),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFD4FF00),
                                   borderRadius: BorderRadius.circular(6),
@@ -895,20 +932,31 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       ValueListenableBuilder<int>(
                         valueListenable: MatchScoreManager().liveStateNotifier,
                         builder: (context, _, child) {
-                          final liveState = MatchScoreManager().getLiveStateSync(bookingId.toString());
-                          final results = MatchScoreManager().getAllResultsForBooking(bookingId.toString());
+                          final liveState = MatchScoreManager()
+                              .getLiveStateSync(bookingId.toString());
+                          final results = MatchScoreManager()
+                              .getAllResultsForBooking(bookingId.toString());
                           final isLive = liveState != null && liveState.isLive;
-                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
+                          final remainingSlotMins =
+                              BookingManager.getRemainingSlotMinutes(
+                                dateStr: dateStr,
+                                timeSlot: timeSlot,
+                              );
+                          final isSlotActive = remainingSlotMins > 0;
+                          final canPlayNext =
+                              !isLive && isSlotActive && results.isNotEmpty;
+                          final isSlotFinished =
+                              isPast ||
+                              (!isSlotActive && results.isNotEmpty) ||
+                              (!isSlotActive &&
+                                  (booking['status'] ?? '')
+                                          .toString()
+                                          .toLowerCase() ==
+                                      'completed');
+                          final isStarted = BookingManager.isMatchStarted(
                             dateStr: dateStr,
                             timeSlot: timeSlot,
                           );
-                          final isSlotActive = remainingSlotMins > 0;
-                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
-                          final isSlotFinished = isPast ||
-                              (!isSlotActive && results.isNotEmpty) ||
-                              (!isSlotActive && (booking['status'] ?? '').toString().toLowerCase() == 'completed');
-                          final isStarted = BookingManager.isMatchStarted(
-                              dateStr: dateStr, timeSlot: timeSlot);
 
                           if (canPlayNext) {
                             return Wrap(
@@ -920,61 +968,99 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                     backgroundColor: const Color(0xFFEF4444),
                                     foregroundColor: Colors.white,
                                     elevation: 2,
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => MatchScorecardScreen(
-                                          bookingId: bookingId.toString(),
-                                          turfName: turfName,
-                                          sport: booking['sport']?.toString() ?? 'Cricket',
-                                          date: dateStr,
-                                          timeSlot: timeSlot,
-                                          startNewMatchImmediately: true,
-                                          initialTab: 1,
-                                          isOpenMatch: booking['isOpenMatch'] == true ||
-                                              booking['is_open_match'] == true,
-                                        ),
+                                        builder: (context) =>
+                                            MatchScorecardScreen(
+                                              bookingId: bookingId.toString(),
+                                              turfName: turfName,
+                                              sport:
+                                                  booking['sport']
+                                                      ?.toString() ??
+                                                  'Cricket',
+                                              date: dateStr,
+                                              timeSlot: timeSlot,
+                                              startNewMatchImmediately: true,
+                                              initialTab: 1,
+                                              isOpenMatch:
+                                                  booking['isOpenMatch'] ==
+                                                      true ||
+                                                  booking['is_open_match'] ==
+                                                      true,
+                                            ),
                                       ),
                                     );
                                   },
-                                  icon: const Icon(Icons.flash_on_rounded, size: 16),
+                                  icon: const Icon(
+                                    Icons.flash_on_rounded,
+                                    size: 16,
+                                  ),
                                   label: Text(
                                     'Play Match #${results.length + 1} (~${remainingSlotMins}m left)',
-                                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 OutlinedButton.icon(
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: const Color(0xFFD4FF00),
-                                    side: const BorderSide(color: Color(0xFFD4FF00)),
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    side: const BorderSide(
+                                      color: Color(0xFFD4FF00),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
                                   ),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => MatchScorecardScreen(
-                                          bookingId: bookingId.toString(),
-                                          turfName: turfName,
-                                          sport: booking['sport']?.toString() ?? 'Cricket',
-                                          date: dateStr,
-                                          timeSlot: timeSlot,
-                                          initialTab: 3,
-                                          isOpenMatch: booking['isOpenMatch'] == true ||
-                                              booking['is_open_match'] == true,
-                                        ),
+                                        builder: (context) =>
+                                            MatchScorecardScreen(
+                                              bookingId: bookingId.toString(),
+                                              turfName: turfName,
+                                              sport:
+                                                  booking['sport']
+                                                      ?.toString() ??
+                                                  'Cricket',
+                                              date: dateStr,
+                                              timeSlot: timeSlot,
+                                              initialTab: 3,
+                                              isOpenMatch:
+                                                  booking['isOpenMatch'] ==
+                                                      true ||
+                                                  booking['is_open_match'] ==
+                                                      true,
+                                            ),
                                       ),
                                     );
                                   },
-                                  icon: const Icon(Icons.emoji_events_outlined, size: 15),
+                                  icon: const Icon(
+                                    Icons.emoji_events_outlined,
+                                    size: 15,
+                                  ),
                                   label: Text(
                                     'View Match #${results.length}',
-                                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -991,8 +1077,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             btnColor = const Color(0xFFEF4444);
                             btnTextColor = Colors.white;
                             btnIcon = Icons.play_circle_fill_rounded;
-                            btnText = 'Continue Live Match (${liveState.liveScoreSummary})';
-                            targetTab = liveState.activeTabIndex == 0 ? 2 : liveState.activeTabIndex;
+                            btnText =
+                                'Continue Live Match (${liveState.liveScoreSummary})';
+                            targetTab = liveState.activeTabIndex == 0
+                                ? 2
+                                : liveState.activeTabIndex;
                           } else if (isSlotFinished) {
                             btnColor = const Color(0xFFD4FF00);
                             btnTextColor = Colors.black;
@@ -1004,10 +1093,16 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           } else {
                             btnColor = const Color(0xFFD4FF00);
                             btnTextColor = Colors.black;
-                            btnIcon = isStarted ? Icons.sports_score_rounded : Icons.groups_rounded;
+                            btnIcon = isStarted
+                                ? Icons.sports_score_rounded
+                                : Icons.groups_rounded;
                             btnText = isOpenChallenge
-                                ? (isStarted ? 'Start Match' : 'Challenge Squad')
-                                : (isStarted ? 'Start Scorecard' : 'Team Lineup');
+                                ? (isStarted
+                                      ? 'Start Match'
+                                      : 'Challenge Squad')
+                                : (isStarted
+                                      ? 'Start Scorecard'
+                                      : 'Team Lineup');
                             targetTab = 0;
                           }
 
@@ -1031,11 +1126,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                   builder: (context) => MatchScorecardScreen(
                                     bookingId: bookingId.toString(),
                                     turfName: turfName,
-                                    sport: booking['sport']?.toString() ?? 'Cricket',
+                                    sport:
+                                        booking['sport']?.toString() ??
+                                        'Cricket',
                                     date: dateStr,
                                     timeSlot: timeSlot,
                                     initialTab: targetTab,
-                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                    isOpenMatch:
+                                        booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),
                                 ),
@@ -1068,8 +1166,13 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () => BookingQrPassModal.show(context, booking),
-                          icon: const Icon(Icons.qr_code_2_rounded, size: 16, color: Color(0xFFD4FF00)),
+                          onPressed: () =>
+                              BookingQrPassModal.show(context, booking),
+                          icon: const Icon(
+                            Icons.qr_code_2_rounded,
+                            size: 16,
+                            color: Color(0xFFD4FF00),
+                          ),
                           label: const Text(
                             'Entry Pass',
                             style: TextStyle(
@@ -1095,20 +1198,32 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                 backgroundColor: const Color(0xFF181818),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
-                                  side: const BorderSide(color: Color(0xFF262626)),
+                                  side: const BorderSide(
+                                    color: Color(0xFF262626),
+                                  ),
                                 ),
                                 title: const Text(
                                   'Cancel Booking?',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 content: Text(
                                   'Are you sure you want to cancel your slot at $turfName ($formattedDateTime)?\n\nNote: Cancellations are only permitted up to 3 hours prior to play time.',
-                                  style: const TextStyle(color: Color(0xFFA1A1AA)),
+                                  style: const TextStyle(
+                                    color: Color(0xFFA1A1AA),
+                                  ),
                                 ),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx),
-                                    child: const Text('Keep Booking', style: TextStyle(color: Color(0xFFA1A1AA))),
+                                    child: const Text(
+                                      'Keep Booking',
+                                      style: TextStyle(
+                                        color: Color(0xFFA1A1AA),
+                                      ),
+                                    ),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -1124,24 +1239,36 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            backgroundColor: const Color(0xFF141414),
+                                            backgroundColor: const Color(
+                                              0xFF141414,
+                                            ),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                               side: BorderSide(
-                                                color: success ? const Color(0xFFD4FF00) : const Color(0xFFEF4444),
+                                                color: success
+                                                    ? const Color(0xFFD4FF00)
+                                                    : const Color(0xFFEF4444),
                                               ),
                                             ),
                                             content: Text(
                                               success
                                                   ? 'Booking cancelled successfully.'
                                                   : 'Failed to cancel booking (must be at least 3 hours before start time).',
-                                              style: const TextStyle(color: Colors.white),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         );
                                       }
                                     },
-                                    child: const Text('Confirm Cancel', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: const Text(
+                                      'Confirm Cancel',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -1158,7 +1285,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                         )
                       else if (!isPast)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF2B1D08),
                             borderRadius: BorderRadius.circular(8),
@@ -1167,7 +1297,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.lock_clock_outlined, size: 13, color: Color(0xFFFBBF24)),
+                              Icon(
+                                Icons.lock_clock_outlined,
+                                size: 13,
+                                color: Color(0xFFFBBF24),
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'Locked (<3h)',
@@ -1239,7 +1373,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F2916),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.35),
+                        ),
                       ),
                       child: Row(
                         children: const [
@@ -1452,7 +1590,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                   height: 44,
                   child: ElevatedButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.qr_code_2, size: 18, color: Colors.black),
+                    icon: const Icon(
+                      Icons.qr_code_2,
+                      size: 18,
+                      color: Colors.black,
+                    ),
                     label: const Text(
                       'View Ticket / QR',
                       style: TextStyle(fontWeight: FontWeight.w900),
@@ -1490,7 +1632,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           ),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: const Color(0xFF1F2916),
-                            side: BorderSide(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                            side: BorderSide(
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.35),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -1596,7 +1742,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F2916),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.35),
+                        ),
                       ),
                       child: Row(
                         children: const [
@@ -1852,7 +2002,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                           ),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: const Color(0xFF1F2916),
-                            side: BorderSide(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                            side: BorderSide(
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.35),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -2039,7 +2193,10 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                     Expanded(
                       child: Text(
                         'Played Sun, Oct 6 • 08:00 AM - 10:00 AM',
-                        style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFA1A1AA),
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -2055,7 +2212,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       height: 40,
                       child: ElevatedButton.icon(
                         onPressed: () {},
-                        icon: const Icon(Icons.refresh, size: 16, color: Colors.black),
+                        icon: const Icon(
+                          Icons.refresh,
+                          size: 16,
+                          color: Colors.black,
+                        ),
                         label: const Text(
                           'Book Again',
                           style: TextStyle(
@@ -2167,7 +2328,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFF1F2916),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+              border: Border.all(
+                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+              ),
             ),
             child: const Text(
               '+180 pts',
