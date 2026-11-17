@@ -678,12 +678,27 @@ export class AuthService {
       throw new BadRequestException('Invalid OTP entered. Please use mock OTP: 1234.');
     }
 
-    // Fetch ALL verified turfs/branches owned by this mobile number!
+    // Fetch ALL verified turfs/branches owned by this master mobile number!
+    const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+    const primaryAdmins = await this.prisma.verifiedAdmin.findMany({
+      where: {
+        OR: [
+          { ownerPhone: cleanPhone },
+          { ownerPhone: last10 },
+          { ownerPhone: { contains: last10 } },
+        ],
+      },
+      select: { id: true },
+    });
+    const primaryIds = primaryAdmins.map((a: any) => a.id);
+
     const allAdmins = await this.prisma.verifiedAdmin.findMany({
       where: {
         OR: [
           { ownerPhone: cleanPhone },
-          { ownerPhone: { contains: cleanPhone } },
+          { ownerPhone: last10 },
+          { ownerPhone: { contains: last10 } },
+          ...(primaryIds.length > 0 ? [{ parentTurfId: { in: primaryIds } }] : []),
         ],
       },
       include: {
@@ -829,8 +844,6 @@ export class AuthService {
       },
     }).catch(() => {});
 
-    const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
-
     // Fetch pending branch applications submitted by this owner waiting for Super Admin
     const pendingBranches = await this.prisma.adminUser.findMany({
       where: {
@@ -937,12 +950,26 @@ export class AuthService {
     const clean = phone.trim().replace(/[^0-9]/g, '');
     const cleanPhone = clean;
     const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+
+    const primaryAdmins = await this.prisma.verifiedAdmin.findMany({
+      where: {
+        OR: [
+          { ownerPhone: cleanPhone },
+          { ownerPhone: last10 },
+          { ownerPhone: { contains: last10 } },
+        ],
+      },
+      select: { id: true },
+    });
+    const primaryIds = primaryAdmins.map((a: any) => a.id);
+
     const allAdmins = await this.prisma.verifiedAdmin.findMany({
       where: {
         OR: [
           { ownerPhone: cleanPhone },
           { ownerPhone: last10 },
           { ownerPhone: { contains: last10 } },
+          ...(primaryIds.length > 0 ? [{ parentTurfId: { in: primaryIds } }] : []),
         ],
       },
       include: {

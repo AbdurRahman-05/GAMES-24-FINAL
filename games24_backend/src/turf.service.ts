@@ -1755,55 +1755,102 @@ export class TurfService {
       }
     }
 
-    // 4. Find booking in database
-    let booking: any = null;
+    // 4. Find booking in database globally across venues
+    const booking = await this.prisma.turfBooking.findFirst({
+      where: {
+        OR: [
+          ...(numericId ? [{ id: numericId }] : []),
+          { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
+        ],
+      },
+      include: { verifiedAdmin: true },
+    });
 
-    if (verifiedAdminId && !isNaN(verifiedAdminId)) {
-      booking = await this.prisma.turfBooking.findFirst({
-        where: {
-          verifiedAdminId,
-          OR: [
-            ...(numericId ? [{ id: numericId }] : []),
-            { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
-          ],
-        },
-        include: { verifiedAdmin: true },
-      });
-    }
-
-    // Global lookup if not found under specific verifiedAdminId
     if (!booking) {
-      const globalBooking = await this.prisma.turfBooking.findFirst({
+      return {
+        success: false,
+        valid: false,
+        message: `Booking ticket "${cleanSearchId}" not found in database!`,
+      };
+    }
+
+    // 5. Cross-Branch & Master Account Verification:
+    // If the scanning owner has multiple branches under the same master phone or parent turf,
+    // allow cross-branch check-in for ANY venue belonging to that owner's turf group!
+    const scannerOwnerPhone = b.ownerPhone || b.masterPhone;
+    const scannerTurfId = verifiedAdminId || b.scannerAdminId || b.turfId;
+
+    let isAuthorized = false;
+    let allowedVenueNames: string[] = [];
+
+    if (scannerOwnerPhone || (scannerTurfId && !isNaN(Number(scannerTurfId)))) {
+      const cleanPhone = String(scannerOwnerPhone || '').trim().replace(/\D/g, '');
+      const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+      const parsedScannerId = Number(scannerTurfId);
+
+      // Find all turfs belonging to this owner / master phone
+      const matchedTurfs = await this.prisma.verifiedAdmin.findMany({
         where: {
           OR: [
-            ...(numericId ? [{ id: numericId }] : []),
-            { bookingCode: { equals: cleanSearchId, mode: 'insensitive' } },
+            ...(last10 ? [
+              { ownerPhone: cleanPhone },
+              { ownerPhone: last10 },
+              { ownerPhone: { contains: last10 } },
+            ] : []),
+            ...(!isNaN(parsedScannerId) ? [
+              { id: parsedScannerId },
+              { parentTurfId: parsedScannerId },
+            ] : []),
           ],
         },
-        include: { verifiedAdmin: true },
+        select: { id: true, venueName: true, parentTurfId: true, ownerPhone: true },
       });
 
-      if (!globalBooking) {
+      const allowedIds = new Set<number>();
+      for (const t of matchedTurfs) {
+        allowedIds.add(t.id);
+        if (t.parentTurfId) allowedIds.add(t.parentTurfId);
+        allowedVenueNames.push(t.venueName);
+      }
+
+      // Also include any child branches whose parentTurfId is one of these
+      if (allowedIds.size > 0) {
+        const childBranches = await this.prisma.verifiedAdmin.findMany({
+          where: { parentTurfId: { in: Array.from(allowedIds) } },
+          select: { id: true, venueName: true },
+        });
+        for (const cb of childBranches) {
+          allowedIds.add(cb.id);
+          allowedVenueNames.push(cb.venueName);
+        }
+      }
+
+      // Check if the booked venue is part of this owner's branch network
+      if (allowedIds.has(booking.verifiedAdminId)) {
+        isAuthorized = true;
+      } else {
+        // Pass was booked for a completely different turf owner
+        const bookedVenue = booking.verifiedAdmin?.venueName || 'another venue';
         return {
           success: false,
           valid: false,
-          message: `Booking ticket "${cleanSearchId}" not found in database!`,
+          message: `Invalid Pass! This booking was booked for a different turf ("${bookedVenue}") and does not belong to your turf account.`,
         };
       }
-
-      // Security check: if scanning owner provided their turf ID and the pass belongs elsewhere
-      if (verifiedAdminId && !isNaN(verifiedAdminId) && globalBooking.verifiedAdminId !== verifiedAdminId) {
-        const bookedVenue = globalBooking.verifiedAdmin?.venueName || 'another venue';
+    } else {
+      // If no scanner context provided, ensure it matches requested verifiedAdminId
+      if (verifiedAdminId && !isNaN(verifiedAdminId) && booking.verifiedAdminId !== verifiedAdminId) {
+        const bookedVenue = booking.verifiedAdmin?.venueName || 'another venue';
         return {
           success: false,
           valid: false,
-          message: `Cross-venue check-in denied: This pass is for "${bookedVenue}", not this venue!`,
+          message: `Invalid Pass! This booking is for "${bookedVenue}" and not recognized under this venue.`,
         };
       }
-
-      booking = globalBooking;
-      verifiedAdminId = globalBooking.verifiedAdminId;
+      isAuthorized = true;
     }
+
+    verifiedAdminId = booking.verifiedAdminId;
 
     const formalCode = booking.bookingCode || `G24-BK-${booking.id.toString().padStart(4, '0')}`;
     const venueName = booking.verifiedAdmin?.venueName || booking.courtName || 'Turf Arena';

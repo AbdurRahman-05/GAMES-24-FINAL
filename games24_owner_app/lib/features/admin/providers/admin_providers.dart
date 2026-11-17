@@ -1347,7 +1347,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       ),
     );
 
-    // If switching to pending local branch, switch active view seamlessly
+    // If switching to pending branch, isolate metrics completely (0 bookings, 0 revenue)
     if (targetBranch.isPending || branchId < 0) {
       state = state.copyWith(
         verifiedAdminId: branchId,
@@ -1359,9 +1359,22 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         todayRevenue: 0.0,
         monthRevenue: 0.0,
         monthTotalBookings: 0,
+        todayPaidBookings: 0,
+        todayCashBookings: 0,
         freeSlotsCount: 0,
         bookedSlotsCount: 0,
         blockedSlotsCount: 0,
+        cancelledCount: 0,
+        cancelledTotal: 0,
+        shiftedCount: 0,
+        bookingHistory: const [],
+        courts: const [],
+        slotsBadge: '0% Full',
+        revenueBadge: '₹0 GMV',
+        todayBookingsGrowth: '0% Today',
+        branches: state.branches
+            .map((b) => b.copyWith(isActive: b.id == branchId))
+            .toList(),
       );
       return;
     }

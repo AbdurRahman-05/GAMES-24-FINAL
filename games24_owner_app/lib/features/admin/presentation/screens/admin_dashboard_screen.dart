@@ -47,7 +47,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     setState(() => _isRefreshing = true);
     try {
       final profile = ref.read(turfProfileProvider);
-      if (profile.ownerPhone.isNotEmpty) {
+      if (profile.ownerPhone.isNotEmpty && !profile.isPendingApproval) {
         await ref
             .read(turfProfileProvider.notifier)
             .fetchVerifiedAdminByPhone(
@@ -2769,17 +2769,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     final now = DateTime.now();
     final todayStr =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    final allList = _getAllBookingsSource(profile);
+    final isPending = profile.branchStatus == 'PENDING_APPROVAL' || (profile.verifiedAdminId ?? 0) < 0;
+    final allList = isPending ? <TurfBookingHistoryItem>[] : _getAllBookingsSource(profile);
 
-    // Dynamic metrics based on actual bookings
+    // Dynamic metrics strictly based on actual bookings for this selected branch
     final cancelledList = allList.where((b) => b.isCancelled).toList();
     final dynamicCancelledCount = cancelledList.length > profile.cancelledCount
         ? cancelledList.length
         : profile.cancelledCount;
-    final dynamicShiftedCount = profile.shiftedCount;
-    final dynamicCancelledTotal = dynamicCancelledCount + dynamicShiftedCount;
+    final dynamicShiftedCount = isPending ? 0 : profile.shiftedCount;
+    final dynamicCancelledTotal = isPending ? 0 : (dynamicCancelledCount + dynamicShiftedCount);
 
-    // Active (non-cancelled) bookings for today
+    // Active (non-cancelled) bookings for today for this branch
     final activeTodayList = allList.where((b) {
       if (b.isCancelled) return false;
       final d = b.effectiveDate;
@@ -2787,25 +2788,30 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     }).toList();
 
     final activeMonthList = allList.where((b) => !b.isCancelled).toList();
-    final dynamicTodayRev = profile.todayRevenue > 0
-        ? profile.todayRevenue
-        : activeTodayList.fold<double>(0.0, (sum, b) => sum + b.amount);
-    final dynamicMonthRev = profile.monthRevenue > 0
-        ? profile.monthRevenue
-        : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount);
+    final dynamicTodayRev = isPending
+        ? 0.0
+        : (profile.todayRevenue > 0
+            ? profile.todayRevenue
+            : activeTodayList.fold<double>(0.0, (sum, b) => sum + b.amount));
+    final dynamicMonthRev = isPending
+        ? 0.0
+        : (profile.monthRevenue > 0
+            ? profile.monthRevenue
+            : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount));
     final monthTarget = profile.monthlyRevenueTarget > 0
         ? profile.monthlyRevenueTarget
         : 50000.0;
-    final targetPct = ((dynamicMonthRev / monthTarget).clamp(0.0, 1.0) * 100)
-        .toInt();
+    final targetPct = isPending
+        ? 0
+        : ((dynamicMonthRev / monthTarget).clamp(0.0, 1.0) * 100).toInt();
 
-    final operatingSlots = AppConstants.generateTimeSlots(
-      profile.openingTime.isNotEmpty ? profile.openingTime : '05:00 AM',
-      profile.closingTime.isNotEmpty ? profile.closingTime : '11:00 PM',
-    );
-    final totalDailySlots = operatingSlots.isNotEmpty
-        ? operatingSlots.length
-        : 18;
+    final operatingSlots = isPending
+        ? <String>[]
+        : AppConstants.generateTimeSlots(
+            profile.openingTime.isNotEmpty ? profile.openingTime : '05:00 AM',
+            profile.closingTime.isNotEmpty ? profile.closingTime : '11:00 PM',
+          );
+    final totalDailySlots = operatingSlots.length;
 
     // Time-aware slot availability: total slots - passed slots - upcoming booked slots = remaining
     final currentMinutes = now.hour * 60 + now.minute;
@@ -2837,17 +2843,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       }
     }
 
-    final dynamicRemainingSlots =
-        (totalDailySlots -
-                passedSlotsCount -
-                upcomingBookedSlots -
-                profile.blockedSlotsCount) >
-            0
-        ? (totalDailySlots -
-              passedSlotsCount -
-              upcomingBookedSlots -
-              profile.blockedSlotsCount)
-        : 0;
+    final dynamicRemainingSlots = isPending
+        ? 0
+        : ((totalDailySlots -
+                    passedSlotsCount -
+                    upcomingBookedSlots -
+                    profile.blockedSlotsCount) >
+                0
+            ? (totalDailySlots -
+                  passedSlotsCount -
+                  upcomingBookedSlots -
+                  profile.blockedSlotsCount)
+            : 0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3112,7 +3119,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               iconColor: const Color(0xFFFBBF24),
               title: "Upcoming Bookings",
               valueWidget: Text(
-                '${allList.where((b) => b.isUpcoming(now)).isNotEmpty ? allList.where((b) => b.isUpcoming(now)).length : (allList.isNotEmpty ? allList.length : 18)}',
+                '${isPending ? 0 : allList.where((b) => b.isUpcoming(now)).length}',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
@@ -3136,7 +3143,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               iconColor: const Color(0xFFEF4444),
               title: "Cancellations",
               valueWidget: Text(
-                '${dynamicCancelledTotal > 0 ? dynamicCancelledTotal : 2}',
+                '${isPending ? 0 : dynamicCancelledTotal}',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
@@ -4756,6 +4763,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
   }
 
   List<TurfBookingHistoryItem> _getAllBookingsSource(TurfProfileState profile) {
+    if (profile.branchStatus == 'PENDING_APPROVAL' || (profile.verifiedAdminId ?? 0) < 0) {
+      return const [];
+    }
     return profile.bookingHistory;
   }
 

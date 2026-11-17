@@ -266,6 +266,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 'rawCode': cleanInput,
                 'qrPayload': cleanInput,
                 'turfId': targetAdminId,
+                'scannerAdminId': adminId,
+                'ownerPhone': profile.ownerPhone,
+                'masterPhone': profile.ownerPhone,
               }),
             )
             .timeout(const Duration(seconds: 15));
@@ -284,6 +287,9 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                 'rawCode': cleanInput,
                 'qrPayload': cleanInput,
                 'turfId': targetAdminId,
+                'scannerAdminId': adminId,
+                'ownerPhone': profile.ownerPhone,
+                'masterPhone': profile.ownerPhone,
               }),
             )
             .timeout(const Duration(seconds: 15));
