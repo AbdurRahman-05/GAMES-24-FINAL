@@ -1473,8 +1473,8 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
               ? targetBranch.surface
               : 'Synthetic Turf',
           hourlyRate: targetBranch.dayRate > 0
-              ? targetBranch.dayRate.toInt()
-              : 1000,
+              ? targetBranch.dayRate.toDouble()
+              : 1000.0,
           timings: targetBranch.timings.isNotEmpty
               ? targetBranch.timings
               : '05:00 AM - 11:00 PM',
