@@ -760,8 +760,8 @@ class _TurfOwnerProfileScreenState
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFF16A34A),
+                foregroundColor: Colors.white,
               ),
               onPressed: () {
                 final sportName = nameCtrl.text.trim().isEmpty
@@ -991,16 +991,25 @@ class _TurfOwnerProfileScreenState
                     return FilterChip(
                       label: Text(sport),
                       selected: isChecked,
-                      selectedColor: AppColors.primary,
+                      selectedColor: const Color(0xFF16A34A),
                       checkmarkColor: Colors.white,
                       labelStyle: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: isChecked ? FontWeight.w800 : FontWeight.w600,
                         color: isChecked
                             ? Colors.white
                             : const Color(0xFFE4E4E7),
                       ),
+                      side: BorderSide(
+                        color: isChecked
+                            ? const Color(0xFF22C55E)
+                            : const Color(0xFF333333),
+                        width: 1,
+                      ),
                       backgroundColor: const Color(0xFF1C1C1C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       onSelected: (selected) {
                         setDialogState(() {
                           if (selected) {
@@ -1038,8 +1047,8 @@ class _TurfOwnerProfileScreenState
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFF16A34A),
+                foregroundColor: Colors.white,
               ),
               onPressed: () {
                 final sportsList = selectedSports.toList();

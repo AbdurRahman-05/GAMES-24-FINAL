@@ -691,16 +691,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     return FilterChip(
                       label: Text(sport),
                       selected: isChecked,
-                      selectedColor: const Color(0xFFD4FF00),
+                      selectedColor: const Color(0xFF16A34A),
                       checkmarkColor: Colors.white,
                       labelStyle: TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: isChecked ? FontWeight.w800 : FontWeight.w600,
                         color: isChecked
                             ? Colors.white
                             : const Color(0xFFE4E4E7),
                       ),
+                      side: BorderSide(
+                        color: isChecked
+                            ? const Color(0xFF22C55E)
+                            : const Color(0xFF333333),
+                        width: 1,
+                      ),
                       backgroundColor: const Color(0xFF1C1C1C),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                       onSelected: (selected) {
                         setDlgState(() {
                           if (selected) {
@@ -742,8 +751,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4FF00),
-                foregroundColor: Colors.black,
+                backgroundColor: const Color(0xFF16A34A),
+                foregroundColor: Colors.white,
               ),
               onPressed: () {
                 final cName = nameCtrl.text.trim();
