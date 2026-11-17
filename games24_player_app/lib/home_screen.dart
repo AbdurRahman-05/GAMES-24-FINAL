@@ -1145,7 +1145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1F2937),
+                                color: Colors.white,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1298,7 +1298,7 @@ class _HomeScreenState extends State<HomeScreen> {
             name,
             style: const TextStyle(
               fontSize: 10,
-              color: Color(0xFF111827),
+              color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
             maxLines: 1,

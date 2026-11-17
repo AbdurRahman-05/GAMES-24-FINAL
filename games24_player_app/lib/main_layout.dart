@@ -142,29 +142,6 @@ class _MainLayoutState extends State<MainLayout> {
           },
         ),
         const SizedBox(width: 8),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _currentIndex = 3;
-            });
-          },
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C1C1C),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF2E2E2E), width: 1.5),
-            ),
-            child: ClipOval(
-              child: Image.asset(
-                'assets/images/logo.png',
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 16),
       ],
     );
   }

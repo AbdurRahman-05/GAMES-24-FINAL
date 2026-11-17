@@ -1111,7 +1111,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: Colors.white,
                 ),
               ),
               Text(
