@@ -101,14 +101,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF374151),
+                    color: Colors.white,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(
                     Icons.refresh,
                     size: 20,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
                   tooltip: 'Refresh Turfs',
                   onPressed: () {
@@ -135,7 +135,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 40),
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFF154D36)),
+          child: CircularProgressIndicator(color: Color(0xFFD4FF00)),
         ),
       );
     }
@@ -145,16 +145,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: const Column(
           children: [
             Icon(
               Icons.sports_soccer_rounded,
               size: 52,
-              color: Color(0xFF9CA3AF),
+              color: Color(0xFFD4FF00),
             ),
             SizedBox(height: 12),
             Text(
@@ -162,14 +162,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF374151),
+                color: Colors.white,
               ),
             ),
             SizedBox(height: 6),
             Text(
               'When an admin registers a turf and Super Admin approves it, it will appear here in real-time.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+              style: TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
             ),
           ],
         ),
@@ -240,13 +240,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return Container(
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F5F1),
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Row(
         children: [
           const SizedBox(width: 12),
-          const Icon(Icons.search, color: Color(0xFF6B7280), size: 20),
+          const Icon(Icons.search, color: Color(0xFFD4FF00), size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Autocomplete<Map<String, dynamic>>(
@@ -322,14 +323,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       decoration: const InputDecoration(
                         hintText: 'Search turfs, locations, sports...',
                         hintStyle: TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFFA1A1AA),
                           fontSize: 14,
                         ),
                         border: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.only(top: 10),
                       ),
-                      style: const TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14, color: Colors.white),
                     );
                   },
               optionsViewBuilder: (context, onSelected, options) {
@@ -338,18 +339,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   child: Material(
                     elevation: 8,
                     borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF181818),
                     child: Container(
                       width: MediaQuery.of(context).size.width - 92,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: const Color(0xFF181818),
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF262626)),
                       ),
                       child: ListView.separated(
                         padding: EdgeInsets.zero,
                         shrinkWrap: true,
                         itemCount: options.length,
                         separatorBuilder: (context, index) =>
-                            const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                            const Divider(height: 1, color: Color(0xFF262626)),
                         itemBuilder: (context, index) {
                           final option = options.elementAt(index);
                           final rawList = (option['photoUrls'] is List)
@@ -369,11 +372,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 errorBuilder: (_, _, _) => Container(
                                   width: 40,
                                   height: 40,
-                                  color: Colors.grey.shade200,
+                                  color: const Color(0xFF262626),
                                   child: const Icon(
                                     Icons.sports_soccer,
                                     size: 20,
-                                    color: Colors.grey,
+                                    color: Color(0xFFD4FF00),
                                   ),
                                 ),
                               ),
@@ -383,13 +386,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
+                                color: Colors.white,
                               ),
                             ),
                             subtitle: Text(
                               option['location'] ?? '',
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFFA1A1AA),
                               ),
                             ),
                             onTap: () => onSelected(option),
@@ -405,11 +409,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
           Container(
             margin: const EdgeInsets.all(6),
             padding: const EdgeInsets.all(6),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E),
               shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF262626)),
             ),
-            child: const Icon(Icons.tune, color: Color(0xFF154D36), size: 16),
+            child: const Icon(Icons.tune, color: Color(0xFFD4FF00), size: 16),
           ),
         ],
       ),
@@ -453,8 +458,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF3F5F1),
+          color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -462,15 +470,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
             Icon(
               icon,
               size: 14,
-              color: isSelected ? Colors.white : const Color(0xFF4B5563),
+              color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                 fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
               ),
             ),
           ],
@@ -500,12 +508,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -528,15 +536,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 vertical: 6,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF181818).withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Row(
                 children: [
@@ -547,13 +549,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '($reviews)',
                     style: const TextStyle(
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFFA1A1AA),
                       fontSize: 12,
                     ),
                   ),
@@ -567,32 +570,30 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
               decoration: BoxDecoration(
                 color: isAvailable
-                    ? const Color(0xFF154D36)
-                    : const Color(0xFFDC2626),
+                    ? const Color(0xFF1F2916)
+                    : const Color(0xFF2D1214),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: Border.all(
+                  color: isAvailable
+                      ? const Color(0xFFD4FF00).withValues(alpha: 0.4)
+                      : const Color(0xFFEF4444).withValues(alpha: 0.4),
+                ),
               ),
               child: Row(
                 children: [
                   Container(
                     width: 6,
                     height: 6,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: isAvailable ? const Color(0xFFD4FF00) : const Color(0xFFEF4444),
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
                     availabilityText,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isAvailable ? const Color(0xFFD4FF00) : const Color(0xFFEF4444),
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -643,7 +644,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF111827),
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -651,7 +652,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             children: [
                               const Icon(
                                 Icons.location_on_outlined,
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFFA1A1AA),
                                 size: 14,
                               ),
                               const SizedBox(width: 4),
@@ -659,7 +660,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 child: Text(
                                   location,
                                   style: const TextStyle(
-                                    color: Color(0xFF6B7280),
+                                    color: Color(0xFFA1A1AA),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -675,7 +676,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         const Text(
                           'Starts from',
                           style: TextStyle(
-                            color: Color(0xFF6B7280),
+                            color: Color(0xFFA1A1AA),
                             fontSize: 11,
                           ),
                         ),
@@ -685,7 +686,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             Text(
                               price,
                               style: const TextStyle(
-                                color: Color(0xFF154D36),
+                                color: Color(0xFFD4FF00),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -693,7 +694,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             const Text(
                               '/hr',
                               style: TextStyle(
-                                color: Color(0xFF6B7280),
+                                color: Color(0xFFA1A1AA),
                                 fontSize: 12,
                               ),
                             ),
@@ -717,10 +718,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF9FAFB),
+                            color: const Color(0xFF1C1C1C),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFFE5E7EB),
+                              color: const Color(0xFF262626),
                             ),
                           ),
                           child: Row(
@@ -729,13 +730,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               Icon(
                                 _getSportIcon(sport),
                                 size: 13,
-                                color: const Color(0xFF154D36),
+                                color: const Color(0xFFD4FF00),
                               ),
                               const SizedBox(width: 5),
                               Text(
                                 sport,
                                 style: const TextStyle(
-                                  color: Color(0xFF374151),
+                                  color: Color(0xFFA1A1AA),
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -776,8 +777,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF154D36),
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFD4FF00),
+                      foregroundColor: Colors.black,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -787,7 +788,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       'Book Slot',
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
                       ),
                     ),

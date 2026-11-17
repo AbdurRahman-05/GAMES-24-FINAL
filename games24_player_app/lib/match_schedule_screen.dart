@@ -43,12 +43,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF154D36), size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () {
           if (Navigator.of(context).canPop()) {
             Navigator.of(context).pop();
@@ -65,7 +65,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
             Text(
               'Match Schedule',
               style: TextStyle(
-                color: Color(0xFF111827),
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -73,7 +73,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
             Text(
               'Upcoming fixtures, booked slots & live games',
               style: TextStyle(
-                color: Color(0xFF6B7280),
+                color: Color(0xFFA1A1AA),
                 fontSize: 11,
                 fontWeight: FontWeight.normal,
               ),
@@ -82,7 +82,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF154D36)),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFFD4FF00)),
             onPressed: () {
               setState(() {
                 BookingManager().fetchBookings();
@@ -95,7 +95,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         ],
       ),
       body: Material(
-        color: const Color(0xFFF9FAFB),
+        color: const Color(0xFF080808),
         child: Column(
           children: [
             _buildTabSelector(),
@@ -144,12 +144,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           duration: const Duration(milliseconds: 200),
           margin: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF154D36) : Colors.transparent,
+            color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF154D36).withValues(alpha: 0.2),
+                      color: Color(0xFFD4FF00).withValues(alpha: 0.2),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -191,7 +191,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   child: Text(
                     '$count',
                     style: TextStyle(
-                      color: isSelected ? Colors.white : const Color(0xFF374151),
+                      color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -222,19 +222,19 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected ? Colors.white : const Color(0xFF374151),
+                    color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                   ),
                 ),
                 selected: isSelected,
-                selectedColor: const Color(0xFF154D36),
-                backgroundColor: const Color(0xFFF3F4F6),
+                selectedColor: const Color(0xFFD4FF00),
+                backgroundColor: const Color(0xFF141414),
                 showCheckmark: false,
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE5E7EB),
+                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                   ),
                 ),
                 onSelected: (selected) {
@@ -311,7 +311,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   fontSize: 11.5,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.8,
-                  color: Color(0xFF6B7280),
+                  color: Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -327,7 +327,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   fontSize: 11.5,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.8,
-                  color: Color(0xFF6B7280),
+                  color: Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -440,14 +440,14 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, size: 11, color: Color(0xFF154D36)),
+                      Icon(Icons.check_circle, size: 11, color: Color(0xFFD4FF00)),
                       SizedBox(width: 4),
                       Text(
                         'Confirmed & Booked',
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                         ),
                       ),
                     ],
@@ -475,12 +475,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFF64748B)),
+                    const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFFA1A1AA)),
                     const SizedBox(width: 3),
                     Expanded(
                       child: Text(
                         courtName,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                        style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -497,18 +497,18 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF154D36)),
+                      const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFFD4FF00)),
                       const SizedBox(width: 6),
                       Text(
                         date,
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                       ),
                       const Spacer(),
-                      const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF154D36)),
+                      const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFFD4FF00)),
                       const SizedBox(width: 6),
                       Text(
                         timeSlot,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF154D36)),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                       ),
                     ],
                   ),
@@ -522,8 +522,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF154D36),
-                          side: const BorderSide(color: Color(0xFF154D36)),
+                          foregroundColor: const Color(0xFFD4FF00),
+                          side: BorderSide(color: Color(0xFFD4FF00)),
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -553,7 +553,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                               : (canPlayNext ? 'Match #${results.length + 1}' : (isDone ? 'Scorecard' : 'Scorecard'));
                           final btnColor = (isLive || canPlayNext)
                               ? const Color(0xFFDC2626)
-                              : (isDone ? const Color(0xFF154D36) : const Color(0xFF154D36));
+                              : (isDone ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00));
                           final targetTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                           return ElevatedButton.icon(
@@ -696,18 +696,18 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFF154D36)),
+                      const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFFD4FF00)),
                       const SizedBox(width: 6),
                       Text(
                         challenge.date,
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
                       ),
                       const Spacer(),
-                      const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF154D36)),
+                      const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFFD4FF00)),
                       const SizedBox(width: 6),
                       Text(
                         challenge.time,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF154D36)),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                       ),
                     ],
                   ),
@@ -734,7 +734,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                           : (canPlayNext ? 'Play Match #${results.length + 1} (~${remainingSlotMins}m left)' : (isDone ? 'View Scorecard' : 'Open Scorecard'));
                       final btnColor = (isLive || canPlayNext)
                           ? const Color(0xFFDC2626)
-                          : (isDone ? const Color(0xFF154D36) : const Color(0xFF154D36));
+                          : (isDone ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00));
                       final targetTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                       return ElevatedButton.icon(
@@ -794,7 +794,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         border: Border.all(color: const Color(0xFF86EFAC), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF154D36).withValues(alpha: 0.08),
+            color: Color(0xFFD4FF00).withValues(alpha: 0.08),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -816,7 +816,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 Expanded(
                   child: Text(
                     sport,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF154D36)),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD4FF00)),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -866,11 +866,11 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFF154D36)),
+                    const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFFD4FF00)),
                     const SizedBox(width: 4),
                     Text(
                       '$date • $timeSlot',
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF154D36)),
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                     ),
                   ],
                 ),
@@ -880,8 +880,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF154D36),
-                          side: const BorderSide(color: Color(0xFF154D36)),
+                          foregroundColor: const Color(0xFFD4FF00),
+                          side: BorderSide(color: Color(0xFFD4FF00)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
@@ -908,7 +908,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                           final btnLabel = isLive
                               ? 'Continue Match'
                               : (canPlayNext ? 'Match #${results.length + 1}' : (isDone ? 'Scorecard' : 'Live Scorecard'));
-                          final btnColor = (isLive || canPlayNext) ? const Color(0xFFDC2626) : (isDone ? const Color(0xFF154D36) : const Color(0xFF154D36));
+                          final btnColor = (isLive || canPlayNext) ? const Color(0xFFDC2626) : (isDone ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00));
                           final initialTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                           return ElevatedButton.icon(
@@ -1001,7 +1001,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF475569),
+                      color: Color(0xFFA1A1AA),
                     ),
                   ),
                 ),
@@ -1047,7 +1047,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: match.winner == match.teamAName ? const Color(0xFF154D36) : const Color(0xFF475569),
+                              color: match.winner == match.teamAName ? const Color(0xFFD4FF00) : const Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
@@ -1070,7 +1070,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: match.winner == match.teamBName ? const Color(0xFF154D36) : const Color(0xFF475569),
+                              color: match.winner == match.teamBName ? const Color(0xFFD4FF00) : const Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
@@ -1079,7 +1079,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                         const Divider(height: 16),
                         Text(
                           '${match.winner} won ${match.winningMargin}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF154D36)),
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -1092,8 +1092,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF154D36),
-                      side: const BorderSide(color: Color(0xFF154D36)),
+                      foregroundColor: const Color(0xFFD4FF00),
+                      side: BorderSide(color: Color(0xFFD4FF00)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
@@ -1126,7 +1126,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
 
   Widget _getSportBadge(String sport) {
     IconData icon = Icons.sports_soccer_outlined;
-    Color color = const Color(0xFF154D36);
+    Color color = const Color(0xFFD4FF00);
 
     switch (sport.toLowerCase()) {
       case 'cricket':
@@ -1143,7 +1143,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         break;
       default:
         icon = Icons.sports_soccer;
-        color = const Color(0xFF154D36);
+        color = const Color(0xFFD4FF00);
     }
 
     return Container(
@@ -1177,7 +1177,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFBBF7D0), width: 1.5),
               ),
-              child: Icon(icon, size: 36, color: const Color(0xFF154D36)),
+              child: Icon(icon, size: 36, color: Color(0xFFD4FF00)),
             ),
             const SizedBox(height: 18),
             Text(
@@ -1195,7 +1195,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF64748B),
+                color: Color(0xFFA1A1AA),
                 height: 1.4,
               ),
             ),
@@ -1208,7 +1208,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 if (showBookAction)
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF154D36),
+                      backgroundColor: const Color(0xFFD4FF00),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1219,8 +1219,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   ),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF154D36),
-                    side: const BorderSide(color: Color(0xFF154D36)),
+                    foregroundColor: const Color(0xFFD4FF00),
+                    side: BorderSide(color: Color(0xFFD4FF00)),
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
@@ -1235,7 +1235,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 ),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF475569),
+                    foregroundColor: const Color(0xFFA1A1AA),
                     side: const BorderSide(color: Color(0xFFCBD5E1)),
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

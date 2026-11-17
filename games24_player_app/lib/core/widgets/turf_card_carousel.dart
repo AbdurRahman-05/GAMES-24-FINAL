@@ -233,7 +233,7 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
       width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
+          colors: [Color(0xFF141414), Color(0xFF1E1E1E), Color(0xFF0F0F0F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -248,7 +248,7 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
               fit: BoxFit.cover,
               width: double.infinity,
               height: widget.height,
-              errorBuilder: (_, __, ___) => const SizedBox(),
+              errorBuilder: (_, _, _) => const SizedBox(),
             ),
           ),
           Column(
@@ -257,14 +257,17 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.12),
+                  color: Colors.white.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                  border: Border.all(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                    width: 1.5,
+                  ),
                 ),
                 child: const Icon(
                   Icons.stadium_rounded,
                   size: 30,
-                  color: Colors.white,
+                  color: Color(0xFFD4FF00),
                 ),
               ),
               const SizedBox(height: 6),
@@ -284,7 +287,7 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
                 'Verified Sports Arena',
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -301,11 +304,11 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
       fit: BoxFit.cover,
       width: double.infinity,
       height: widget.height,
-      errorBuilder: (_, __, ___) => _buildPlaceholder(),
+      errorBuilder: (_, _, _) => _buildPlaceholder(),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(
-          color: const Color(0xFF0D3324),
+          color: const Color(0xFF141414),
           alignment: Alignment.center,
           child: SizedBox(
             width: 24,
@@ -313,9 +316,10 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
             child: CircularProgressIndicator(
               strokeWidth: 2,
               value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
                   : null,
-              color: const Color(0xFF4ADE80),
+              color: const Color(0xFFD4FF00),
             ),
           ),
         );

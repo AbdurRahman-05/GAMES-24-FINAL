@@ -41,7 +41,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAF7),
+      backgroundColor: const Color(0xFF080808),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -65,7 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         fontFamily: 'PrimeNordic',
                         fontSize: 32, // slightly larger for display font
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -74,7 +74,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFFA1A1AA),
                         height: 1.4,
                       ),
                     ),
@@ -99,8 +99,8 @@ class _SignupScreenState extends State<SignupScreen> {
               Container(
                 height: 52,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  color: const Color(0xFF141414),
+                  border: Border.all(color: const Color(0xFF262626)),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -110,14 +110,15 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedCountryCode,
+                          dropdownColor: const Color(0xFF1F1F1F),
                           icon: const Icon(
                             Icons.arrow_drop_down,
                             color: Color(0xFF9CA3AF),
                           ),
                           style: const TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF374151),
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
                           ),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
@@ -131,7 +132,13 @@ class _SignupScreenState extends State<SignupScreen> {
                           ) {
                             return DropdownMenuItem<String>(
                               value: value,
-                              child: Text(value),
+                              child: Text(
+                                value,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             );
                           }).toList(),
                         ),
@@ -141,17 +148,23 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Container(
                         decoration: const BoxDecoration(
                           border: Border(
-                            left: BorderSide(color: Color(0xFFE5E7EB)),
+                            left: BorderSide(color: Color(0xFF262626)),
                           ),
                         ),
                         child: TextField(
                           controller: _mobileController,
                           keyboardType: TextInputType.phone,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
                           textAlignVertical: TextAlignVertical.center,
                           decoration: InputDecoration(
                             hintText: '98765 43210',
                             hintStyle: const TextStyle(
-                              color: Color(0xFF9CA3AF),
+                              color: Color(0xFF71717A),
+                              fontSize: 14,
                             ),
                             suffixIcon: TextButton(
                               onPressed: _isOtpVerified
@@ -161,8 +174,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                 _isOtpVerified ? 'Verified' : 'Verify',
                                 style: TextStyle(
                                   color: _isOtpVerified
-                                      ? Colors.green
-                                      : Colors.blue,
+                                      ? const Color(0xFFD4FF00)
+                                      : const Color(0xFF38BDF8),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -190,7 +203,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     'Must be secure',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFFA1A1AA),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -256,8 +269,9 @@ class _SignupScreenState extends State<SignupScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      side: const BorderSide(color: Color(0xFFD1D5DB)),
-                      activeColor: Colors.green.shade600,
+                      side: const BorderSide(color: Color(0xFF3F3F46)),
+                      activeColor: const Color(0xFFD4FF00),
+                      checkColor: Colors.black,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -265,7 +279,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: RichText(
                       text: TextSpan(
                         style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFFA1A1AA),
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -274,7 +288,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           TextSpan(
                             text: 'Terms of Service',
                             style: TextStyle(
-                              color: Colors.green.shade600,
+                              color: Color(0xFFD4FF00),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -282,7 +296,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           TextSpan(
                             text: 'Privacy Policy',
                             style: TextStyle(
-                              color: Colors.green.shade600,
+                              color: Color(0xFFD4FF00),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -332,12 +346,10 @@ class _SignupScreenState extends State<SignupScreen> {
                           _register();
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: (_agreeToTerms && _isOtpVerified)
-                        ? Colors.green.shade600
-                        : Colors.green.shade700,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0xFFE5E7EB),
-                    disabledForegroundColor: const Color(0xFF9CA3AF),
+                    backgroundColor: const Color(0xFFD4FF00),
+                    foregroundColor: Colors.black,
+                    disabledBackgroundColor: const Color(0xFF262626),
+                    disabledForegroundColor: const Color(0xFF71717A),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -348,7 +360,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: Colors.black,
                             strokeWidth: 2,
                           ),
                         )
@@ -359,12 +371,13 @@ class _SignupScreenState extends State<SignupScreen> {
                               'Create Account',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                                letterSpacing: 0.3,
                               ),
                             ),
                             SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                            Icon(Icons.arrow_forward, size: 20, color: Colors.black),
                           ],
                         ),
                 ),
@@ -377,7 +390,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   const Text(
                     'Already have an account? ',
-                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 15),
+                    style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 15),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -391,7 +404,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: Text(
                       'Log In',
                       style: TextStyle(
-                        color: Colors.green.shade600,
+                        color: Color(0xFFD4FF00),
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -548,7 +561,7 @@ class _SignupScreenState extends State<SignupScreen> {
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF374151),
+        color: Colors.white,
       ),
     );
   }
@@ -567,9 +580,14 @@ class _SignupScreenState extends State<SignupScreen> {
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscureText,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+          hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 14),
           prefixIcon: Icon(
             prefixIcon,
             color: const Color(0xFF9CA3AF),
@@ -577,18 +595,18 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
           suffixIcon: suffixIcon,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: const Color(0xFF141414),
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            borderSide: const BorderSide(color: Color(0xFF262626)),
             borderRadius: BorderRadius.circular(12),
           ),
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(
-              color: Colors.greenAccent.shade400,
-              width: 2,
+              color: Color(0xFFD4FF00),
+              width: 1.5,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
         ),
       ),
@@ -607,11 +625,11 @@ class _SignupScreenState extends State<SignupScreen> {
         height: 72,
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFF0FDF4)
-              : Colors.white,
+              ? const Color(0xFF1F2916)
+              : const Color(0xFF141414),
           border: Border.all(
-            color: isSelected ? Colors.green.shade600 : const Color(0xFFE5E7EB),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+            width: isSelected ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -621,8 +639,8 @@ class _SignupScreenState extends State<SignupScreen> {
             Icon(
               icon,
               color: isSelected
-                  ? Colors.green.shade600
-                  : const Color(0xFF6B7280),
+                  ? const Color(0xFFD4FF00)
+                  : const Color(0xFFA1A1AA),
               size: 24,
             ),
             const SizedBox(height: 6),
@@ -630,10 +648,10 @@ class _SignupScreenState extends State<SignupScreen> {
               label,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 color: isSelected
-                    ? Colors.green.shade600
-                    : const Color(0xFF4B5563),
+                    ? const Color(0xFFD4FF00)
+                    : const Color(0xFFA1A1AA),
               ),
             ),
           ],
@@ -764,14 +782,14 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
             width: 80,
             height: 80,
             decoration: const BoxDecoration(
-              color: Color(0xFFFDE68A),
+              color: Color(0xFF1F2916),
               shape: BoxShape.circle,
             ),
             child: const Center(
               child: Icon(
                 Icons.sentiment_very_satisfied,
                 size: 50,
-                color: Colors.orange,
+                color: Color(0xFFD4FF00),
               ),
             ),
           ),
@@ -781,23 +799,23 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
             'Welcome!',
-            style: TextStyle(fontSize: 16, color: Colors.black54),
+            style: TextStyle(fontSize: 16, color: Color(0xFFA1A1AA)),
           ),
           const SizedBox(height: 24),
           Container(
             width: 64,
             height: 64,
             decoration: const BoxDecoration(
-              color: Colors.green,
+              color: Color(0xFFD4FF00),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check, color: Colors.white, size: 40),
+            child: const Icon(Icons.check, color: Colors.black, size: 40),
           ),
         ],
       );
@@ -810,7 +828,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
           width: 80,
           height: 80,
           decoration: const BoxDecoration(
-            color: Color(0xFFFDE68A),
+            color: Color(0xFF1F2916),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -819,7 +837,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                   ? Icons.sentiment_dissatisfied
                   : Icons.sentiment_satisfied,
               size: 50,
-              color: Colors.orange,
+              color: _status == 'error' ? Colors.redAccent : const Color(0xFFD4FF00),
             ),
           ),
         ),
@@ -829,13 +847,13 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
         const Text(
           'Enter the 4-digit code',
-          style: TextStyle(fontSize: 16, color: Colors.black54),
+          style: TextStyle(fontSize: 16, color: Color(0xFFA1A1AA)),
         ),
       ],
     );
@@ -848,18 +866,15 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
       height: 56,
       textStyle: const TextStyle(
         fontSize: 22,
-        color: Colors.black,
+        color: Colors.white,
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: _status == 'error' ? Colors.red : const Color(0xFFE5E7EB),
+          color: _status == 'error' ? Colors.red : const Color(0xFF2E2E2E),
         ),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
-        ],
       ),
     );
 
@@ -869,8 +884,9 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: _status == 'success'
             ? _buildFace()
@@ -886,7 +902,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                     focusedPinTheme: defaultPinTheme.copyWith(
                       decoration: defaultPinTheme.decoration!.copyWith(
                         border: Border.all(
-                          color: const Color(0xFF8B5CF6),
+                          color: const Color(0xFFD4FF00),
                           width: 2,
                         ),
                       ),
@@ -900,9 +916,8 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _verify,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(
-                          0xFF8B5CF6,
-                        ), // Purple color
+                        backgroundColor: const Color(0xFFD4FF00),
+                        foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -913,7 +928,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: Colors.black,
                                 strokeWidth: 2,
                               ),
                             )
@@ -921,8 +936,8 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                               'Verify',
                               style: TextStyle(
                                 fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
                               ),
                             ),
                     ),
@@ -931,7 +946,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                   Text(
                     '00:${_timerSeconds.toString().padLeft(2, '0')}',
                     style: const TextStyle(
-                      color: Colors.black54,
+                      color: Color(0xFFA1A1AA),
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -943,8 +958,8 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
                       'Resend OTP',
                       style: TextStyle(
                         color: _timerSeconds == 0
-                            ? const Color(0xFF8B5CF6)
-                            : Colors.black38,
+                            ? const Color(0xFFD4FF00)
+                            : const Color(0xFF71717A),
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),

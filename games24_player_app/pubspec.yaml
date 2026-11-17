@@ -43,6 +43,7 @@ dependencies:
   qr_flutter: ^4.1.0
   flutter_contacts: ^2.6.0
   audioplayers: ^6.8.1
+  google_fonts: ^9.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -88,7 +88,7 @@ class LocationManager {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF141414),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -145,7 +145,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: const Color(0xFF3F3F46),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -158,12 +158,12 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
+                    color: const Color(0xFF1F2916),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.location_on_rounded,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                     size: 20,
                   ),
                 ),
@@ -177,18 +177,19 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
+                          color: Colors.white,
                         ),
                       ),
+                      SizedBox(height: 2),
                       Text(
                         'Discover nearby turfs & open challenge matches in Madurai',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.grey),
+                  icon: const Icon(Icons.close, color: Color(0xFFA1A1AA)),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -198,18 +199,23 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
             // Search textfield
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F4F6),
+                color: const Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFF2E2E2E)),
               ),
               child: TextField(
                 controller: _searchCtrl,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
                 onChanged: (v) => setState(() => _query = v),
                 decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF154D36), size: 20),
+                  prefixIcon: const Icon(Icons.search, color: Color(0xFFD4FF00), size: 20),
                   suffixIcon: _query.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear, size: 16),
+                          icon: const Icon(Icons.clear, size: 16, color: Color(0xFFA1A1AA)),
                           onPressed: () {
                             _searchCtrl.clear();
                             setState(() => _query = '');
@@ -217,7 +223,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                         )
                       : null,
                   hintText: 'Search locality / area in Madurai...',
-                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
+                  hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF71717A)),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
@@ -236,13 +242,13 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0FDF4),
+                  color: const Color(0xFF1F2916),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                  border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: const [
-                    Icon(Icons.my_location_rounded, color: Color(0xFF154D36), size: 18),
+                    Icon(Icons.my_location_rounded, color: Color(0xFFD4FF00), size: 18),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -250,11 +256,11 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                         ),
                       ),
                     ),
-                    Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFF154D36)),
+                    Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFFD4FF00)),
                   ],
                 ),
               ),
@@ -266,7 +272,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF9CA3AF),
+                color: Color(0xFFA1A1AA),
                 letterSpacing: 0.6,
               ),
             ),
@@ -276,7 +282,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
             Expanded(
               child: ListView.separated(
                 itemCount: filtered.length,
-                separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                separatorBuilder: (_, _) => const Divider(height: 1, color: Color(0xFF262626)),
                 itemBuilder: (context, index) {
                   final area = filtered[index];
                   final isSelected = current.toLowerCase() == area.toLowerCase();
@@ -288,30 +294,30 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                       leading: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF3F4F6),
+                          color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF1E1E1E),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           area == 'All Madurai' ? Icons.map_rounded : Icons.location_on_outlined,
                           size: 16,
-                          color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                          color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                         ),
                       ),
                       title: Text(
                         area,
                         style: TextStyle(
                           fontSize: 14,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: isSelected ? const Color(0xFF154D36) : const Color(0xFF1F2937),
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
                         ),
                       ),
                       subtitle: Text(
                         area == 'All Madurai' ? 'Shows all venues across city' : 'Madurai, Tamil Nadu',
-                        style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+                        style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                       ),
                       trailing: isSelected
-                          ? const Icon(Icons.check_circle_rounded, color: Color(0xFF154D36), size: 20)
-                          : const Icon(Icons.chevron_right_rounded, color: Colors.grey, size: 18),
+                          ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD4FF00), size: 20)
+                          : const Icon(Icons.chevron_right_rounded, color: Color(0xFF71717A), size: 18),
                       onTap: () {
                         LocationManager().setLocation(area);
                         Navigator.pop(context);

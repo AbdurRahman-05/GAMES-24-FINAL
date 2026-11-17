@@ -379,12 +379,12 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF080808),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -399,14 +399,14 @@ class _BookingScreenState extends State<BookingScreen> {
           widget.turfName,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
-            color: Color(0xFF111827),
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black87),
+            icon: const Icon(Icons.share_outlined, color: Colors.white),
             onPressed: () {},
           ),
           IconButton(
@@ -546,14 +546,14 @@ class _BookingScreenState extends State<BookingScreen> {
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
                         return Container(
-                          color: const Color(0xFF0D3324),
+                          color: const Color(0xFF141414),
                           alignment: Alignment.center,
                           child: const SizedBox(
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Color(0xFF4ADE80),
+                              color: Color(0xFFD4FF00),
                             ),
                           ),
                         );
@@ -614,18 +614,18 @@ class _BookingScreenState extends State<BookingScreen> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF154D36),
+                        color: const Color(0xFF1F2916),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.verified, color: Colors.white, size: 12),
+                          Icon(Icons.verified, color: Color(0xFFD4FF00), size: 12),
                           SizedBox(width: 4),
                           Text(
                             'Super Admin Verified Turf',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Color(0xFFD4FF00),
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -680,7 +680,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: Colors.white,
                 ),
               ),
               if (widget.openingTime != null && widget.closingTime != null)
@@ -688,7 +688,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   '${widget.openingTime} - ${widget.closingTime}',
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -721,23 +721,23 @@ class _BookingScreenState extends State<BookingScreen> {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: const Color(0xFF154D36).withValues(alpha: 0.2),
+                    color: const Color(0xFF262626),
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: 13, color: const Color(0xFF154D36)),
+                    Icon(icon, size: 13, color: const Color(0xFFD4FF00)),
                     const SizedBox(width: 5),
                     Text(
                       item,
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFA1A1AA),
                       ),
                     ),
                   ],
@@ -764,7 +764,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: Colors.white,
                 ),
               ),
               Row(
@@ -773,14 +773,14 @@ class _BookingScreenState extends State<BookingScreen> {
                     _dates[_selectedDateIndex]['fullDate']!,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFFA1A1AA),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(width: 8),
                   const Icon(
                     Icons.calendar_month,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                     size: 18,
                   ),
                 ],
@@ -812,9 +812,12 @@ class _BookingScreenState extends State<BookingScreen> {
                   width: 54,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF154D36)
-                        : const Color(0xFFF3F5F1),
+                        ? const Color(0xFFD4FF00)
+                        : const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                    ),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -823,9 +826,10 @@ class _BookingScreenState extends State<BookingScreen> {
                         date['day']!,
                         style: TextStyle(
                           fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
                           color: isSelected
-                              ? Colors.white70
-                              : const Color(0xFF6B7280),
+                              ? Colors.black87
+                              : const Color(0xFF71717A),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -833,10 +837,10 @@ class _BookingScreenState extends State<BookingScreen> {
                         date['date']!,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                           color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF111827),
+                              ? Colors.black
+                              : Colors.white,
                         ),
                       ),
                     ],
@@ -864,21 +868,21 @@ class _BookingScreenState extends State<BookingScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
               decoration: BoxDecoration(
-                color: const Color(0xFF154D36).withValues(alpha: 0.08),
+                color: const Color(0xFF1F2916),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF154D36).withValues(alpha: 0.2)),
+                border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.sports_soccer_rounded, size: 14, color: Color(0xFF154D36)),
+                  const Icon(Icons.sports_soccer_rounded, size: 14, color: Color(0xFFD4FF00)),
                   const SizedBox(width: 6),
                   Text(
                     '$sport • ₹$rate/hr',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF154D36),
+                      color: Color(0xFFD4FF00),
                     ),
                   ),
                 ],
@@ -899,7 +903,7 @@ class _BookingScreenState extends State<BookingScreen> {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
+              color: Colors.white,
             ),
           ),
         ),
@@ -946,9 +950,12 @@ class _BookingScreenState extends State<BookingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF154D36)
-                        : const Color(0xFFF3F5F1),
+                        ? const Color(0xFFD4FF00)
+                        : const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -957,8 +964,8 @@ class _BookingScreenState extends State<BookingScreen> {
                         iconData,
                         size: 14,
                         color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF4B5563),
+                            ? Colors.black
+                            : const Color(0xFFA1A1AA),
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -966,11 +973,11 @@ class _BookingScreenState extends State<BookingScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected
-                              ? FontWeight.w600
+                              ? FontWeight.w900
                               : FontWeight.w500,
                           color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF4B5563),
+                              ? Colors.black
+                              : const Color(0xFFA1A1AA),
                         ),
                       ),
                     ],
@@ -1002,12 +1009,12 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: Colors.white,
                 ),
               ),
               Text(
                 '${courts.length} Available',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF154D36), fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 11, color: Color(0xFFD4FF00), fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -1035,11 +1042,11 @@ class _BookingScreenState extends State<BookingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF154D36)
-                        : Colors.white,
+                        ? const Color(0xFFD4FF00)
+                        : const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE5E7EB),
+                      color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                       width: 1.5,
                     ),
                   ),
@@ -1049,15 +1056,15 @@ class _BookingScreenState extends State<BookingScreen> {
                       Icon(
                         Icons.stadium_outlined,
                         size: 15,
-                        color: isSelected ? Colors.white : const Color(0xFF4B5563),
+                        color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         court,
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? Colors.white : const Color(0xFF1F2937),
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+                          color: isSelected ? Colors.black : Colors.white,
                         ),
                       ),
                     ],
@@ -1076,7 +1083,7 @@ class _BookingScreenState extends State<BookingScreen> {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
         child: Center(
-          child: CircularProgressIndicator(color: Color(0xFF154D36)),
+          child: CircularProgressIndicator(color: Color(0xFFD4FF00)),
         ),
       );
     }
@@ -1134,7 +1141,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: Colors.white,
                 ),
               ),
               Text(
@@ -1153,11 +1160,11 @@ class _BookingScreenState extends State<BookingScreen> {
             runSpacing: 4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              _buildLegendItem('Available', const Color(0xFFE5F5EB)),
-              _buildLegendItem('Selected', const Color(0xFF154D36)),
+              _buildLegendItem('Available', const Color(0xFF141414)),
+              _buildLegendItem('Selected', const Color(0xFFD4FF00)),
               _buildLegendItem('Booked', const Color(0xFFDC2626)),
               if (isToday && _showPassedSlots)
-                _buildLegendItem('Passed', const Color(0xFF9CA3AF)),
+                _buildLegendItem('Passed', const Color(0xFF52525B)),
             ],
           ),
           if (isToday && passedSlotsCount > 0) ...[
@@ -1165,9 +1172,9 @@ class _BookingScreenState extends State<BookingScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1216,7 +1223,7 @@ class _BookingScreenState extends State<BookingScreen> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: _showPassedSlots ? const Color(0xFF374151) : const Color(0xFF154D36),
+                          color: _showPassedSlots ? const Color(0xFF71717A) : const Color(0xFFD4FF00),
                         ),
                       ),
                     ),
@@ -1331,28 +1338,29 @@ class _BookingScreenState extends State<BookingScreen> {
                   badgeText = 'Special Price';
                 }
 
-                Color bgColor = const Color(0xFFF3F5F1);
-                Color textColor = const Color(0xFF111827);
-                Color borderColor = Colors.transparent;
+                Color bgColor = const Color(0xFF141414);
+                Color textColor = Colors.white;
+                Color borderColor = const Color(0xFF262626);
 
                 if (isPast) {
-                  bgColor = const Color(0xFFF3F4F6);
-                  textColor = const Color(0xFF9CA3AF);
-                  borderColor = const Color(0xFFE5E7EB);
+                  bgColor = const Color(0xFF181818);
+                  textColor = const Color(0xFF52525B);
+                  borderColor = const Color(0xFF262626);
                 } else if (isBooked) {
-                  bgColor = const Color(0xFFFEE2E2);
-                  textColor = const Color(0xFFDC2626);
+                  bgColor = const Color(0xFF2D1214);
+                  textColor = const Color(0xFFEF4444);
+                  borderColor = const Color(0xFF7F1D1D);
                 } else if (isBlocked) {
-                  bgColor = Colors.amber.shade50;
-                  textColor = Colors.amber.shade900;
-                  borderColor = Colors.amber.shade300;
+                  bgColor = const Color(0xFF2B1D08);
+                  textColor = const Color(0xFFFBBF24);
+                  borderColor = const Color(0xFF78350F);
                 } else if (isSelected) {
-                  bgColor = const Color(0xFF154D36);
-                  textColor = Colors.white;
-                  borderColor = const Color(0xFF154D36);
+                  bgColor = const Color(0xFFD4FF00);
+                  textColor = Colors.black;
+                  borderColor = const Color(0xFFD4FF00);
                 } else if (hasOffer) {
-                  bgColor = const Color(0xFFF0FDF4);
-                  borderColor = const Color(0xFF15803D).withValues(alpha: 0.35);
+                  bgColor = const Color(0xFF1F2916);
+                  borderColor = const Color(0xFFD4FF00).withValues(alpha: 0.35);
                 }
 
                 return SizedBox(
@@ -1471,8 +1479,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
-                                        ? Colors.white
-                                        : const Color(0xFF154D36),
+                                        ? Colors.black
+                                        : const Color(0xFFD4FF00),
                                   ),
                                 ),
                               ],
@@ -1486,8 +1494,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? Colors.white.withValues(alpha: 0.2)
-                                      : const Color(0xFFDCFCE7),
+                                      ? Colors.black.withValues(alpha: 0.15)
+                                      : const Color(0xFF1F2916),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -1496,8 +1504,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                     fontSize: 7.5,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
-                                        ? Colors.white
-                                        : const Color(0xFF15803D),
+                                        ? Colors.black
+                                        : const Color(0xFFD4FF00),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1513,8 +1521,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                     Icons.nightlight_round,
                                     size: 9,
                                     color: isSelected
-                                        ? Colors.white70
-                                        : const Color(0xFF154D36),
+                                        ? Colors.black87
+                                        : const Color(0xFFD4FF00),
                                   ),
                                   const SizedBox(width: 2),
                                 ],
@@ -1524,8 +1532,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
-                                        ? Colors.white
-                                        : const Color(0xFF154D36),
+                                        ? Colors.black
+                                        : const Color(0xFFD4FF00),
                                   ),
                                 ),
                               ],
@@ -1539,8 +1547,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? Colors.white.withValues(alpha: 0.2)
-                                      : const Color(0xFFDCFCE7),
+                                      ? Colors.black.withValues(alpha: 0.15)
+                                      : const Color(0xFF1F2916),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
@@ -1549,8 +1557,8 @@ class _BookingScreenState extends State<BookingScreen> {
                                     fontSize: 7.5,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected
-                                        ? Colors.white
-                                        : const Color(0xFF15803D),
+                                        ? Colors.black
+                                        : const Color(0xFFD4FF00),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1577,9 +1585,9 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFFEF2F2),
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFFCA5A5)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Column(
           children: [
@@ -1588,12 +1596,12 @@ class _BookingScreenState extends State<BookingScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
-                    color: Color(0xFFBE123C),
+                    color: Color(0xFF1F2916),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.flash_on,
-                    color: Colors.white,
+                    color: Color(0xFFD4FF00),
                     size: 16,
                   ),
                 ),
@@ -1607,14 +1615,14 @@ class _BookingScreenState extends State<BookingScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF111827),
+                          color: Colors.white,
                         ),
                       ),
                       Text(
                         'Let other teams request to match with you.',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFFA1A1AA),
                         ),
                       ),
                     ],
@@ -1622,7 +1630,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
                 Switch(
                   value: _isOpenForChallenge,
-                  activeThumbColor: const Color(0xFFBE123C),
+                  activeThumbColor: const Color(0xFFD4FF00),
                   onChanged: (val) {
                     setState(() {
                       _isOpenForChallenge = val;
@@ -1635,44 +1643,62 @@ class _BookingScreenState extends State<BookingScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _teamNameController,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter Team Name (e.g. Eagles FC)',
-                  prefixIcon: const Icon(Icons.shield_outlined, size: 18),
+                  prefixIcon: const Icon(Icons.shield_outlined, size: 18, color: Color(0xFFD4FF00)),
                   hintStyle: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF9CA3AF),
+                    color: Color(0xFF71717A),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: const Color(0xFF1E1E1E),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFD4FF00)),
                   ),
                 ),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _teamSizeController,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter Team Size / Format (e.g. 7v7, 5v5)',
-                  prefixIcon: const Icon(Icons.groups_outlined, size: 18),
+                  prefixIcon: const Icon(Icons.groups_outlined, size: 18, color: Color(0xFFD4FF00)),
                   hintStyle: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF9CA3AF),
+                    color: Color(0xFF71717A),
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: const Color(0xFF1E1E1E),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 8,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF2A2A2A)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFD4FF00)),
                   ),
                 ),
               ),
@@ -1713,9 +1739,9 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFF9FAFB),
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF3F4F6)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1725,7 +1751,7 @@ class _BookingScreenState extends State<BookingScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF111827),
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 12),
@@ -1752,9 +1778,9 @@ class _BookingScreenState extends State<BookingScreen> {
             _buildSummaryRow(
               'Convenience & Tax Fee',
               '₹0 (Free • No Extra Taxes)',
-              valueColor: const Color(0xFF154D36),
+              valueColor: const Color(0xFFD4FF00),
             ),
-            const Divider(height: 20),
+            const Divider(height: 20, color: Color(0xFF262626)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1763,7 +1789,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
+                    color: Colors.white,
                   ),
                 ),
                 Text(
@@ -1771,7 +1797,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ],
@@ -1788,16 +1814,16 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFBEB),
+          color: const Color(0xFF1F1B0E),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFFDE68A)),
+          border: Border.all(color: const Color(0xFF78350F)),
         ),
         child: const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               Icons.warning_amber_rounded,
-              color: Color(0xFFD97706),
+              color: Color(0xFFFBBF24),
               size: 22,
             ),
             SizedBox(width: 10),
@@ -1810,7 +1836,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF92400E),
+                      color: Color(0xFFFBBF24),
                     ),
                   ),
                   SizedBox(height: 4),
@@ -1818,7 +1844,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     '• Free cancellation is allowed only up to 3 hours before the slot start time.\n• Slots booked within 3 hours are locked and cannot be cancelled.',
                     style: TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF78350F),
+                      color: Color(0xFFFDE68A),
                       height: 1.4,
                     ),
                   ),
@@ -1837,7 +1863,7 @@ class _BookingScreenState extends State<BookingScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+          style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -1847,7 +1873,7 @@ class _BookingScreenState extends State<BookingScreen> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12,
-              color: valueColor ?? const Color(0xFF111827),
+              color: valueColor ?? Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1864,13 +1890,13 @@ class _BookingScreenState extends State<BookingScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0F0F0F),
         border: const Border(
-          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          top: BorderSide(color: Color(0xFF262626), width: 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -1893,7 +1919,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       style: const TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF0F172A),
+                        color: Colors.white,
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -1905,7 +1931,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: hasSlots ? const Color(0xFF16A34A) : const Color(0xFF64748B),
+                      color: hasSlots ? const Color(0xFFD4FF00) : const Color(0xFF71717A),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -2107,7 +2133,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 sport: _selectedSport,
                                 challengerName: tName,
                                 challengerTeamInitials: initials,
-                                challengerColor: const Color(0xFF154D36),
+                                challengerColor: const Color(0xFFD4FF00),
                                 creatorPhone: customerPhone,
                                 teamSize: tSize,
                                 isCreator: true,
@@ -2169,8 +2195,8 @@ class _BookingScreenState extends State<BookingScreen> {
                     }
                   },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF154D36),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFFD4FF00),
+              foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
@@ -2181,7 +2207,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: Colors.black,
                       strokeWidth: 2,
                     ),
                   )
@@ -2192,11 +2218,12 @@ class _BookingScreenState extends State<BookingScreen> {
                         hasSlots ? 'Confirm Slot' : 'Select Slot',
                         style: const TextStyle(
                           fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Icon(Icons.arrow_forward_rounded, size: 16),
+                      const Icon(Icons.arrow_forward_rounded, size: 16, color: Colors.black),
                     ],
                   ),
           ),
