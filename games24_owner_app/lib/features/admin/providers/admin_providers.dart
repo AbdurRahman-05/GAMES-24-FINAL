@@ -803,6 +803,9 @@ class OwnerTurfBranchItem {
     this.clonedFrom,
   });
 
+  double get dayRate =>
+      sportRates.isNotEmpty ? sportRates.values.first : 1000.0;
+
   OwnerTurfBranchItem copyWith({
     int? id,
     String? venueName,
@@ -1479,7 +1482,6 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       ];
       state = state.copyWith(
         verifiedAdminId: branchId,
-        turfId: branchId,
         venueName: targetBranch.venueName,
         area: targetBranch.neighborhoodArea,
         address: targetBranch.streetAddress,
@@ -1513,7 +1515,6 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     state = state.copyWith(
       branchStatus: targetBranch.status,
       verifiedAdminId: branchId,
-      turfId: branchId,
       branches: state.branches
           .map<OwnerTurfBranchItem>(
             (b) => b.copyWith(isActive: b.id == branchId),
