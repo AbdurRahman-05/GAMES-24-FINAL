@@ -3766,14 +3766,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                         Container(
                           width: 9,
                           height: 18,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF080808),
-                            borderRadius: const BorderRadius.horizontal(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.horizontal(
                               right: Radius.circular(9),
-                            ),
-                            border: Border.all(
-                              color: const Color(0xFF262C20),
-                              width: 1,
                             ),
                           ),
                         ),
@@ -3794,10 +3790,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                   dashCount,
                                   (_) => const SizedBox(
                                     width: dashWidth,
-                                    height: 1.2,
+                                    height: 1.5,
                                     child: DecoratedBox(
                                       decoration: BoxDecoration(
-                                        color: Color(0xFF262C20),
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ),
@@ -3809,14 +3805,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                         Container(
                           width: 9,
                           height: 18,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF080808),
-                            borderRadius: const BorderRadius.horizontal(
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.horizontal(
                               left: Radius.circular(9),
-                            ),
-                            border: Border.all(
-                              color: const Color(0xFF262C20),
-                              width: 1,
                             ),
                           ),
                         ),
@@ -4716,7 +4708,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                   height: 1.5,
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
-                                      color: Color(0xFF2E2E2E),
+                                      color: Colors.white,
                                     ),
                                   ),
                                 ),
@@ -4733,14 +4725,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     child: Container(
                       width: 12,
                       height: 22,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF080808),
-                        borderRadius: const BorderRadius.horizontal(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.horizontal(
                           right: Radius.circular(11),
-                        ),
-                        border: Border.all(
-                          color: const Color(0xFF262626),
-                          width: 1.2,
                         ),
                       ),
                     ),
@@ -4751,14 +4739,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     child: Container(
                       width: 12,
                       height: 22,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF080808),
-                        borderRadius: const BorderRadius.horizontal(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.horizontal(
                           left: Radius.circular(11),
-                        ),
-                        border: Border.all(
-                          color: const Color(0xFF262626),
-                          width: 1.2,
                         ),
                       ),
                     ),
