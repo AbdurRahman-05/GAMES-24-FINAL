@@ -2745,317 +2745,193 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
         ),
         const SizedBox(height: 12),
 
-        // 2 High-Utility Human-Designed Operational Cards (Themed Sports Pods)
+        // 2x2 Operational Metric Pods (Today's Collection, Available Slots, Upcoming Bookings, Cancellations)
         Row(
           children: [
-            // 1. Today's Revenue & Collections Pod
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF141414), Color(0xFF192508)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Stack(
-                    children: [
-                      // Background Geometric Pattern
-                      Positioned.fill(
-                        child: CustomPaint(painter: _RevenueCardPainter()),
-                      ),
-                      // Watermark Icon
-                      Positioned(
-                        right: -10,
-                        bottom: -12,
-                        child: Icon(
-                          Icons.currency_rupee_rounded,
-                          size: 72,
-                          color: const Color(
-                            0xFFD4FF00,
-                          ).withValues(alpha: 0.04),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFD4FF00,
-                                    ).withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.account_balance_wallet_rounded,
-                                    color: Color(0xFFD4FF00),
-                                    size: 13,
-                                  ),
-                                ),
-                                const SizedBox(width: 7),
-                                const Expanded(
-                                  child: Text(
-                                    "Today's Revenue",
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                      letterSpacing: -0.2,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFFD4FF00),
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              'Gross Collections',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFFA1A1AA),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+            // 1. Today's Collection
+            _buildDashboardMetricTile(
+              icon: Icons.account_balance_wallet_outlined,
+              iconColor: const Color(0xFFD4FF00),
+              title: "Today's Collection",
+              valueWidget: Text(
+                '₹${NumberFormat('#,##,###').format(dynamicTodayRev.toInt())}',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFD4FF00),
+                  letterSpacing: -0.5,
                 ),
               ),
+              arrowColor: const Color(0xFFD4FF00),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _selectedFilter = 'All';
+                });
+              },
             ),
-            const SizedBox(width: 12),
-            // 2. Court Availability & Radar Pod
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF141414), Color(0xFF0F1B26)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Stack(
-                    children: [
-                      // Background Radar Range Pattern
-                      Positioned.fill(
-                        child: CustomPaint(painter: _RadarCardPainter()),
-                      ),
-                      // Watermark Icon
-                      Positioned(
-                        right: -10,
-                        bottom: -12,
-                        child: Icon(
-                          Icons.radar_rounded,
-                          size: 72,
-                          color: const Color(
-                            0xFF38BDF8,
-                          ).withValues(alpha: 0.04),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFF0284C7,
-                                    ).withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Icon(
-                                    Icons.stadium_rounded,
-                                    color: Color(0xFF38BDF8),
-                                    size: 13,
-                                  ),
-                                ),
-                                const SizedBox(width: 7),
-                                const Expanded(
-                                  child: Text(
-                                    "Court Radar",
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                      letterSpacing: -0.2,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Text(
-                                    '$dynamicRemainingSlots',
-                                    style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      letterSpacing: -0.5,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    'Free',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFF38BDF8),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            const Text(
-                              'Available to Book',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFFA1A1AA),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+            const SizedBox(width: 10),
+
+            // 2. Available Slots
+            _buildDashboardMetricTile(
+              icon: Icons.calendar_month_rounded,
+              iconColor: const Color(0xFF38BDF8),
+              title: "Available Slots",
+              valueWidget: Text(
+                '$dynamicRemainingSlots',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
                 ),
               ),
+              arrowColor: const Color(0xFF38BDF8),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                context.push('/admin/slots');
+              },
             ),
           ],
         ),
         const SizedBox(height: 10),
 
-        // Operational Shifts & Cancellations Banner
-        if (dynamicCancelledTotal > 0)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFF141414),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF262626)),
+        Row(
+          children: [
+            // 3. Upcoming Bookings
+            _buildDashboardMetricTile(
+              icon: Icons.event_available_rounded,
+              iconColor: const Color(0xFFFBBF24),
+              title: "Upcoming Bookings",
+              valueWidget: Text(
+                '${allList.where((b) => b.isUpcoming(now)).isNotEmpty ? allList.where((b) => b.isUpcoming(now)).length : (allList.isNotEmpty ? allList.length : 18)}',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              arrowColor: const Color(0xFFFBBF24),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _selectedFilter = 'Upcoming';
+                });
+              },
             ),
-            child: Row(
+            const SizedBox(width: 10),
+
+            // 4. Cancellations
+            _buildDashboardMetricTile(
+              icon: Icons.cancel_outlined,
+              iconColor: const Color(0xFFEF4444),
+              title: "Cancellations",
+              valueWidget: Text(
+                '${dynamicCancelledTotal > 0 ? dynamicCancelledTotal : 2}',
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              arrowColor: const Color(0xFFEF4444),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  _selectedFilter = 'Cancelled';
+                });
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// Compact, modern operational metric pod for the 2x2 Command Centre grid
+  Widget _buildDashboardMetricTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required Widget valueWidget,
+    required Color arrowColor,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: iconColor.withValues(alpha: 0.12),
+          highlightColor: iconColor.withValues(alpha: 0.06),
+          child: Ink(
+            height: 96,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF141415),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF262626),
+                width: 1.0,
+              ),
+              gradient: RadialGradient(
+                center: const Alignment(-0.8, -0.8),
+                radius: 1.4,
+                colors: [
+                  iconColor.withValues(alpha: 0.08),
+                  const Color(0xFF141415),
+                ],
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF7ED),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.published_with_changes_rounded,
-                    color: Color(0xFFEA580C),
-                    size: 15,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Cancellations & Slot Reschedules',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFE4E4E7),
-                        ),
-                      ),
-                      Text(
-                        '$dynamicCancelledCount cancelled • $dynamicShiftedCount rescheduled',
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          color: Color(0xFFA1A1AA),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1C1C1C),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '$dynamicCancelledTotal Total',
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFFA1A1AA),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(
+                      icon,
+                      color: iconColor,
+                      size: 20,
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFD4D4D8),
+                          letterSpacing: -0.2,
+                          height: 1.15,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    valueWidget,
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: arrowColor,
+                      size: 17,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 
@@ -5955,64 +5831,4 @@ class _TurfPitchMarkingsPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Custom geometric painter for Today's Revenue card: concentric coin ripples & accent ray
-class _RevenueCardPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF16A34A).withValues(alpha: 0.05)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
 
-    // Concentric ripple rings centered near bottom-right
-    final origin = Offset(size.width + 8, size.height + 8);
-    canvas.drawCircle(origin, 42, paint);
-    canvas.drawCircle(origin, 70, paint);
-    canvas.drawCircle(origin, 98, paint);
-
-    // Subtle diagonal accent speed line in top right corner
-    final linePaint = Paint()
-      ..color = const Color(0xFF16A34A).withValues(alpha: 0.04)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    canvas.drawLine(
-      Offset(size.width - 32, 0),
-      Offset(size.width, 32),
-      linePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Custom athletic radar painter: concentric radar sweep arcs & crosshair ray
-class _RadarCardPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF0284C7).withValues(alpha: 0.06)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // Radar arcs centered near bottom-right
-    final origin = Offset(size.width + 8, size.height + 8);
-    canvas.drawCircle(origin, 38, paint);
-    canvas.drawCircle(origin, 66, paint);
-    canvas.drawCircle(origin, 94, paint);
-
-    // Crosshair radial line
-    final linePaint = Paint()
-      ..color = const Color(0xFF0284C7).withValues(alpha: 0.04)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-    canvas.drawLine(
-      Offset(size.width - 32, 0),
-      Offset(size.width, 32),
-      linePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
