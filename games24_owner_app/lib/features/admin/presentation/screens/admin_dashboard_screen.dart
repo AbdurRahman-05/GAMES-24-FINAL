@@ -548,19 +548,23 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                         children: [
                           Row(
                             children: [
-                              const Text(
-                                'Turf Branches & Venues',
-                                style: TextStyle(
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: -0.3,
+                              const Flexible(
+                                child: Text(
+                                  'Turf Branches & Venues',
+                                  style: TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 6.5,
+                                  horizontal: 6,
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
@@ -574,7 +578,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                 child: Text(
                                   '${branches.length} Location${branches.length > 1 ? "s" : ""}',
                                   style: const TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 9.5,
                                     fontWeight: FontWeight.w700,
                                     color: Color(0xFF86EFAC),
                                   ),
@@ -589,20 +593,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                               fontSize: 11.5,
                               color: Color(0xFFA1A1AA),
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Color(0xFFA1A1AA),
-                        size: 20,
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () => Navigator.pop(ctx),
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF262626),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFFA1A1AA),
+                          size: 16,
+                        ),
                       ),
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
