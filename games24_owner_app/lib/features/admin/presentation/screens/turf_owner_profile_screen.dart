@@ -2947,13 +2947,20 @@ class _TurfOwnerProfileScreenState
                 const SizedBox(width: 6),
                 InkWell(
                   onTap: () => _showReceiptDetailsDialog(item),
-                  child: const Text(
-                    'View Receipt 📄',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.receipt_long_rounded, size: 13, color: AppColors.primary),
+                      SizedBox(width: 4),
+                      Text(
+                        'View Receipt',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -3315,7 +3322,7 @@ class _TurfOwnerProfileScreenState
                             label: Text(
                               profile.isSubscriptionActive
                                   ? 'Renew Platform Plan (₹1,180)'
-                                  : 'Pay ₹1,180 & Go Live ⚡',
+                                  : 'Pay ₹1,180 & Go Live',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
@@ -4372,7 +4379,7 @@ class _TurfOwnerProfileScreenState
                         child: Row(
                           children: [
                             const Icon(
-                              Icons.stars_rounded,
+                              Icons.weekend_rounded,
                               size: 13,
                               color: Color(0xFFD97706),
                             ),
@@ -5205,7 +5212,7 @@ class _TurfOwnerProfileScreenState
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '$pct% Reached • ${remaining > 0 ? "₹${NumberFormat('#,##,###').format(remaining.toInt())} left" : "Goal Met! 🎉"}',
+                                  '$pct% Reached • ${remaining > 0 ? "₹${NumberFormat('#,##,###').format(remaining.toInt())} left" : "Goal Met!"}',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,

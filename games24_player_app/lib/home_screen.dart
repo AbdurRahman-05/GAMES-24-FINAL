@@ -2458,19 +2458,26 @@ class _HomeScreenState extends State<HomeScreen> {
             : ['Floodlights', 'Parking', 'Restroom'];
 
         final List<String> rawPhotos = (turf['photoUrls'] is List)
-            ? (turf['photoUrls'] as List).map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList()
+            ? (turf['photoUrls'] as List)
+                .map((e) => e.toString().trim())
+                .where((e) => e.isNotEmpty && e != 'null' && !e.contains('unsplash.com') && !e.contains('picsum.photos'))
+                .toList()
             : <String>[];
 
         String resolvedImg = '';
-        if (turf['imageUrl'] != null && turf['imageUrl'].toString().trim().isNotEmpty) {
-          resolvedImg = turf['imageUrl'].toString().trim();
-        } else if (rawPhotos.isNotEmpty) {
+        if (turf['imageUrl'] != null && turf['imageUrl'].toString().trim().isNotEmpty && turf['imageUrl'].toString().trim() != 'null') {
+          final trimmed = turf['imageUrl'].toString().trim();
+          if (!trimmed.contains('unsplash.com') && !trimmed.contains('picsum.photos')) {
+            resolvedImg = trimmed;
+          }
+        }
+        if (resolvedImg.isEmpty && rawPhotos.isNotEmpty) {
           resolvedImg = rawPhotos.first;
-        } else {
-          resolvedImg = 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80';
         }
 
-        final List<String> photoUrls = rawPhotos.isNotEmpty ? rawPhotos : [resolvedImg];
+        final List<String> photoUrls = rawPhotos.isNotEmpty
+            ? rawPhotos
+            : (resolvedImg.isNotEmpty ? [resolvedImg] : <String>[]);
 
         final sportsStr = (turf['sports'] is List)
             ? (turf['sports'] as List).join(' • ')
@@ -2520,9 +2527,9 @@ class _HomeScreenState extends State<HomeScreen> {
     List<dynamic>? sportsList,
     required List<String> tags,
   }) {
-    final effectiveImageUrl = (imageUrl.trim().isNotEmpty && imageUrl.trim().startsWith('http'))
+    final effectiveImageUrl = (imageUrl.trim().isNotEmpty && imageUrl.trim() != 'null' && !imageUrl.contains('unsplash.com') && !imageUrl.contains('picsum.photos'))
         ? imageUrl.trim()
-        : 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80';
+        : '';
 
     return Container(
       decoration: BoxDecoration(

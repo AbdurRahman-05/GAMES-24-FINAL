@@ -703,7 +703,7 @@ class _SuperAdminWebPortalScreenState
         const SizedBox(height: 20),
         AppTextField(
           label: 'Broadcast Title',
-          hint: 'e.g. Madurai Super Box Cricket Cup Announced! 🏆',
+          hint: 'e.g. Madurai Super Box Cricket Cup Announced!',
           prefixIcon: Icons.campaign_rounded,
         ),
         const SizedBox(height: 16),

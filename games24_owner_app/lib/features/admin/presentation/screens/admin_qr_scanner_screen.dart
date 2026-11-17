@@ -388,7 +388,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
         if (mounted) {
           ToastUtils.showSuccess(
             context,
-            data['message'] ?? 'Ticket Pass Verified & Entry Granted! 🎟️',
+            data['message'] ?? 'Ticket Pass Verified & Entry Granted!',
           );
         }
       } else {
@@ -535,7 +535,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
           _isProcessing = false;
         });
         if (mounted) {
-          ToastUtils.showSuccess(context, 'Ticket Pass Offline Verified! 🎟️');
+          ToastUtils.showSuccess(context, 'Ticket Pass Offline Verified!');
         }
         return;
       }
@@ -1219,7 +1219,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'PASS ALREADY VERIFIED ⚠️',
+                        'PASS ALREADY VERIFIED',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
@@ -1385,7 +1385,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isReEntry ? 'RE-ENTRY GRANTED ✅' : 'ENTRY GRANTED ✅',
+                      isReEntry ? 'RE-ENTRY GRANTED' : 'ENTRY GRANTED',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,

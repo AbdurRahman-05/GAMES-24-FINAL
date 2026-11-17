@@ -52,20 +52,23 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
     final list = <String>[];
     if (widget.photoUrls != null && widget.photoUrls!.isNotEmpty) {
       for (final p in widget.photoUrls!) {
-        final resolved = ApiConfig.resolveUrl(p);
+        final raw = p.trim();
+        if (raw.isEmpty || raw == 'null') continue;
+        if (raw.contains('picsum.photos') || raw.contains('unsplash.com')) continue;
+        final resolved = ApiConfig.resolveUrl(raw);
         if (resolved.isNotEmpty && !list.contains(resolved)) {
           list.add(resolved);
         }
       }
     }
-    if (list.isEmpty && widget.fallbackImageUrl != null && widget.fallbackImageUrl!.isNotEmpty) {
-      final resolved = ApiConfig.resolveUrl(widget.fallbackImageUrl);
-      if (resolved.isNotEmpty) {
-        list.add(resolved);
+    if (list.isEmpty && widget.fallbackImageUrl != null && widget.fallbackImageUrl!.trim().isNotEmpty) {
+      final raw = widget.fallbackImageUrl!.trim();
+      if (raw != 'null' && !raw.contains('picsum.photos') && !raw.contains('unsplash.com')) {
+        final resolved = ApiConfig.resolveUrl(raw);
+        if (resolved.isNotEmpty && !list.contains(resolved)) {
+          list.add(resolved);
+        }
       }
-    }
-    if (list.isEmpty) {
-      list.add('https://picsum.photos/seed/turf1/800/400');
     }
     return list;
   }
@@ -83,21 +86,23 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // PageView for swipeable carousel
+            // PageView for swipeable carousel OR branded placeholder
             GestureDetector(
               onTap: widget.onTap,
-              child: hasMultiple
-                  ? PageView.builder(
-                      controller: _pageController,
-                      itemCount: images.length,
-                      onPageChanged: (idx) {
-                        setState(() => _currentIndex = idx);
-                      },
-                      itemBuilder: (context, index) {
-                        return _buildImageItem(images[index]);
-                      },
-                    )
-                  : _buildImageItem(images.first),
+              child: images.isNotEmpty
+                  ? (hasMultiple
+                      ? PageView.builder(
+                          controller: _pageController,
+                          itemCount: images.length,
+                          onPageChanged: (idx) {
+                            setState(() => _currentIndex = idx);
+                          },
+                          itemBuilder: (context, index) {
+                            return _buildImageItem(images[index]);
+                          },
+                        )
+                      : _buildImageItem(images.first))
+                  : _buildPlaceholder(),
             ),
 
             // Subtle gradient overlay for readability of badges and dots
@@ -222,91 +227,95 @@ class _TurfCardCarouselState extends State<TurfCardCarousel> {
     );
   }
 
+  Widget _buildPlaceholder() {
+    return Container(
+      height: widget.height,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Opacity(
+            opacity: 0.22,
+            child: Image.asset(
+              'assets/images/wm_full.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: widget.height,
+              errorBuilder: (_, __, ___) => const SizedBox(),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
+                ),
+                child: const Icon(
+                  Icons.stadium_rounded,
+                  size: 30,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'GAMEZ24 VENUE',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Delight',
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Verified Sports Arena',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.white.withOpacity(0.7),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImageItem(String url) {
     return Image.network(
       url,
       fit: BoxFit.cover,
       width: double.infinity,
       height: widget.height,
-      errorBuilder: (_, __, ___) => Container(
-        height: widget.height,
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Opacity(
-              opacity: 0.22,
-              child: Image.asset(
-                'assets/images/wm_full.png',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: widget.height,
-                errorBuilder: (_, __, ___) => const SizedBox(),
-              ),
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.25), width: 1.5),
-                  ),
-                  child: const Icon(
-                    Icons.stadium_rounded,
-                    size: 30,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'GAMEZ24 VENUE',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Delight',
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Verified Sports Arena',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.white.withOpacity(0.7),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      errorBuilder: (_, __, ___) => _buildPlaceholder(),
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(
-          color: const Color(0xFFE5E7EB),
+          color: const Color(0xFF0D3324),
           alignment: Alignment.center,
           child: SizedBox(
-            width: 20,
-            height: 20,
+            width: 24,
+            height: 24,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               value: loadingProgress.expectedTotalBytes != null
                   ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                   : null,
-              color: const Color(0xFF154D36),
+              color: const Color(0xFF4ADE80),
             ),
           ),
         );

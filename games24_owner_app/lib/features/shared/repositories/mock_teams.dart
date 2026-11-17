@@ -16,7 +16,7 @@ class MockTeamsRepository {
       matchesPlayed: 18,
       wins: 14,
       winRate: 77.8,
-      achievements: ['KK Nagar Turf Champions 🏆', 'Best Defensive Unit 🛡️'],
+      achievements: ['KK Nagar Turf Champions', 'Best Defensive Unit'],
     ),
     TeamModel(
       id: 't2',
@@ -30,7 +30,7 @@ class MockTeamsRepository {
       matchesPlayed: 24,
       wins: 19,
       winRate: 79.2,
-      achievements: ['Madurai League Winners 2025 🥇', 'Max Sixes Award 💥'],
+      achievements: ['Madurai League Winners 2025', 'Max Sixes Award'],
     ),
     TeamModel(
       id: 't3',
@@ -44,7 +44,7 @@ class MockTeamsRepository {
       matchesPlayed: 15,
       wins: 11,
       winRate: 73.3,
-      achievements: ['Doubles Cup Semi-Finalists 🏸'],
+      achievements: ['Doubles Cup Semi-Finalists'],
     ),
   ];
 }

@@ -331,7 +331,7 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                                           ),
                                           child: Text(
                                             item.status == 'Live'
-                                                ? '🔴 LIVE NOW'
+                                                ? 'LIVE NOW'
                                                 : item.sportType,
                                             style: const TextStyle(
                                               color: Colors.white,
@@ -414,13 +414,20 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen>
                                               color: Colors.red.shade200,
                                             ),
                                           ),
-                                          child: Text(
-                                            '🔴 ${item.liveScore}',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red.shade900,
-                                            ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(Icons.circle, size: 7, color: Colors.red),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                item.liveScore,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.red.shade900,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                         const SizedBox(height: 10),

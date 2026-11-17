@@ -383,7 +383,7 @@ class _SuperAdminDashboardScreenState
           const SizedBox(height: 16),
           AppTextField(
             label: 'Announcement Title',
-            hint: 'e.g. Madurai Super Box Cricket Tournament Cup Announced! 🏆',
+            hint: 'e.g. Madurai Super Box Cricket Tournament Cup Announced!',
             prefixIcon: Icons.campaign_rounded,
           ),
           const SizedBox(height: 14),

@@ -27,32 +27,43 @@ class VenueCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Widget imageWidget = Image.network(
-      venue.imageUrls.first,
-      height: 130,
-      width: double.infinity,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          height: 130,
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            gradient: AppColors.primaryGradient,
-          ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.stadium_rounded, size: 42, color: Colors.white),
-              SizedBox(height: 4),
-              Text(
-                'Madurai Sports Arena',
-                style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    Widget buildPlaceholder() {
+      return Container(
+        height: 130,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: AppColors.primaryGradient,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.stadium_rounded, size: 42, color: Colors.white),
+            const SizedBox(height: 4),
+            Text(
+              venue.name.isNotEmpty ? venue.name : 'Madurai Sports Arena',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final hasImage = venue.imageUrls.isNotEmpty &&
+        venue.imageUrls.first.trim().isNotEmpty &&
+        !venue.imageUrls.first.contains('picsum.photos') &&
+        !venue.imageUrls.first.contains('unsplash.com');
+
+    Widget imageWidget = hasImage
+        ? Image.network(
+            venue.imageUrls.first,
+            height: 130,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => buildPlaceholder(),
+          )
+        : buildPlaceholder();
 
     if (heroTag != null) {
       imageWidget = Hero(

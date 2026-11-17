@@ -283,7 +283,7 @@ class _WebPartnerPortalScreenState
               AppButton(
                 text: 'Simulate Web Gate Verification Pass',
                 onPressed: () {
-                  ToastUtils.showSuccess(context, "Gate Ticket BK-99214 Verified ✅");
+                  ToastUtils.showSuccess(context, "Gate Ticket BK-99214 Verified");
                 },
               ),
             ],

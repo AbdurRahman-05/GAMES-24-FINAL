@@ -506,7 +506,7 @@ class _TurfOwnerRegistrationScreenState
         if (mounted) {
           ToastUtils.showSuccess(
             context,
-            "Venue photo uploaded successfully! 📸",
+            "Venue photo uploaded successfully",
           );
         }
       } else {
@@ -605,7 +605,7 @@ class _TurfOwnerRegistrationScreenState
         if (mounted) {
           ToastUtils.showSuccess(
             context,
-            "${file.name} (PDF) attached successfully! 📄✅",
+            "${file.name} (PDF) attached successfully",
           );
         }
       } else {
@@ -648,7 +648,7 @@ class _TurfOwnerRegistrationScreenState
         if (mounted) {
           ToastUtils.showSuccess(
             context,
-            "OTPs sent! Check your backend terminal 💻",
+            "OTPs sent successfully to your mobile and email",
           );
         }
       }
@@ -677,14 +677,14 @@ class _TurfOwnerRegistrationScreenState
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() => _isMobileVerified = true);
         if (mounted) {
-          ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+          ToastUtils.showSuccess(context, "Mobile Phone Number Verified");
         }
       } else {
         final data = jsonDecode(response.body);
         if (mounted) {
           ToastUtils.showError(
             context,
-            data['message'] ?? "Invalid Mobile OTP. Check backend terminal.",
+            data['message'] ?? "Invalid Mobile OTP. Please try again.",
           );
         }
       }
@@ -692,13 +692,13 @@ class _TurfOwnerRegistrationScreenState
       if (otp.length == 4) {
         setState(() => _isMobileVerified = true);
         if (mounted) {
-          ToastUtils.showSuccess(context, "Mobile Phone Number Verified ✅");
+          ToastUtils.showSuccess(context, "Mobile Phone Number Verified");
         }
       } else {
         if (mounted) {
           ToastUtils.showError(
             context,
-            "Please check backend terminal for OTP.",
+            "Please enter a valid 4-digit OTP.",
           );
         }
       }
@@ -725,14 +725,14 @@ class _TurfOwnerRegistrationScreenState
       if (response.statusCode == 200 || response.statusCode == 201) {
         setState(() => _isEmailVerified = true);
         if (mounted) {
-          ToastUtils.showSuccess(context, "Email Address Verified ✅");
+          ToastUtils.showSuccess(context, "Email Address Verified");
         }
       } else {
         final data = jsonDecode(response.body);
         if (mounted) {
           ToastUtils.showError(
             context,
-            data['message'] ?? "Invalid Email OTP. Check backend terminal.",
+            data['message'] ?? "Invalid Email OTP. Please try again.",
           );
         }
       }
@@ -740,13 +740,13 @@ class _TurfOwnerRegistrationScreenState
       if (otp.length == 4) {
         setState(() => _isEmailVerified = true);
         if (mounted) {
-          ToastUtils.showSuccess(context, "Email Address Verified ✅");
+          ToastUtils.showSuccess(context, "Email Address Verified");
         }
       } else {
         if (mounted) {
           ToastUtils.showError(
             context,
-            "Please check backend terminal for OTP.",
+            "Please enter a valid 4-digit OTP.",
           );
         }
       }
@@ -1283,49 +1283,6 @@ class _TurfOwnerRegistrationScreenState
         ),
         const SizedBox(height: 16),
 
-        // Dev Mode Terminal Banner
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.25),
-            ),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.terminal_rounded,
-                color: AppColors.primary,
-                size: 26,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Backend Terminal OTP Mode',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Both 4-digit Mobile OTP & Email OTP are printed directly in your backend terminal console!',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[800]),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
         // Mobile OTP Box
         AppCard(
           color: _isMobileVerified
@@ -1400,16 +1357,18 @@ class _TurfOwnerRegistrationScreenState
                     Expanded(
                       child: AppTextField(
                         label: 'Mobile OTP Code',
-                        hint: 'Enter 4-digit OTP from terminal',
+                        hint: 'Enter 4-digit OTP',
                         controller: _mobileOtpController,
                         keyboardType: TextInputType.number,
                       ),
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
-                      width: 110,
+                      width: 115,
                       child: AppButton(
                         text: 'Verify SMS',
+                        fontSize: 12,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         height: 48,
                         isLoading: _isVerifyingMobile,
                         onPressed: _isVerifyingMobile ? null : _verifyMobileOtp,
@@ -1509,16 +1468,18 @@ class _TurfOwnerRegistrationScreenState
                     Expanded(
                       child: AppTextField(
                         label: 'Email OTP Code',
-                        hint: 'Enter 4-digit OTP from terminal',
+                        hint: 'Enter 4-digit OTP',
                         controller: _emailOtpController,
                         keyboardType: TextInputType.number,
                       ),
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
-                      width: 110,
+                      width: 115,
                       child: AppButton(
                         text: 'Verify Email',
+                        fontSize: 12,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         height: 48,
                         isLoading: _isVerifyingEmail,
                         onPressed: _isVerifyingEmail ? null : _verifyEmailOtp,
@@ -1548,6 +1509,7 @@ class _TurfOwnerRegistrationScreenState
 
   // STEP 3: Photos & Facilities (Pricing configured per sport in Profile Page)
   Widget _buildStep3PricingAndFacilities(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1570,15 +1532,15 @@ class _TurfOwnerRegistrationScreenState
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.info_rounded, color: AppColors.primary, size: 24),
-              SizedBox(width: 12),
+              const Icon(Icons.info_rounded, color: AppColors.primary, size: 24),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Pricing Configured per Sport in Profile',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -1586,10 +1548,14 @@ class _TurfOwnerRegistrationScreenState
                         color: AppColors.primary,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       'Hourly rates (weekday, weekend, day, and night slots) are configured based on individual sports inside your Turf Owner Profile Page after login.',
-                      style: TextStyle(fontSize: 11, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: isDark ? const Color(0xFFD4D4D8) : const Color(0xFF374151),
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),
@@ -1676,7 +1642,7 @@ class _TurfOwnerRegistrationScreenState
                                   ),
                                   child: const Icon(
                                     Icons.close_rounded,
-                                    color: Color(0xFF141414),
+                                    color: Colors.white,
                                     size: 14,
                                   ),
                                 ),

@@ -129,7 +129,7 @@ class TournamentBracketView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${tournament.sportType.toUpperCase()} CHAMPION 🏆',
+                            '${tournament.sportType.toUpperCase()} CHAMPION',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,

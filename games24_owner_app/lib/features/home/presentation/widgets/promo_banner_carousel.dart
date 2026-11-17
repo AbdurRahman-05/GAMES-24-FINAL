@@ -21,14 +21,14 @@ class _PromoBannerCarouselState extends State<PromoBannerCarousel> {
   Widget build(BuildContext context) {
     final banners = [
       _BannerData(
-        title: 'Host Sports Birthday Parties! 🎂',
+        title: 'Host Sports Birthday Parties!',
         subtitle: 'Turf booking + Food + Decor package starting ₹4,999 in KK Nagar',
         gradient: AppColors.heroGradient,
         buttonText: 'Book Celebration',
         onTap: widget.onCelebrationTap,
       ),
       _BannerData(
-        title: '20% OFF Badminton Courts 🏸',
+        title: '20% OFF Badminton Courts',
         subtitle: 'BWF standard wooden courts in Anna Nagar using code MADURAI20',
         gradient: const LinearGradient(
           colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)],

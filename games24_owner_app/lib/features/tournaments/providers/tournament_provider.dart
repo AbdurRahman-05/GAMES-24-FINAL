@@ -283,7 +283,7 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
               ),
               TournamentFixture(
                 id: finalId,
-                matchNumber: 'GRAND FINAL 🏆',
+                matchNumber: 'GRAND FINAL',
                 teamA: teamNames[1] == 'BYE' ? teamNames[0] : 'TBD (Winner SF1)',
                 teamB: teamNames[3] == 'BYE' ? teamNames[2] : 'TBD (Winner SF2)',
                 courtName: t.courtAllocation,
@@ -387,7 +387,7 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
               ),
               TournamentFixture(
                 id: finalId,
-                matchNumber: 'GRAND FINAL 🏆',
+                matchNumber: 'GRAND FINAL',
                 teamA: 'TBD (Winner SF1)',
                 teamB: 'TBD (Winner SF2)',
                 courtName: t.courtAllocation,
@@ -539,7 +539,7 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
       }
 
       final summaryMsg = newChampionTeam.isNotEmpty
-          ? '🏆 CHAMPION DECLARED: $newChampionTeam'
+          ? 'CHAMPION DECLARED: $newChampionTeam'
           : '${targetFixture.matchNumber}: $winnerTeam WON ($scoreA-$scoreB)';
 
       RealtimeScoreSyncService.instance.emitEvent(
