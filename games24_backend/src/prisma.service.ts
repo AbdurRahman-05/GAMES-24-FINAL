@@ -57,7 +57,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     this.$use(async (params, next) => {
       let attempts = 0;
-      const maxAttempts = 4;
+      const maxAttempts = 5;
+
+      const isKeepAlive =
+        params.action === 'queryRaw' &&
+        JSON.stringify(params.args || {}).includes('SELECT 1');
 
       while (attempts < maxAttempts) {
         try {
@@ -88,15 +92,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             errorMessage.includes('econnreset');
 
           if (isConnectionError && attempts < maxAttempts) {
-            // Neon serverless wake-up delay with exponential backoff
-            const delay = attempts === 1 ? 800 : attempts * 1000;
-            this.logger.warn(
-              `Database waking up or reconnecting (${errorCode || 'Neon-ColdStart'}). Resuming in ${delay}ms (attempt ${attempts}/${maxAttempts})...`,
-            );
+            // Signal Prisma query engine to establish a fresh connection if the pool socket was dropped
+            await this.$connect().catch(() => {});
+
+            // Neon serverless cold-start wake-up progressive backoff (up to 14.5s total retry window)
+            const delay = attempts === 1 ? 1000 : attempts * 1500;
+            if (!isKeepAlive) {
+              this.logger.warn(
+                `Database waking up or reconnecting (${errorCode || 'Neon-ColdStart'}). Resuming in ${delay}ms (attempt ${attempts}/${maxAttempts})...`,
+              );
+            }
             await new Promise((res) => setTimeout(res, delay));
-            // Do NOT call $disconnect() as it destroys the connection pool for all active concurrent queries!
-            // Prisma will reuse or open healthy connections on the next attempt automatically.
             continue;
+          }
+
+          if (isKeepAlive) {
+            // Internal heartbeat ping: silently recover without polluting user console
+            return [{ result: 1 }];
           }
 
           throw error;
@@ -116,15 +128,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         WHERE "status" != 'Cancelled';
       `).catch((e) => this.logger.warn(`Could not verify unique booking index: ${e?.message || e}`));
 
-      // Keep-alive ping every 30 seconds to maintain warm connection to Neon
+      // Warm heartbeat ping every 2 minutes (120s) to keep Neon serverless compute warm
       this.keepAliveTimer = setInterval(async () => {
         try {
           await this.$queryRawUnsafe('SELECT 1');
-        } catch (e: any) {
-          // If keep-alive ping encounters cold-start or temporary socket stall, log quietly without destroying pool
-          this.logger.debug?.(`Keep-alive ping delayed: ${e?.message || e}`);
+        } catch {
+          // Handled silently; next tick or real user query will reconnect automatically
         }
-      }, 30000);
+      }, 120000);
       if (this.keepAliveTimer && typeof (this.keepAliveTimer as any).unref === 'function') {
         (this.keepAliveTimer as any).unref();
       }
