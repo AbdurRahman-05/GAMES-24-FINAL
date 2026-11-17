@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -1547,28 +1548,39 @@ class _AdminSlotManagerScreenState
     }
 
     String selectedStatus = initialStatus;
+    bool isSaving = false;
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setModalState) {
           return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.88,
+            ),
             decoration: const BoxDecoration(
               color: Color(0xFF141414),
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(
+                top: BorderSide(color: Color(0xFF262626), width: 1),
+              ),
             ),
-            padding: EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              MediaQuery.of(context).viewInsets.bottom + 24,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  14,
+                  20,
+                  MediaQuery.of(context).viewInsets.bottom + 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                 Center(
                   child: Container(
                     width: 44,
@@ -1632,46 +1644,78 @@ class _AdminSlotManagerScreenState
                     ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                const Divider(height: 1, color: Color(0xFF262626)),
+                const SizedBox(height: 14),
+
+                // Scrollable 3 Status Cards
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildStatusSelectionTile(
+                          icon: Icons.build_circle_rounded,
+                          accentColor: const Color(0xFFF59E0B),
+                          bgColor: const Color(0xFF2D2005),
+                          title: 'Under Maintenance',
+                          subtitle:
+                              'Grass repair, pitch rolling, floodlights or venue maintenance hold.',
+                          badgeText: 'Maintenance',
+                          isSelected: selectedStatus == 'Under Maintenance',
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setModalState(
+                              () => selectedStatus = 'Under Maintenance',
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        _buildStatusSelectionTile(
+                          icon: Icons.bookmark_added_rounded,
+                          accentColor: const Color(0xFF3B82F6),
+                          bgColor: const Color(0xFF1E293B),
+                          title: 'Already Booked',
+                          subtitle:
+                              'Reserved via direct call, walk-in customer or manual cash booking.',
+                          badgeText: 'Booked Offline',
+                          isSelected: selectedStatus == 'Already Booked',
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setModalState(
+                              () => selectedStatus = 'Already Booked',
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 10),
+
+                        _buildStatusSelectionTile(
+                          icon: Icons.check_circle_rounded,
+                          accentColor: const Color(0xFF22C55E),
+                          bgColor: const Color(0xFF152A15),
+                          title: 'Available',
+                          subtitle:
+                              'Open for players to book online on the Gamez24 Player App.',
+                          badgeText: 'Open Slot',
+                          isSelected: selectedStatus == 'Available',
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setModalState(
+                              () => selectedStatus = 'Available',
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 16),
-                const Divider(height: 1, color: Color(0xFF1C1C1C)),
-                const SizedBox(height: 16),
+                const Divider(height: 1, color: Color(0xFF262626)),
+                const SizedBox(height: 14),
 
-                _buildStatusSelectionTile(
-                  icon: Icons.build_circle_rounded,
-                  accentColor: const Color(0xFFD97706),
-                  bgColor: const Color(0xFF2D2005),
-                  title: 'Under Maintenance',
-                  subtitle: 'Grass repair, pitch rolling, floodlights or venue maintenance hold.',
-                  badgeText: 'Maintenance',
-                  isSelected: selectedStatus == 'Under Maintenance',
-                  onTap: () => setModalState(() => selectedStatus = 'Under Maintenance'),
-                ),
-                const SizedBox(height: 10),
-
-                _buildStatusSelectionTile(
-                  icon: Icons.bookmark_added_rounded,
-                  accentColor: const Color(0xFF1D4ED8),
-                  bgColor: const Color(0xFFDBEAFE),
-                  title: 'Already Booked',
-                  subtitle: 'Reserved via direct call, walk-in customer or manual cash booking.',
-                  badgeText: 'Booked Offline',
-                  isSelected: selectedStatus == 'Already Booked',
-                  onTap: () => setModalState(() => selectedStatus = 'Already Booked'),
-                ),
-                const SizedBox(height: 10),
-
-                _buildStatusSelectionTile(
-                  icon: Icons.check_circle_rounded,
-                  accentColor: const Color(0xFFD4FF00),
-                  bgColor: const Color(0xFFDCFCE7),
-                  title: 'Available',
-                  subtitle: 'Open for players to book online on the Gamez24 Player App.',
-                  badgeText: 'Open Slot',
-                  isSelected: selectedStatus == 'Available',
-                  onTap: () => setModalState(() => selectedStatus = 'Available'),
-                ),
-                const SizedBox(height: 20),
-
+                // Pinned Always-Visible Action Bar
                 Row(
                   children: [
                     Expanded(
@@ -1680,7 +1724,7 @@ class _AdminSlotManagerScreenState
                         onPressed: () => Navigator.pop(ctx),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: const BorderSide(color: Color(0xFF262626)),
+                          side: const BorderSide(color: Color(0xFF2D2D30)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -1699,70 +1743,97 @@ class _AdminSlotManagerScreenState
                     Expanded(
                       flex: 3,
                       child: ElevatedButton.icon(
-                        icon: const Icon(Icons.check_rounded, size: 18),
-                        label: const Text(
-                          'Confirm Status',
-                          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800),
+                        icon: isSaving
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.check_circle_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                        label: Text(
+                          isSaving ? 'Saving...' : 'Save Slot Status',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4FF00),
-                          foregroundColor: Colors.black,
+                          backgroundColor: const Color(0xFF16A34A),
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          elevation: 0,
+                          elevation: 2,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () async {
-                          Navigator.pop(ctx);
-                          final profile = ref.read(turfProfileProvider);
-                          final adminId = profile.verifiedAdminId ?? profile.adminUserId ?? 1;
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                setModalState(() => isSaving = true);
+                                final profile = ref.read(turfProfileProvider);
+                                final adminId = profile.verifiedAdminId ??
+                                    profile.adminUserId ??
+                                    1;
 
-                          final success = await ref
-                              .read(adminSlotProvider.notifier)
-                              .updateSlotStatusRealtime(
-                                adminId: adminId,
-                                slot: slot,
-                                dateKey: dateKey,
-                                statusType: selectedStatus,
-                              );
+                                final success = await ref
+                                    .read(adminSlotProvider.notifier)
+                                    .updateSlotStatusRealtime(
+                                      adminId: adminId,
+                                      slot: slot,
+                                      dateKey: dateKey,
+                                      statusType: selectedStatus,
+                                    );
 
-                          if (context.mounted) {
-                            if (success) {
-                              if (selectedStatus == 'Under Maintenance') {
-                                ToastUtils.showSuccess(
-                                  context,
-                                  'Slot $slot marked as Under Maintenance.',
-                                );
-                              } else if (selectedStatus == 'Already Booked') {
-                                ToastUtils.showSuccess(
-                                  context,
-                                  'Slot $slot marked as Already Booked (Offline).',
-                                );
-                              } else {
-                                ToastUtils.showSuccess(
-                                  context,
-                                  'Slot $slot is now Available for player bookings.',
-                                );
-                              }
-                            } else {
-                              ToastUtils.showError(
-                                context,
-                                'Failed to update slot $slot status.',
-                              );
-                            }
-                          }
-                        },
+                                if (context.mounted) {
+                                  Navigator.pop(ctx);
+                                  if (success) {
+                                    if (selectedStatus == 'Under Maintenance') {
+                                      ToastUtils.showSuccess(
+                                        context,
+                                        'Slot $slot marked as Under Maintenance.',
+                                      );
+                                    } else if (selectedStatus ==
+                                        'Already Booked') {
+                                      ToastUtils.showSuccess(
+                                        context,
+                                        'Slot $slot marked as Already Booked (Offline).',
+                                      );
+                                    } else {
+                                      ToastUtils.showSuccess(
+                                        context,
+                                        'Slot $slot is now Available for player bookings.',
+                                      );
+                                    }
+                                  } else {
+                                    ToastUtils.showError(
+                                      context,
+                                      'Failed to update slot $slot status.',
+                                    );
+                                  }
+                                }
+                              },
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-          );
-        },
-      ),
-    );
+          ),
+        ),
+      );
+    },
+  ),
+);
   }
 
   Widget _buildStatusSelectionTile({
