@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -171,6 +172,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 0. Notice when active branch is pending Super Admin approval
+              if (profile.isPendingApproval) ...[
+                _buildPendingAdminApprovalNotice(context, profile),
+                const SizedBox(height: 14),
+              ],
+
               // 1. Live Operating Status & Quick Date Bar
               _buildVenueHeaderPulseBar(profile, nowFormatted),
               const SizedBox(height: 14),
@@ -347,6 +354,118 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     );
   }
 
+  Widget _buildPendingAdminApprovalNotice(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF261906), Color(0xFF181005)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.hourglass_top_rounded,
+              color: Color(0xFFFBBF24),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Text(
+                      'Branch Pending Super Admin Verification',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFFBBF24),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Application for "${profile.venueName}" has been submitted to the Super Admin queue. You can configure courts and preview operations. Public player bookings will unlock automatically once verified.',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFFE4E4E7),
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: () => _showBranchSwitcherBottomSheet(context, profile),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.swap_horiz_rounded,
+                          size: 14,
+                          color: Color(0xFFFBBF24),
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          'Switch to Another Branch',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFBBF24),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showBranchSwitcherBottomSheet(
     BuildContext context,
     TurfProfileState profile,
@@ -379,40 +498,97 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: const BoxDecoration(
-          color: Color(0xFF141414),
+          color: Color(0xFF121212),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(
+            top: BorderSide(color: Color(0xFF262626), width: 1),
+          ),
         ),
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Instagram-style Drag Handle
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3F3F46),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Sheet Header
                 Row(
                   children: [
-                    const Expanded(
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.storefront_rounded,
+                        color: Color(0xFF22C55E),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Your Turf Branches',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
+                          Row(
+                            children: [
+                              const Text(
+                                'Turf Branches & Venues',
+                                style: TextStyle(
+                                  fontSize: 16.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6.5,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E291E),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFF2E452E),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  '${branches.length} Location${branches.length > 1 ? "s" : ""}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF86EFAC),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Select a location or register another branch',
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Switch active venue or register a new branch',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11.5,
                               color: Color(0xFFA1A1AA),
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
@@ -422,6 +598,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       icon: const Icon(
                         Icons.close_rounded,
                         color: Color(0xFFA1A1AA),
+                        size: 20,
                       ),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
@@ -430,187 +607,358 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   ],
                 ),
                 const SizedBox(height: 16),
+
+                // Connected Branches List (Instagram-Style Cards)
                 ...branches.map((b) {
                   final isCurrent = b.id == profile.verifiedAdminId;
+                  final isPending = b.isPending || b.status == 'PENDING_APPROVAL';
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
                     child: Material(
                       color: isCurrent
-                          ? const Color(0xFF1B2A06)
-                          : const Color(0xFF141414),
+                          ? const Color(0xFF142414)
+                          : const Color(0xFF18181B),
                       clipBehavior: Clip.antiAlias,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                         side: BorderSide(
                           color: isCurrent
-                              ? const Color(0xFFD4FF00)
-                              : const Color(0xFF262626),
+                              ? const Color(0xFF22C55E)
+                              : isPending
+                                  ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                                  : const Color(0xFF27272A),
                           width: isCurrent ? 1.5 : 1.0,
                         ),
                       ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 4,
-                        ),
-                        leading: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: isCurrent
-                                ? const Color(0xFFD4FF00)
-                                : const Color(0xFF262626),
-                            borderRadius: BorderRadius.circular(10),
+                      child: InkWell(
+                        onTap: () async {
+                          if (isCurrent) {
+                            Navigator.pop(ctx);
+                            return;
+                          }
+                          HapticFeedback.mediumImpact();
+                          Navigator.pop(ctx);
+                          await ref
+                              .read(turfProfileProvider.notifier)
+                              .switchBranch(b.id);
+                          if (mounted && context.mounted) {
+                            if (isPending) {
+                              ToastUtils.showInfo(
+                                context,
+                                'Switched view to "${b.venueName}" (Under Super Admin Verification)',
+                              );
+                            } else {
+                              ToastUtils.showSuccess(
+                                context,
+                                'Switched active branch to "${b.venueName}"!',
+                              );
+                            }
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 12,
                           ),
-                          child: Icon(
-                            Icons.stadium_rounded,
-                            color: isCurrent
-                                ? Colors.black
-                                : const Color(0xFFA1A1AA),
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          b.venueName,
-                          style: TextStyle(
-                            fontWeight: isCurrent
-                                ? FontWeight.w800
-                                : FontWeight.w700,
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            color: Color(0xFFA1A1AA),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: isCurrent
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
+                          child: Row(
+                            children: [
+                              // Avatar / Turf Emblem
+                              Container(
+                                width: 44,
+                                height: 44,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF16A34A),
+                                  color: isCurrent
+                                      ? const Color(0xFF16A34A).withValues(alpha: 0.2)
+                                      : const Color(0xFF27272A),
                                   borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Text(
-                                  'Active',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                                  border: Border.all(
+                                    color: isCurrent
+                                        ? const Color(0xFF22C55E)
+                                        : Colors.transparent,
+                                    width: 1.2,
                                   ),
                                 ),
-                              )
-                            : TextButton(
-                                onPressed: () async {
-                                  Navigator.pop(ctx);
-                                  await ref
-                                      .read(turfProfileProvider.notifier)
-                                      .switchBranch(b.id);
-                                  if (mounted && context.mounted) {
-                                    ToastUtils.showSuccess(
-                                      context,
-                                      'Switched to branch: ${b.venueName}',
-                                    );
-                                  }
-                                },
-                                child: const Text(
-                                  'Switch',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFD4FF00),
-                                  ),
+                                child: Stack(
+                                  children: [
+                                    Center(
+                                      child: Icon(
+                                        Icons.stadium_rounded,
+                                        color: isCurrent
+                                            ? const Color(0xFF86EFAC)
+                                            : const Color(0xFFA1A1AA),
+                                        size: 22,
+                                      ),
+                                    ),
+                                    if (isPending)
+                                      Positioned(
+                                        top: 3,
+                                        right: 3,
+                                        child: Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFF59E0B),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      )
+                                    else if (isCurrent)
+                                      Positioned(
+                                        top: 3,
+                                        right: 3,
+                                        child: Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF22C55E),
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
+                              const SizedBox(width: 12),
+
+                              // Branch Info
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            b.venueName,
+                                            style: TextStyle(
+                                              fontWeight: isCurrent
+                                                  ? FontWeight.w900
+                                                  : FontWeight.w700,
+                                              color: Colors.white,
+                                              fontSize: 14.5,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        if (isPending)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 1.5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF382305),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: const Color(0xFF784A0A),
+                                                width: 0.6,
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'PENDING APPROVAL',
+                                              style: TextStyle(
+                                                fontSize: 8.5,
+                                                fontWeight: FontWeight.w900,
+                                                color: Color(0xFFFBBF24),
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          )
+                                        else if (isCurrent)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 1.5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF1E3A1E),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: const Color(0xFF22C55E),
+                                                width: 0.6,
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'ACTIVE',
+                                              style: TextStyle(
+                                                fontSize: 8.5,
+                                                fontWeight: FontWeight.w900,
+                                                color: Color(0xFF86EFAC),
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      isPending
+                                          ? '${b.neighborhoodArea} • Super Admin verification in progress'
+                                          : '${b.neighborhoodArea} • Today: ${b.todayBookingsCount} bookings (₹${b.todayRevenue.toInt()})',
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        color: isPending
+                                            ? const Color(0xFFFBBF24)
+                                                .withValues(alpha: 0.8)
+                                            : const Color(0xFFA1A1AA),
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+
+                              // Trailing Indicator (Instagram Checkmark or Switch Pill)
+                              if (isCurrent)
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Color(0xFF22C55E),
+                                  size: 22,
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF27272A),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Switch',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFE4E4E7),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   );
                 }),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 48,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            _showAddCourtSamePlaceDialog(context, profile);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Color(0xFFD4FF00),
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.sports_soccer_rounded,
-                            color: Color(0xFFD4FF00),
-                            size: 16,
-                          ),
-                          label: const FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '+ Add Court (Same Place)',
-                              style: TextStyle(
-                                color: Color(0xFFD4FF00),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11.5,
-                              ),
-                            ),
-                          ),
+
+                const SizedBox(height: 10),
+                const Divider(color: Color(0xFF27272A), height: 1),
+                const SizedBox(height: 14),
+
+                // Action 1: Register New Branch Location (Instagram-style Row)
+                Material(
+                  color: const Color(0xFF18181B),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: Color(0xFF27272A)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(ctx);
+                      _showBranchSetupModeDialog(context, profile);
+                    },
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: SizedBox(
-                        height: 48,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            _showAddBranchDialog(context, profile);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD4FF00),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.add_location_alt_rounded,
-                            color: Colors.black,
-                            size: 16,
-                          ),
-                          label: const FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '+ New Branch (Location)',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 11.5,
-                              ),
-                            ),
-                          ),
-                        ),
+                      child: const Icon(
+                        Icons.add_location_alt_rounded,
+                        color: Color(0xFF22C55E),
+                        size: 20,
                       ),
                     ),
-                  ],
+                    title: const Text(
+                      'Register New Branch Location',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Clone current specs or configure a new arena • Admin Approval',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA1A1AA),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFFA1A1AA),
+                      size: 20,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
+
+                // Action 2: Add Court / Pitch (Same Place)
+                Material(
+                  color: const Color(0xFF18181B),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: const BorderSide(color: Color(0xFF27272A)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.pop(ctx);
+                      _showAddCourtSamePlaceDialog(context, profile);
+                    },
+                    leading: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.sports_soccer_rounded,
+                        color: Color(0xFF38BDF8),
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      'Add Court / Pitch to ${profile.venueName}',
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      'Multi-sport pricing (Cricket, Football, Pickleball & more)',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA1A1AA),
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Color(0xFFA1A1AA),
+                      size: 20,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -619,6 +967,767 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     );
   }
 
+  // --- STEP 1: CHOOSE BRANCH SETUP MODE (CLONE VS NEW) ---
+  void _showBranchSetupModeDialog(
+    BuildContext context,
+    TurfProfileState profile,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+        decoration: const BoxDecoration(
+          color: Color(0xFF121212),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(
+            top: BorderSide(color: Color(0xFF262626), width: 1),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3F3F46),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.hub_rounded,
+                      color: Color(0xFF22C55E),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Setup New Branch Location',
+                          style: TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Choose how to initialize specifications for this branch',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFFA1A1AA),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Option A: Use Details from Current Branch (Clone)
+              Material(
+                color: const Color(0xFF142414),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Color(0xFF22C55E), width: 1.2),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(ctx);
+                    _showAddBranchFormDialog(context, profile, isClone: true);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF16A34A).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.copy_all_rounded,
+                            color: Color(0xFF86EFAC),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    'Clone Current Branch Details',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF16A34A),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'RECOMMENDED',
+                                      style: TextStyle(
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                'Copies timings (${profile.openingTime} – ${profile.closingTime}), amenities, sports (${profile.sports.map((s) => s.name).join(", ")}), and sport rates from "${profile.venueName}". You only need to enter the new location address & branch name.',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFFCBD5E1),
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Option B: Enter Brand New Details (Custom Setup)
+              Material(
+                color: const Color(0xFF18181B),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: Color(0xFF27272A), width: 1.0),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(ctx);
+                    _showAddBranchFormDialog(context, profile, isClone: false);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF27272A),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.add_business_rounded,
+                            color: Color(0xFFA1A1AA),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Enter Brand New Details',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                'Start fresh with a clean slate: choose custom sports, independent per-game pricing, different operating schedule, and venue amenities.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFFA1A1AA),
+                                  height: 1.35,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- STEP 2: ADD BRANCH FORM WITH PER-GAME PRICING & ADMIN APPROVAL ---
+  void _showAddBranchFormDialog(
+    BuildContext context,
+    TurfProfileState profile, {
+    required bool isClone,
+  }) {
+    final nextBranchNum = profile.branches.length + 1;
+    final nameCtrl = TextEditingController(
+      text: isClone ? '${profile.venueName} - Branch $nextBranchNum' : '',
+    );
+    final areaCtrl = TextEditingController();
+    final addressCtrl = TextEditingController();
+    final altPhoneCtrl = TextEditingController();
+
+    final allSports = [
+      'Cricket',
+      'Football',
+      'Pickle ball',
+      'Badminton',
+      'Tennis',
+      'Volleyball',
+    ];
+
+    final Set<String> selectedSports = isClone
+        ? profile.sports.map((s) => s.name).toSet()
+        : {'Cricket', 'Football'};
+    if (selectedSports.isEmpty) {
+      selectedSports.addAll(['Cricket', 'Football']);
+    }
+
+    final Map<String, TextEditingController> sportPriceControllers = {};
+    for (final sport in allSports) {
+      double rate = 1200.0;
+      if (sport == 'Cricket') rate = 1000.0;
+      if (sport == 'Football') rate = 1200.0;
+      if (sport == 'Badminton') rate = 600.0;
+      if (sport == 'Pickle ball') rate = 700.0;
+      if (sport == 'Tennis') rate = 900.0;
+      if (sport == 'Volleyball') rate = 800.0;
+
+      if (isClone) {
+        final existing = profile.sports.where((s) => s.name == sport);
+        if (existing.isNotEmpty) {
+          rate = existing.first.hourlyRate;
+        }
+      }
+      sportPriceControllers[sport] = TextEditingController(
+        text: rate.toInt().toString(),
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (dlgCtx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF141414),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFF27272A), width: 1),
+          ),
+          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  isClone ? Icons.copy_all_rounded : Icons.add_business_rounded,
+                  color: const Color(0xFF22C55E),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isClone
+                          ? 'Clone to New Branch'
+                          : 'Register New Branch',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16.5,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      isClone
+                          ? 'Pre-filled from ${profile.venueName}'
+                          : 'Enter branch location & game pricing',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA1A1AA),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+
+                  // Mode Indicator Chip
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isClone
+                          ? const Color(0xFF162A16)
+                          : const Color(0xFF202024),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isClone
+                            ? const Color(0xFF2E4D2E)
+                            : const Color(0xFF333338),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isClone ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded,
+                          size: 14,
+                          color: isClone ? const Color(0xFF86EFAC) : const Color(0xFFA1A1AA),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            isClone
+                                ? 'Timings, surface & specs copied from current venue'
+                                : 'Primary Owner Account: ${profile.ownerPhone}',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: isClone
+                                  ? const Color(0xFF86EFAC)
+                                  : const Color(0xFFD4D4D8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: nameCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                    decoration: const InputDecoration(
+                      labelText: 'New Branch Name *',
+                      hintText: 'e.g. Vicky Turf - Anna Nagar',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: areaCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                    decoration: const InputDecoration(
+                      labelText: 'Neighborhood / Area *',
+                      hintText: 'e.g. Anna Nagar / KK Nagar',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: addressCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                    decoration: const InputDecoration(
+                      labelText: 'Full Street Address *',
+                      hintText: 'e.g. 14, 2nd Main Road, Madurai',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: altPhoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                    decoration: const InputDecoration(
+                      labelText: 'Manager Mobile Number * (Mandatory)',
+                      hintText: '10-digit number for this branch',
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Supported Sports Multi-Select
+                  const Text(
+                    'Supported Sports (Multi-Select) *',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Select the sports offered at this branch. Each sport can have its own hourly rate.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: allSports.map((sport) {
+                      final isChecked = selectedSports.contains(sport);
+                      return FilterChip(
+                        label: Text(sport),
+                        selected: isChecked,
+                        selectedColor: const Color(0xFF16A34A),
+                        checkmarkColor: Colors.white,
+                        labelStyle: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight:
+                              isChecked ? FontWeight.w800 : FontWeight.w600,
+                          color: isChecked
+                              ? Colors.white
+                              : const Color(0xFFE4E4E7),
+                        ),
+                        side: BorderSide(
+                          color: isChecked
+                              ? const Color(0xFF22C55E)
+                              : const Color(0xFF333333),
+                          width: 1,
+                        ),
+                        backgroundColor: const Color(0xFF1C1C1C),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        onSelected: (selected) {
+                          setDlgState(() {
+                            if (selected) {
+                              selectedSports.add(sport);
+                            } else {
+                              if (selectedSports.length > 1) {
+                                selectedSports.remove(sport);
+                              }
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // PER-GAME / SPORT SPECIFIC PRICING (User Request!)
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.payments_outlined,
+                        size: 15,
+                        color: Color(0xFF86EFAC),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Per-Game Hourly Rates (₹)',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Set individual rates for each selected sport:',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Individual rate inputs for each selected sport
+                  ...selectedSports.map((sport) {
+                    final ctrl = sportPriceControllers[sport]!;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1E),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF2A2A30),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getSportIcon(sport),
+                            size: 18,
+                            color: const Color(0xFF86EFAC),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              sport,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 110,
+                            height: 38,
+                            child: TextField(
+                              controller: ctrl,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              decoration: InputDecoration(
+                                prefixText: '₹ ',
+                                prefixStyle: const TextStyle(
+                                  color: Color(0xFF86EFAC),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF101014),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF33333A),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF33333A),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF22C55E),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            '/hr',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFFA1A1AA),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 10),
+
+                  // Super Admin Approval Requirement Notice
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF281C08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.verified_user_outlined,
+                          size: 16,
+                          color: Color(0xFFFBBF24),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Super Admin Approval Required: After submission, this branch will be verified by Super Admin for safety & KYC standards before opening player bookings.',
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: Color(0xFFFDE68A),
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dlgCtx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFFA1A1AA)),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF16A34A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                final vName = nameCtrl.text.trim();
+                final vArea = areaCtrl.text.trim();
+                final altPhone = altPhoneCtrl.text
+                    .trim()
+                    .replaceAll(RegExp(r'\D'), '');
+
+                if (vName.isEmpty || vArea.isEmpty) {
+                  ToastUtils.showError(
+                    context,
+                    'Please enter branch name and area',
+                  );
+                  return;
+                }
+
+                if (altPhone.length < 10) {
+                  ToastUtils.showError(
+                    context,
+                    'Manager mobile number is mandatory (10 digits)',
+                  );
+                  return;
+                }
+
+                final primaryDigits = profile.ownerPhone.replaceAll(
+                  RegExp(r'\D'),
+                  '',
+                );
+                if (primaryDigits.isNotEmpty &&
+                    primaryDigits.endsWith(
+                      altPhone.length >= 10
+                          ? altPhone.substring(altPhone.length - 10)
+                          : altPhone,
+                    )) {
+                  ToastUtils.showError(
+                    context,
+                    'Manager phone must be different from primary owner phone',
+                  );
+                  return;
+                }
+
+                Navigator.pop(dlgCtx);
+
+                // Collect per-sport prices
+                final Map<String, double> perSportRates = {};
+                for (final sport in selectedSports) {
+                  final text = sportPriceControllers[sport]?.text.trim() ?? '';
+                  final rate = double.tryParse(text) ?? 1000.0;
+                  perSportRates[sport] = rate;
+                }
+
+                final baseDayRate = perSportRates.values.isNotEmpty
+                    ? perSportRates.values.first
+                    : 1000.0;
+
+                await ref.read(turfProfileProvider.notifier).addNewBranch(
+                      venueName: vName,
+                      neighborhoodArea: vArea,
+                      streetAddress: addressCtrl.text.trim().isNotEmpty
+                          ? addressCtrl.text.trim()
+                          : vArea,
+                      alternativePhone: altPhone,
+                      dayRate: baseDayRate,
+                      nightRate: baseDayRate + 200,
+                      sports: selectedSports.toList(),
+                      sportRates: perSportRates,
+                      isCloned: isClone,
+                      clonedFromVenue: isClone ? profile.venueName : null,
+                    );
+
+                if (context.mounted) {
+                  ToastUtils.showSuccess(
+                    context,
+                    'Branch "$vName" submitted for Super Admin verification!',
+                  );
+                }
+              },
+              child: const Text(
+                'Submit for Admin Approval',
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- ADD COURT / PITCH (SAME PLACE) WITH PER-SPORT PRICING ---
   void _showAddCourtSamePlaceDialog(
     BuildContext context,
     TurfProfileState profile,
@@ -628,7 +1737,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       text: '${profile.venueName} - Pitch $nextNum',
     );
     final Set<String> selectedSports = {'Cricket', 'Football'};
-    final rateCtrl = TextEditingController(text: '1200');
     final surfaceCtrl = TextEditingController(text: 'Synthetic Grass Turf');
 
     final sportsOptions = [
@@ -640,119 +1748,304 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       'Volleyball',
     ];
 
+    // Dynamic per-game pricing controllers
+    final Map<String, TextEditingController> sportPriceControllers = {
+      'Cricket': TextEditingController(text: '1000'),
+      'Football': TextEditingController(text: '1200'),
+      'Pickle ball': TextEditingController(text: '700'),
+      'Badminton': TextEditingController(text: '600'),
+      'Tennis': TextEditingController(text: '900'),
+      'Volleyball': TextEditingController(text: '800'),
+    };
+
+    // Pre-populate if profile has sports rates
+    for (final s in profile.sports) {
+      if (sportPriceControllers.containsKey(s.name)) {
+        sportPriceControllers[s.name]!.text = s.hourlyRate.toInt().toString();
+      }
+    }
+
     showDialog(
       context: context,
       builder: (dlgCtx) => StatefulBuilder(
         builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF141414),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFF27272A), width: 1),
           ),
-          title: Text(
-            'Add Court / Pitch to ${profile.venueName}',
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.sports_soccer_rounded,
+                  color: Color(0xFF22C55E),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add Court / Pitch to ${profile.venueName}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      'Add additional courts or pitches in the same venue ground.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA1A1AA),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Add additional courts or pitches in the same venue ground.',
-                  style: TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Court / Pitch Name *',
-                    hintText: 'e.g. Box Arena, Pitch B, Court 2',
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: nameCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                    decoration: const InputDecoration(
+                      labelText: 'Court / Pitch Name *',
+                      hintText: 'e.g. Box Arena, Pitch 2, Court B',
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  'Supported Sports (Multi-Select) *',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  const SizedBox(height: 14),
+
+                  const Text(
+                    'Supported Sports (Multi-Select) *',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Football & Cricket can share the same ground. Badminton & Pickleball require separate court types.',
-                  style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: sportsOptions.map((sport) {
-                    final isChecked = selectedSports.contains(sport);
-                    return FilterChip(
-                      label: Text(sport),
-                      selected: isChecked,
-                      selectedColor: const Color(0xFF16A34A),
-                      checkmarkColor: Colors.white,
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        fontWeight: isChecked ? FontWeight.w800 : FontWeight.w600,
-                        color: isChecked
-                            ? Colors.white
-                            : const Color(0xFFE4E4E7),
-                      ),
-                      side: BorderSide(
-                        color: isChecked
-                            ? const Color(0xFF22C55E)
-                            : const Color(0xFF333333),
-                        width: 1,
-                      ),
-                      backgroundColor: const Color(0xFF1C1C1C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      onSelected: (selected) {
-                        setDlgState(() {
-                          if (selected) {
-                            selectedSports.add(sport);
-                          } else {
-                            if (selectedSports.length > 1) {
-                              selectedSports.remove(sport);
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Football & Cricket can share the same ground. Badminton & Pickleball require separate court types.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: sportsOptions.map((sport) {
+                      final isChecked = selectedSports.contains(sport);
+                      return FilterChip(
+                        label: Text(sport),
+                        selected: isChecked,
+                        selectedColor: const Color(0xFF16A34A),
+                        checkmarkColor: Colors.white,
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              isChecked ? FontWeight.w800 : FontWeight.w600,
+                          color: isChecked
+                              ? Colors.white
+                              : const Color(0xFFE4E4E7),
+                        ),
+                        side: BorderSide(
+                          color: isChecked
+                              ? const Color(0xFF22C55E)
+                              : const Color(0xFF333333),
+                          width: 1,
+                        ),
+                        backgroundColor: const Color(0xFF1C1C1C),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        onSelected: (selected) {
+                          setDlgState(() {
+                            if (selected) {
+                              selectedSports.add(sport);
+                            } else {
+                              if (selectedSports.length > 1) {
+                                selectedSports.remove(sport);
+                              }
                             }
-                          }
-                        });
-                      },
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: surfaceCtrl,
+                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
+                    decoration: const InputDecoration(
+                      labelText: 'Surface Type',
+                      hintText: 'e.g. Synthetic Grass Turf, Astro Turf, Hard Court',
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // DYNAMIC PER-GAME PRICING SECTION
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.payments_outlined,
+                        size: 15,
+                        color: Color(0xFF86EFAC),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Per-Game Hourly Rates (₹) *',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Configure specific pricing for each game played on this court:',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                  ),
+                  const SizedBox(height: 8),
+
+                  ...selectedSports.map((sport) {
+                    final ctrl = sportPriceControllers[sport]!;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A1E),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF2A2A30),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _getSportIcon(sport),
+                            size: 18,
+                            color: const Color(0xFF86EFAC),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              sport,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 110,
+                            height: 38,
+                            child: TextField(
+                              controller: ctrl,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                              decoration: InputDecoration(
+                                prefixText: '₹ ',
+                                prefixStyle: const TextStyle(
+                                  color: Color(0xFF86EFAC),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                filled: true,
+                                fillColor: const Color(0xFF101014),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF33333A),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF33333A),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF22C55E),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Text(
+                            '/hr',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFFA1A1AA),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
-                  }).toList(),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: surfaceCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Surface Type',
-                    hintText: 'e.g. Synthetic Grass, Astro Turf, Hard Court',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: rateCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Hourly Rate (₹) *',
-                    hintText: '1200',
-                  ),
-                ),
-              ],
+                  }),
+                  const SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dlgCtx),
-              child: const Text('Cancel'),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFFA1A1AA)),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF16A34A),
                 foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 final cName = nameCtrl.text.trim();
@@ -768,8 +2061,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   return;
                 }
                 Navigator.pop(dlgCtx);
-                final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
+
+                // Collect per-sport rates
+                final Map<String, double> perSportRates = {};
+                for (final sport in selectedSports) {
+                  final text = sportPriceControllers[sport]?.text.trim() ?? '';
+                  final rate = double.tryParse(text) ?? 1000.0;
+                  perSportRates[sport] = rate;
+                }
+
                 final sportsList = selectedSports.toList();
+                final baseRate = perSportRates.values.isNotEmpty
+                    ? perSportRates.values.first
+                    : 1200.0;
+
                 final newCourt = TurfCourtVenueItem(
                   id: 'CRT-${profile.turfId}-${DateTime.now().millisecondsSinceEpoch % 100000}',
                   name: cName,
@@ -778,181 +2083,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   surface: surfaceCtrl.text.trim().isNotEmpty
                       ? surfaceCtrl.text.trim()
                       : 'Turf Surface',
-                  hourlyRate: rate,
+                  hourlyRate: baseRate,
+                  sportRates: perSportRates,
                   timings: '06:00 AM - 11:00 PM',
                   description: 'Court at ${profile.venueName}',
                 );
+
                 ref.read(turfProfileProvider.notifier).addCourtVenue(newCourt);
                 if (context.mounted) {
                   ToastUtils.showSuccess(
                     context,
-                    'Court "$cName" (${sportsList.join(", ")}) added to ${profile.venueName}!',
+                    'Court "$cName" added with sport-specific rates!',
                   );
                 }
               },
-              child: const Text('Add Court'),
+              child: const Text(
+                'Add Court',
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showAddBranchDialog(BuildContext context, TurfProfileState profile) {
-    final nameCtrl = TextEditingController();
-    final areaCtrl = TextEditingController();
-    final addressCtrl = TextEditingController();
-    final altPhoneCtrl = TextEditingController();
-    final rateCtrl = TextEditingController(text: '1200');
-
-    showDialog(
-      context: context,
-      builder: (dlgCtx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Register New Branch Location',
-          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Primary Owner Phone: ${profile.ownerPhone}',
-                style: const TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFD4FF00),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'New Branch Name *',
-                  hintText: 'e.g. Vicky Turf - Branch 2',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: areaCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Branch Neighborhood / Area *',
-                  hintText: 'e.g. KK Nagar',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: addressCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Branch Street Address *',
-                  hintText: 'e.g. 45, Main Avenue',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: altPhoneCtrl,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Alternative Mobile Number * (Mandatory)',
-                  hintText: '10-digit number for this branch',
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: rateCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Hourly Rate (₹)',
-                  hintText: '1200',
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dlgCtx),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD4FF00),
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () async {
-              final vName = nameCtrl.text.trim();
-              final vArea = areaCtrl.text.trim();
-              final altPhone = altPhoneCtrl.text.trim().replaceAll(
-                RegExp(r'\D'),
-                '',
-              );
-
-              if (vName.isEmpty || vArea.isEmpty) {
-                ToastUtils.showError(
-                  context,
-                  'Please enter branch name and area',
-                );
-                return;
-              }
-
-              if (altPhone.length < 10) {
-                ToastUtils.showError(
-                  context,
-                  'Alternative mobile number is mandatory (10 digits)',
-                );
-                return;
-              }
-
-              final primaryDigits = profile.ownerPhone.replaceAll(
-                RegExp(r'\D'),
-                '',
-              );
-              if (primaryDigits.isNotEmpty &&
-                  primaryDigits.endsWith(
-                    altPhone.length >= 10
-                        ? altPhone.substring(altPhone.length - 10)
-                        : altPhone,
-                  )) {
-                ToastUtils.showError(
-                  context,
-                  'Alternative number must be different from primary number',
-                );
-                return;
-              }
-
-              Navigator.pop(dlgCtx);
-              final rate = double.tryParse(rateCtrl.text.trim()) ?? 1200.0;
-              final ok = await ref
-                  .read(turfProfileProvider.notifier)
-                  .addNewBranch(
-                    venueName: vName,
-                    neighborhoodArea: vArea,
-                    streetAddress: addressCtrl.text.trim().isNotEmpty
-                        ? addressCtrl.text.trim()
-                        : vArea,
-                    alternativePhone: altPhone,
-                    dayRate: rate,
-                    nightRate: rate + 200,
-                  );
-              if (context.mounted) {
-                if (ok) {
-                  ToastUtils.showSuccess(
-                    context,
-                    'Branch "$vName" application submitted! Super Admin will verify and activate your branch.',
-                  );
-                } else {
-                  ToastUtils.showError(
-                    context,
-                    'Failed to submit branch application. Please try again.',
-                  );
-                }
-              }
-            },
-            child: const Text('Submit Application'),
-          ),
-        ],
       ),
     );
   }

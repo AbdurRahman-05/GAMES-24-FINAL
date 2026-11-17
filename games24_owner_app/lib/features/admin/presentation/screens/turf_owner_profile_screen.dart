@@ -926,7 +926,6 @@ class _TurfOwnerProfileScreenState
       text: '${profile.venueName} - Court $nextNum',
     );
     final surfaceCtrl = TextEditingController(text: 'Synthetic Turf');
-    final rateCtrl = TextEditingController(text: '1200');
     final Set<String> selectedSports = {'Cricket', 'Football'};
     final availableSports = [
       'Cricket',
@@ -936,10 +935,23 @@ class _TurfOwnerProfileScreenState
       'Tennis',
       'Volleyball',
     ];
+
+    final Map<String, TextEditingController> sportPriceControllers = {
+      'Cricket': TextEditingController(text: '1000'),
+      'Football': TextEditingController(text: '1200'),
+      'Pickle ball': TextEditingController(text: '700'),
+      'Badminton': TextEditingController(text: '600'),
+      'Tennis': TextEditingController(text: '900'),
+      'Volleyball': TextEditingController(text: '800'),
+    };
+
     for (final s in profile.sports) {
       if (!availableSports.contains(s.name)) {
         availableSports.add(s.name);
       }
+      sportPriceControllers[s.name] = TextEditingController(
+        text: s.hourlyRate.toInt().toString(),
+      );
     }
 
     showDialog(
@@ -1030,13 +1042,109 @@ class _TurfOwnerProfileScreenState
                   controller: surfaceCtrl,
                   hint: 'e.g. Teakwood Mat, Synthetic Grass, Acrylic Court',
                 ),
-                const SizedBox(height: 12),
-                AppTextField(
-                  label: 'Standard Hourly Rate (₹)',
-                  hint: 'e.g. 1000',
-                  controller: rateCtrl,
-                  keyboardType: TextInputType.number,
+                const SizedBox(height: 14),
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.payments_outlined,
+                      size: 15,
+                      color: Color(0xFF86EFAC),
+                    ),
+                    SizedBox(width: 6),
+                    Text(
+                      'Per-Game Hourly Rates (₹) *',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Configure specific rates for each game played on this court:',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
+
+                ...selectedSports.map((sport) {
+                  final ctrl = sportPriceControllers[sport] ??=
+                      TextEditingController(text: '1000');
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1A1E),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFF2A2A30),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.sports_rounded,
+                          size: 16,
+                          color: Color(0xFF86EFAC),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            sport,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 100,
+                          height: 38,
+                          child: TextField(
+                            controller: ctrl,
+                            keyboardType: TextInputType.number,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            decoration: InputDecoration(
+                              prefixText: '₹ ',
+                              prefixStyle: const TextStyle(
+                                color: Color(0xFF86EFAC),
+                                fontWeight: FontWeight.bold,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFF101014),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF33333A),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          '/hr',
+                          style: TextStyle(fontSize: 10, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ],
             ),
           ),
@@ -1055,7 +1163,15 @@ class _TurfOwnerProfileScreenState
                 final courtName = courtNameCtrl.text.trim().isEmpty
                     ? 'Court $nextNum (${sportsList.join(" • ")})'
                     : courtNameCtrl.text.trim();
-                final hourlyRate = double.tryParse(rateCtrl.text) ?? 1000.0;
+
+                final Map<String, double> perSportRates = {};
+                for (final s in selectedSports) {
+                  final text = sportPriceControllers[s]?.text.trim() ?? '';
+                  perSportRates[s] = double.tryParse(text) ?? 1000.0;
+                }
+                final baseHourlyRate = perSportRates.values.isNotEmpty
+                    ? perSportRates.values.first
+                    : 1200.0;
 
                 final newCourt = TurfCourtVenueItem(
                   id: 'CR-${DateTime.now().millisecondsSinceEpoch}',
@@ -1065,7 +1181,8 @@ class _TurfOwnerProfileScreenState
                   surface: surfaceCtrl.text.trim().isNotEmpty
                       ? surfaceCtrl.text.trim()
                       : 'Synthetic Turf',
-                  hourlyRate: hourlyRate,
+                  hourlyRate: baseHourlyRate,
+                  sportRates: perSportRates,
                   timings: profile.weekdayOpeningTime == '24 Hours'
                       ? '24 Hours Open'
                       : '${profile.weekdayOpeningTime} - ${profile.weekdayClosingTime}',
@@ -4520,30 +4637,57 @@ class _TurfOwnerProfileScreenState
                         spacing: 6,
                         runSpacing: 4,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 2.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1C2518),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: const Color(0xFF2E3D29),
-                                width: 0.8,
+                          if (court.sportRates.isNotEmpty &&
+                              court.sportRates.length > 1)
+                            ...court.sportRates.entries.map(
+                              (entry) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 2.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1C2518),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFF2E3D29),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  '${entry.key}: ₹${entry.value.toInt()}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Color(0xFF86EFAC),
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1C2518),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: const Color(0xFF2E3D29),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                court.sport.isNotEmpty
+                                    ? court.sport
+                                    : 'Multi-Sport',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFFCBD5E1),
+                                ),
                               ),
                             ),
-                            child: Text(
-                              court.sport.isNotEmpty
-                                  ? court.sport
-                                  : 'Multi-Sport',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFCBD5E1),
-                              ),
-                            ),
-                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 7,
@@ -4598,7 +4742,9 @@ class _TurfOwnerProfileScreenState
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '₹${court.hourlyRate.toStringAsFixed(0)}',
+                        court.sportRates.length > 1
+                            ? '₹${court.hourlyRate.toStringAsFixed(0)}+'
+                            : '₹${court.hourlyRate.toStringAsFixed(0)}',
                         style: const TextStyle(
                           color: Color(0xFFD4FF00),
                           fontWeight: FontWeight.w900,
@@ -4606,9 +4752,11 @@ class _TurfOwnerProfileScreenState
                           letterSpacing: -0.3,
                         ),
                       ),
-                      const Text(
-                        '/hour',
-                        style: TextStyle(
+                      Text(
+                        court.sportRates.length > 1
+                            ? '/hr (by sport)'
+                            : '/hour',
+                        style: const TextStyle(
                           color: Color(0xFF86EFAC),
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,

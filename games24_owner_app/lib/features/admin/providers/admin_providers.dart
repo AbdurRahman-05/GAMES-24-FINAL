@@ -495,6 +495,7 @@ class TurfCourtVenueItem {
   final List<String> sports;
   final String surface;
   final double hourlyRate;
+  final Map<String, double> sportRates;
   final String timings;
   final String description;
   final List<String> amenities;
@@ -507,11 +508,40 @@ class TurfCourtVenueItem {
     this.sports = const [],
     required this.surface,
     required this.hourlyRate,
+    this.sportRates = const {},
     required this.timings,
     this.description = '',
     this.amenities = const [],
     this.imageUrls = const [],
   });
+
+  TurfCourtVenueItem copyWith({
+    String? id,
+    String? name,
+    String? sport,
+    List<String>? sports,
+    String? surface,
+    double? hourlyRate,
+    Map<String, double>? sportRates,
+    String? timings,
+    String? description,
+    List<String>? amenities,
+    List<String>? imageUrls,
+  }) {
+    return TurfCourtVenueItem(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      sport: sport ?? this.sport,
+      sports: sports ?? this.sports,
+      surface: surface ?? this.surface,
+      hourlyRate: hourlyRate ?? this.hourlyRate,
+      sportRates: sportRates ?? this.sportRates,
+      timings: timings ?? this.timings,
+      description: description ?? this.description,
+      amenities: amenities ?? this.amenities,
+      imageUrls: imageUrls ?? this.imageUrls,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -520,6 +550,7 @@ class TurfCourtVenueItem {
     'sports': sports.isNotEmpty ? sports : (sport.isNotEmpty ? sport.split(RegExp(r'\s*[•,]\s*')).where((s) => s.isNotEmpty).toList() : ['Cricket', 'Football']),
     'surface': surface,
     'hourlyRate': hourlyRate,
+    'sportRates': sportRates,
     'timings': timings,
     'description': description,
     'amenities': amenities,
@@ -536,15 +567,26 @@ class TurfCourtVenueItem {
     }
     final primarySport = sportsList.isNotEmpty ? sportsList.join(' • ') : (json['sport']?.toString() ?? 'Cricket • Football');
 
+    Map<String, double> parsedSportRates = {};
+    if (json['sportRates'] is Map) {
+      (json['sportRates'] as Map).forEach((k, v) {
+        final d = (v is num) ? v.toDouble() : double.tryParse(v.toString());
+        if (d != null) parsedSportRates[k.toString()] = d;
+      });
+    }
+
+    final double baseRate = (json['hourlyRate'] is num)
+        ? (json['hourlyRate'] as num).toDouble()
+        : (double.tryParse(json['hourlyRate']?.toString() ?? '') ?? 1000.0);
+
     return TurfCourtVenueItem(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       sport: primarySport,
       sports: sportsList.isNotEmpty ? sportsList : ['Cricket', 'Football'],
       surface: json['surface']?.toString() ?? 'Synthetic Turf',
-      hourlyRate: (json['hourlyRate'] is num)
-          ? (json['hourlyRate'] as num).toDouble()
-          : (double.tryParse(json['hourlyRate']?.toString() ?? '') ?? 1000.0),
+      hourlyRate: baseRate,
+      sportRates: parsedSportRates,
       timings: json['timings']?.toString() ?? '06:00 AM - 11:00 PM',
       description: json['description']?.toString() ?? '',
       amenities: (json['amenities'] is List) ? (json['amenities'] as List).map((e) => e.toString()).toList() : const [],
@@ -678,6 +720,13 @@ class OwnerTurfBranchItem {
   final int monthTotalBookings;
   final bool isActive;
   final bool isPending;
+  final List<String> sports;
+  final Map<String, double> sportRates;
+  final String timings;
+  final String surface;
+  final List<String> amenities;
+  final bool isCloned;
+  final String? clonedFrom;
 
   const OwnerTurfBranchItem({
     required this.id,
@@ -692,24 +741,70 @@ class OwnerTurfBranchItem {
     required this.monthTotalBookings,
     required this.isActive,
     this.isPending = false,
+    this.sports = const [],
+    this.sportRates = const {},
+    this.timings = '06:00 AM - 11:00 PM',
+    this.surface = 'Synthetic Turf',
+    this.amenities = const [],
+    this.isCloned = false,
+    this.clonedFrom,
   });
 
-  factory OwnerTurfBranchItem.fromJson(Map<String, dynamic> json) => OwnerTurfBranchItem(
-    id: (json['id'] is num) ? (json['id'] as num).toInt() : (int.tryParse(json['id']?.toString() ?? '') ?? 0),
-    venueName: json['venueName']?.toString() ?? '',
-    neighborhoodArea: json['neighborhoodArea']?.toString() ?? 'Main Branch',
-    streetAddress: json['streetAddress']?.toString() ?? '',
-    ownerPhone: json['ownerPhone']?.toString() ?? '',
-    status: json['status']?.toString() ?? 'VERIFIED',
-    todayBookingsCount: int.tryParse(json['todayBookingsCount']?.toString() ?? '') ?? 0,
-    todayRevenue: double.tryParse(json['todayRevenue']?.toString() ?? '') ?? 0.0,
-    monthRevenue: double.tryParse(json['monthRevenue']?.toString() ?? '') ?? 0.0,
-    monthTotalBookings: int.tryParse(json['monthTotalBookings']?.toString() ?? '') ?? 0,
-    isActive: json['isActive'] == true,
-    isPending: json['isPending'] == true ||
-        json['status'] == 'PENDING_APPROVAL' ||
-        ((json['id'] is num) && (json['id'] as num) < 0),
-  );
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'venueName': venueName,
+    'neighborhoodArea': neighborhoodArea,
+    'streetAddress': streetAddress,
+    'ownerPhone': ownerPhone,
+    'status': status,
+    'todayBookingsCount': todayBookingsCount,
+    'todayRevenue': todayRevenue,
+    'monthRevenue': monthRevenue,
+    'monthTotalBookings': monthTotalBookings,
+    'isActive': isActive,
+    'isPending': isPending,
+    'sports': sports,
+    'sportRates': sportRates,
+    'timings': timings,
+    'surface': surface,
+    'amenities': amenities,
+    'isCloned': isCloned,
+    'clonedFrom': clonedFrom,
+  };
+
+  factory OwnerTurfBranchItem.fromJson(Map<String, dynamic> json) {
+    Map<String, double> parsedSportRates = {};
+    if (json['sportRates'] is Map) {
+      (json['sportRates'] as Map).forEach((k, v) {
+        final d = (v is num) ? v.toDouble() : double.tryParse(v.toString());
+        if (d != null) parsedSportRates[k.toString()] = d;
+      });
+    }
+
+    return OwnerTurfBranchItem(
+      id: (json['id'] is num) ? (json['id'] as num).toInt() : (int.tryParse(json['id']?.toString() ?? '') ?? 0),
+      venueName: json['venueName']?.toString() ?? '',
+      neighborhoodArea: json['neighborhoodArea']?.toString() ?? 'Main Branch',
+      streetAddress: json['streetAddress']?.toString() ?? '',
+      ownerPhone: json['ownerPhone']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'VERIFIED',
+      todayBookingsCount: int.tryParse(json['todayBookingsCount']?.toString() ?? '') ?? 0,
+      todayRevenue: double.tryParse(json['todayRevenue']?.toString() ?? '') ?? 0.0,
+      monthRevenue: double.tryParse(json['monthRevenue']?.toString() ?? '') ?? 0.0,
+      monthTotalBookings: int.tryParse(json['monthTotalBookings']?.toString() ?? '') ?? 0,
+      isActive: json['isActive'] == true,
+      isPending: json['isPending'] == true ||
+          json['status'] == 'PENDING_APPROVAL' ||
+          ((json['id'] is num) && (json['id'] as num) < 0),
+      sports: (json['sports'] is List) ? (json['sports'] as List).map((e) => e.toString()).toList() : const [],
+      sportRates: parsedSportRates,
+      timings: json['timings']?.toString() ?? '06:00 AM - 11:00 PM',
+      surface: json['surface']?.toString() ?? 'Synthetic Turf',
+      amenities: (json['amenities'] is List) ? (json['amenities'] as List).map((e) => e.toString()).toList() : const [],
+      isCloned: json['isCloned'] == true,
+      clonedFrom: json['clonedFrom']?.toString(),
+    );
+  }
 }
 
 class TurfProfileState {
@@ -720,6 +815,7 @@ class TurfProfileState {
   final String address;
   final String area;
   final List<OwnerTurfBranchItem> branches;
+  final String branchStatus;
   final String openingTime;
   final String closingTime;
   final String weekdayOpeningTime;
@@ -841,6 +937,10 @@ class TurfProfileState {
   bool get isSubscriptionBlocked =>
       !isSubscriptionActive || isBookingHold || subscriptionDaysRemaining <= 0;
 
+  bool get isPendingApproval =>
+      branchStatus == 'PENDING_APPROVAL' ||
+      (verifiedAdminId != null && verifiedAdminId! < 0);
+
   const TurfProfileState({
     this.ownerName = 'Karthikeyan M',
     this.ownerPhone = '+91 98765 43210',
@@ -848,6 +948,7 @@ class TurfProfileState {
     this.venueName = 'Madurai Champions Turf Hub',
     this.address = 'No. 42, 80 Feet Road, KK Nagar, Madurai',
     this.area = 'KK Nagar',
+    this.branchStatus = 'VERIFIED',
     this.openingTime = '06:00 AM',
     this.closingTime = '11:30 PM',
     this.weekdayOpeningTime = '06:00 AM',
@@ -957,6 +1058,7 @@ class TurfProfileState {
     String? venueName,
     String? address,
     String? area,
+    String? branchStatus,
     String? openingTime,
     String? closingTime,
     String? weekdayOpeningTime,
@@ -1021,6 +1123,7 @@ class TurfProfileState {
       venueName: venueName ?? this.venueName,
       address: address ?? this.address,
       area: area ?? this.area,
+      branchStatus: branchStatus ?? this.branchStatus,
       openingTime: openingTime ?? this.openingTime,
       closingTime: closingTime ?? this.closingTime,
       weekdayOpeningTime: weekdayOpeningTime ?? this.weekdayOpeningTime,
@@ -1148,11 +1251,35 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       }
       final phone = prefs.getString('owner_phone');
       final savedTurfId = prefs.getInt('selected_turf_id');
+      final savedBranches = prefs.getString('owner_saved_branches');
+      if (savedBranches != null && savedBranches.isNotEmpty) {
+        try {
+          final List bList = jsonDecode(savedBranches);
+          final loaded = bList
+              .map((i) => OwnerTurfBranchItem.fromJson(Map<String, dynamic>.from(i)))
+              .toList();
+          if (loaded.isNotEmpty) {
+            state = state.copyWith(branches: loaded);
+          }
+        } catch (e) {
+          debugPrint("Error loading saved branches: $e");
+        }
+      }
       if (phone != null && phone.isNotEmpty) {
         await fetchVerifiedAdminByPhone(phone, turfId: savedTurfId);
       }
     } catch (e) {
       debugPrint("Error loading admin from storage: $e");
+    }
+  }
+
+  Future<void> _persistBranchesLocally(List<OwnerTurfBranchItem> list) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(list.map((b) => b.toJson()).toList());
+      await prefs.setString('owner_saved_branches', encoded);
+    } catch (e) {
+      debugPrint("Error saving branches locally: $e");
     }
   }
 
@@ -1181,6 +1308,44 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   Future<void> switchBranch(int branchId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('selected_turf_id', branchId);
+
+    final targetBranch = state.branches.firstWhere(
+      (b) => b.id == branchId,
+      orElse: () => OwnerTurfBranchItem(
+        id: branchId,
+        venueName: state.venueName,
+        neighborhoodArea: state.area,
+        streetAddress: state.address,
+        ownerPhone: state.ownerPhone,
+        status: 'VERIFIED',
+        todayBookingsCount: 0,
+        todayRevenue: 0.0,
+        monthRevenue: 0.0,
+        monthTotalBookings: 0,
+        isActive: true,
+      ),
+    );
+
+    // If switching to pending local branch, switch active view seamlessly
+    if (targetBranch.isPending || branchId < 0) {
+      state = state.copyWith(
+        verifiedAdminId: branchId,
+        venueName: targetBranch.venueName,
+        area: targetBranch.neighborhoodArea,
+        address: targetBranch.streetAddress,
+        branchStatus: 'PENDING_APPROVAL',
+        todayBookingsCount: 0,
+        todayRevenue: 0.0,
+        monthRevenue: 0.0,
+        monthTotalBookings: 0,
+        freeSlotsCount: 0,
+        bookedSlotsCount: 0,
+        blockedSlotsCount: 0,
+      );
+      return;
+    }
+
+    state = state.copyWith(branchStatus: targetBranch.status);
     await fetchVerifiedAdminByPhone(state.ownerPhone, turfId: branchId);
   }
 
@@ -1192,7 +1357,38 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     double? dayRate,
     double? nightRate,
     List<String>? photoUrls,
+    List<String>? sports,
+    Map<String, double>? sportRates,
+    bool isCloned = false,
+    String? clonedFromVenue,
   }) async {
+    final pendingId = -(DateTime.now().millisecondsSinceEpoch % 1000000);
+    final newBranch = OwnerTurfBranchItem(
+      id: pendingId,
+      venueName: venueName,
+      neighborhoodArea: neighborhoodArea,
+      streetAddress: streetAddress,
+      ownerPhone: alternativePhone.isNotEmpty ? alternativePhone : state.ownerPhone,
+      status: 'PENDING_APPROVAL',
+      todayBookingsCount: 0,
+      todayRevenue: 0.0,
+      monthRevenue: 0.0,
+      monthTotalBookings: 0,
+      isActive: false,
+      isPending: true,
+      sports: sports ?? ['Cricket', 'Football'],
+      sportRates: sportRates ?? {},
+      timings: '${state.openingTime} - ${state.closingTime}',
+      surface: 'Synthetic Turf',
+      amenities: state.facilities,
+      isCloned: isCloned,
+      clonedFrom: clonedFromVenue ?? state.venueName,
+    );
+
+    final updatedBranches = List<OwnerTurfBranchItem>.from(state.branches)..add(newBranch);
+    state = state.copyWith(branches: updatedBranches);
+    await _persistBranchesLocally(updatedBranches);
+
     try {
       final res = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/verified-admin/add-branch'),
@@ -1206,17 +1402,19 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
           'dayRate': dayRate ?? 1000.0,
           'nightRate': nightRate ?? 1400.0,
           'photoUrls': photoUrls ?? [],
+          'sports': sports ?? [],
+          'sportRates': sportRates ?? {},
+          'isCloned': isCloned,
+          'clonedFrom': clonedFromVenue ?? state.venueName,
         }),
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
-        // Refresh to get updated branches list including the newly submitted pending application
         await fetchVerifiedAdminByPhone(state.ownerPhone);
-        return true;
       }
     } catch (e) {
       debugPrint("Error adding new branch: $e");
     }
-    return false;
+    return true;
   }
 
   void setFromVerifiedAdmin(Map<String, dynamic> data, {bool saveToStorage = true}) {
@@ -1446,6 +1644,31 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     final dynamicOccupancyPct = totalSlotsSafe > 0 ? ((activeBookedSlotsCount / totalSlotsSafe.toDouble()) * 100).round() : 0;
     final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
 
+    final Map<int, OwnerTurfBranchItem> branchMap = {};
+    for (final b in state.branches) {
+      branchMap[b.id] = b;
+    }
+    for (final b in branches) {
+      branchMap[b.id] = b;
+    }
+    final mergedBranches = branchMap.values.toList();
+    if (mergedBranches.isEmpty) {
+      mergedBranches.add(OwnerTurfBranchItem(
+        id: verifiedAdminId,
+        venueName: venueName,
+        neighborhoodArea: neighborhoodArea.isNotEmpty ? neighborhoodArea : 'Main Arena',
+        streetAddress: streetAddress,
+        ownerPhone: ownerPhone,
+        status: (data['status']?.toString() ?? 'VERIFIED'),
+        todayBookingsCount: finalTodayBookingsCount,
+        todayRevenue: double.tryParse((dash['todayRevenue'] ?? data['todayRevenue'])?.toString() ?? '') ?? 0.0,
+        monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
+        monthTotalBookings: monthTotalBookings,
+        isActive: true,
+      ));
+    }
+    _persistBranchesLocally(mergedBranches);
+
     state = state.copyWith(
       venueName: venueName,
       ownerName: ownerName,
@@ -1486,7 +1709,8 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       todayCashBookings: todayCashBookings,
       todayRevenue: double.tryParse((dash['todayRevenue'] ?? data['todayRevenue'])?.toString() ?? '') ??
           activeTodayBookings.fold<double>(0.0, (double sum, b) => sum + b.amount),
-      branches: branches.isNotEmpty ? branches : state.branches,
+      branches: mergedBranches,
+      branchStatus: (data['status']?.toString() ?? 'VERIFIED'),
       todayBookingsGrowth: (dash['todayBookingsGrowth'] ?? data['todayBookingsGrowth'])?.toString() ?? '0% Today',
       monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
       monthTotalBookings: monthTotalBookings,
