@@ -101,9 +101,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Row(
                     children: [
@@ -112,13 +112,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedCountryCode,
+                            dropdownColor: const Color(0xFF1F1F1F),
                             icon: const Icon(
                               Icons.arrow_drop_down,
                               color: Color(0xFF9CA3AF),
                             ),
                             style: const TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                             onChanged: (String? newValue) {
@@ -133,7 +134,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             ) {
                               return DropdownMenuItem<String>(
                                 value: value,
-                                child: Text(value),
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               );
                             }).toList(),
                           ),
@@ -143,15 +150,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Container(
                           decoration: const BoxDecoration(
                             border: Border(
-                              left: BorderSide(color: Color(0xFFE5E7EB)),
+                              left: BorderSide(color: Color(0xFF262626)),
                             ),
                           ),
                           child: TextField(
                             controller: _mobileController,
                             keyboardType: TextInputType.phone,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
                             decoration: const InputDecoration(
                               hintText: 'e.g. 9876543210',
-                              hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                              hintStyle: TextStyle(
+                                color: Color(0xFF71717A),
+                                fontSize: 14,
+                              ),
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -210,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            side: const BorderSide(color: Color(0xFF3F3F46)),
                             activeColor: const Color(0xFFD4FF00),
                             checkColor: Colors.black,
                           ),
@@ -254,8 +269,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade600,
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFD4FF00),
+                      foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -266,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
-                              color: Colors.white,
+                              color: Colors.black,
                               strokeWidth: 2,
                             ),
                           )
@@ -277,11 +292,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Log In',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                               SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, size: 20),
+                              Icon(Icons.arrow_forward, size: 20, color: Colors.black),
                             ],
                           ),
                   ),
@@ -309,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'Sign Up',
                         style: TextStyle(
-                          color: Colors.green.shade600,
+                          color: const Color(0xFFD4FF00),
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
@@ -420,10 +437,14 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextField(
         controller: controller,
         obscureText: obscureText,
-
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+          hintStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 14),
           prefixIcon: Icon(
             prefixIcon,
             color: const Color(0xFF9CA3AF),
@@ -431,18 +452,18 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           suffixIcon: suffixIcon,
           filled: true,
-          fillColor: Colors.white,
+          fillColor: const Color(0xFF141414),
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+            borderSide: const BorderSide(color: Color(0xFF262626)),
             borderRadius: BorderRadius.circular(12),
           ),
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: const OutlineInputBorder(
             borderSide: BorderSide(
-              color: Colors.greenAccent.shade400,
-              width: 2,
+              color: Color(0xFFD4FF00),
+              width: 1.5,
             ),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
         ),
       ),
