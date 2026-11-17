@@ -1223,12 +1223,12 @@ class _AdminTournamentManagerScreenState
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF1C1C1C),
+                    color: isSelected ? const Color(0xFF16A34A) : const Color(0xFF1C1C1C),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
+                              color: const Color(0xFF16A34A).withValues(alpha: 0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -1241,15 +1241,15 @@ class _AdminTournamentManagerScreenState
                       Icon(
                         item['icon'] as IconData,
                         size: 14,
-                        color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                        color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                       ),
                       const SizedBox(width: 5),
                       Text(
                         item['label'] as String,
                         style: TextStyle(
                           fontSize: 11.5,
-                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                          color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                         ),
                       ),
                     ],

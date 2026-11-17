@@ -775,11 +775,11 @@ class _AdminSlotManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
+                    color: isSelected ? const Color(0xFF16A34A) : const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFFD4FF00)
+                          ? const Color(0xFF22C55E)
                           : const Color(0xFF262626),
                       width: isSelected ? 1.5 : 1,
                     ),
@@ -787,8 +787,8 @@ class _AdminSlotManagerScreenState
                         ? [
                             BoxShadow(
                               color: const Color(
-                                0xFFD4FF00,
-                              ).withValues(alpha: 0.2),
+                                0xFF16A34A,
+                              ).withValues(alpha: 0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -812,12 +812,10 @@ class _AdminSlotManagerScreenState
                         children: [
                           Text(
                             court.name,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.white,
+                              color: Colors.white,
                             ),
                           ),
                           Text(
@@ -826,7 +824,7 @@ class _AdminSlotManagerScreenState
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               color: isSelected
-                                  ? const Color(0xFF141414)
+                                  ? Colors.white.withValues(alpha: 0.85)
                                   : const Color(0xFFA1A1AA),
                             ),
                           ),

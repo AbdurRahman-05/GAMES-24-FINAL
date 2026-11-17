@@ -1961,7 +1961,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 gradient: LinearGradient(
                   colors: isLive
                       ? [const Color(0xFF141414), const Color(0xFF16A34A)]
-                      : [const Color(0xFF0F2E22), const Color(0xFFD4FF00)],
+                      : [const Color(0xFF111E13), const Color(0xFF1C381F)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -1976,7 +1976,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                         height: 7,
                         decoration: BoxDecoration(
                           color: isLive
-                              ? const Color(0xFFD4FF00)
+                              ? const Color(0xFF4ADE80)
                               : const Color(0xFFFBBF24),
                           shape: BoxShape.circle,
                         ),
@@ -1988,7 +1988,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
                           color: isLive
-                              ? const Color(0xFFD4FF00)
+                              ? const Color(0xFF86EFAC)
                               : Colors.white,
                           letterSpacing: 0.5,
                         ),
@@ -2116,8 +2116,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     height: 38,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD4FF00),
-                        foregroundColor: Colors.black,
+                        backgroundColor: const Color(0xFF16A34A),
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -2235,19 +2235,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
+          color: isSelected ? const Color(0xFF16A34A) : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFFD4FF00)
+                ? const Color(0xFF22C55E)
                 : const Color(0xFF262626),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
-                    blurRadius: 4,
+                    color: const Color(0xFF16A34A).withValues(alpha: 0.3),
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -2260,8 +2260,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               title,
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 6),
@@ -2269,7 +2269,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.black.withValues(alpha: 0.15)
+                    ? Colors.black.withValues(alpha: 0.25)
                     : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -2277,8 +2277,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                  color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -2877,7 +2877,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                 Expanded(
                                   flex: 3,
                                   child: Material(
-                                    color: const Color(0xFFD4FF00),
+                                    color: const Color(0xFF16A34A),
                                     borderRadius: BorderRadius.circular(12),
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(12),
@@ -2899,7 +2899,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                             Icon(
                                               Icons.confirmation_number_rounded,
                                               size: 15,
-                                              color: Colors.black,
+                                              color: Colors.white,
                                             ),
                                             SizedBox(width: 6),
                                             FittedBox(
@@ -2908,8 +2908,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                                 'Pass & Actions',
                                                 style: TextStyle(
                                                   fontSize: 12.5,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: Colors.white,
                                                   letterSpacing: -0.1,
                                                 ),
                                               ),
@@ -2954,8 +2954,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                           ),
                                           border: Border.all(
                                             color: const Color(
-                                              0xFFD4FF00,
-                                            ).withValues(alpha: 0.6),
+                                              0xFF16A34A,
+                                            ).withValues(alpha: 0.7),
                                             width: 1.2,
                                           ),
                                         ),
@@ -2968,7 +2968,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                             Icon(
                                               Icons.phone_in_talk_rounded,
                                               size: 14,
-                                              color: Color(0xFFD4FF00),
+                                              color: Color(0xFF86EFAC),
                                             ),
                                             SizedBox(width: 5),
                                             FittedBox(
@@ -2977,8 +2977,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                                 'Call',
                                                 style: TextStyle(
                                                   fontSize: 12.5,
-                                                  fontWeight: FontWeight.w900,
-                                                  color: Color(0xFFD4FF00),
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFF86EFAC),
                                                   letterSpacing: -0.1,
                                                 ),
                                               ),
