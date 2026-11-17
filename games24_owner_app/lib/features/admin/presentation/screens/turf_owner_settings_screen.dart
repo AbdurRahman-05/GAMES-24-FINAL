@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,19 +39,24 @@ class _TurfOwnerSettingsScreenState
         ),
         leading: IconButton(
           icon: Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: const Color(0xFF1C1C1C),
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 0.8,
+              ),
             ),
             child: const Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF141414),
+              color: Colors.white,
               size: 15,
             ),
           ),
           tooltip: 'Back to Profile',
           onPressed: () {
+            HapticFeedback.lightImpact();
             if (context.canPop()) {
               context.pop();
             } else {
