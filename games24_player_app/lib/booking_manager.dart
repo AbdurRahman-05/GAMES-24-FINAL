@@ -267,8 +267,14 @@ class BookingManager {
 
   Future<bool> cancelBooking(int bookingId) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
       final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/bookings/$bookingId/cancel');
-      final res = await http.post(uri).timeout(const Duration(seconds: 15));
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'callerPhone': phone}),
+      ).timeout(const Duration(seconds: 15));
       if (res.statusCode == 200 || res.statusCode == 201) {
         await fetchBookings();
         return true;

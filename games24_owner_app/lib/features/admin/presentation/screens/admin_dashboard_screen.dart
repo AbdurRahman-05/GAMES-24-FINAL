@@ -1,10 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../api_config.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
@@ -133,7 +138,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     if (mounted) {
       ToastUtils.showSuccess(
         context,
-        "Gate check-in confirmed for $playerName! 🎉",
+        "Gate check-in confirmed for $playerName!",
       );
     }
   }
@@ -1296,10 +1301,73 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       );
     }
 
+    final List<String> branchPhotos = [];
+    bool isUploadingPhoto = false;
+
     showDialog(
       context: context,
       builder: (dlgCtx) => StatefulBuilder(
-        builder: (ctx, setDlgState) => AlertDialog(
+        builder: (ctx, setDlgState) {
+          Future<void> pickAndUploadPhoto() async {
+            final ImagePicker picker = ImagePicker();
+            final List<XFile> images = [];
+            try {
+              final picked = await picker.pickMultiImage(imageQuality: 85);
+              if (picked.isNotEmpty) {
+                images.addAll(picked);
+              } else {
+                final single = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 85,
+                );
+                if (single != null) images.add(single);
+              }
+            } catch (e) {
+              debugPrint('Image picker error: $e');
+            }
+
+            if (images.isEmpty) return;
+
+            setDlgState(() => isUploadingPhoto = true);
+            try {
+              for (final img in images) {
+                final uri = Uri.parse('${ApiConfig.baseUrl}/upload/photo');
+                final request = http.MultipartRequest('POST', uri);
+                final bytes = await img.readAsBytes();
+                final ext = img.name.split('.').last.toLowerCase();
+                final mimeSubtype =
+                    ext == 'png' ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
+
+                request.files.add(
+                  http.MultipartFile.fromBytes(
+                    'file',
+                    bytes,
+                    filename: img.name,
+                    contentType: MediaType('image', mimeSubtype),
+                  ),
+                );
+
+                final streamedRes = await request.send();
+                final response = await http.Response.fromStream(streamedRes);
+                if (response.statusCode == 200 || response.statusCode == 201) {
+                  final data = jsonDecode(response.body);
+                  final fileUrl = data['url'];
+                  if (fileUrl != null &&
+                      !branchPhotos.contains(fileUrl.toString())) {
+                    setDlgState(() {
+                      branchPhotos.add(fileUrl.toString());
+                    });
+                  }
+                }
+              }
+            } catch (e) {
+              debugPrint('Upload photo error: $e');
+            } finally {
+              setDlgState(() => isUploadingPhoto = false);
+            }
+          }
+
+          return AlertDialog(
           backgroundColor: const Color(0xFF141414),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -1626,7 +1694,172 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       ),
                     );
                   }),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 14),
+
+                  // Branch Venue Photos (Images)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.photo_library_outlined,
+                            size: 15,
+                            color: Color(0xFF86EFAC),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Branch Venue Photos',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (branchPhotos.isNotEmpty)
+                        Text(
+                          '${branchPhotos.length} uploaded',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF86EFAC),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Upload photos of your courts, turf pitch, and amenities for player app listing:',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Upload Button / Progress
+                  InkWell(
+                    onTap: isUploadingPhoto ? null : pickAndUploadPhoto,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161E14),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF2E4D2E),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isUploadingPhoto) ...[
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFF86EFAC),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Uploading Photos...',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF86EFAC),
+                              ),
+                            ),
+                          ] else ...[
+                            const Icon(
+                              Icons.add_photo_alternate_rounded,
+                              size: 18,
+                              color: Color(0xFF86EFAC),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              branchPhotos.isEmpty
+                                  ? 'Select & Upload Venue Photos'
+                                  : 'Add More Photos',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF86EFAC),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Thumbnails row
+                  if (branchPhotos.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 72,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: branchPhotos.length,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (context, idx) {
+                          final photoUrl = branchPhotos[idx];
+                          return Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  photoUrl,
+                                  width: 72,
+                                  height: 72,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 72,
+                                    height: 72,
+                                    color: const Color(0xFF202024),
+                                    child: const Icon(
+                                      Icons.broken_image_rounded,
+                                      size: 24,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 2,
+                                right: 2,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setDlgState(() {
+                                      branchPhotos.removeAt(idx);
+                                    });
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black87,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.close_rounded,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
 
                   // Super Admin Approval Requirement Notice
                   Container(
@@ -1750,6 +1983,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       alternativePhone: altPhone,
                       dayRate: baseDayRate,
                       nightRate: baseDayRate + 200,
+                      photoUrls: branchPhotos,
                       sports: selectedSports.toList(),
                       sportRates: perSportRates,
                       isCloned: isClone,
@@ -1769,10 +2003,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
+        );
+      },
+    ),
+  );
+}
 
   // --- ADD COURT / PITCH (SAME PLACE) WITH PER-SPORT PRICING ---
   void _showAddCourtSamePlaceDialog(
@@ -2317,7 +2552,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Subscription Expires in ${profile.subscriptionDaysRemaining} Day(s) ⚠️',
+                        'Subscription Expires in ${profile.subscriptionDaysRemaining} Day(s)',
                         style: const TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w800,
@@ -3139,9 +3374,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                             const SizedBox(height: 2),
                             Row(
                               children: [
-                                Text(
-                                  _getSportEmoji(spotlight.sport),
-                                  style: const TextStyle(fontSize: 12),
+                                Icon(
+                                  _getSportIcon(spotlight.sport),
+                                  size: 13,
+                                  color: _getSportColor(spotlight.sport),
                                 ),
                                 const SizedBox(width: 4),
                                 Expanded(
@@ -3275,9 +3511,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              child: const Text(
-                'All Slots ➔',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'All Slots',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_rounded, size: 14),
+                ],
               ),
             ),
           ],
@@ -3521,7 +3764,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       booking: booking,
       sportColor: _getSportColor(booking.sport),
       sportIcon: _getSportIcon(booking.sport),
-      sportEmoji: _getSportEmoji(booking.sport),
       scheduleWidget: _buildBookingScheduleDisplay(booking),
       onOpenDetails: () => _openBookingDetailsSheet(context, booking),
       onCall: () {
@@ -3797,22 +4039,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     } else if (isCompleted) {
       statusBgColor = const Color(0xFF1C1C1C);
       statusTextColor = const Color(0xFFA1A1AA);
-      statusDisplay = 'COMPLETED ✓';
+      statusDisplay = 'COMPLETED';
       statusIcon = Icons.check_circle_outline_rounded;
     } else if (isCheckedIn) {
       statusBgColor = const Color(0xFF1A2A04);
       statusTextColor = const Color(0xFFD4FF00);
-      statusDisplay = 'CHECKED IN 🟢';
+      statusDisplay = 'CHECKED IN';
       statusIcon = Icons.verified_rounded;
     } else if (isLiveNow) {
       statusBgColor = const Color(0xFF1A2A04);
       statusTextColor = const Color(0xFFD4FF00);
-      statusDisplay = 'LIVE NOW 🟢';
+      statusDisplay = 'LIVE NOW';
       statusIcon = Icons.sensors_rounded;
     } else {
       statusBgColor = const Color(0xFF0C2040);
       statusTextColor = const Color(0xFF60A5FA);
-      statusDisplay = 'CONFIRMED ✓';
+      statusDisplay = 'CONFIRMED';
       statusIcon = Icons.check_circle_rounded;
     }
 
@@ -3862,9 +4104,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      _getSportEmoji(booking.sport),
-                      style: const TextStyle(fontSize: 16),
+                    child: Icon(
+                      _getSportIcon(booking.sport),
+                      size: 18,
+                      color: _getSportColor(booking.sport),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -4508,16 +4751,16 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     return source;
   }
 
-  String _getSportEmoji(String sport) {
+  IconData _getSportIcon(String sport) {
     final lower = sport.toLowerCase();
-    if (lower.contains('cricket')) return '🏏';
-    if (lower.contains('foot') || lower.contains('soccer')) return '⚽';
-    if (lower.contains('badminton')) return '🏸';
-    if (lower.contains('pickle')) return '🏓';
-    if (lower.contains('tennis')) return '🎾';
-    if (lower.contains('basket')) return '🏀';
-    if (lower.contains('volley')) return '🏐';
-    return '🏆';
+    if (lower.contains('cricket')) return Icons.sports_cricket_rounded;
+    if (lower.contains('foot') || lower.contains('soccer')) return Icons.sports_soccer_rounded;
+    if (lower.contains('badminton')) return Icons.sports_tennis_rounded;
+    if (lower.contains('pickle')) return Icons.sports_tennis_rounded;
+    if (lower.contains('tennis')) return Icons.sports_tennis_rounded;
+    if (lower.contains('basket')) return Icons.sports_basketball_rounded;
+    if (lower.contains('volley')) return Icons.sports_volleyball_rounded;
+    return Icons.sports_rounded;
   }
 
   Color _getSportColor(String sport) {
@@ -4535,19 +4778,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     return const Color(0xFFD4FF00);
   }
 
-  IconData _getSportIcon(String sport) {
-    final lower = sport.toLowerCase();
-    if (lower.contains('cricket')) return Icons.sports_cricket_rounded;
-    if (lower.contains('foot') || lower.contains('soccer')) {
-      return Icons.sports_soccer_rounded;
-    }
-    if (lower.contains('badminton') || lower.contains('tennis')) {
-      return Icons.sports_tennis_rounded;
-    }
-    if (lower.contains('basket')) return Icons.sports_basketball_rounded;
-    if (lower.contains('volley')) return Icons.sports_volleyball_rounded;
-    return Icons.sports_score_rounded;
-  }
 
   // --- 8. BLOCKED ACCESS SCAFFOLD ---
   Widget _buildBlockedAccessScaffold(
@@ -4749,7 +4979,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   ),
                   icon: const Icon(Icons.bolt_rounded, size: 20),
                   label: const Text(
-                    'Pay ₹1,180 & Unlock Access Now ⚡',
+                    'Pay ₹1,180 & Unlock Access Now',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   onPressed: () async {
@@ -4965,7 +5195,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 label: Text(
                   profile.isSubscriptionActive
                       ? 'Renew Platform Plan (₹1,180)'
-                      : 'Pay ₹1,180 & Activate Turf ⚡',
+                      : 'Pay ₹1,180 & Activate Turf',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
@@ -5332,7 +5562,6 @@ class _TearableBookingCard extends StatefulWidget {
   final TurfBookingHistoryItem booking;
   final Color sportColor;
   final IconData sportIcon;
-  final String sportEmoji;
   final Widget scheduleWidget;
   final VoidCallback onOpenDetails;
   final VoidCallback onCall;
@@ -5341,7 +5570,6 @@ class _TearableBookingCard extends StatefulWidget {
     required this.booking,
     required this.sportColor,
     required this.sportIcon,
-    required this.sportEmoji,
     required this.scheduleWidget,
     required this.onOpenDetails,
     required this.onCall,
@@ -5440,10 +5668,10 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
       badgeLabel = 'CANCELLED';
     } else if (isCompleted) {
       badgeTextColor = const Color(0xFFA1A1AA);
-      badgeLabel = 'COMPLETED ✓';
+      badgeLabel = 'COMPLETED';
     } else if (isLiveNow) {
       badgeTextColor = const Color(0xFFD4FF00);
-      badgeLabel = 'LIVE NOW 🟢';
+      badgeLabel = 'LIVE NOW';
     } else {
       badgeTextColor = isUpi
           ? const Color(0xFFD4FF00)
@@ -5583,9 +5811,10 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      widget.sportEmoji,
-                      style: const TextStyle(fontSize: 11),
+                    Icon(
+                      widget.sportIcon,
+                      size: 13,
+                      color: widget.sportColor,
                     ),
                     const SizedBox(width: 5),
                     Text(

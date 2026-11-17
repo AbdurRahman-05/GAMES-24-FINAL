@@ -63,15 +63,26 @@ class _AdminTournamentManagerScreenState
   // Active status filter for Tab 1
   String _activeFilter = 'All';
 
-  final List<Map<String, String>> _sportsList = const [
-    {'name': 'Cricket', 'emoji': '🏏'},
-    {'name': 'Football', 'emoji': '⚽'},
-    {'name': 'Futsal', 'emoji': '🥅'},
-    {'name': 'Badminton', 'emoji': '🏸'},
-    {'name': 'Tennis', 'emoji': '🎾'},
-    {'name': 'Volleyball', 'emoji': '🏐'},
-    {'name': 'Basketball', 'emoji': '🏀'},
+  final List<String> _sportsList = const [
+    'Cricket',
+    'Football',
+    'Futsal',
+    'Badminton',
+    'Tennis',
+    'Volleyball',
+    'Basketball',
   ];
+
+  IconData _getSportIcon(String sport) {
+    final lower = sport.toLowerCase();
+    if (lower.contains('cricket')) return Icons.sports_cricket_rounded;
+    if (lower.contains('foot') || lower.contains('soccer') || lower.contains('futsal')) return Icons.sports_soccer_rounded;
+    if (lower.contains('badminton')) return Icons.sports_tennis_rounded;
+    if (lower.contains('tennis')) return Icons.sports_tennis_rounded;
+    if (lower.contains('basket')) return Icons.sports_basketball_rounded;
+    if (lower.contains('volley')) return Icons.sports_volleyball_rounded;
+    return Icons.sports_rounded;
+  }
 
   final List<Map<String, String>> _formatsList = const [
     {'name': 'Knockout', 'desc': 'Single loss elimination'},
@@ -469,9 +480,16 @@ class _AdminTournamentManagerScreenState
                                               color: const Color(0xFF262626),
                                               borderRadius: BorderRadius.circular(6),
                                             ),
-                                            child: Text(
-                                              '👥 ${team.playerCount} Players',
-                                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFE4E4E7)),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(Icons.groups_rounded, size: 12, color: Color(0xFFD4FF00)),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${team.playerCount} Players',
+                                                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFE4E4E7)),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
@@ -890,7 +908,13 @@ class _AdminTournamentManagerScreenState
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('⚡ Log Key Match Event (Real-time)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                          const Row(
+                            children: [
+                              Icon(Icons.bolt_rounded, size: 14, color: Color(0xFFD4FF00)),
+                              SizedBox(width: 4),
+                              Text('Log Key Match Event (Real-time)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                            ],
+                          ),
                           const SizedBox(height: 6),
                           Row(
                             children: [
@@ -1677,7 +1701,7 @@ class _AdminTournamentManagerScreenState
                   ),
                   child: Row(
                     children: [
-                      Text(t.sportType == 'Cricket' ? '🏏' : '⚽', style: const TextStyle(fontSize: 12)),
+                      Icon(_getSportIcon(t.sportType), size: 12, color: const Color(0xFFD4FF00)),
                       const SizedBox(width: 4),
                       Text(
                         '${t.sportType} • ${t.tournamentType}',
@@ -2003,19 +2027,23 @@ class _AdminTournamentManagerScreenState
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
                   child: Row(
-                    children: _sportsList.map((s) {
-                      final isSelected = _selectedSport == s['name'];
+                    children: _sportsList.map((sport) {
+                      final isSelected = _selectedSport == sport;
                       return Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: ChoiceChip(
-                          avatar: Text(s['emoji']!, style: const TextStyle(fontSize: 13)),
-                          label: Text(s['name']!, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600)),
+                          avatar: Icon(
+                            _getSportIcon(sport),
+                            size: 14,
+                            color: isSelected ? Colors.black : const Color(0xFFD4FF00),
+                          ),
+                          label: Text(sport, style: TextStyle(fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600)),
                           selected: isSelected,
                           selectedColor: const Color(0xFFD4FF00),
                           labelStyle: TextStyle(color: isSelected ? Colors.black : const Color(0xFFE4E4E7), fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600),
                           backgroundColor: const Color(0xFF1C1C1C),
                           onSelected: (val) {
-                            if (val) setState(() => _selectedSport = s['name']!);
+                            if (val) setState(() => _selectedSport = sport);
                           },
                         ),
                       );
@@ -2174,12 +2202,12 @@ class _AdminTournamentManagerScreenState
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _championPrizeCtrl,
-                  decoration: _inputDecoration('Champion Prize 🏆', '₹15,000 Cash + Trophy', Icons.emoji_events_outlined),
+                  decoration: _inputDecoration('Champion Prize', '₹15,000 Cash + Trophy', Icons.emoji_events_outlined),
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _runnerUpPrizeCtrl,
-                  decoration: _inputDecoration('Runner-Up Prize 🥈', '₹7,000 Cash', Icons.workspace_premium_outlined),
+                  decoration: _inputDecoration('Runner-Up Prize', '₹7,000 Cash', Icons.workspace_premium_outlined),
                 ),
                 const SizedBox(height: 12),
 
@@ -2439,7 +2467,13 @@ class _AdminTournamentManagerScreenState
                   const SizedBox(height: 12),
 
                   // Engine Selector Chips
-                  const Text('⚡ Generate / Switch Fixture Engine:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                  const Row(
+                    children: [
+                      Icon(Icons.bolt_rounded, size: 14, color: Color(0xFFD4FF00)),
+                      SizedBox(width: 4),
+                      Text('Generate / Switch Fixture Engine:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                    ],
+                  ),
                   const SizedBox(height: 6),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -2496,7 +2530,13 @@ class _AdminTournamentManagerScreenState
                     )
                   else ...[
                     // Interactive Visual Bracket View
-                    const Text('🏆 Visual Tournament Bracket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD4FF00))),
+                    const Row(
+                      children: [
+                        Icon(Icons.emoji_events_rounded, size: 15, color: Color(0xFFD4FF00)),
+                        SizedBox(width: 6),
+                        Text('Visual Tournament Bracket', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFFD4FF00))),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     TournamentBracketView(
                       tournament: t,
@@ -2505,7 +2545,13 @@ class _AdminTournamentManagerScreenState
                     const SizedBox(height: 14),
 
                     // Fixture Match Console Cards
-                    const Text('📋 Match Operations List', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    const Row(
+                      children: [
+                        Icon(Icons.format_list_bulleted_rounded, size: 15, color: Color(0xFFD4FF00)),
+                        SizedBox(width: 6),
+                        Text('Match Operations List', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ],
+                    ),
                     const SizedBox(height: 8),
                     ...t.fixtures.map((fix) {
                       final isLiveFix = fix.status == 'Live';
@@ -2558,7 +2604,14 @@ class _AdminTournamentManagerScreenState
                                     const SizedBox(height: 4),
                                     InkWell(
                                       onTap: () => _showUpdateMatchResultDialog(t, fix),
-                                      child: const Text('Edit Score ➔', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text('Edit Score', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                                          SizedBox(width: 2),
+                                          Icon(Icons.arrow_forward_rounded, size: 11, color: Color(0xFFD4FF00)),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -2574,7 +2627,7 @@ class _AdminTournamentManagerScreenState
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced ➔)" : "(CHAMPION 🥇)"}',
+                                  'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced)" : "(CHAMPION)"}',
                                   style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                                 ),
                               ),

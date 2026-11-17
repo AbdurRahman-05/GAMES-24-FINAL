@@ -22,7 +22,7 @@ class MockNotificationsRepository {
     ),
     NotificationModel(
       id: 'n3',
-      title: 'Weekend Offer 🎉',
+      title: 'Weekend Offer',
       body: 'Get 20% OFF on all Badminton court bookings in Anna Nagar using code MADURAI20.',
       time: '1 day ago',
       type: 'offer',

@@ -1595,7 +1595,7 @@ class _TurfOwnerSettingsScreenState
                             label: Text(
                               profile.isSubscriptionActive
                                   ? 'Renew Platform Plan (₹1,180)'
-                                  : 'Pay ₹1,180 & Go Live ⚡',
+                                  : 'Pay ₹1,180 & Go Live',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 13,
@@ -1986,13 +1986,19 @@ class _TurfOwnerSettingsScreenState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                '🔒 Verified Legal Identity Locked',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.warning,
-                                  fontSize: 13,
-                                ),
+                              Row(
+                                children: [
+                                  Icon(Icons.lock_rounded, size: 14, color: AppColors.warning),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Verified Legal Identity Locked',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.warning,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
                               ),
                               SizedBox(height: 2),
                               Text(

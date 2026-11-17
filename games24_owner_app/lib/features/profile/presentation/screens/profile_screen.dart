@@ -74,7 +74,7 @@ class ProfileScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Turf Partner / Admin Portal 🏟️', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                          Text('Turf Partner / Admin Portal', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 2),
                           const Text('Manage slots, block courts, scan QR entry', style: TextStyle(fontSize: 11, color: Colors.grey)),
                         ],
@@ -117,7 +117,14 @@ class ProfileScreen extends ConsumerWidget {
                     child: AppCard(
                       child: Column(
                         children: [
-                          Text('4.9 ★', style: theme.textTheme.titleLarge?.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('4.9', style: theme.textTheme.titleLarge?.copyWith(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                              const SizedBox(width: 3),
+                              const Icon(Icons.star_rounded, size: 16, color: AppColors.warning),
+                            ],
+                          ),
                           const SizedBox(height: 2),
                           const Text('Karma', style: TextStyle(fontSize: 12, color: Colors.grey)),
                         ],

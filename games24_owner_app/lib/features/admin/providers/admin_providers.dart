@@ -317,7 +317,7 @@ class AdminSlotNotifier extends Notifier<AdminSlotState> {
     final currentOffersMap = Map<String, Map<String, String>>.from(state.discountedSlotsByDate);
     final dateOffers = Map<String, String>.from(currentOffersMap[dateKey] ?? {});
     for (final s in slots) {
-      dateOffers[s] = 'PERCENT|0|Reserved for $tournamentTitle 🏆';
+      dateOffers[s] = 'PERCENT|0|Reserved for $tournamentTitle';
     }
     currentOffersMap[dateKey] = dateOffers;
 

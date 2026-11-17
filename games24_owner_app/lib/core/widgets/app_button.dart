@@ -12,6 +12,8 @@ class AppButton extends StatelessWidget {
   final bool isLoading;
   final bool isFullWidth;
   final double height;
+  final double? fontSize;
+  final EdgeInsetsGeometry? padding;
 
   const AppButton({
     super.key,
@@ -22,6 +24,8 @@ class AppButton extends StatelessWidget {
     this.isLoading = false,
     this.isFullWidth = true,
     this.height = 52.0,
+    this.fontSize,
+    this.padding,
   });
 
   @override
@@ -65,6 +69,7 @@ class AppButton extends StatelessWidget {
             text,
             style: theme.textTheme.titleMedium?.copyWith(
               color: textColor,
+              fontSize: fontSize,
               fontWeight: type == AppButtonType.primary ? FontWeight.w800 : FontWeight.w600,
             ),
             maxLines: 1,
@@ -129,7 +134,7 @@ class AppButton extends StatelessWidget {
                   onPressed?.call();
                 },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: padding ?? const EdgeInsets.symmetric(horizontal: 16),
             child: buttonContent,
           ),
         ),

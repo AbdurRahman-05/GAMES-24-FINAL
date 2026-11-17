@@ -6,6 +6,7 @@ import {
   Param,
   Query,
   Body,
+  Headers,
   ParseIntPipe,
 } from '@nestjs/common';
 import { TurfService } from './turf.service.js';
@@ -83,8 +84,10 @@ export class TurfController {
   @Post('bookings/:bookingId/cancel')
   async cancelBooking(
     @Param('bookingId', ParseIntPipe) bookingId: number,
+    @Body() body: any,
+    @Headers('x-admin-key') adminKey?: string,
   ) {
-    return this.turfService.cancelBooking(bookingId);
+    return this.turfService.cancelBooking(bookingId, body, adminKey);
   }
 
   @Post('bookings/:bookingId/complete')
@@ -224,7 +227,9 @@ export class TurfController {
     @Param('id', ParseIntPipe) id: number,
     @Body() body: any,
   ) {
-    return this.turfService.saveTurfCourts(id, body?.courts || body);
+    const courts = Array.isArray(body) ? body : (body?.courts || []);
+    const callerPhone = body?.callerPhone || body?.adminPhone || body?.ownerPhone;
+    return this.turfService.saveTurfCourts(id, courts, callerPhone);
   }
 
   @Get(':id/subscription')

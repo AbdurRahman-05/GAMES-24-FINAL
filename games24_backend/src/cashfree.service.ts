@@ -179,6 +179,15 @@ export class CashfreeService {
       throw new NotFoundException(`Order ${orderId} not found`);
     }
 
+    if (paymentOrder.orderStatus === 'PAID') {
+      return {
+        success: true,
+        orderId,
+        status: 'PAID',
+        message: 'Order has already been verified and processed.',
+      };
+    }
+
     let isPaid = false;
     let cfPaymentId = `cf_pay_${Date.now()}`;
     let paymentMethod = 'UPI';
@@ -278,6 +287,15 @@ export class CashfreeService {
     });
     if (!paymentOrder) {
       throw new NotFoundException(`Order ${orderId} not found`);
+    }
+
+    if (paymentOrder.orderStatus === 'PAID') {
+      return {
+        success: true,
+        orderId,
+        status: 'PAID',
+        message: 'Order has already been verified and processed.',
+      };
     }
 
     return {

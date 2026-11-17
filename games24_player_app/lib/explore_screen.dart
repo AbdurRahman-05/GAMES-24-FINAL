@@ -182,9 +182,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ? (turf['amenities'] as List).map((e) => e.toString()).toList()
             : ['Floodlights', 'Parking', 'Restroom'];
 
-        final List<String> photoUrls = (turf['photoUrls'] is List)
-            ? (turf['photoUrls'] as List).map((e) => e.toString()).toList()
-            : [turf['imageUrl'] ?? 'https://picsum.photos/seed/turf1/800/400'];
+        final List<String> rawPhotos = (turf['photoUrls'] is List)
+            ? (turf['photoUrls'] as List)
+                .map((e) => e.toString().trim())
+                .where((e) => e.isNotEmpty && e != 'null' && !e.contains('unsplash.com') && !e.contains('picsum.photos'))
+                .toList()
+            : <String>[];
+
+        String resolvedImg = '';
+        if (turf['imageUrl'] != null && turf['imageUrl'].toString().trim().isNotEmpty && turf['imageUrl'].toString().trim() != 'null') {
+          final trimmed = turf['imageUrl'].toString().trim();
+          if (!trimmed.contains('unsplash.com') && !trimmed.contains('picsum.photos')) {
+            resolvedImg = trimmed;
+          }
+        }
+        if (resolvedImg.isEmpty && rawPhotos.isNotEmpty) {
+          resolvedImg = rawPhotos.first;
+        }
+
+        final List<String> photoUrls = rawPhotos.isNotEmpty
+            ? rawPhotos
+            : (resolvedImg.isNotEmpty ? [resolvedImg] : <String>[]);
 
         final List<String> sportsList = (turf['sports'] is List && (turf['sports'] as List).isNotEmpty)
             ? (turf['sports'] as List).map((e) => e.toString()).toList()
@@ -201,7 +219,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             price: turf['price'] ?? '₹1,200',
             rating: turf['rating']?.toString() ?? '4.9',
             reviews: turf['reviews']?.toString() ?? '128',
-            imageUrl: turf['imageUrl'] ?? photoUrls.first,
+            imageUrl: resolvedImg,
             photoUrls: photoUrls,
             amenities: amenities,
             openingTime: turf['openingTime'] ?? '06:00 AM',

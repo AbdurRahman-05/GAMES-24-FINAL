@@ -79,7 +79,7 @@ class AdvancedFixtureEngine {
         ),
         TournamentFixture(
           id: finalId,
-          matchNumber: 'GRAND FINAL 🏆',
+          matchNumber: 'GRAND FINAL',
           teamA: isBye1 ? seededNames[0] : 'TBD (Winner SF1)',
           teamB: isBye2 ? seededNames[2] : 'TBD (Winner SF2)',
           courtName: t.courtAllocation,
@@ -183,7 +183,7 @@ class AdvancedFixtureEngine {
         ),
         TournamentFixture(
           id: finalId,
-          matchNumber: 'GRAND FINAL 🏆',
+          matchNumber: 'GRAND FINAL',
           teamA: 'TBD (Winner SF1)',
           teamB: 'TBD (Winner SF2)',
           courtName: t.courtAllocation,
@@ -290,7 +290,7 @@ class AdvancedFixtureEngine {
       // Grand Final (Winners Bracket Champion vs Losers Bracket Champion)
       TournamentFixture(
         id: grandFinalId,
-        matchNumber: 'GRAND FINAL 🏆 (WB Champ vs LB Champ)',
+        matchNumber: 'GRAND FINAL (WB Champ vs LB Champ)',
         teamA: 'TBD (WB Champion)',
         teamB: 'TBD (LB Champion)',
         courtName: t.courtAllocation,
@@ -406,7 +406,7 @@ class AdvancedFixtureEngine {
     fixtures.add(
       TournamentFixture(
         id: finalId,
-        matchNumber: 'GRAND FINAL 🏆',
+        matchNumber: 'GRAND FINAL',
         teamA: 'TBD (Winner SF1)',
         teamB: 'TBD (Winner SF2)',
         courtName: t.courtAllocation,

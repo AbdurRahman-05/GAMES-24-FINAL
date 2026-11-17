@@ -197,7 +197,7 @@ class _UserTournamentDetailsDialogState
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        t.status == 'Live' ? '🔴 LIVE NOW' : 'STATUS: ${t.status.toUpperCase()}',
+                        t.status == 'Live' ? 'LIVE NOW' : 'STATUS: ${t.status.toUpperCase()}',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11),
                       ),
                     ),
@@ -294,12 +294,26 @@ class _UserTournamentDetailsDialogState
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('🔴 REAL-TIME MATCH TICKER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red)),
+                            const Row(
+                              children: [
+                                Icon(Icons.circle, size: 8, color: Colors.red),
+                                SizedBox(width: 4),
+                                Text('REAL-TIME MATCH TICKER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red)),
+                              ],
+                            ),
                             const SizedBox(height: 4),
                             Text(t.liveScore, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red.shade900)),
                             if (t.liveCommentary.isNotEmpty) ...[
                               const SizedBox(height: 4),
-                              Text('🎙️ "${t.liveCommentary}"', style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic)),
+                              Row(
+                                children: [
+                                  const Icon(Icons.mic_rounded, size: 14, color: Color(0xFF6B7280)),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text('"${t.liveCommentary}"', style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic)),
+                                  ),
+                                ],
+                              ),
                             ],
                           ],
                         ),
@@ -309,11 +323,23 @@ class _UserTournamentDetailsDialogState
 
                     // Fixtures & UEFA Bracket Tree Section
                     if (t.fixtures.isNotEmpty) ...[
-                      const Text('🏆 Live Tournament Bracket Tree', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary)),
+                      const Row(
+                        children: [
+                          Icon(Icons.emoji_events_rounded, size: 16, color: AppColors.primary),
+                          SizedBox(width: 6),
+                          Text('Live Tournament Bracket Tree', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary)),
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       TournamentBracketView(tournament: t),
                       const SizedBox(height: 14),
-                      const Text('📋 Match Schedule & Results', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      const Row(
+                        children: [
+                          Icon(Icons.format_list_bulleted_rounded, size: 16, color: AppColors.primary),
+                          SizedBox(width: 6),
+                          Text('Match Schedule & Results', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       Column(
                         children: t.fixtures.map((fix) {
@@ -373,7 +399,7 @@ class _UserTournamentDetailsDialogState
                                         const SizedBox(width: 4),
                                         Expanded(
                                           child: Text(
-                                            'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced ➔)" : "(CHAMPION 🥇)"}',
+                                            'WINNER: ${fix.winnerTeam} ${fix.nextMatchId != null ? "(Advanced)" : "(CHAMPION)"}',
                                             style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade900),
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -392,7 +418,13 @@ class _UserTournamentDetailsDialogState
 
                     // Points Table Standings if League format
                     if (t.standings.isNotEmpty) ...[
-                      const Text('📊 Live Points Table Standings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      const Row(
+                        children: [
+                          Icon(Icons.leaderboard_rounded, size: 16, color: AppColors.primary),
+                          SizedBox(width: 6),
+                          Text('Live Points Table Standings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,

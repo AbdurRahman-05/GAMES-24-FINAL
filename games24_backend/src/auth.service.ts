@@ -69,20 +69,39 @@ export class AuthService {
     if (!mobileNumber) {
       throw new BadRequestException('Mobile number is required');
     }
+    const cleanNumber = String(mobileNumber).trim();
+
+    // Rate limiting cooldown: 45 seconds between requests for the same number
+    const lastOtp = await this.prisma.otp.findFirst({
+      where: { mobileNumber: cleanNumber },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (lastOtp) {
+      const elapsedSec = (Date.now() - new Date(lastOtp.createdAt).getTime()) / 1000;
+      if (elapsedSec < 45) {
+        throw new BadRequestException(
+          `Please wait ${Math.ceil(45 - elapsedSec)} seconds before requesting a new OTP.`,
+        );
+      }
+    }
     
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     await this.prisma.otp.create({
       data: {
-        mobileNumber,
+        mobileNumber: cleanNumber,
         otp,
         expiresAt,
       },
     });
 
-    console.log(`[DEV ONLY] OTP for ${mobileNumber} is ${otp}`);
-    return { message: 'OTP sent successfully', otp };
+    console.log(`[AUTH] OTP generated for ${cleanNumber}`);
+    const isProd = process.env.NODE_ENV === 'production';
+    return {
+      message: 'OTP sent successfully',
+      ...(isProd ? {} : { otp }),
+    };
   }
 
   async verifyOtp(body: any) {
@@ -159,10 +178,10 @@ export class AuthService {
     }
     console.log('======================================================\n');
 
+    const isProd = process.env.NODE_ENV === 'production';
     return {
       message: 'OTPs generated and sent successfully',
-      mobileOtp,
-      emailOtp,
+      ...(isProd ? {} : { mobileOtp, emailOtp }),
     };
   }
 
@@ -2582,13 +2601,22 @@ export class AuthService {
       throw new BadRequestException(`Verified admin with ID ${id} not found`);
     }
 
-    // Security check: if phone is provided, ensure it matches turf owner's registered phone
-    if (profileData.adminPhone || profileData.ownerPhoneCheck) {
-      const callerPhone = String(profileData.adminPhone || profileData.ownerPhoneCheck).replace(/\D/g, '');
-      const cleanOwnerPhone = String(admin.ownerPhone).replace(/\D/g, '');
-      if (callerPhone.length >= 10 && cleanOwnerPhone.length >= 10 && !cleanOwnerPhone.endsWith(callerPhone.slice(-10))) {
-        throw new BadRequestException('Security Alert: You do not have permission to modify another turf owner\'s profile!');
-      }
+    // Security check: strictly require owner phone and ensure caller owns this turf
+    const callerRaw = profileData.adminPhone || profileData.ownerPhoneCheck || profileData.callerPhone;
+    if (!callerRaw) {
+      throw new BadRequestException('Security Alert: Turf owner verification phone number is required to update profile.');
+    }
+    const callerPhone = String(callerRaw).replace(/\D/g, '');
+    const cleanOwnerPhone = String(admin.ownerPhone || '').replace(/\D/g, '');
+    const cleanAltPhone = String(admin.alternativePhone || '').replace(/\D/g, '');
+
+    const callerLast10 = callerPhone.slice(-10);
+    const ownerLast10 = cleanOwnerPhone.slice(-10);
+    const altLast10 = cleanAltPhone.slice(-10);
+
+    const isMatch = (ownerLast10 && callerLast10 === ownerLast10) || (altLast10 && callerLast10 === altLast10);
+    if (!isMatch) {
+      throw new BadRequestException('Security Alert: You do not have permission to modify another turf owner\'s profile!');
     }
 
     const verifiedAdminId = admin.id;
@@ -2596,7 +2624,7 @@ export class AuthService {
     const dataToUpdate: any = {};
     if (profileData.venueName !== undefined) dataToUpdate.venueName = String(profileData.venueName);
     if (profileData.ownerName !== undefined) dataToUpdate.ownerName = String(profileData.ownerName);
-    if (profileData.ownerPhone !== undefined) dataToUpdate.ownerPhone = String(profileData.ownerPhone);
+    // Primary owner phone cannot be altered via self-service profile update to prevent account takeover
     if (profileData.ownerEmail !== undefined) dataToUpdate.ownerEmail = String(profileData.ownerEmail);
     if (profileData.streetAddress !== undefined) dataToUpdate.streetAddress = String(profileData.streetAddress);
     if (profileData.neighborhoodArea !== undefined) dataToUpdate.neighborhoodArea = String(profileData.neighborhoodArea);

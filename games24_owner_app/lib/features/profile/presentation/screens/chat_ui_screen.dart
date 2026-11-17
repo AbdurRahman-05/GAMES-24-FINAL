@@ -113,10 +113,10 @@ class _ChatUiScreenState extends State<ChatUiScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                'Arriving in 10 mins 🏃',
-                'Bringing extra ball ⚽',
+                'Arriving in 10 mins',
+                'Bringing extra ball',
                 'Where is parking entrance?',
-                'Ready to play! 🔥',
+                'Ready to play!',
               ].map((chip) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),

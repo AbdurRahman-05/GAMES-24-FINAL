@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => context.push('/admin/login'),
                   icon: const Icon(Icons.storefront_rounded, size: 18, color: AppColors.primary),
                   label: const Text(
-                    'Are you a Turf Owner? Log in as Partner 🏟️',
+                    'Are you a Turf Owner? Log in as Partner',
                     style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                 ),

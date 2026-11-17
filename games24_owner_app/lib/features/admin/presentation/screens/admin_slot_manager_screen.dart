@@ -768,7 +768,7 @@ class _AdminSlotManagerScreenState
                     );
 
               final isSelected = _selectedCourt == court.name;
-              final sportEmoji = _getSportEmoji(court.sport);
+              final sportIcon = _getSportIcon(court.sport);
 
               return InkWell(
                 onTap: () => setState(() => _selectedCourt = court.name),
@@ -805,7 +805,11 @@ class _AdminSlotManagerScreenState
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(sportEmoji, style: const TextStyle(fontSize: 16)),
+                      Icon(
+                        sportIcon,
+                        size: 16,
+                        color: isSelected ? Colors.white : const Color(0xFFD4FF00),
+                      ),
                       const SizedBox(width: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3174,12 +3178,15 @@ class _AdminSlotManagerScreenState
     );
   }
 
-  String _getSportEmoji(String sport) {
+  IconData _getSportIcon(String sport) {
     final lower = sport.toLowerCase();
-    if (lower.contains('cricket')) return '🏏';
-    if (lower.contains('foot') || lower.contains('soccer')) return '⚽';
-    if (lower.contains('badminton')) return '🏸';
-    if (lower.contains('pickle')) return '🏓';
-    return '🎯';
+    if (lower.contains('cricket')) return Icons.sports_cricket_rounded;
+    if (lower.contains('foot') || lower.contains('soccer')) return Icons.sports_soccer_rounded;
+    if (lower.contains('badminton')) return Icons.sports_tennis_rounded;
+    if (lower.contains('pickle')) return Icons.sports_tennis_rounded;
+    if (lower.contains('tennis')) return Icons.sports_tennis_rounded;
+    if (lower.contains('basket')) return Icons.sports_basketball_rounded;
+    if (lower.contains('volley')) return Icons.sports_volleyball_rounded;
+    return Icons.sports_rounded;
   }
 }

@@ -446,16 +446,82 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  Widget _buildHeroPlaceholder() {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Opacity(
+            opacity: 0.2,
+            child: Image.asset(
+              'assets/images/wm_full.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 200,
+              errorBuilder: (_, _, _) => const SizedBox(),
+            ),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+                ),
+                child: const Icon(
+                  Icons.stadium_rounded,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.turfName.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: 'Delight',
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHeroImage() {
     final rawImages = (widget.photoUrls != null && widget.photoUrls!.isNotEmpty)
-        ? widget.photoUrls!.map((e) => e.trim()).where((e) => e.isNotEmpty).toList()
+        ? widget.photoUrls!
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty && e != 'null' && !e.contains('unsplash.com') && !e.contains('picsum.photos'))
+            .toList()
         : <String>[];
+
+    final resolvedImg = (widget.imageUrl.trim().isNotEmpty &&
+            widget.imageUrl.trim() != 'null' &&
+            !widget.imageUrl.contains('unsplash.com') &&
+            !widget.imageUrl.contains('picsum.photos'))
+        ? widget.imageUrl.trim()
+        : '';
 
     final images = rawImages.isNotEmpty
         ? rawImages
-        : [(widget.imageUrl.trim().isNotEmpty && widget.imageUrl.trim().startsWith('http'))
-            ? widget.imageUrl.trim()
-            : 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=800&q=80'];
+        : (resolvedImg.isNotEmpty ? [resolvedImg] : <String>[]);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -467,72 +533,36 @@ class _BookingScreenState extends State<BookingScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              PageView.builder(
-                itemCount: images.length,
-                onPageChanged: (idx) =>
-                    setState(() => _currentImageIndex = idx),
-                itemBuilder: (context, index) {
-                  return Image.network(
-                    images[index],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      width: double.infinity,
-                      height: 200,
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF071C13), Color(0xFF154D36), Color(0xFF0A291D)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Opacity(
-                            opacity: 0.2,
-                            child: Image.asset(
-                              'assets/images/wm_full.png',
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: 200,
-                              errorBuilder: (_, _, _) => const SizedBox(),
+              if (images.isNotEmpty)
+                PageView.builder(
+                  itemCount: images.length,
+                  onPageChanged: (idx) =>
+                      setState(() => _currentImageIndex = idx),
+                  itemBuilder: (context, index) {
+                    return Image.network(
+                      images[index],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _buildHeroPlaceholder(),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: const Color(0xFF0D3324),
+                          alignment: Alignment.center,
+                          child: const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFF4ADE80),
                             ),
                           ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.12),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
-                                ),
-                                child: const Icon(
-                                  Icons.stadium_rounded,
-                                  size: 40,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                widget.turfName.toUpperCase(),
-                                style: const TextStyle(
-                                  fontFamily: 'Delight',
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
+                        );
+                      },
+                    );
+                  },
+                )
+              else
+                _buildHeroPlaceholder(),
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(

@@ -897,8 +897,10 @@ export class TurfService {
     }
 
     // Authorization verification: if owner/caller phone provided, ensure ownership match
-    const providedPhone = String(callerPhone || ownerPhone || '').trim();
-    if (providedPhone && providedPhone !== turf.ownerPhone && providedPhone !== turf.alternativePhone) {
+    const providedPhone = String(callerPhone || ownerPhone || '').replace(/\D/g, '').slice(-10);
+    const cleanOwner = String(turf.ownerPhone || '').replace(/\D/g, '').slice(-10);
+    const cleanAlt = String(turf.alternativePhone || '').replace(/\D/g, '').slice(-10);
+    if (providedPhone && providedPhone !== cleanOwner && providedPhone !== cleanAlt) {
       throw new BadRequestException('Unauthorized: Provided credentials do not match turf venue operator');
     }
 
@@ -1043,7 +1045,7 @@ export class TurfService {
   }
 
   async setSlotOffer(id: number, body: any) {
-    const { date, timeSlot, offerString, offerType, discountPercent, originalPrice, offerPrice, tagLabel, remove } = body || {};
+    const { date, timeSlot, offerString, offerType, discountPercent, originalPrice, offerPrice, tagLabel, remove, callerPhone, ownerPhone, adminPhone } = body || {};
 
     if (!date || !timeSlot) {
       throw new BadRequestException('Date and timeSlot are required to set slot offer');
@@ -1056,6 +1058,17 @@ export class TurfService {
     if (!turf) {
       throw new NotFoundException(`Turf #${id} not found`);
     }
+
+    const callerRaw = callerPhone || ownerPhone || adminPhone;
+    if (callerRaw) {
+      const cleanCaller = String(callerRaw).replace(/\D/g, '').slice(-10);
+      const cleanOwner = String(turf.ownerPhone || '').replace(/\D/g, '').slice(-10);
+      const cleanAlt = String(turf.alternativePhone || '').replace(/\D/g, '').slice(-10);
+      if (cleanCaller !== cleanOwner && cleanCaller !== cleanAlt) {
+        throw new BadRequestException('Security Alert: You do not have permission to modify slot offers for this turf.');
+      }
+    }
+
     const verifiedAdminId = turf.id;
 
     // Check if user wants to remove the offer
@@ -1441,12 +1454,35 @@ export class TurfService {
     }
   }
 
-  async cancelBooking(bookingId: number) {
+  async cancelBooking(bookingId: number, body?: any, adminKey?: string) {
     const booking = await this.prisma.turfBooking.findUnique({
       where: { id: bookingId },
+      include: {
+        verifiedAdmin: true,
+      },
     });
     if (!booking) {
       throw new NotFoundException(`Booking #${bookingId} not found`);
+    }
+
+    // Security check: Super Admin OR Customer who booked OR Turf Owner
+    const isSuperAdmin = adminKey === (process.env.SUPER_ADMIN_KEY || 'superadmin-secret-key-games24');
+    if (!isSuperAdmin) {
+      const callerPhone = String(body?.callerPhone || body?.phone || body?.customerPhone || body?.ownerPhone || '').replace(/\D/g, '').slice(-10);
+      if (!callerPhone) {
+        throw new BadRequestException('Security Alert: Caller phone number is required to cancel this booking.');
+      }
+
+      const bookingCustomerPhone = String(booking.customerPhone || '').replace(/\D/g, '').slice(-10);
+      const ownerPhone = String(booking.verifiedAdmin?.ownerPhone || '').replace(/\D/g, '').slice(-10);
+      const altPhone = String(booking.verifiedAdmin?.alternativePhone || '').replace(/\D/g, '').slice(-10);
+
+      const isCustomer = Boolean(bookingCustomerPhone && callerPhone === bookingCustomerPhone);
+      const isOwner = Boolean((ownerPhone && callerPhone === ownerPhone) || (altPhone && callerPhone === altPhone));
+
+      if (!isCustomer && !isOwner) {
+        throw new BadRequestException('Security Alert: You do not have permission to cancel this booking.');
+      }
     }
 
     // 3-hour cancellation rule:
@@ -2684,11 +2720,21 @@ export class TurfService {
     return getCourtsForTurf(id, turf.venueName, sports, turf.courts);
   }
 
-  async saveTurfCourts(id: number, courts: any[]) {
+  async saveTurfCourts(id: number, courts: any[], callerPhone?: string) {
     const turf = await this.findVerifiedAdmin(id, false, false);
     if (!turf) {
       throw new NotFoundException(`Turf #${id} not found`);
     }
+
+    if (callerPhone) {
+      const cleanCaller = String(callerPhone).replace(/\D/g, '').slice(-10);
+      const cleanOwner = String(turf.ownerPhone || '').replace(/\D/g, '').slice(-10);
+      const cleanAlt = String(turf.alternativePhone || '').replace(/\D/g, '').slice(-10);
+      if (cleanCaller !== cleanOwner && cleanCaller !== cleanAlt) {
+        throw new BadRequestException('Security Alert: You do not have permission to modify courts for this turf.');
+      }
+    }
+
     const updated = await this.prisma.verifiedAdmin.update({
       where: { id: turf.id },
       data: { courts: Array.isArray(courts) ? courts : [] },
