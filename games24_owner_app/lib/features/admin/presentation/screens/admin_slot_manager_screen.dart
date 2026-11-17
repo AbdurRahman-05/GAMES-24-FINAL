@@ -776,11 +776,11 @@ class _AdminSlotManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF16A34A) : const Color(0xFF141414),
+                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF22C55E)
+                          ? const Color(0xFFD4FF00)
                           : const Color(0xFF262626),
                       width: isSelected ? 1.5 : 1,
                     ),
@@ -788,9 +788,9 @@ class _AdminSlotManagerScreenState
                         ? [
                             BoxShadow(
                               color: const Color(
-                                0xFF16A34A,
-                              ).withValues(alpha: 0.3),
-                              blurRadius: 6,
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.35),
+                              blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
                           ]
@@ -813,19 +813,19 @@ class _AdminSlotManagerScreenState
                         children: [
                           Text(
                             court.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: isSelected ? Colors.black : Colors.white,
                             ),
                           ),
                           Text(
                             '₹${court.hourlyRate.toInt()}/hr • ${court.sport}',
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
                               color: isSelected
-                                  ? Colors.white.withValues(alpha: 0.85)
+                                  ? Colors.black.withValues(alpha: 0.8)
                                   : const Color(0xFFA1A1AA),
                             ),
                           ),
@@ -1757,19 +1757,19 @@ class _AdminSlotManagerScreenState
                             : const Icon(
                                 Icons.check_circle_rounded,
                                 size: 18,
-                                color: Colors.white,
+                                color: Colors.black,
                               ),
                         label: Text(
                           isSaving ? 'Saving...' : 'Save Slot Status',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF16A34A),
-                          foregroundColor: Colors.white,
+                          backgroundColor: const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           elevation: 2,
                           shape: RoundedRectangleBorder(

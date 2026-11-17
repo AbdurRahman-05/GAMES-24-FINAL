@@ -1471,19 +1471,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       return FilterChip(
                         label: Text(sport),
                         selected: isChecked,
-                        selectedColor: const Color(0xFF16A34A),
-                        checkmarkColor: Colors.white,
+                        selectedColor: const Color(0xFFD4FF00),
+                        checkmarkColor: Colors.black,
                         labelStyle: TextStyle(
                           fontSize: 11.5,
                           fontWeight:
-                              isChecked ? FontWeight.w800 : FontWeight.w600,
+                              isChecked ? FontWeight.w900 : FontWeight.w600,
                           color: isChecked
-                              ? Colors.white
+                              ? Colors.black
                               : const Color(0xFFE4E4E7),
                         ),
                         side: BorderSide(
                           color: isChecked
-                              ? const Color(0xFF22C55E)
+                              ? const Color(0xFFD4FF00)
                               : const Color(0xFF333333),
                           width: 1,
                         ),
@@ -1677,8 +1677,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF16A34A),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,
@@ -1904,19 +1904,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       return FilterChip(
                         label: Text(sport),
                         selected: isChecked,
-                        selectedColor: const Color(0xFF16A34A),
-                        checkmarkColor: Colors.white,
+                        selectedColor: const Color(0xFFD4FF00),
+                        checkmarkColor: Colors.black,
                         labelStyle: TextStyle(
                           fontSize: 12,
                           fontWeight:
-                              isChecked ? FontWeight.w800 : FontWeight.w600,
+                              isChecked ? FontWeight.w900 : FontWeight.w600,
                           color: isChecked
-                              ? Colors.white
+                              ? Colors.black
                               : const Color(0xFFE4E4E7),
                         ),
                         side: BorderSide(
                           color: isChecked
-                              ? const Color(0xFF22C55E)
+                              ? const Color(0xFFD4FF00)
                               : const Color(0xFF333333),
                           width: 1,
                         ),
@@ -2084,8 +2084,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF16A34A),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 10,

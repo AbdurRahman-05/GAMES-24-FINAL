@@ -1093,8 +1093,8 @@ class _TurfOwnerSettingsScreenState
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF16A34A),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -1203,8 +1203,8 @@ class _TurfOwnerSettingsScreenState
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF16A34A),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -1320,8 +1320,8 @@ class _TurfOwnerSettingsScreenState
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF16A34A),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
