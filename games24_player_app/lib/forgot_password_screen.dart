@@ -172,7 +172,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAF7),
+      backgroundColor: const Color(0xFF080808),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -209,7 +209,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         fontFamily: 'PrimeNordic',
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
+                        color: Colors.white,
                       ),
                     ),
                     Container(
@@ -229,7 +229,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             width: 6,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: Colors.green.shade600,
+                              color: Color(0xFFD4FF00),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -237,7 +237,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Text(
                             'SECURE',
                             style: TextStyle(
-                              color: Colors.green.shade700,
+                              color: Color(0xFFD4FF00),
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -283,7 +283,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: Colors.green.shade600,
+                          color: Color(0xFFD4FF00),
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                         ),
@@ -305,7 +305,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     fontFamily: 'PrimeNordic',
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -316,7 +316,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFFA1A1AA),
                       height: 1.5,
                     ),
                   ),
@@ -374,14 +374,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     children: [
                       Icon(
                         Icons.arrow_back,
-                        color: Colors.green.shade600,
+                        color: Color(0xFFD4FF00),
                         size: 18,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Remember password? Back to Log In',
                         style: TextStyle(
-                          color: Colors.green.shade600,
+                          color: Color(0xFFD4FF00),
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -436,7 +436,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               child: Icon(
                 Icons.badge_outlined,
-                color: Colors.green.shade600,
+                color: Color(0xFFD4FF00),
                 size: 20,
               ),
             ),
@@ -450,13 +450,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'Where should we send your OTP?',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                    style: TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
                   ),
                 ],
               ),
@@ -470,7 +470,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Text(
                 'Current',
                 style: TextStyle(
-                  color: Colors.green.shade700,
+                  color: Color(0xFFD4FF00),
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -488,7 +488,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
@@ -513,7 +513,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF374151),
+                      color: Colors.white,
                     ),
                     onChanged: (String? newValue) {
                       if (newValue != null) {
@@ -585,7 +585,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               child: Icon(
                 Icons.password_outlined,
-                color: Colors.green.shade600,
+                color: Color(0xFFD4FF00),
                 size: 20,
               ),
             ),
@@ -599,7 +599,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -607,7 +607,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     text: TextSpan(
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFFA1A1AA),
                         height: 1.4,
                       ),
                       children: [
@@ -618,7 +618,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           text: 'Mobile Number',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF111827),
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -636,7 +636,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Text(
                 'Current',
                 style: TextStyle(
-                  color: Colors.green.shade700,
+                  color: Color(0xFFD4FF00),
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -664,7 +664,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF111827),
+                  color: Colors.white,
                 ),
                 decoration: InputDecoration(
                   counterText: "",
@@ -703,13 +703,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Center(
           child: RichText(
             text: TextSpan(
-              style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+              style: const TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
               children: [
                 const TextSpan(text: "Didn't receive code? "),
                 TextSpan(
                   text: 'Resend in 30s',
                   style: TextStyle(
-                    color: Colors.green.shade600,
+                    color: Color(0xFFD4FF00),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -736,7 +736,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
               child: Icon(
                 Icons.lock_reset_outlined,
-                color: Colors.green.shade600,
+                color: Color(0xFFD4FF00),
                 size: 20,
               ),
             ),
@@ -750,13 +750,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF111827),
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 4),
                   Text(
                     'Create a new strong password.',
-                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                    style: TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
                   ),
                 ],
               ),
@@ -770,7 +770,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Text(
                 'Current',
                 style: TextStyle(
-                  color: Colors.green.shade700,
+                  color: Color(0xFFD4FF00),
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
@@ -788,7 +788,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
@@ -810,7 +810,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 8),
@@ -884,7 +884,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green.shade600,
+          backgroundColor: const Color(0xFFD4FF00),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -950,7 +950,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           height: 32,
           decoration: BoxDecoration(
             color: isActive || isCompleted
-                ? Colors.green.shade600
+                ? const Color(0xFFD4FF00)
                 : const Color(0xFFF3F4F6),
             shape: BoxShape.circle,
           ),
@@ -976,7 +976,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ? FontWeight.bold
                 : FontWeight.w500,
             color: isActive || isCompleted
-                ? Colors.green.shade600
+                ? const Color(0xFFD4FF00)
                 : const Color(0xFF9CA3AF),
           ),
         ),
@@ -992,7 +992,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           bottom: 24,
         ), // Offset to align with circles
         height: 2,
-        color: isCompleted ? Colors.green.shade600 : const Color(0xFFF3F4F6),
+        color: isCompleted ? const Color(0xFFD4FF00) : const Color(0xFFF3F4F6),
       ),
     );
   }

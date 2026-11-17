@@ -60,22 +60,30 @@ class _TournamentRegistrationScreenState
       showDialog(
         context: context,
         builder: (dialogCtx) => AlertDialog(
-          title: const Text('Confirm Registration'),
+          backgroundColor: const Color(0xFF181818),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFF262626)),
+          ),
+          title: const Text(
+            'Confirm Registration',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Tournament: ${widget.tournament.title}'),
-              Text('Team: ${_teamNameCtrl.text}'),
-              Text('Players: ${_playersCountCtrl.text}'),
-              Text('Entry Fee: ${widget.tournament.entryFee}'),
-              Text('Venue: ${widget.tournament.venue}'),
+              _dialogRow('Tournament', widget.tournament.title),
+              _dialogRow('Team', _teamNameCtrl.text),
+              _dialogRow('Players', _playersCountCtrl.text),
+              _dialogRow('Entry Fee', widget.tournament.entryFee),
+              _dialogRow('Venue', widget.tournament.venue),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+              child: const Text('Cancel', style: TextStyle(color: Color(0xFFA1A1AA))),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -92,29 +100,47 @@ class _TournamentRegistrationScreenState
 
                 if (success) {
                   messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Registration Successful!'),
-                      backgroundColor: Colors.green,
+                    SnackBar(
+                      content: const Text(
+                        'Registration Successful! 🏆',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      backgroundColor: const Color(0xFF141414),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFD4FF00)),
+                      ),
                     ),
                   );
                   nav.pop(); // close registration screen
                 } else {
                   messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text(
+                    SnackBar(
+                      content: const Text(
                         'Registration Failed. Tournament might be full or team name exists.',
+                        style: TextStyle(color: Colors.white),
                       ),
-                      backgroundColor: Colors.red,
+                      backgroundColor: const Color(0xFF141414),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFEF4444)),
+                      ),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF154D36),
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text(
                 'Confirm',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(fontWeight: FontWeight.w900),
               ),
             ),
           ],
@@ -123,15 +149,34 @@ class _TournamentRegistrationScreenState
     }
   }
 
+  Widget _dialogRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('$label: ', style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13)),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF080808),
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -145,7 +190,7 @@ class _TournamentRegistrationScreenState
         title: const Text(
           'Register for Tournament',
           style: TextStyle(
-            color: Color(0xFF111827),
+            color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -160,7 +205,7 @@ class _TournamentRegistrationScreenState
             const SizedBox(height: 24),
             const Text(
               'Team Registration Form',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
             ),
             const SizedBox(height: 16),
             _buildForm(),
@@ -170,10 +215,13 @@ class _TournamentRegistrationScreenState
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF0F0F0F),
+          border: const Border(
+            top: BorderSide(color: Color(0xFF262626)),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),
@@ -183,16 +231,18 @@ class _TournamentRegistrationScreenState
           child: ElevatedButton(
             onPressed: _submitRegistration,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF154D36),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFFD4FF00),
+              foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
+              elevation: 4,
+              shadowColor: const Color(0xFFD4FF00).withValues(alpha: 0.3),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             child: const Text(
               'Confirm Registration',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
             ),
           ),
         ),
@@ -204,18 +254,18 @@ class _TournamentRegistrationScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             widget.tournament.title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _summaryRow(Icons.sports_soccer, 'Sport', widget.tournament.sport),
           _summaryRow(Icons.calendar_today, 'Date', widget.tournament.date),
           _summaryRow(Icons.access_time, 'Time', widget.tournament.time),
@@ -242,19 +292,19 @@ class _TournamentRegistrationScreenState
 
   Widget _summaryRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF6B7280)),
-          const SizedBox(width: 8),
+          Icon(icon, size: 16, color: const Color(0xFFD4FF00)),
+          const SizedBox(width: 10),
           Text(
             '$label: ',
-            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+            style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.white),
             ),
           ),
         ],
@@ -326,17 +376,24 @@ class _TournamentRegistrationScreenState
   }) {
     return TextFormField(
       controller: controller,
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
+        floatingLabelStyle: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: const Color(0xFF141414),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderSide: const BorderSide(color: Color(0xFF262626)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderSide: const BorderSide(color: Color(0xFF262626)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 1.5),
         ),
       ),
       validator: validator,

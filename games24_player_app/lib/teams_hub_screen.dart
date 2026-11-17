@@ -101,7 +101,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                 ),
                                 child: const Icon(
                                   Icons.group_add_rounded,
-                                  color: Color(0xFF154D36),
+                                  color: Color(0xFFD4FF00),
                                   size: 20,
                                 ),
                               ),
@@ -111,7 +111,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
@@ -128,7 +128,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -137,7 +137,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         decoration: InputDecoration(
                           hintText: 'e.g. Thunder Warriors FC',
                           filled: true,
-                          fillColor: const Color(0xFFF3F5F1),
+                          fillColor: const Color(0xFF1E1E1E),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
@@ -154,7 +154,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -165,9 +165,9 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           return ChoiceChip(
                             label: Text(sport),
                             selected: isSel,
-                            selectedColor: const Color(0xFFE5F5EB),
+                            selectedColor: const Color(0xFF1F2916),
                             labelStyle: TextStyle(
-                              color: isSel ? const Color(0xFF154D36) : Colors.black87,
+                              color: isSel ? const Color(0xFFD4FF00) : Colors.white70,
                               fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
                             ),
                             onSelected: (val) {
@@ -186,7 +186,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -203,9 +203,9 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           return ChoiceChip(
                             label: Text(fmt),
                             selected: isSel,
-                            selectedColor: const Color(0xFFE5F5EB),
+                            selectedColor: const Color(0xFF1F2916),
                             labelStyle: TextStyle(
-                              color: isSel ? const Color(0xFF154D36) : Colors.black87,
+                              color: isSel ? const Color(0xFFD4FF00) : Colors.white70,
                               fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
                             ),
                             onSelected: (val) {
@@ -231,7 +231,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Colors.white,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -246,7 +246,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF154D36),
+                                    color: Color(0xFFD4FF00),
                                   ),
                                 ),
                               ),
@@ -254,7 +254,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           ),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF154D36),
+                              backgroundColor: Color(0xFF141414),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -291,16 +291,16 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF9FAFB),
+                          color: const Color(0xFF1E1E1E),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: const Color(0xFF262626)),
                         ),
                         child: selectedMembers.isEmpty
                             ? const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8),
                                 child: Text(
                                   'No contacts imported. Tap "Import Contacts" to choose players from phone.',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                                 ),
                               )
                             : Wrap(
@@ -314,7 +314,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                       color: isCaptain ? const Color(0xFFE5F5EB) : Colors.white,
                                       borderRadius: BorderRadius.circular(20),
                                       border: Border.all(
-                                        color: isCaptain ? const Color(0xFFBBE5CA) : const Color(0xFFE5E7EB),
+                                        color: isCaptain ? const Color(0xFFBBE5CA) : const Color(0xFF262626),
                                       ),
                                     ),
                                     child: Row(
@@ -323,7 +323,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                         CircleAvatar(
                                           radius: 11,
                                           backgroundColor:
-                                              isCaptain ? const Color(0xFF154D36) : const Color(0xFF9CA3AF),
+                                              isCaptain ? const Color(0xFFD4FF00) : const Color(0xFF9CA3AF),
                                           child: Text(
                                             member.avatarInitials,
                                             style: const TextStyle(
@@ -339,14 +339,14 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                           style: const TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
+                                            color: Colors.white,
                                           ),
                                         ),
                                         const SizedBox(width: 4),
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                                           decoration: BoxDecoration(
-                                            color: isCaptain ? const Color(0xFF154D36) : const Color(0xFFF3F4F6),
+                                            color: isCaptain ? const Color(0xFF1F2916) : const Color(0xFF1E1E1E),
                                             borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Text(
@@ -366,7 +366,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                                 selectedMembers.removeWhere((m) => m.id == member.id);
                                               });
                                             },
-                                            child: const Icon(Icons.close, size: 14, color: Colors.grey),
+                                            child: const Icon(Icons.close, size: 14, color: Color(0xFFA1A1AA)),
                                           ),
                                         ],
                                       ],
@@ -382,7 +382,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         height: 48,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF154D36),
+                            backgroundColor: Color(0xFF141414),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -410,7 +410,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text('Team "$name" created with ${selectedMembers.length} squad players!'),
-                                backgroundColor: const Color(0xFF154D36),
+                                backgroundColor: const Color(0xFF141414),
                               ),
                             );
                           },
@@ -486,12 +486,12 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                   color: const Color(0xFFE5F5EB),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF154D36), size: 20),
+                                child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFFD4FF00), size: 20),
                               ),
                               const SizedBox(width: 10),
                               const Text(
                                 'Invite Player by ID',
-                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ],
                           ),
@@ -504,14 +504,14 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       const SizedBox(height: 14),
 
                       // Select Team
-                      const Text('Choose Squad to Invite Into', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const Text('Choose Squad to Invite Into', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF9FAFB),
+                          color: const Color(0xFF1E1E1E),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: const Color(0xFF262626)),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
@@ -536,13 +536,13 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       const SizedBox(height: 14),
 
                       // Enter Player ID / Phone
-                      const Text('Target Player ID or Mobile Number', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const Text('Target Player ID or Mobile Number', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 6),
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF9FAFB),
+                          color: const Color(0xFF1E1E1E),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
+                          border: Border.all(color: const Color(0xFF262626)),
                         ),
                         child: TextField(
                           controller: idController,
@@ -564,8 +564,8 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           },
                           decoration: InputDecoration(
                             hintText: 'e.g. PLY-0005 or 9876543210',
-                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-                            prefixIcon: const Icon(Icons.badge_outlined, size: 18, color: Color(0xFF154D36)),
+                            hintStyle: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                            prefixIcon: const Icon(Icons.badge_outlined, size: 18, color: Color(0xFFD4FF00)),
                             suffixIcon: isSearching
                                 ? const SizedBox(width: 16, height: 16, child: Center(child: CircularProgressIndicator(strokeWidth: 2)))
                                 : null,
@@ -580,9 +580,9 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF0FDF4),
+                            color: const Color(0xFF1F2916),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFBBF7D0)),
+                            border: Border.all(color: const Color(0x55D4FF00)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -595,14 +595,14 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                 contentPadding: EdgeInsets.zero,
                                 leading: CircleAvatar(
                                   radius: 14,
-                                  backgroundColor: const Color(0xFF154D36),
+                                  backgroundColor: const Color(0xFF141414),
                                   child: Text(name.isNotEmpty ? name[0] : 'P', style: const TextStyle(color: Colors.white, fontSize: 11)),
                                 ),
                                 title: Text('$name ($pId)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                subtitle: Text('Sport: $sport', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                subtitle: Text('Sport: $sport', style: const TextStyle(fontSize: 10, color: Color(0xFFA1A1AA))),
                                 trailing: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF154D36),
+                                    backgroundColor: const Color(0xFF141414),
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
@@ -626,7 +626,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       const SizedBox(height: 14),
 
                       // Player Role
-                      const Text('Role in Squad', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const Text('Role in Squad', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 6),
                       Wrap(
                         spacing: 8,
@@ -635,11 +635,11 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           return ChoiceChip(
                             label: Text(r),
                             selected: isSelected,
-                            selectedColor: const Color(0xFFE5F5EB),
+                            selectedColor: const Color(0xFF1F2916),
                             labelStyle: TextStyle(
                               fontSize: 11,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? const Color(0xFF154D36) : Colors.black87,
+                              color: isSelected ? const Color(0xFFD4FF00) : Colors.white70,
                             ),
                             onSelected: (val) {
                               if (val) setSheetState(() => selectedRole = r);
@@ -655,7 +655,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         height: 46,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF154D36),
+                            backgroundColor: const Color(0xFF141414),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             elevation: 0,
@@ -687,7 +687,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text('Squad invitation sent to $targetId for ${chosenTeam.name}! 🚀'),
-                                backgroundColor: const Color(0xFF154D36),
+                                backgroundColor: const Color(0xFF141414),
                               ),
                             );
                           },
@@ -747,7 +747,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                               const SizedBox(width: 10),
                               const Text(
                                 'Challenge Team to Match',
-                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
                               ),
                             ],
                           ),
@@ -767,12 +767,12 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.shield, color: Color(0xFF154D36), size: 18),
+                            const Icon(Icons.shield, color: Color(0xFFD4FF00), size: 18),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
                                 'Challenger: ${myTeam.name} (${myTeam.teamCode} • ${myTeam.sport})',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -782,38 +782,38 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      const Text('Opponent Team ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const Text('Opponent Team ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 6),
                       TextField(
                         controller: opponentCodeController,
                         textCapitalization: TextCapitalization.characters,
                         decoration: InputDecoration(
                           hintText: 'e.g. TM-1042',
-                          prefixIcon: const Icon(Icons.tag, size: 18, color: Color(0xFF154D36)),
+                          prefixIcon: const Icon(Icons.tag, size: 18, color: Color(0xFFD4FF00)),
                           filled: true,
-                          fillColor: const Color(0xFFF9FAFB),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
+                          fillColor: const Color(0xFF1E1E1E),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         ),
                       ),
                       const SizedBox(height: 12),
 
-                      const Text('Opponent Team Name (Optional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const Text('Opponent Team Name (Optional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 6),
                       TextField(
                         controller: opponentNameController,
                         decoration: InputDecoration(
                           hintText: 'e.g. Thunder Strikers',
-                          prefixIcon: const Icon(Icons.sports, size: 18, color: Color(0xFF154D36)),
+                          prefixIcon: const Icon(Icons.sports, size: 18, color: Color(0xFFD4FF00)),
                           filled: true,
-                          fillColor: const Color(0xFFF9FAFB),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFE5E7EB))),
+                          fillColor: const Color(0xFF1E1E1E),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                         ),
                       ),
                       const SizedBox(height: 12),
 
-                      const Text('Match Time Slot', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      const Text('Match Time Slot', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
                       const SizedBox(height: 6),
                       Wrap(
                         spacing: 8,
@@ -822,7 +822,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           return ChoiceChip(
                             label: Text(slot, style: const TextStyle(fontSize: 11)),
                             selected: isSelected,
-                            selectedColor: const Color(0xFFE5F5EB),
+                            selectedColor: const Color(0xFF1F2916),
                             onSelected: (val) {
                               if (val) setSheetState(() => selectedSlot = slot);
                             },
@@ -836,7 +836,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         height: 46,
                         child: ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF154D36),
+                            backgroundColor: const Color(0xFF141414),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             elevation: 0,
@@ -870,7 +870,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             messenger.showSnackBar(
                               SnackBar(
                                 content: Text('Challenge sent to $oppName ($oppCode)! Scheduled for $selectedSlot.'),
-                                backgroundColor: const Color(0xFF154D36),
+                                backgroundColor: const Color(0xFF141414),
                               ),
                             );
                           },
@@ -904,7 +904,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Joined squad "$code" successfully!'),
-          backgroundColor: const Color(0xFF154D36),
+          backgroundColor: const Color(0xFF141414),
         ),
       );
     }
@@ -947,14 +947,14 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF154D36), Color(0xFF0F3D2A)],
+            colors: [Color(0xFF1C1C1C), Color(0xFF141414)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF154D36).withValues(alpha: 0.2),
+              color: const Color(0xFFD4FF00).withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -981,7 +981,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       children: const [
                         Text(
                           'Your Official Player ID',
-                          style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600),
+                          style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                         Text(
                           'Share to Join Squads & Matches',
@@ -1002,7 +1002,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Player ID $_myPlayerId copied to clipboard'),
-                    backgroundColor: const Color(0xFF154D36),
+                    backgroundColor: const Color(0xFF141414),
                   ),
                 );
               },
@@ -1015,7 +1015,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.copy_rounded, size: 14, color: Color(0xFF154D36)),
+                    const Icon(Icons.copy_rounded, size: 14, color: Color(0xFFD4FF00)),
                     const SizedBox(width: 4),
                     Text(
                       _myPlayerId,
@@ -1023,7 +1023,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         fontFamily: 'monospace',
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFD4FF00),
                       ),
                     ),
                   ],
@@ -1050,7 +1050,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 children: [
                   const Text(
                     'Squad Invitations & Requests',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   const SizedBox(width: 6),
                   Container(
@@ -1071,10 +1071,10 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF154D36)),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4FF00)),
                     )
                   : IconButton(
-                      icon: const Icon(Icons.refresh, size: 18, color: Color(0xFF154D36)),
+                      icon: const Icon(Icons.refresh, size: 18, color: Color(0xFFD4FF00)),
                       onPressed: _loadInvitations,
                     ),
             ],
@@ -1103,7 +1103,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                               color: const Color(0xFFE5F5EB),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.group_add_rounded, color: Color(0xFF154D36), size: 18),
+                            child: const Icon(Icons.group_add_rounded, color: Color(0xFFD4FF00), size: 18),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -1112,13 +1112,13 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                               children: [
                                 Text(
                                   inv.senderTeamName,
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
                                   '${inv.senderTeamSport} • Captain: ${inv.senderName}',
-                                  style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                                 ),
                               ],
                             ),
@@ -1134,7 +1134,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       ),
                       child: Text(
                         inv.role,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF154D36)),
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
                       ),
                     ),
                   ],
@@ -1167,7 +1167,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF154D36),
+                          backgroundColor: const Color(0xFF141414),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1180,7 +1180,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Joined ${inv.senderTeamName} successfully!'),
-                                backgroundColor: const Color(0xFF154D36),
+                                backgroundColor: const Color(0xFF141414),
                               ),
                             );
                           }
@@ -1222,12 +1222,12 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: const Icon(
                     Icons.arrow_back,
                     size: 20,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -1240,7 +1240,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 2),
@@ -1265,12 +1265,12 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: const Icon(
                     Icons.search,
                     size: 18,
-                    color: Colors.black87,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -1291,7 +1291,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   child: const Icon(
                     Icons.qr_code_scanner,
                     size: 18,
-                    color: Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ),
@@ -1309,7 +1309,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFF262626)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.02),
@@ -1351,7 +1351,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         ),
                         child: const Icon(
                           Icons.group_add_outlined,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                           size: 24,
                         ),
                       ),
@@ -1381,7 +1381,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1404,7 +1404,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       ),
                       label: const Icon(Icons.arrow_forward, size: 16),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
+                        backgroundColor: const Color(0xFF141414),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -1430,7 +1430,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Column(
           children: [
@@ -1457,7 +1457,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Colors.white,
                       ),
                     ),
                     SizedBox(height: 2),
@@ -1485,7 +1485,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: Colors.white,
                       ),
                       decoration: const InputDecoration(
                         prefixIcon: Icon(
@@ -1527,7 +1527,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       color: Colors.white,
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF154D36),
+                      backgroundColor: const Color(0xFF141414),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -1562,7 +1562,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1572,7 +1572,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5E7EB),
+                          color: const Color(0xFF262626),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -1580,7 +1580,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -1593,7 +1593,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           width: 6,
                           height: 6,
                           decoration: const BoxDecoration(
-                            color: Color(0xFF154D36),
+                            color: Color(0xFFD4FF00),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -1603,7 +1603,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF154D36),
+                            color: Color(0xFFD4FF00),
                           ),
                         ),
                       ],
@@ -1619,9 +1619,9 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
+                    color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Column(
                     children: [
@@ -1634,7 +1634,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         child: const Icon(
                           Icons.groups_outlined,
                           size: 32,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1643,7 +1643,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -1726,7 +1726,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Column(
           children: [
@@ -1749,7 +1749,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                         ),
                       ),
                     ),
@@ -1759,7 +1759,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(sportIcon, size: 12, color: Colors.white),
@@ -1782,7 +1782,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: Colors.white,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1801,7 +1801,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                               border: Border.all(
                                 color: isCaptain
                                     ? const Color(0xFFE5F5EB)
-                                    : const Color(0xFFE5E7EB),
+                                    : const Color(0xFF262626),
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -1849,12 +1849,12 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFF3F4F6),
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: const Color(0xFFE5E7EB)),
+                              border: Border.all(color: const Color(0xFF262626)),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.shield_outlined, size: 10, color: Color(0xFF154D36)),
+                                const Icon(Icons.shield_outlined, size: 10, color: Color(0xFFD4FF00)),
                                 const SizedBox(width: 3),
                                 Text(
                                   team.teamCode,
@@ -1862,7 +1862,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                     fontFamily: 'monospace',
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF154D36),
+                                    color: Color(0xFFD4FF00),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -1872,11 +1872,11 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Team ID ${team.teamCode} copied!'),
-                                        backgroundColor: const Color(0xFF154D36),
+                                        backgroundColor: const Color(0xFF141414),
                                       ),
                                     );
                                   },
-                                  child: const Icon(Icons.copy_rounded, size: 10, color: Color(0xFF154D36)),
+                                  child: const Icon(Icons.copy_rounded, size: 10, color: Color(0xFFD4FF00)),
                                 ),
                               ],
                             ),
@@ -1892,7 +1892,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
+                color: const Color(0xFF1E1E1E),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -1902,13 +1902,13 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                   Container(
                     width: 1,
                     height: 24,
-                    color: const Color(0xFFE5E7EB),
+                    color: const Color(0xFF262626),
                   ),
                   _buildStatItem(winsCount, 'Wins'),
                   Container(
                     width: 1,
                     height: 24,
-                    color: const Color(0xFFE5E7EB),
+                    color: const Color(0xFF262626),
                   ),
                   _buildStatItem(rating, 'Rating', isRating: true),
                 ],
@@ -1948,7 +1948,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       const Icon(
                         Icons.calendar_today_outlined,
                         size: 14,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFD4FF00),
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -1964,7 +1964,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         dateText,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -1988,7 +1988,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                     const Icon(
                       Icons.flag_outlined,
                       size: 16,
-                      color: Color(0xFF154D36),
+                      color: Color(0xFFD4FF00),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -1996,7 +1996,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         nextMatchText,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.black87,
+                          color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -2006,7 +2006,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFD4FF00),
                       ),
                     ),
                   ],
@@ -2021,7 +2021,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 onPressed: onTapDetails,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF3F5F1),
-                  foregroundColor: const Color(0xFF154D36),
+                  foregroundColor: const Color(0xFFD4FF00),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -2049,8 +2049,8 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF154D36),
-                      side: const BorderSide(color: Color(0xFFBBF7D0)),
+                      foregroundColor: const Color(0xFFD4FF00),
+                      side: const BorderSide(color: Color(0x55D4FF00)),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
@@ -2063,7 +2063,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF154D36),
+                      backgroundColor: const Color(0xFF141414),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -2085,7 +2085,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
   Widget _buildStatItem(
     String value,
     String label, {
-    Color valueColor = Colors.black87,
+    Color valueColor = Colors.white,
     bool isRating = false,
   }) {
     return Column(
@@ -2182,7 +2182,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 2),
@@ -2197,7 +2197,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF154D36),
+                  color: Color(0xFFD4FF00),
                 ),
               ),
             ],
@@ -2211,7 +2211,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+              border: Border.all(color: const Color(0xFF262626)),
             ),
             child: Column(
               children: [
@@ -2227,7 +2227,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       child: const Icon(
                         Icons.sports_soccer,
                         size: 24,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFD4FF00),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -2242,7 +2242,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Colors.white,
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -2294,7 +2294,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                       Icon(
                         Icons.stadium_outlined,
                         size: 16,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFD4FF00),
                       ),
                       SizedBox(width: 8),
                       Expanded(
@@ -2302,7 +2302,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                           'Grand Arena • Turf A',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.black87,
+                            color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -2330,13 +2330,13 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFE5E7EB),
+                          color: const Color(0xFF262626),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
                           Icons.chat_bubble_outline,
                           size: 20,
-                          color: Colors.black87,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -2349,7 +2349,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Request sent to Metro Eagles captain!'),
-                                backgroundColor: Color(0xFF154D36),
+                                backgroundColor: Color(0xFF141414),
                               ),
                             );
                           },
@@ -2362,7 +2362,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF154D36),
+                            backgroundColor: const Color(0xFF141414),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(

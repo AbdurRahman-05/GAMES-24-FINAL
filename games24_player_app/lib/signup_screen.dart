@@ -41,7 +41,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAF7),
+      backgroundColor: const Color(0xFF080808),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -65,7 +65,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         fontFamily: 'PrimeNordic',
                         fontSize: 32, // slightly larger for display font
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -74,7 +74,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFFA1A1AA),
                         height: 1.4,
                       ),
                     ),
@@ -117,7 +117,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF374151),
+                            color: Colors.white,
                           ),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
@@ -190,7 +190,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     'Must be secure',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFFA1A1AA),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -257,7 +257,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       side: const BorderSide(color: Color(0xFFD1D5DB)),
-                      activeColor: Colors.green.shade600,
+                      activeColor: const Color(0xFFD4FF00),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -265,7 +265,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: RichText(
                       text: TextSpan(
                         style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                          color: Color(0xFFA1A1AA),
                           fontSize: 14,
                           height: 1.4,
                         ),
@@ -274,7 +274,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           TextSpan(
                             text: 'Terms of Service',
                             style: TextStyle(
-                              color: Colors.green.shade600,
+                              color: Color(0xFFD4FF00),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -282,7 +282,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           TextSpan(
                             text: 'Privacy Policy',
                             style: TextStyle(
-                              color: Colors.green.shade600,
+                              color: Color(0xFFD4FF00),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -333,8 +333,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: (_agreeToTerms && _isOtpVerified)
-                        ? Colors.green.shade600
-                        : Colors.green.shade700,
+                        ? const Color(0xFFD4FF00)
+                        : const Color(0xFFD4FF00),
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: const Color(0xFFE5E7EB),
                     disabledForegroundColor: const Color(0xFF9CA3AF),
@@ -377,7 +377,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   const Text(
                     'Already have an account? ',
-                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 15),
+                    style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 15),
                   ),
                   GestureDetector(
                     onTap: () {
@@ -391,7 +391,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     child: Text(
                       'Log In',
                       style: TextStyle(
-                        color: Colors.green.shade600,
+                        color: Color(0xFFD4FF00),
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -548,7 +548,7 @@ class _SignupScreenState extends State<SignupScreen> {
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF374151),
+        color: Colors.white,
       ),
     );
   }
@@ -610,7 +610,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ? const Color(0xFFF0FDF4)
               : Colors.white,
           border: Border.all(
-            color: isSelected ? Colors.green.shade600 : const Color(0xFFE5E7EB),
+            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -621,7 +621,7 @@ class _SignupScreenState extends State<SignupScreen> {
             Icon(
               icon,
               color: isSelected
-                  ? Colors.green.shade600
+                  ? const Color(0xFFD4FF00)
                   : const Color(0xFF6B7280),
               size: 24,
             ),
@@ -632,7 +632,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected
-                    ? Colors.green.shade600
+                    ? const Color(0xFFD4FF00)
                     : const Color(0xFF4B5563),
               ),
             ),

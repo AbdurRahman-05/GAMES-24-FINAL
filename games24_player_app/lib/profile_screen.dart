@@ -272,12 +272,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -292,17 +292,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 width: 72,
                 height: 72,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFF154D36),
+                  color: const Color(0xFF1F2916),
+                  border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35), width: 1.5),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   _fullName.isNotEmpty ? _fullName.substring(0, 1).toUpperCase() : 'P',
                   style: const TextStyle(
                     fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
               ),
@@ -312,18 +313,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF154D36),
+                    color: const Color(0xFF1F2916),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white, width: 1.5),
+                    border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.4), width: 1.5),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, color: Colors.white, size: 10),
+                      Icon(Icons.check_circle, color: Color(0xFFD4FF00), size: 10),
                       SizedBox(width: 2),
                       Text(
                         'Member',
-                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Color(0xFFD4FF00), fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -345,18 +346,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF111827),
+                        color: Colors.white,
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFBBE5CA),
+                        color: const Color(0xFF1F2916),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
                       ),
                       child: Icon(
                         _getSportIcon(_preferredSport),
-                        color: const Color(0xFF154D36),
+                        color: const Color(0xFFD4FF00),
                         size: 16,
                       ),
                     ),
@@ -366,7 +368,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   _mobileNumber,
                   style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                    color: Color(0xFFA1A1AA),
                     fontSize: 12,
                   ),
                 ),
@@ -374,14 +376,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE5F5EB),
+                    color: const Color(0xFF181818),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFBBE5CA)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.badge_outlined, size: 12, color: Color(0xFF154D36)),
+                      const Icon(Icons.badge_outlined, size: 12, color: Color(0xFFD4FF00)),
                       const SizedBox(width: 4),
                       Text(
                         'ID: $_playerId',
@@ -389,7 +391,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontFamily: 'monospace',
                           fontWeight: FontWeight.bold,
                           fontSize: 11,
-                          color: Color(0xFF154D36),
+                          color: Color(0xFFD4FF00),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -399,11 +401,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Player ID $_playerId copied!'),
-                              backgroundColor: const Color(0xFF154D36),
+                              backgroundColor: const Color(0xFF141414),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(color: Color(0xFFD4FF00)),
+                              ),
                             ),
                           );
                         },
-                        child: const Icon(Icons.copy_rounded, size: 12, color: Color(0xFF154D36)),
+                        child: const Icon(Icons.copy_rounded, size: 12, color: Color(0xFFD4FF00)),
                       ),
                     ],
                   ),
@@ -411,7 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: Color(0xFF154D36), size: 13),
+                    const Icon(Icons.location_on, color: Color(0xFFD4FF00), size: 13),
                     const SizedBox(width: 2),
                     Expanded(
                       child: Text(
@@ -419,7 +425,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF374151),
+                          color: Color(0xFFA1A1AA),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -439,29 +445,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF154D36), Color(0xFF154D36)],
-                      ),
+                      color: const Color(0xFF1F2916),
                       borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF154D36).withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                      border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.emoji_events_rounded, color: Colors.amberAccent, size: 14),
+                        const Icon(Icons.emoji_events_rounded, color: Color(0xFFD4FF00), size: 14),
                         const SizedBox(width: 5),
                         ConstrainedBox(
                           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.42),
                           child: Text(
                             '$_rank in $_city • $_points PTS',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: Color(0xFFD4FF00),
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
@@ -470,7 +468,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(Icons.chevron_right, color: Colors.white, size: 14),
+                        const Icon(Icons.chevron_right, color: Color(0xFFD4FF00), size: 14),
                       ],
                     ),
                   ),
@@ -478,7 +476,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: const [
-                    Icon(Icons.star_outline, color: Colors.orange, size: 16),
+                    Icon(Icons.star_rounded, color: Colors.amber, size: 16),
                     SizedBox(width: 4),
                     Flexible(
                       child: Text(
@@ -486,7 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
-                          color: Color(0xFF111827),
+                          color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -547,12 +545,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: const Color(0xFF262626)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -563,18 +561,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isOrange ? const Color(0xFFFFF7ED) : const Color(0xFFF0FDF4),
+                color: isOrange ? const Color(0xFF2D1606) : const Color(0xFF1F2916),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: isOrange ? const Color(0xFFFF6B00).withValues(alpha: 0.35) : const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                ),
               ),
-              child: Icon(icon, color: isOrange ? const Color(0xFFEA580C) : const Color(0xFF154D36), size: 18),
+              child: Icon(
+                icon,
+                color: isOrange ? const Color(0xFFFF6B00) : const Color(0xFFD4FF00),
+                size: 18,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF0F172A),
+                color: isOrange ? const Color(0xFFFF6B00) : const Color(0xFFD4FF00),
                 letterSpacing: -0.5,
               ),
             ),
@@ -584,7 +589,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF64748B),
+                color: Color(0xFFA1A1AA),
               ),
             ),
           ],
@@ -599,7 +604,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       style: const TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF9CA3AF),
+        color: Color(0xFFA1A1AA),
         letterSpacing: 1.0,
       ),
     );
@@ -609,48 +614,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F5F1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF141414),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF262626)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E1E),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: const Color(0xFFD4FF00), size: 22),
             ),
-            child: Icon(icon, color: const Color(0xFF154D36), size: 22),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF6B7280),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFFA1A1AA),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
-        ],
-      ),
+            const Icon(Icons.chevron_right, color: Color(0xFFA1A1AA)),
+          ],
+        ),
       ),
     );
   }
@@ -665,20 +671,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             (route) => false,
           );
         },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.logout, color: Color(0xFFDC2626), size: 20),
-            SizedBox(width: 8),
-            Text(
-              'Log Out',
-              style: TextStyle(
-                color: Color(0xFFDC2626),
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2D1214),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.logout, color: Color(0xFFEF4444), size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Log Out',
+                style: TextStyle(
+                  color: Color(0xFFEF4444),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -219,7 +219,7 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
           builder: (ctx) => AlertDialog(
             title: Row(
               children: [
-                const Icon(Icons.celebration_rounded, color: Color(0xFF154D36)),
+                const Icon(Icons.celebration_rounded, color: Color(0xFFD4FF00)),
                 const SizedBox(width: 8),
                 const Text('Enquiry Confirmed!'),
               ],
@@ -244,7 +244,7 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('Booking Ref:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                      Text(code, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF154D36), fontSize: 14)),
+                      Text(code, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFD4FF00), fontSize: 14)),
                     ],
                   ),
                 ),
@@ -301,7 +301,7 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
                 ),
                 Text(
                   '₹${widget.package.basePrice.toInt()}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF154D36)),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFFD4FF00)),
                 ),
               ],
             ),
@@ -335,7 +335,7 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
-                    const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFF154D36)),
+                    const Icon(Icons.calendar_today_rounded, size: 18, color: Color(0xFFD4FF00)),
                   ],
                 ),
               ),
@@ -361,7 +361,7 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Guest Count', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                Text('$_guestCount Guests', style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF154D36))),
+                Text('$_guestCount Guests', style: const TextStyle(fontWeight: FontWeight.w800, color: Color(0xFFD4FF00))),
               ],
             ),
             Slider(
@@ -369,7 +369,7 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
               min: 10,
               max: 150,
               divisions: 14,
-              activeColor: const Color(0xFF154D36),
+              activeColor: const Color(0xFFD4FF00),
               label: '$_guestCount Guests',
               onChanged: (v) => setState(() => _guestCount = v.round()),
             ),
@@ -408,7 +408,8 @@ class _CelebrationEnquiryFormState extends State<_CelebrationEnquiryForm> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitEnquiry,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF154D36),
+                  backgroundColor: const Color(0xFFD4FF00),
+                            foregroundColor: Colors.black,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),

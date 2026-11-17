@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'home_screen.dart';
 import 'tournaments_screen.dart';
 import 'create_tournament_dialog.dart';
@@ -43,36 +44,36 @@ class _MainLayoutState extends State<MainLayout> {
         }
       },
       child: Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: _buildBottomNav(),
-      // Add a global FAB specifically when on the Tournaments tab, matching design
-      floatingActionButton: _currentIndex == 1
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                showCreateTournamentDialog(context);
-              },
-              backgroundColor: const Color(0xFF154D36), // Botanical Emerald
-              elevation: 2,
-              icon: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
-              label: const Text(
-                'Create Tournament',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13.5,
-                  letterSpacing: -0.2,
+        backgroundColor: const Color(0xFF080808),
+        appBar: _buildAppBar(),
+        body: IndexedStack(index: _currentIndex, children: _pages),
+        bottomNavigationBar: _buildBottomNav(),
+        floatingActionButton: _currentIndex == 1
+            ? FloatingActionButton.extended(
+                onPressed: () {
+                  showCreateTournamentDialog(context);
+                },
+                backgroundColor: const Color(0xFFD4FF00),
+                elevation: 4,
+                icon: const Icon(Icons.add_rounded, color: Colors.black, size: 20),
+                label: const Text(
+                  'Create Tournament',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13.5,
+                    letterSpacing: -0.2,
+                  ),
                 ),
-              ),
-            )
-          : null,
-    ));
+              )
+            : null,
+      ),
+    );
   }
 
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF080808),
       elevation: 0,
       scrolledUnderElevation: 0,
       title: ValueListenableBuilder<String>(
@@ -84,7 +85,7 @@ class _MainLayoutState extends State<MainLayout> {
                 'GAMES24',
                 style: TextStyle(
                   fontFamily: 'Delight',
-                  color: Color(0xFF154D36),
+                  color: Color(0xFFD4FF00),
                   fontSize: 21,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0.8,
@@ -97,14 +98,14 @@ class _MainLayoutState extends State<MainLayout> {
                   constraints: const BoxConstraints(maxWidth: 160),
                   padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0FDF4),
+                    color: const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFF154D36)),
+                      const Icon(Icons.location_on_rounded, size: 13, color: Color(0xFFD4FF00)),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
@@ -112,13 +113,13 @@ class _MainLayoutState extends State<MainLayout> {
                           style: const TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF154D36),
+                            color: Colors.white,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 2),
-                      const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFF154D36)),
+                      const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Color(0xFFA1A1AA)),
                     ],
                   ),
                 ),
@@ -131,7 +132,7 @@ class _MainLayoutState extends State<MainLayout> {
         IconButton(
           icon: const Icon(
             Icons.notifications_none_outlined,
-            color: Colors.black87,
+            color: Colors.white,
           ),
           onPressed: () {
             Navigator.push(
@@ -148,16 +149,16 @@ class _MainLayoutState extends State<MainLayout> {
             });
           },
           child: Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: const Color(0xFF1C1C1C),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.green.shade200, width: 1.5),
+              border: Border.all(color: const Color(0xFF2E2E2E), width: 1.5),
             ),
             child: ClipOval(
               child: Image.asset(
-                'assets/images/logo.png', // Fallback to logo if profile pic isn't available
+                'assets/images/logo.png',
                 fit: BoxFit.cover,
               ),
             ),
@@ -170,82 +171,49 @@ class _MainLayoutState extends State<MainLayout> {
 
   Widget _buildBottomNav() {
     return Container(
-      padding: const EdgeInsets.only(bottom: 16, top: 12),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0F0F0F),
+        border: const Border(
+          top: BorderSide(color: Color(0xFF262626), width: 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final double itemWidth = constraints.maxWidth / 4;
-            // The pill width is a bit smaller than the full item width to look nice
-            final double pillWidth = 64.0;
-            // Calculate the exact center position for the pill for the current index
-            final double pillLeftPosition =
-                (itemWidth * _currentIndex) + (itemWidth / 2) - (pillWidth / 2);
-
-            return Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // The sliding animated pill indicator
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 400),
-                  curve: Curves.easeOutCubic,
-                  left: pillLeftPosition,
-                  top: 0,
-                  child: Container(
-                    width: pillWidth,
-                    height: 36, // Match the height of the icon container
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF154D36).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-                // The actual navigation items
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildAnimatedNavItem(
-                      0,
-                      Icons.home_outlined,
-                      Icons.home,
-                      'Home',
-                      itemWidth,
-                    ),
-                    _buildAnimatedNavItem(
-                      1,
-                      Icons.emoji_events_outlined,
-                      Icons.emoji_events,
-                      'Tournaments',
-                      itemWidth,
-                    ),
-                    _buildAnimatedNavItem(
-                      2,
-                      Icons.explore_outlined,
-                      Icons.explore,
-                      'Explore',
-                      itemWidth,
-                    ),
-                    _buildAnimatedNavItem(
-                      3,
-                      Icons.person_outline,
-                      Icons.person,
-                      'Profile',
-                      itemWidth,
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildAnimatedNavItem(
+              0,
+              Icons.home_outlined,
+              Icons.home_rounded,
+              'Home',
+            ),
+            _buildAnimatedNavItem(
+              1,
+              Icons.emoji_events_outlined,
+              Icons.emoji_events_rounded,
+              'Tournaments',
+            ),
+            _buildAnimatedNavItem(
+              2,
+              Icons.explore_outlined,
+              Icons.explore_rounded,
+              'Explore',
+            ),
+            _buildAnimatedNavItem(
+              3,
+              Icons.person_outline_rounded,
+              Icons.person_rounded,
+              'Profile',
+            ),
+          ],
         ),
       ),
     );
@@ -256,48 +224,61 @@ class _MainLayoutState extends State<MainLayout> {
     IconData outlineIcon,
     IconData solidIcon,
     String label,
-    double width,
   ) {
     final isSelected = _currentIndex == index;
 
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: width,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              height: 36,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: Icon(
-                  isSelected ? solidIcon : outlineIcon,
-                  key: ValueKey<bool>(isSelected),
-                  size: 24,
-                  color: isSelected
-                      ? const Color(0xFF154D36)
-                      : const Color(0xFF64748B),
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _currentIndex = index);
+        },
+        borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isSelected ? solidIcon : outlineIcon,
+                size: isSelected ? 21 : 19,
+                color: isSelected ? Colors.black : const Color(0xFF71717A),
+              ),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? Colors.black : const Color(0xFF71717A),
+                      fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                      fontSize: isSelected ? 10.5 : 9.5,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 1,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 6),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 300),
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected
-                    ? const Color(0xFF154D36)
-                    : const Color(0xFF64748B),
-              ),
-              child: Text(label),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

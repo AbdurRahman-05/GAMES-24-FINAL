@@ -65,16 +65,19 @@ class _CreatePrivateTournamentStep2ScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: const Color(0xFF166534),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          backgroundColor: const Color(0xFF141414),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(color: Color(0xFFD4FF00)),
+          ),
           content: Row(
             children: [
-              const Icon(Icons.lock_open_rounded, color: Colors.white, size: 22),
+              const Icon(Icons.lock_open_rounded, color: Color(0xFFD4FF00), size: 22),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Private Tournament "$tournamentTitle" Created! PIN: ${widget.formData.accessCode} 🔒',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white),
                 ),
               ),
             ],

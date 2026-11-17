@@ -208,7 +208,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Imported "$name" ($phone) from phone!'),
-                backgroundColor: const Color(0xFF154D36),
+                backgroundColor: const Color(0xFFD4FF00),
                 duration: const Duration(seconds: 2),
               ),
             );
@@ -266,7 +266,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Row(
             children: [
-              Icon(Icons.person_add_alt_1, color: Color(0xFF154D36)),
+              Icon(Icons.person_add_alt_1, color: Color(0xFFD4FF00)),
               SizedBox(width: 8),
               Text('Add New Teammate', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ],
@@ -328,7 +328,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF154D36),
+                backgroundColor: const Color(0xFFD4FF00),
                 foregroundColor: Colors.white,
               ),
               onPressed: () async {
@@ -399,7 +399,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
               ...roles.map((r) => ListTile(
                     title: Text(r),
                     trailing: (_customRoles[contact.id] ?? contact.role) == r
-                        ? const Icon(Icons.check, color: Color(0xFF154D36))
+                        ? const Icon(Icons.check, color: Color(0xFFD4FF00))
                         : null,
                     onTap: () {
                       setState(() {
@@ -450,7 +450,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: const Color(0xFF333333),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -469,7 +469,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                         color: const Color(0xFFE5F5EB),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.phone_android_rounded, color: Color(0xFF154D36), size: 20),
+                      child: const Icon(Icons.phone_android_rounded, color: Color(0xFFD4FF00), size: 20),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -477,13 +477,13 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                       children: [
                         const Text(
                           'Import Phone Contacts',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         Text(
                           _isLoading
                               ? 'Connecting to phone contacts...'
                               : '$physicalCount physical device contact${physicalCount == 1 ? '' : 's'} available',
-                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                          style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                         ),
                       ],
                     ),
@@ -491,12 +491,12 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.black54),
+                  icon: const Icon(Icons.close, color: Colors.white),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
+          const Divider(height: 1, color: Color(0xFF262626)),
 
           // Permission banner / Status indicator
           if (_permissionDenied)
@@ -566,14 +566,14 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 16),
+                  const Icon(Icons.check_circle, color: Color(0xFFD4FF00), size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _physicalCount > 0
                           ? 'Physical device contacts synced ($_physicalCount contacts ready)'
                           : 'Contacts access granted. You can also pick directly from your phone.',
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF154D36), fontWeight: FontWeight.w600),
+                      style: const TextStyle(fontSize: 11, color: Color(0xFFD4FF00), fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],
@@ -589,7 +589,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                   flex: 3,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF154D36),
+                      backgroundColor: const Color(0xFFD4FF00),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
@@ -610,8 +610,8 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                   flex: 2,
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF154D36),
-                      side: const BorderSide(color: Color(0xFF154D36)),
+                      foregroundColor: const Color(0xFFD4FF00),
+                      side: BorderSide(color: Color(0xFFD4FF00)),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -637,7 +637,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: 'Search contacts by name or phone...',
-                prefixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+                prefixIcon: const Icon(Icons.search, size: 20, color: Color(0xFFA1A1AA)),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, size: 18),
@@ -669,7 +669,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                   selectedColor: const Color(0xFFE5F5EB),
                   labelStyle: TextStyle(
                     fontSize: 11,
-                    color: _filter == 'All' ? const Color(0xFF154D36) : Colors.black87,
+                    color: _filter == 'All' ? const Color(0xFFD4FF00) : Colors.black87,
                     fontWeight: _filter == 'All' ? FontWeight.bold : FontWeight.normal,
                   ),
                   onSelected: (_) => setState(() => _filter = 'All'),
@@ -681,7 +681,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                   selectedColor: const Color(0xFFE5F5EB),
                   labelStyle: TextStyle(
                     fontSize: 11,
-                    color: _filter == 'Physical' ? const Color(0xFF154D36) : Colors.black87,
+                    color: _filter == 'Physical' ? const Color(0xFFD4FF00) : Colors.black87,
                     fontWeight: _filter == 'Physical' ? FontWeight.bold : FontWeight.normal,
                   ),
                   onSelected: (_) => setState(() => _filter = 'Physical'),
@@ -693,7 +693,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                   selectedColor: const Color(0xFFE5F5EB),
                   labelStyle: TextStyle(
                     fontSize: 11,
-                    color: _filter == 'Selected' ? const Color(0xFF154D36) : Colors.black87,
+                    color: _filter == 'Selected' ? const Color(0xFFD4FF00) : Colors.black87,
                     fontWeight: _filter == 'Selected' ? FontWeight.bold : FontWeight.normal,
                   ),
                   onSelected: (_) => setState(() => _filter = 'Selected'),
@@ -709,11 +709,11 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(color: Color(0xFF154D36)),
+                        CircularProgressIndicator(color: Color(0xFFD4FF00)),
                         SizedBox(height: 12),
                         Text(
                           'Reading phone contacts...',
-                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                          style: TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
                         ),
                       ],
                     ),
@@ -725,13 +725,13 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.search_off, size: 40, color: Colors.grey),
+                              const Icon(Icons.search_off, size: 40, color: Color(0xFFA1A1AA)),
                               const SizedBox(height: 8),
-                              const Text('No contacts found.', style: TextStyle(color: Colors.grey)),
+                              const Text('No contacts found.', style: TextStyle(color: Color(0xFFA1A1AA))),
                               const SizedBox(height: 12),
                               ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF154D36),
+                                  backgroundColor: const Color(0xFFD4FF00),
                                   foregroundColor: Colors.white,
                                 ),
                                 onPressed: _pickNativeContact,
@@ -768,7 +768,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                                   // Avatar initials
                                   CircleAvatar(
                                     radius: 20,
-                                    backgroundColor: isSelected ? const Color(0xFF154D36) : const Color(0xFFE5E7EB),
+                                    backgroundColor: isSelected ? const Color(0xFFD4FF00) : const Color(0xFFE5E7EB),
                                     child: Text(
                                       contact.avatarInitials,
                                       style: TextStyle(
@@ -794,7 +794,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                                           children: [
                                             Text(
                                               contact.phone,
-                                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                              style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                                             ),
                                             if (contact.isPhysicalContact) ...[
                                               const SizedBox(width: 6),
@@ -808,14 +808,14 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                                                 child: const Row(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
-                                                    Icon(Icons.phone_iphone, size: 9, color: Color(0xFF154D36)),
+                                                    Icon(Icons.phone_iphone, size: 9, color: Color(0xFFD4FF00)),
                                                     SizedBox(width: 2),
                                                     Text(
                                                       'Device',
                                                       style: TextStyle(
                                                         fontSize: 9,
                                                         fontWeight: FontWeight.bold,
-                                                        color: Color(0xFF154D36),
+                                                        color: Color(0xFFD4FF00),
                                                       ),
                                                     ),
                                                   ],
@@ -848,14 +848,14 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                                             style: TextStyle(
                                               fontSize: 10,
                                               fontWeight: FontWeight.bold,
-                                              color: isSelected ? const Color(0xFF154D36) : Colors.black54,
+                                              color: isSelected ? const Color(0xFFD4FF00) : Colors.black54,
                                             ),
                                           ),
                                           const SizedBox(width: 4),
                                           Icon(
                                             Icons.arrow_drop_down,
                                             size: 14,
-                                            color: isSelected ? const Color(0xFF154D36) : Colors.black54,
+                                            color: isSelected ? const Color(0xFFD4FF00) : Colors.black54,
                                           ),
                                         ],
                                       ),
@@ -866,7 +866,8 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                                   // Checkbox
                                   Checkbox(
                                     value: isSelected,
-                                    activeColor: const Color(0xFF154D36),
+                                    activeColor: const Color(0xFFD4FF00),
+                                checkColor: Colors.black,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                                     onChanged: (val) {
                                       setState(() {
@@ -929,7 +930,7 @@ class _ContactsPickerSheetState extends State<ContactsPickerSheet> {
                     flex: 2,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF154D36),
+                        backgroundColor: const Color(0xFFD4FF00),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

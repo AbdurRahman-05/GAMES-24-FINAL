@@ -111,7 +111,7 @@ class Challenge {
     challengerColor: Color(
       json['challengerColor'] is int
           ? json['challengerColor'] as int
-          : (int.tryParse(json['challengerColor']?.toString() ?? '') ?? 0xFF154D36),
+          : (int.tryParse(json['challengerColor']?.toString() ?? '') ?? 0xFFD4FF00),
     ),
     creatorPhone: json['creatorPhone']?.toString() ?? '',
     teamSize: json['teamSize']?.toString() ?? '7v7',

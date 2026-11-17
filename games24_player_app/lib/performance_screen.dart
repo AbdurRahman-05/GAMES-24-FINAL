@@ -44,20 +44,20 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
         final hoursPlayed = (totalMatches * 1.5).toStringAsFixed(1);
 
         return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
         title: const Text(
           'Performance & Analytics',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
+            color: Colors.white,
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -79,14 +79,14 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF154D36), Color(0xFF15803D)],
+                  colors: [Color(0xFF1C1C1C), Color(0xFF141414)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF154D36).withValues(alpha: 0.25),
+                    color: Color(0xFFD4FF00).withValues(alpha: 0.05),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -136,7 +136,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                               ),
                               child: Text(
                                 _preferredSport,
-                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                                style: const TextStyle(color: Color(0xFFD4FF00), fontSize: 11, fontWeight: FontWeight.bold),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -162,7 +162,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                     title: 'Total Matches',
                     value: '$totalMatches',
                     icon: Icons.sports_soccer_outlined,
-                    color: const Color(0xFF154D36),
+                    color: Color(0xFFD4FF00),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -217,11 +217,11 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                     children: [
                       const Text(
                         'Weekly Match Volume',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       Text(
                         totalMatches > 0 ? '$totalMatches matches' : 'No matches',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF154D36), fontWeight: FontWeight.w600),
+                        style: const TextStyle(fontSize: 12, color: Color(0xFFD4FF00), fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -255,7 +255,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
               ),
               child: Column(
                 children: [
-                  _buildSportProgress('Football', _preferredSport == 'Football' ? 0.8 : 0.3, const Color(0xFF154D36)),
+                  _buildSportProgress('Football', _preferredSport == 'Football' ? 0.8 : 0.3, const Color(0xFFD4FF00)),
                   const SizedBox(height: 12),
                   _buildSportProgress('Box Cricket', _preferredSport == 'Cricket' ? 0.8 : 0.2, const Color(0xFF0284C7)),
                   const SizedBox(height: 12),
@@ -279,17 +279,17 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                 ),
                 child: Column(
                   children: const [
-                    Icon(Icons.query_stats_rounded, size: 40, color: Color(0xFF9CA3AF)),
+                    Icon(Icons.query_stats_rounded, size: 40, color: Color(0xFFA1A1AA)),
                     SizedBox(height: 10),
                     Text(
                       'No match records yet',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     SizedBox(height: 4),
                     Text(
                       'Book turf slots or play open challenges to view detailed match heatmaps & analytics here.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                      style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                     ),
                   ],
                 ),
@@ -309,10 +309,10 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
+                          color: const Color(0xFF1F2916),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.sports_soccer, color: Color(0xFF154D36), size: 20),
+                        child: const Icon(Icons.sports_soccer, color: Color(0xFFD4FF00), size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -326,7 +326,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                             const SizedBox(height: 2),
                             Text(
                               "${b['date'] ?? 'Recent'} • ${b['timeSlot'] ?? ''}",
-                              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12),
+                              style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
                             ),
                           ],
                         ),
@@ -334,12 +334,12 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
+                          color: const Color(0xFF1F2916),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'Played',
-                          style: TextStyle(color: Color(0xFF154D36), fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Color(0xFFD4FF00), fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -361,7 +361,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
       style: const TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.bold,
-        color: Color(0xFF9CA3AF),
+        color: Color(0xFFA1A1AA),
         letterSpacing: 1.0,
       ),
     );
@@ -388,7 +388,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 12, fontWeight: FontWeight.w500),
+                style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12, fontWeight: FontWeight.w500),
               ),
               Icon(icon, color: color, size: 20),
             ],
@@ -399,7 +399,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
+              color: Colors.white,
             ),
           ),
         ],
@@ -415,13 +415,13 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
           height: 80,
           alignment: Alignment.bottomCenter,
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
+            color: const Color(0xFF1E1E1E),
             borderRadius: BorderRadius.circular(7),
           ),
           child: Container(
             height: 80 * heightFactor,
             decoration: BoxDecoration(
-              color: heightFactor > 0 ? const Color(0xFF154D36) : Colors.transparent,
+              color: heightFactor > 0 ? const Color(0xFFD4FF00) : Colors.transparent,
               borderRadius: BorderRadius.circular(7),
             ),
           ),
@@ -429,7 +429,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
         const SizedBox(height: 8),
         Text(
           day,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6B7280)),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFFA1A1AA)),
         ),
       ],
     );
@@ -442,7 +442,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF374151))),
+            Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
             Text('${(progress * 100).toInt()}%', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color)),
           ],
         ),
@@ -451,7 +451,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
           borderRadius: BorderRadius.circular(4),
           child: LinearProgressIndicator(
             value: progress,
-            backgroundColor: const Color(0xFFF1F5F9),
+            backgroundColor: const Color(0xFF1E1E1E),
             color: color,
             minHeight: 8,
           ),

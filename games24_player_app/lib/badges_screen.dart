@@ -1,7 +1,7 @@
 import 'main_layout.dart';
 import 'package:flutter/material.dart';
-import 'booking_manager.dart';
-import 'team_manager.dart';
+import 'package:games24_player_app/booking_manager.dart';
+import 'package:games24_player_app/team_manager.dart';
 
 class BadgeItem {
   final String title;
@@ -40,7 +40,7 @@ class BadgesScreen extends StatelessWidget {
         title: 'First Kickoff',
         description: 'Book your very first turf slot on Gamez24',
         icon: Icons.sports_soccer_rounded,
-        color: const Color(0xFF154D36),
+        color: const Color(0xFFD4FF00),
         isUnlocked: hasBooking,
         progressText: hasBooking ? 'Unlocked' : '0/1 Bookings',
         points: 100,
@@ -49,7 +49,7 @@ class BadgesScreen extends StatelessWidget {
         title: 'Squad Leader',
         description: 'Create or lead your own team squad',
         icon: Icons.groups_rounded,
-        color: const Color(0xFF0284C7),
+        color: const Color(0xFF38BDF8),
         isUnlocked: hasTeam,
         progressText: hasTeam ? 'Unlocked' : '0/1 Teams',
         points: 150,
@@ -58,25 +58,16 @@ class BadgesScreen extends StatelessWidget {
         title: 'Hat-Trick Booker',
         description: 'Complete 3 turf match bookings',
         icon: Icons.military_tech_rounded,
-        color: const Color(0xFFEA580C),
+        color: const Color(0xFFFBBF24),
         isUnlocked: hasThreeBookings,
         progressText: hasThreeBookings ? 'Unlocked' : '${bookings.length}/3 Bookings',
         points: 250,
       ),
       BadgeItem(
-        title: 'Night Owl',
-        description: 'Play a prime evening game under floodlights after 6 PM',
-        icon: Icons.nightlight_round,
-        color: const Color(0xFF7C3AED),
-        isUnlocked: hasBooking,
-        progressText: hasBooking ? 'Unlocked' : '0/1 Evening Slots',
-        points: 120,
-      ),
-      BadgeItem(
         title: 'Weekend Warrior',
-        description: 'Book and play a match on Saturday or Sunday',
-        icon: Icons.local_fire_department_rounded,
-        color: const Color(0xFFDC2626),
+        description: 'Play on 2 consecutive weekends',
+        icon: Icons.bolt_rounded,
+        color: const Color(0xFFFB923C),
         isUnlocked: false,
         progressText: '0/2 Matches',
         points: 200,
@@ -85,7 +76,7 @@ class BadgesScreen extends StatelessWidget {
         title: 'Tournament Challenger',
         description: 'Register and compete in a community tournament',
         icon: Icons.emoji_events_rounded,
-        color: const Color(0xFFD97706),
+        color: const Color(0xFFF59E0B),
         isUnlocked: false,
         progressText: '0/1 Tournaments',
         points: 300,
@@ -94,7 +85,7 @@ class BadgesScreen extends StatelessWidget {
         title: 'Fair Play Champion',
         description: 'Maintain a 5.0 player rating with zero penalties',
         icon: Icons.shield_rounded,
-        color: const Color(0xFF059669),
+        color: const Color(0xFF34D399),
         isUnlocked: true,
         progressText: 'Unlocked',
         points: 100,
@@ -103,7 +94,7 @@ class BadgesScreen extends StatelessWidget {
         title: 'Grand Master',
         description: 'Unlock 5 badges to earn the exclusive Gamez24 Master badge',
         icon: Icons.workspace_premium_rounded,
-        color: const Color(0xFFB45309),
+        color: const Color(0xFFF97316),
         isUnlocked: false,
         progressText: '${(hasBooking ? 1 : 0) + (hasTeam ? 1 : 0) + 1}/5 Badges',
         points: 500,
@@ -114,20 +105,21 @@ class BadgesScreen extends StatelessWidget {
     final totalPoints = badges.where((b) => b.isUnlocked).fold(0, (sum, b) => sum + b.points);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
         title: const Text(
           'Badges & Achievements',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF080808),
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -149,14 +141,15 @@ class BadgesScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  colors: [Color(0xFF1C1C1C), Color(0xFF141414)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF262626)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Colors.black.withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -172,13 +165,13 @@ class BadgesScreen extends StatelessWidget {
                         children: [
                           const Text(
                             'Achievement Score',
-                            style: TextStyle(color: Colors.white70, fontSize: 13),
+                            style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '$totalPoints PTS',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: Color(0xFFD4FF00),
                               fontSize: 26,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 0.5,
@@ -189,12 +182,13 @@ class BadgesScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF154D36),
+                          color: const Color(0xFF1F2916),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
                         ),
                         child: Text(
                           '$unlockedCount of ${badges.length} Unlocked',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                          style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                       ),
                     ],
@@ -204,8 +198,8 @@ class BadgesScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                     child: LinearProgressIndicator(
                       value: unlockedCount / badges.length,
-                      backgroundColor: Colors.white24,
-                      color: const Color(0xFF22C55E),
+                      backgroundColor: const Color(0xFF262626),
+                      color: const Color(0xFFD4FF00),
                       minHeight: 8,
                     ),
                   ),
@@ -219,7 +213,7 @@ class BadgesScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF9CA3AF),
+                color: Color(0xFFA1A1AA),
                 letterSpacing: 1.0,
               ),
             ),
@@ -230,15 +224,15 @@ class BadgesScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: badge.isUnlocked ? const Color(0xFF86EFAC) : const Color(0xFFE5E7EB),
+                    color: badge.isUnlocked ? const Color(0xFFD4FF00).withValues(alpha: 0.4) : const Color(0xFF262626),
                     width: badge.isUnlocked ? 1.5 : 1.0,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -252,13 +246,13 @@ class BadgesScreen extends StatelessWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         color: badge.isUnlocked
-                            ? badge.color.withValues(alpha: 0.12)
-                            : const Color(0xFFF1F5F9),
+                            ? badge.color.withValues(alpha: 0.15)
+                            : const Color(0xFF1E1E1E),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         badge.icon,
-                        color: badge.isUnlocked ? badge.color : const Color(0xFF94A3B8),
+                        color: badge.isUnlocked ? badge.color : const Color(0xFF71717A),
                         size: 20,
                       ),
                     ),
@@ -276,7 +270,7 @@ class BadgesScreen extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF111827),
+                                    color: Colors.white,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -284,7 +278,7 @@ class BadgesScreen extends StatelessWidget {
                               ),
                               if (badge.isUnlocked) ...[
                                 const SizedBox(width: 4),
-                                const Icon(Icons.check_circle, color: Color(0xFF154D36), size: 14),
+                                const Icon(Icons.check_circle, color: Color(0xFFD4FF00), size: 14),
                               ],
                             ],
                           ),
@@ -293,7 +287,7 @@ class BadgesScreen extends StatelessWidget {
                             badge.description,
                             style: const TextStyle(
                               fontSize: 11,
-                              color: Color(0xFF6B7280),
+                              color: Color(0xFFA1A1AA),
                               height: 1.25,
                             ),
                             maxLines: 2,
@@ -312,22 +306,25 @@ class BadgesScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: badge.isUnlocked ? const Color(0xFF154D36) : const Color(0xFF94A3B8),
+                            color: badge.isUnlocked ? const Color(0xFFD4FF00) : const Color(0xFF71717A),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: badge.isUnlocked ? const Color(0xFFF0FDF4) : const Color(0xFFF1F5F9),
+                            color: badge.isUnlocked ? const Color(0xFF1F2916) : const Color(0xFF1E1E1E),
                             borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: badge.isUnlocked ? const Color(0xFFD4FF00).withValues(alpha: 0.35) : const Color(0xFF262626),
+                            ),
                           ),
                           child: Text(
                             badge.progressText,
                             style: TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w600,
-                              color: badge.isUnlocked ? const Color(0xFF154D36) : const Color(0xFF64748B),
+                              color: badge.isUnlocked ? const Color(0xFFD4FF00) : const Color(0xFFA1A1AA),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -346,4 +343,3 @@ class BadgesScreen extends StatelessWidget {
     );
   }
 }
-

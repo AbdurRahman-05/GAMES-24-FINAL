@@ -65,7 +65,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             for (var item in rawList) {
               final type = (item['type'] ?? 'general').toString().toLowerCase();
               IconData icon = Icons.notifications_active_rounded;
-              Color color = const Color(0xFF154D36);
+              Color color = const Color(0xFFD4FF00);
 
               if (type == 'booking') {
                 icon = Icons.confirmation_number_rounded;
@@ -115,7 +115,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           message: 'Hello $name, explore nearby turfs, book instant slots, and join competitive challenges.',
           time: 'Just now',
           icon: Icons.sports_handball_rounded,
-          color: const Color(0xFF154D36),
+          color: const Color(0xFFD4FF00),
           isRead: false,
         ),
       );
@@ -182,20 +182,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
         title: const Text(
           'Notifications',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF111827),
+            color: Colors.white,
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF111827), size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -222,7 +222,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF154D36)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)))
           : _notifications.isEmpty
               ? Center(
                   child: Padding(
@@ -230,17 +230,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
-                        Icon(Icons.notifications_off_outlined, size: 56, color: Color(0xFF9CA3AF)),
+                        Icon(Icons.notifications_off_outlined, size: 56, color: Color(0xFFA1A1AA)),
                         SizedBox(height: 16),
                         Text(
                           'No Notifications Yet',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                         SizedBox(height: 6),
                         Text(
                           'You are all caught up! Match confirmations and squad invites will appear here.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                          style: TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
                         ),
                       ],
                     ),
@@ -296,20 +296,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                         style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
-                                          color: Color(0xFF111827),
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
                                     Text(
                                       item.time,
-                                      style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
+                                      style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   item.message,
-                                  style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563), height: 1.35),
+                                  style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA), height: 1.35),
                                 ),
                               ],
                             ),

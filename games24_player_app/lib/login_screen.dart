@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAF7),
+      backgroundColor: const Color(0xFF080808),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontFamily: 'PrimeNordic',
                       fontSize: 32, // slightly larger for display font
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 15,
-                      color: Color(0xFF6B7280),
+                      color: Color(0xFFA1A1AA),
                       height: 1.4,
                     ),
                   ),
@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Verified turf id',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF6B7280),
+                        color: Color(0xFFA1A1AA),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF374151),
+                              color: Colors.white,
                             ),
                             onChanged: (String? newValue) {
                               if (newValue != null) {
@@ -211,7 +211,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(4),
                             ),
                             side: const BorderSide(color: Color(0xFFD1D5DB)),
-                            activeColor: Colors.green.shade600,
+                            activeColor: const Color(0xFFD4FF00),
+                            checkColor: Colors.black,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -219,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           'Remember me',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF374151),
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -236,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'Forgot Password?',
                         style: TextStyle(
-                          color: Colors.green.shade600,
+                          color: const Color(0xFFD4FF00),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -293,7 +294,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const Text(
                       'Don\'t have an account? ',
-                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 15),
+                      style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 15),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -349,7 +350,7 @@ class _LoginScreenState extends State<LoginScreen> {
       style: const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w600,
-        color: Color(0xFF374151),
+        color: Colors.white,
       ),
     );
   }
