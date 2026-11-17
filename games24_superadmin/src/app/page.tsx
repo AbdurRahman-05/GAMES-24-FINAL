@@ -894,7 +894,7 @@ export default function SuperAdminDashboard() {
                         <h3 className="text-sm font-bold text-white">{reg.venueName}</h3>
                         {reg.isBranch && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                            🏢 New Branch Request
+                            <Building2 className="w-3 h-3 text-cyan-400" /> New Branch Request
                           </span>
                         )}
                         {reg.status === 'PENDING_APPROVAL' && (
@@ -909,6 +909,33 @@ export default function SuperAdminDashboard() {
                           </span>
                         )}
                       </div>
+
+                      {reg.isBranch && (
+                        <div className="mt-2.5 p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-800/60 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-cyan-400 font-bold flex items-center gap-1 text-[11px]">
+                              <Building2 className="w-3.5 h-3.5 text-cyan-400" /> Linked Old Turf:
+                            </span>
+                            <span className="font-bold text-white bg-cyan-900/40 px-2 py-0.5 rounded border border-cyan-700/50">
+                              {reg.parentTurfName || reg.parentTurf?.venueName || 'Primary Turf Venue'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400 text-[11px]">Owner Login Phone:</span>
+                            <span className="font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">
+                              {reg.parentTurfPhone || reg.ownerPhone}
+                            </span>
+                          </div>
+                          {reg.alternativePhone && (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-slate-400 text-[11px]">Branch Manager Phone:</span>
+                              <span className="font-mono text-cyan-300 bg-[#161D2F] px-2 py-0.5 rounded border border-[#28354F]">
+                                {reg.alternativePhone}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       <p className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
                         <span>Owner: <strong className="text-slate-300">{reg.ownerName}</strong></span>

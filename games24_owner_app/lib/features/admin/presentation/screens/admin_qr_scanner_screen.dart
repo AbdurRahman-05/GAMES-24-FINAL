@@ -978,7 +978,7 @@ class _AdminQrScannerScreenState extends ConsumerState<AdminQrScannerScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'CHECK-IN NOT OPEN YET ⏳',
+                        'CHECK-IN NOT OPEN YET',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,

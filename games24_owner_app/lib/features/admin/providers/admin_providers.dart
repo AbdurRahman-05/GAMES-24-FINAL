@@ -1395,6 +1395,8 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'ownerPhone': state.ownerPhone,
+          'parentTurfId': state.verifiedAdminId,
+          'parentTurfName': state.venueName,
           'venueName': venueName,
           'neighborhoodArea': neighborhoodArea,
           'streetAddress': streetAddress,
@@ -1410,11 +1412,15 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       );
       if (res.statusCode == 200 || res.statusCode == 201) {
         await fetchVerifiedAdminByPhone(state.ownerPhone);
+        return true;
+      } else {
+        debugPrint("Error adding new branch [${res.statusCode}]: ${res.body}");
+        return false;
       }
     } catch (e) {
       debugPrint("Error adding new branch: $e");
+      return false;
     }
-    return true;
   }
 
   void setFromVerifiedAdmin(Map<String, dynamic> data, {bool saveToStorage = true}) {

@@ -65,15 +65,17 @@ class AppButton extends StatelessWidget {
           const SizedBox(width: 6),
         ],
         Flexible(
-          child: Text(
-            text,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: textColor,
-              fontSize: fontSize,
-              fontWeight: type == AppButtonType.primary ? FontWeight.w800 : FontWeight.w600,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              text,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: textColor,
+                fontSize: fontSize,
+                fontWeight: type == AppButtonType.primary ? FontWeight.w800 : FontWeight.w600,
+              ),
+              maxLines: 1,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],

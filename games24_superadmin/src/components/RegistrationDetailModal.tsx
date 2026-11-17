@@ -142,6 +142,54 @@ export default function RegistrationDetailModal({
 
         {/* Scrollable Content */}
         <div className="overflow-y-auto p-6 space-y-6">
+          {/* Branch Application Details Banner */}
+          {registration.isBranch && (
+            <div className="bg-gradient-to-r from-cyan-950/60 to-[#121827] rounded-xl p-5 border border-cyan-500/40 shadow-lg">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5" /> NEW BRANCH LOCATION APPLICATION
+                </span>
+                <span className="text-xs text-cyan-400 font-mono">
+                  Linked to Existing Turf ID #{registration.parentTurfId}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
+                    Original / Parent Turf Name:
+                  </span>
+                  <p className="font-bold text-white text-sm mt-0.5">
+                    {registration.parentTurfName || registration.parentTurf?.venueName || 'Primary Turf Arena'}
+                  </p>
+                </div>
+                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
+                    Owner Primary Login Phone:
+                  </span>
+                  <p className="font-mono font-bold text-emerald-400 text-sm mt-0.5">
+                    {registration.parentTurfPhone || registration.ownerPhone}
+                  </p>
+                </div>
+                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
+                    Branch Manager Alternative Mobile:
+                  </span>
+                  <p className="font-mono font-bold text-cyan-300 text-sm mt-0.5">
+                    {registration.alternativePhone || '—'}
+                  </p>
+                </div>
+                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
+                    New Branch Neighborhood & Address:
+                  </span>
+                  <p className="text-slate-200 mt-0.5">
+                    {registration.streetAddress}, {registration.neighborhoodArea}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Owner & Identity */}
           <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
             <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">

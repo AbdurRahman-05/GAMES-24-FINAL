@@ -1974,7 +1974,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     ? perSportRates.values.first
                     : 1000.0;
 
-                await ref.read(turfProfileProvider.notifier).addNewBranch(
+                final success = await ref.read(turfProfileProvider.notifier).addNewBranch(
                       venueName: vName,
                       neighborhoodArea: vArea,
                       streetAddress: addressCtrl.text.trim().isNotEmpty
@@ -1991,10 +1991,17 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     );
 
                 if (context.mounted) {
-                  ToastUtils.showSuccess(
-                    context,
-                    'Branch "$vName" submitted for Super Admin verification!',
-                  );
+                  if (success) {
+                    ToastUtils.showSuccess(
+                      context,
+                      'Branch "$vName" submitted for Super Admin verification!',
+                    );
+                  } else {
+                    ToastUtils.showError(
+                      context,
+                      'Failed to submit branch application. Please try again.',
+                    );
+                  }
                 }
               },
               child: const Text(

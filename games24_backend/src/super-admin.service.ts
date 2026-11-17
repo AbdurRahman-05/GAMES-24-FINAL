@@ -67,14 +67,47 @@ export class SuperAdminService {
       this.getStats(),
     ]);
 
-    const items = rawItems.map((item) => {
-      const sportsList = getAdminSports(item.id);
-      return {
-        ...item,
-        sports: sportsList.map((s: any) => s.name),
-        sportsList,
-      };
-    });
+    const items = await Promise.all(
+      rawItems.map(async (item) => {
+        const sportsList = getAdminSports(item.id);
+        let parentTurf: any = null;
+        if (item.isBranch && item.parentTurfId) {
+          parentTurf = await this.prisma.verifiedAdmin.findUnique({
+            where: { id: item.parentTurfId },
+            select: {
+              id: true,
+              venueName: true,
+              ownerName: true,
+              ownerPhone: true,
+              neighborhoodArea: true,
+              streetAddress: true,
+            },
+          });
+          if (!parentTurf) {
+            parentTurf = await this.prisma.adminUser.findUnique({
+              where: { id: item.parentTurfId },
+              select: {
+                id: true,
+                venueName: true,
+                ownerName: true,
+                ownerPhone: true,
+                neighborhoodArea: true,
+                streetAddress: true,
+              },
+            });
+          }
+        }
+        return {
+          ...item,
+          sports: sportsList.map((s: any) => s.name),
+          sportsList,
+          parentTurf,
+          parentTurfName: parentTurf?.venueName || null,
+          parentTurfPhone: parentTurf?.ownerPhone || item.ownerPhone,
+          parentTurfArea: parentTurf?.neighborhoodArea || null,
+        };
+      }),
+    );
 
     return {
       items,
@@ -102,11 +135,43 @@ export class SuperAdminService {
 
     const sportsList = getAdminSports(admin.id);
 
+    let parentTurf: any = null;
+    if (admin.isBranch && admin.parentTurfId) {
+      parentTurf = await this.prisma.verifiedAdmin.findUnique({
+        where: { id: admin.parentTurfId },
+        select: {
+          id: true,
+          venueName: true,
+          ownerName: true,
+          ownerPhone: true,
+          neighborhoodArea: true,
+          streetAddress: true,
+        },
+      });
+      if (!parentTurf) {
+        parentTurf = await this.prisma.adminUser.findUnique({
+          where: { id: admin.parentTurfId },
+          select: {
+            id: true,
+            venueName: true,
+            ownerName: true,
+            ownerPhone: true,
+            neighborhoodArea: true,
+            streetAddress: true,
+          },
+        });
+      }
+    }
+
     return {
       ...admin,
       sports: sportsList.map((s: any) => s.name),
       sportsList,
       verifiedRecord,
+      parentTurf,
+      parentTurfName: parentTurf?.venueName || null,
+      parentTurfPhone: parentTurf?.ownerPhone || admin.ownerPhone,
+      parentTurfArea: parentTurf?.neighborhoodArea || null,
     };
   }
 

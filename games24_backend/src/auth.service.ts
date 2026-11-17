@@ -1037,6 +1037,8 @@ export class AuthService {
       streetAddress,
       alternativePhone,
       alternativeNumber,
+      parentTurfId,
+      turfId,
       dayRate,
       nightRate,
       weekdayRate,
@@ -1064,14 +1066,58 @@ export class AuthService {
       throw new BadRequestException('Alternative mobile number must be different from primary registered mobile number');
     }
 
-    const existingAdmin = await this.prisma.verifiedAdmin.findFirst({
-      where: {
-        OR: [{ ownerPhone: cleanPhone }, { ownerPhone: { contains: cleanPhone } }],
-      },
-    });
+    // 1. Try finding by parentTurfId / turfId first
+    let existingAdmin: any = null;
+    const parsedParentId = parentTurfId ? Number(parentTurfId) : (turfId ? Number(turfId) : NaN);
+    if (!isNaN(parsedParentId) && parsedParentId > 0) {
+      existingAdmin = await this.prisma.verifiedAdmin.findUnique({
+        where: { id: parsedParentId },
+      });
+    }
+
+    // 2. If not found by ID, find by owner phone with robust matching
+    if (!existingAdmin) {
+      existingAdmin = await this.prisma.verifiedAdmin.findFirst({
+        where: {
+          OR: [
+            { ownerPhone: cleanPhone },
+            { ownerPhone: primaryLast10 },
+            { ownerPhone: { contains: primaryLast10 } },
+            { ownerPhone: `+91 ${primaryLast10}` },
+            { ownerPhone: `+91${primaryLast10}` },
+          ],
+        },
+        orderBy: { id: 'asc' },
+      });
+    }
+
+    // 3. Fallback to AdminUser table if not yet in VerifiedAdmin
+    if (!existingAdmin) {
+      const fallbackAdmin = await this.prisma.adminUser.findFirst({
+        where: {
+          OR: [
+            { ownerPhone: cleanPhone },
+            { ownerPhone: primaryLast10 },
+            { ownerPhone: { contains: primaryLast10 } },
+          ],
+        },
+        orderBy: { id: 'asc' },
+      });
+      if (fallbackAdmin) {
+        existingAdmin = {
+          id: fallbackAdmin.id,
+          venueName: fallbackAdmin.venueName,
+          ownerName: fallbackAdmin.ownerName,
+          ownerPhone: fallbackAdmin.ownerPhone,
+          ownerEmail: fallbackAdmin.ownerEmail,
+          streetAddress: fallbackAdmin.streetAddress,
+          neighborhoodArea: fallbackAdmin.neighborhoodArea,
+        };
+      }
+    }
 
     if (!existingAdmin) {
-      throw new BadRequestException('Primary owner profile not found. Please register first.');
+      throw new BadRequestException(`Primary owner profile not found for ${ownerPhone}. Please register first.`);
     }
 
     const trackingCode = `TRK-BR-${Date.now().toString().slice(-6)}`;
@@ -1086,7 +1132,7 @@ export class AuthService {
         trackingCode,
         venueName: venueName.trim(),
         ownerName: existingAdmin.ownerName,
-        ownerPhone: cleanPhone,
+        ownerPhone: primaryLast10,
         ownerEmail: existingAdmin.ownerEmail,
         streetAddress: (streetAddress || existingAdmin.streetAddress).trim(),
         neighborhoodArea: (neighborhoodArea || existingAdmin.neighborhoodArea).trim(),
@@ -1096,17 +1142,41 @@ export class AuthService {
         photoUrls: branchPhotos,
         isBranch: true,
         parentTurfId: existingAdmin.id,
-        alternativePhone: cleanAltPhone,
+        alternativePhone: altLast10,
         status: 'PENDING_APPROVAL',
       },
     });
+
+    // 4. Save configured sports and per-game rates for this branch
+    try {
+      if (Array.isArray(body.sports) && body.sports.length > 0) {
+        const sportItems = body.sports.map((sportName: string) => {
+          const rate = body.sportRates && body.sportRates[sportName]
+            ? Number(body.sportRates[sportName])
+            : (Number(body.dayRate) || 1000);
+          return {
+            name: sportName,
+            hourlyRate: rate,
+            surface: 'Synthetic Turf',
+            isActive: true,
+          };
+        });
+        saveAdminSports(newAdminUser.id, sportItems);
+      }
+    } catch (e) {
+      console.error('Error saving branch sports:', e);
+    }
 
     return {
       success: true,
       message: `New branch application for "${venueName}" submitted successfully! It has been forwarded to Super Admin for verification.`,
       trackingCode,
       isPendingApproval: true,
-      branchApplication: newAdminUser,
+      branchApplication: {
+        ...newAdminUser,
+        parentTurfName: existingAdmin.venueName,
+        parentTurfPhone: existingAdmin.ownerPhone,
+      },
     };
   }
 

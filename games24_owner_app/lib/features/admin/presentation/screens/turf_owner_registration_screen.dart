@@ -1364,11 +1364,11 @@ class _TurfOwnerRegistrationScreenState
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
-                      width: 115,
+                      width: 125,
                       child: AppButton(
                         text: 'Verify SMS',
-                        fontSize: 12,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        fontSize: 11.5,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
                         height: 48,
                         isLoading: _isVerifyingMobile,
                         onPressed: _isVerifyingMobile ? null : _verifyMobileOtp,
@@ -1475,11 +1475,11 @@ class _TurfOwnerRegistrationScreenState
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
-                      width: 115,
+                      width: 125,
                       child: AppButton(
                         text: 'Verify Email',
-                        fontSize: 12,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        fontSize: 11.5,
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
                         height: 48,
                         isLoading: _isVerifyingEmail,
                         onPressed: _isVerifyingEmail ? null : _verifyEmailOtp,
@@ -1552,8 +1552,9 @@ class _TurfOwnerRegistrationScreenState
                     Text(
                       'Hourly rates (weekday, weekend, day, and night slots) are configured based on individual sports inside your Turf Owner Profile Page after login.',
                       style: TextStyle(
-                        fontSize: 11.5,
-                        color: isDark ? const Color(0xFFD4D4D8) : const Color(0xFF374151),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white.withValues(alpha: 0.92),
                         height: 1.4,
                       ),
                     ),

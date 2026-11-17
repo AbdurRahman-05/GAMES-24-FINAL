@@ -114,6 +114,17 @@ export interface AdminRegistration {
   upiId: string | null;
   isBranch?: boolean;
   parentTurfId?: number | null;
+  parentTurf?: {
+    id: number;
+    venueName: string;
+    ownerName: string;
+    ownerPhone: string;
+    neighborhoodArea: string;
+    streetAddress?: string;
+  } | null;
+  parentTurfName?: string | null;
+  parentTurfPhone?: string | null;
+  parentTurfArea?: string | null;
   alternativePhone?: string | null;
   status: 'PENDING_APPROVAL' | 'VERIFIED' | 'CANCELLED';
   cancelReason: string | null;
@@ -150,6 +161,17 @@ export interface VerifiedAdmin {
   upiId: string | null;
   isBranch?: boolean;
   parentTurfId?: number | null;
+  parentTurf?: {
+    id: number;
+    venueName: string;
+    ownerName: string;
+    ownerPhone: string;
+    neighborhoodArea: string;
+    streetAddress?: string;
+  } | null;
+  parentTurfName?: string | null;
+  parentTurfPhone?: string | null;
+  parentTurfArea?: string | null;
   alternativePhone?: string | null;
   approvedBranches?: VerifiedAdmin[];
   pendingBranchApplications?: AdminRegistration[];

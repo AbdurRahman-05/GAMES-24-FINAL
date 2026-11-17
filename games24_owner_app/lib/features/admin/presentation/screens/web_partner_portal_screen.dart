@@ -170,8 +170,21 @@ class _WebPartnerPortalScreenState
                 color: AppColors.success.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text('Live Web Sync Active 🟢',
-                  style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 12)),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.circle, size: 8, color: AppColors.success),
+                  SizedBox(width: 6),
+                  Text(
+                    'Live Web Sync Active',
+                    style: TextStyle(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -111,7 +111,7 @@ class _SuperAdminLoginScreenState
                     color: AppColors.primary.withValues(alpha: 0.08),
                     child: Row(
                       children: [
-                        const Icon(Icons.stars_rounded, color: AppColors.primary),
+                        const Icon(Icons.verified_user_rounded, color: AppColors.primary),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
