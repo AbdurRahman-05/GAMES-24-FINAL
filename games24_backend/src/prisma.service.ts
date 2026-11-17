@@ -15,35 +15,33 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
 
     const isHarmlessIdleReset = (msg: string): boolean => {
+      const lower = msg.toLowerCase();
       return (
-        msg.includes('kind: Closed') ||
-        msg.includes('Closed, cause: None') ||
-        msg.includes('Socket closed') ||
-        msg.includes('10054') ||
-        msg.includes('ConnectionReset') ||
-        msg.includes('forcibly closed') ||
-        msg.includes('kind: Io') ||
-        msg.includes('ECONNRESET') ||
-        msg.includes('Broken pipe') ||
-        msg.includes("Can't reach database server") ||
-        msg.includes('P1001') ||
-        msg.includes('P1017') ||
-        msg.includes('P2024') ||
-        msg.includes('Connection pool timeout') ||
-        msg.includes('Connection terminated') ||
-        msg.includes('closed unexpectedly')
+        lower.includes('kind: closed') ||
+        lower.includes('closed, cause: none') ||
+        lower.includes('socket closed') ||
+        lower.includes('10054') ||
+        lower.includes('connectionreset') ||
+        lower.includes('forcibly closed') ||
+        lower.includes('kind: io') ||
+        lower.includes('econnreset') ||
+        lower.includes('broken pipe') ||
+        lower.includes("can't reach database server") ||
+        lower.includes('p1001') ||
+        lower.includes('p1017') ||
+        lower.includes('p2024') ||
+        lower.includes('connection pool timeout') ||
+        lower.includes('timed out fetching a new connection') ||
+        lower.includes('connection terminated') ||
+        lower.includes('closed unexpectedly')
       );
     };
 
     // Intercept Prisma engine logs and filter out harmless idle socket closures / Neon serverless cold starts
-    (this as any).$on('error', async (e: any) => {
+    (this as any).$on('error', (e: any) => {
       const msg = e?.message || (typeof e === 'string' ? e : JSON.stringify(e));
       if (isHarmlessIdleReset(msg)) {
-        // Idle connection drop or serverless Neon waking up - cleanly re-establish pool in background
-        try {
-          await this.$disconnect().catch(() => {});
-          await this.$connect().catch(() => {});
-        } catch (_) {}
+        // Harmless idle socket reset or serverless Neon spin-up; safely ignored as retry middleware handles it
         return;
       }
       this.logger.error(`Prisma error: ${msg}`);
@@ -66,39 +64,38 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
           return await next(params);
         } catch (error: any) {
           attempts++;
-          const errorMessage = error?.message || '';
+          const errorMessage = (error?.message || '').toLowerCase();
           const errorCode = error?.code || '';
 
           const isConnectionError =
             errorCode === 'P1001' ||
             errorCode === 'P1017' ||
             errorCode === 'P2024' ||
-            errorMessage.includes("Can't reach database server") ||
-            errorMessage.includes('Connection terminated') ||
+            errorMessage.includes("can't reach database server") ||
+            errorMessage.includes('connection terminated') ||
             errorMessage.includes('closed unexpectedly') ||
-            errorMessage.includes('Connection pool timeout') ||
+            errorMessage.includes('connection pool timeout') ||
+            errorMessage.includes('timed out fetching a new connection') ||
             errorMessage.includes('connection refused') ||
-            errorMessage.includes('kind: Closed') ||
-            errorMessage.includes('Closed') ||
+            errorMessage.includes('kind: closed') ||
+            errorMessage.includes('closed') ||
             errorMessage.includes('timeout') ||
             errorMessage.includes('10054') ||
-            errorMessage.includes('ConnectionReset') ||
+            errorMessage.includes('connectionreset') ||
             errorMessage.includes('forcibly closed') ||
-            errorMessage.includes('kind: Io') ||
-            errorMessage.includes('Broken pipe') ||
-            errorMessage.includes('ECONNRESET');
+            errorMessage.includes('kind: io') ||
+            errorMessage.includes('broken pipe') ||
+            errorMessage.includes('econnreset');
 
           if (isConnectionError && attempts < maxAttempts) {
-            // Neon serverless cold-start wake up typically takes ~1.5 seconds
-            const delay = attempts === 1 ? 1200 : attempts * 1000;
+            // Neon serverless wake-up delay with exponential backoff
+            const delay = attempts === 1 ? 800 : attempts * 1000;
             this.logger.warn(
               `Database waking up or reconnecting (${errorCode || 'Neon-ColdStart'}). Resuming in ${delay}ms (attempt ${attempts}/${maxAttempts})...`,
             );
             await new Promise((res) => setTimeout(res, delay));
-            try {
-              await this.$disconnect().catch(() => {});
-              await this.$connect().catch(() => {});
-            } catch (_) {}
+            // Do NOT call $disconnect() as it destroys the connection pool for all active concurrent queries!
+            // Prisma will reuse or open healthy connections on the next attempt automatically.
             continue;
           }
 
@@ -119,17 +116,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         WHERE "status" != 'Cancelled';
       `).catch((e) => this.logger.warn(`Could not verify unique booking index: ${e?.message || e}`));
 
-      // Start keep-alive ping every 20 seconds to keep Neon compute & socket active
+      // Keep-alive ping every 30 seconds to maintain warm connection to Neon
       this.keepAliveTimer = setInterval(async () => {
         try {
           await this.$queryRawUnsafe('SELECT 1');
-        } catch (_) {
-          try {
-            await this.$disconnect().catch(() => {});
-            await this.$connect().catch(() => {});
-          } catch (_) {}
+        } catch (e: any) {
+          // If keep-alive ping encounters cold-start or temporary socket stall, log quietly without destroying pool
+          this.logger.debug?.(`Keep-alive ping delayed: ${e?.message || e}`);
         }
-      }, 20000);
+      }, 30000);
       if (this.keepAliveTimer && typeof (this.keepAliveTimer as any).unref === 'function') {
         (this.keepAliveTimer as any).unref();
       }
