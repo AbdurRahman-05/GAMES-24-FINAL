@@ -3512,568 +3512,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     BuildContext context,
     TurfBookingHistoryItem booking,
   ) {
-    final now = DateTime.now();
-    final isCompleted = booking.isCompleted(now);
-    final isLiveNow = booking.isLiveNow(now);
-    final isCancelled = booking.status.toLowerCase() == 'cancelled';
-    final isUpi =
-        booking.paymentMethod.toUpperCase().contains('UPI') ||
-        booking.paymentMethod.toUpperCase().contains('GPAY');
-    final sportColor = _getSportColor(booking.sport);
-
-    // Dynamic Pill Badge Styling
-    Color badgeTextColor;
-    String badgeLabel;
-
-    if (isCancelled) {
-      badgeTextColor = const Color(0xFFFB7185);
-      badgeLabel = 'CANCELLED';
-    } else if (isCompleted) {
-      badgeTextColor = const Color(0xFFA1A1AA);
-      badgeLabel = 'COMPLETED ✓';
-    } else if (isLiveNow) {
-      badgeTextColor = const Color(0xFFD4FF00);
-      badgeLabel = 'LIVE NOW 🟢';
-    } else {
-      badgeTextColor = isUpi
-          ? const Color(0xFFD4FF00)
-          : const Color(0xFFFBBF24);
-      badgeLabel = isUpi ? 'PAID ONLINE' : 'PAY AT VENUE';
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isLiveNow
-              ? const [
-                  Color(0xFF172412),
-                  Color(0xFF10160D),
-                  Color(0xFF0C100A),
-                ]
-              : const [
-                  Color(0xFF181A15),
-                  Color(0xFF12140F),
-                  Color(0xFF0E0F0C),
-                ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isLiveNow
-              ? const Color(0xFF22C55E).withValues(alpha: 0.8)
-              : const Color(0xFF262C20),
-          width: isLiveNow ? 1.5 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isLiveNow
-                ? const Color(0xFF22C55E).withValues(alpha: 0.15)
-                : Colors.black.withValues(alpha: 0.35),
-            blurRadius: isLiveNow ? 16 : 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(19),
-        child: Stack(
-          children: [
-            // Background sport watermark
-            Positioned(
-              right: 14,
-              top: 24,
-              child: IgnorePointer(
-                child: Icon(
-                  _getSportIcon(booking.sport),
-                  size: 64,
-                  color: sportColor.withValues(alpha: 0.04),
-                ),
-              ),
-            ),
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(19),
-                onTap: () => _openBookingDetailsSheet(context, booking),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Match Header Row
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF161814),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFF262C20),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _getSportEmoji(booking.sport),
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  booking.sport,
-                                  style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.3,
-                                    color: sportColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF161814),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFF262C20),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: badgeTextColor,
-                                    shape: BoxShape.circle,
-                                    boxShadow: isLiveNow || isUpi
-                                        ? [
-                                            BoxShadow(
-                                              color: badgeTextColor.withValues(
-                                                alpha: 0.6,
-                                              ),
-                                              blurRadius: 3,
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  badgeLabel,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.3,
-                                    color: badgeTextColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // 2. Player Info & Match Fixture
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Squircle Player Badge
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  sportColor.withValues(alpha: 0.22),
-                                  sportColor.withValues(alpha: 0.08),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(13),
-                              border: Border.all(
-                                color: sportColor.withValues(alpha: 0.45),
-                                width: 1.2,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                booking.customerName.isNotEmpty
-                                    ? booking.customerName[0].toUpperCase()
-                                    : 'P',
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w900,
-                                  color: isCompleted
-                                      ? const Color(0xFFA1A1AA)
-                                      : sportColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  booking.customerName,
-                                  style: const TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: -0.2,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                _buildBookingScheduleDisplay(booking),
-                                const SizedBox(height: 3),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.stadium_outlined,
-                                      size: 11,
-                                      color: Color(0xFF71717A),
-                                    ),
-                                    const SizedBox(width: 3.5),
-                                    Expanded(
-                                      child: Text(
-                                        booking.courtName,
-                                        style: const TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: Color(0xFFA1A1AA),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Fare Box Office Stub
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'FARE',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.2,
-                                  color: Color(0xFF71717A),
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '₹${booking.amount.toInt()}',
-                                style: TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                  color: isCompleted
-                                      ? const Color(0xFFA1A1AA)
-                                      : const Color(0xFFD4FF00),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // 3. Stadium Match Pass Perforation Line with Realistic Cutouts
-                    Row(
-                      children: [
-                        Container(
-                          width: 9,
-                          height: 18,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.horizontal(
-                              right: Radius.circular(9),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              const dashWidth = 4.0;
-                              const dashSpace = 4.0;
-                              final dashCount =
-                                  (constraints.constrainWidth() /
-                                          (dashWidth + dashSpace))
-                                      .floor();
-                              return Flex(
-                                direction: Axis.horizontal,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: List.generate(
-                                  dashCount,
-                                  (_) => const SizedBox(
-                                    width: dashWidth,
-                                    height: 1.5,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        Container(
-                          width: 9,
-                          height: 18,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.horizontal(
-                              left: Radius.circular(9),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    // 4. Action Buttons Section
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-                      child: isCompleted
-                          ? Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 9,
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF121411),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFF22261E),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check_circle_rounded,
-                                        size: 15,
-                                        color: Color(0xFF16A34A),
-                                      ),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        'Match Completed & Closed',
-                                        style: TextStyle(
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.w700,
-                                          color: Color(0xFFE4E4E7),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    '₹${booking.amount.toInt()} Settled',
-                                    style: const TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFFD4FF00),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : isCancelled
-                          ? Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 9,
-                                horizontal: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2A1215),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: const Color(0xFF4A1A20),
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.info_outline_rounded,
-                                    size: 14,
-                                    color: Color(0xFFDC2626),
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'Slot Cancelled & Released',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFFFB7185),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Row(
-                              children: [
-                                // Primary Action: View Match Pass & Actions
-                                Expanded(
-                                  flex: 3,
-                                  child: Material(
-                                    color: const Color(0xFF16A34A),
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(12),
-                                      onTap: () => _openBookingDetailsSheet(
-                                        context,
-                                        booking,
-                                      ),
-                                      child: Container(
-                                        height: 42,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.confirmation_number_rounded,
-                                              size: 15,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(width: 6),
-                                            FittedBox(
-                                              fit: BoxFit.scaleDown,
-                                              child: Text(
-                                                'Pass & Actions',
-                                                style: TextStyle(
-                                                  fontSize: 12.5,
-                                                  fontWeight: FontWeight.w800,
-                                                  color: Colors.white,
-                                                  letterSpacing: -0.1,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // Secondary Action: Call Customer
-                                Expanded(
-                                  flex: 2,
-                                  child: Material(
-                                    color: const Color(0xFF14240A),
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(12),
-                                      onTap: () {
-                                        if (booking.customerPhone.isNotEmpty) {
-                                          PhoneDialer.call(
-                                            context,
-                                            booking.customerPhone,
-                                            customerName: booking.customerName,
-                                          );
-                                        } else {
-                                          ToastUtils.showError(
-                                            context,
-                                            'No phone number available for this player',
-                                          );
-                                        }
-                                      },
-                                      child: Container(
-                                        height: 42,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: const Color(
-                                              0xFF16A34A,
-                                            ).withValues(alpha: 0.7),
-                                            width: 1.2,
-                                          ),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.phone_in_talk_rounded,
-                                              size: 14,
-                                              color: Color(0xFF86EFAC),
-                                            ),
-                                            SizedBox(width: 5),
-                                            FittedBox(
-                                              fit: BoxFit.scaleDown,
-                                              child: Text(
-                                                'Call',
-                                                style: TextStyle(
-                                                  fontSize: 12.5,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFF86EFAC),
-                                                  letterSpacing: -0.1,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return _TearableBookingCard(
+      booking: booking,
+      sportColor: _getSportColor(booking.sport),
+      sportIcon: _getSportIcon(booking.sport),
+      sportEmoji: _getSportEmoji(booking.sport),
+      scheduleWidget: _buildBookingScheduleDisplay(booking),
+      onOpenDetails: () => _openBookingDetailsSheet(context, booking),
+      onCall: () {
+        if (booking.customerPhone.isNotEmpty) {
+          PhoneDialer.call(
+            context,
+            booking.customerPhone,
+            customerName: booking.customerName,
+          );
+        } else {
+          ToastUtils.showError(
+            context,
+            'No contact number available for this player',
+          );
+        }
+      },
     );
   }
 
@@ -5860,6 +5319,751 @@ class _TurfPitchMarkingsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Interactive stadium match pass ticket card featuring a physical tear animation
+/// along the perforated tear zone when tapping "Pass & Actions" or the card.
+class _TearableBookingCard extends StatefulWidget {
+  final TurfBookingHistoryItem booking;
+  final Color sportColor;
+  final IconData sportIcon;
+  final String sportEmoji;
+  final Widget scheduleWidget;
+  final VoidCallback onOpenDetails;
+  final VoidCallback onCall;
+
+  const _TearableBookingCard({
+    required this.booking,
+    required this.sportColor,
+    required this.sportIcon,
+    required this.sportEmoji,
+    required this.scheduleWidget,
+    required this.onOpenDetails,
+    required this.onCall,
+  });
+
+  @override
+  State<_TearableBookingCard> createState() => _TearableBookingCardState();
+}
+
+class _TearableBookingCardState extends State<_TearableBookingCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _tearController;
+  late final Animation<double> _tearAnimation;
+  bool _isTearing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tearController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 360),
+    );
+    _tearAnimation = CurvedAnimation(
+      parent: _tearController,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tearController.dispose();
+    super.dispose();
+  }
+
+  void _triggerTear() {
+    if (_isTearing) return;
+
+    final now = DateTime.now();
+    final isCompleted = widget.booking.isCompleted(now);
+    final isCancelled = widget.booking.status.toLowerCase() == 'cancelled';
+
+    // If match is already closed or cancelled, open modal directly without tear
+    if (isCompleted || isCancelled) {
+      widget.onOpenDetails();
+      return;
+    }
+
+    setState(() => _isTearing = true);
+
+    // Haptic Phase 1: initial paper-edge snip
+    HapticFeedback.lightImpact();
+
+    _tearController.forward(from: 0.0);
+
+    // Haptic Phase 2: mid-tear perforation click
+    Future.delayed(const Duration(milliseconds: 130), () {
+      if (mounted) HapticFeedback.selectionClick();
+    });
+
+    // Haptic Phase 3: paper-tear separation snap
+    Future.delayed(const Duration(milliseconds: 270), () {
+      if (mounted) HapticFeedback.mediumImpact();
+    });
+
+    // Launch Match Pass bottom sheet after tear completes
+    Future.delayed(const Duration(milliseconds: 360), () {
+      if (!mounted) return;
+      widget.onOpenDetails();
+
+      // Reset card after modal is open
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (mounted) {
+          _tearController.reset();
+          setState(() => _isTearing = false);
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final isCompleted = widget.booking.isCompleted(now);
+    final isLiveNow = widget.booking.isLiveNow(now);
+    final isCancelled = widget.booking.status.toLowerCase() == 'cancelled';
+    final isUpi =
+        widget.booking.paymentMethod.toUpperCase().contains('UPI') ||
+        widget.booking.paymentMethod.toUpperCase().contains('GPAY');
+
+    // Dynamic Pill Badge Styling
+    Color badgeTextColor;
+    String badgeLabel;
+
+    if (isCancelled) {
+      badgeTextColor = const Color(0xFFFB7185);
+      badgeLabel = 'CANCELLED';
+    } else if (isCompleted) {
+      badgeTextColor = const Color(0xFFA1A1AA);
+      badgeLabel = 'COMPLETED ✓';
+    } else if (isLiveNow) {
+      badgeTextColor = const Color(0xFFD4FF00);
+      badgeLabel = 'LIVE NOW 🟢';
+    } else {
+      badgeTextColor = isUpi
+          ? const Color(0xFFD4FF00)
+          : const Color(0xFFFBBF24);
+      badgeLabel = isUpi ? 'PAID ONLINE' : 'PAY AT VENUE';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isLiveNow
+              ? const [
+                  Color(0xFF172412),
+                  Color(0xFF10160D),
+                  Color(0xFF0C100A),
+                ]
+              : const [
+                  Color(0xFF181A15),
+                  Color(0xFF12140F),
+                  Color(0xFF0E0F0C),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isLiveNow
+              ? const Color(0xFF22C55E).withValues(alpha: 0.8)
+              : const Color(0xFF262C20),
+          width: isLiveNow ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isLiveNow
+                ? const Color(0xFF22C55E).withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.35),
+            blurRadius: isLiveNow ? 16 : 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(19),
+        child: Stack(
+          children: [
+            // Background sport watermark
+            Positioned(
+              right: 14,
+              top: 24,
+              child: IgnorePointer(
+                child: Icon(
+                  widget.sportIcon,
+                  size: 64,
+                  color: widget.sportColor.withValues(alpha: 0.04),
+                ),
+              ),
+            ),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(19),
+                onTap: _triggerTear,
+                child: AnimatedBuilder(
+                  animation: _tearAnimation,
+                  builder: (context, _) {
+                    final progress = _tearAnimation.value;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1. Top Section (Match Header & Player Info)
+                        _buildTopStub(
+                          isCompleted,
+                          isLiveNow,
+                          isUpi,
+                          badgeTextColor,
+                          badgeLabel,
+                        ),
+
+                        // 2. Perforated Tear Line with Dynamic Rip Effect & Spark
+                        _buildPerforationDivider(progress),
+
+                        // 3. Bottom Stub (Actions & Buttons) with Tear Physics
+                        Transform.translate(
+                          offset: Offset(0, progress * 8.0),
+                          child: Transform.rotate(
+                            angle: progress * 0.02,
+                            alignment: Alignment.topLeft,
+                            child: Opacity(
+                              opacity: (1.0 - (progress * 0.15)).clamp(0.0, 1.0),
+                              child: _buildBottomStub(isCompleted, isCancelled),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopStub(
+    bool isCompleted,
+    bool isLiveNow,
+    bool isUpi,
+    Color badgeTextColor,
+    String badgeLabel,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Match Header Row
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4.5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161814),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF262C20),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.sportEmoji,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      widget.booking.sport,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                        color: widget.sportColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4.5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161814),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFF262C20),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: badgeTextColor,
+                        shape: BoxShape.circle,
+                        boxShadow: isLiveNow || isUpi
+                            ? [
+                                BoxShadow(
+                                  color: badgeTextColor.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                  blurRadius: 3,
+                                ),
+                              ]
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      badgeLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                        color: badgeTextColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Player Info & Match Fixture
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Squircle Player Badge
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      widget.sportColor.withValues(alpha: 0.22),
+                      widget.sportColor.withValues(alpha: 0.08),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(13),
+                  border: Border.all(
+                    color: widget.sportColor.withValues(alpha: 0.45),
+                    width: 1.2,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    widget.booking.customerName.isNotEmpty
+                        ? widget.booking.customerName[0].toUpperCase()
+                        : 'P',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w900,
+                      color: isCompleted
+                          ? const Color(0xFFA1A1AA)
+                          : widget.sportColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.booking.customerName,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    widget.scheduleWidget,
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.stadium_outlined,
+                          size: 11,
+                          color: Color(0xFF71717A),
+                        ),
+                        const SizedBox(width: 3.5),
+                        Expanded(
+                          child: Text(
+                            widget.booking.courtName,
+                            style: const TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFFA1A1AA),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Fare Box Office Stub
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'FARE',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: Color(0xFF71717A),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '₹${widget.booking.amount.toInt()}',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                      color: isCompleted
+                          ? const Color(0xFFA1A1AA)
+                          : const Color(0xFFD4FF00),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPerforationDivider(double progress) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalWidth = constraints.maxWidth;
+        const dashWidth = 4.0;
+        const dashSpace = 4.0;
+        final availableWidth = totalWidth - 18.0; // 9px each side for notches
+        final dashCount = (availableWidth / (dashWidth + dashSpace)).floor();
+
+        return SizedBox(
+          height: 18,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // 1. Left White Notch
+              Positioned(
+                left: 0,
+                child: Container(
+                  width: 9.0 + (progress * 2.0),
+                  height: 18,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.horizontal(
+                      right: Radius.circular(9),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 2. Dashed Tear Line with Perforation Jitter
+              Positioned(
+                left: 9,
+                right: 9,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(dashCount, (index) {
+                    final dashFraction = (index + 1) / dashCount;
+                    final isTorn = progress > 0.0 && dashFraction <= progress;
+                    final verticalJitter =
+                        isTorn ? (index.isEven ? 1.0 : -1.0) * progress * 2.5 : 0.0;
+
+                    return Transform.translate(
+                      offset: Offset(0, verticalJitter),
+                      child: Container(
+                        width: dashWidth,
+                        height: isTorn ? 2.0 : 1.5,
+                        decoration: BoxDecoration(
+                          color: isTorn ? const Color(0xFFD4FF00) : Colors.white,
+                          borderRadius: BorderRadius.circular(0.8),
+                          boxShadow: isTorn
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(0xFFD4FF00).withValues(alpha: 0.6),
+                                    blurRadius: 3,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+
+              // 3. Right White Notch
+              const Positioned(
+                right: 0,
+                child: SizedBox(
+                  width: 9,
+                  height: 18,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(9),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 4. Glowing Tear Spark Rip Head
+              if (progress > 0.02 && progress < 0.98)
+                Positioned(
+                  left: 9.0 + (availableWidth * progress) - 8.0,
+                  child: Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          const Color(0xFFD4FF00),
+                          const Color(0xFFD4FF00).withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0xFFD4FF00),
+                              blurRadius: 6,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomStub(bool isCompleted, bool isCancelled) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      child: isCompleted
+          ? Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                vertical: 9,
+                horizontal: 12,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF121411),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF22261E),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle_rounded,
+                        size: 15,
+                        color: Color(0xFF16A34A),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'Match Completed & Closed',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFE4E4E7),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '₹${widget.booking.amount.toInt()} Settled',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFD4FF00),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : isCancelled
+          ? Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                vertical: 9,
+                horizontal: 12,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A1215),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF4A1A20),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 14,
+                    color: Color(0xFFDC2626),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Slot Cancelled & Released',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFFB7185),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : Row(
+              children: [
+                // Primary Action: View Match Pass & Actions (Triggers Tear)
+                Expanded(
+                  flex: 3,
+                  child: Material(
+                    color: const Color(0xFF16A34A),
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: _triggerTear,
+                      child: Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                        ),
+                        alignment: Alignment.center,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.confirmation_number_rounded,
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 6),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Pass & Actions',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: -0.1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Secondary Action: Call Customer
+                Expanded(
+                  flex: 2,
+                  child: Material(
+                    color: const Color(0xFF14240A),
+                    borderRadius: BorderRadius.circular(12),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: widget.onCall,
+                      child: Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                        ),
+                        alignment: Alignment.center,
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.call_rounded,
+                              size: 15,
+                              color: Color(0xFF86EFAC),
+                            ),
+                            SizedBox(width: 5),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Call',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF86EFAC),
+                                  letterSpacing: -0.1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
 }
 
 
