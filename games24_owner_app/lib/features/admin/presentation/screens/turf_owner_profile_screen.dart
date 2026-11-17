@@ -5035,9 +5035,6 @@ class _TurfOwnerProfileScreenState
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: isChecked
-                              ? info.bgColor
-                              : const Color(0xFF141414),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: isChecked
@@ -5045,53 +5042,60 @@ class _TurfOwnerProfileScreenState
                                 : Colors.grey.shade200,
                           ),
                         ),
-                        child: CheckboxListTile(
-                          value: isChecked,
-                          activeColor: info.color,
-                          dense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          secondary: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: isChecked
-                                  ? info.color.withValues(alpha: 0.2)
-                                  : Colors.grey.shade200,
-                              shape: BoxShape.circle,
+                        child: Material(
+                          color: isChecked
+                              ? info.bgColor
+                              : const Color(0xFF141414),
+                          borderRadius: BorderRadius.circular(12),
+                          clipBehavior: Clip.antiAlias,
+                          child: CheckboxListTile(
+                            value: isChecked,
+                            activeColor: info.color,
+                            dense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
                             ),
-                            child: Icon(
-                              info.icon,
-                              size: 16,
-                              color: isChecked ? info.color : Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                          ),
-                          title: Text(
-                            amenity,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isChecked
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                              color: isChecked
-                                  ? Colors.white
-                                  : const Color(0xFFA1A1AA),
+                            secondary: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: isChecked
+                                    ? info.color.withValues(alpha: 0.2)
+                                    : Colors.grey.shade200,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                info.icon,
+                                size: 16,
+                                color: isChecked ? info.color : Colors.grey,
+                              ),
                             ),
-                          ),
-                          onChanged: (val) {
-                            setDialogState(() {
-                              if (val == true) {
-                                if (!selectedFacilities.contains(amenity)) {
-                                  selectedFacilities.add(amenity);
+                            title: Text(
+                              amenity,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isChecked
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                color: isChecked
+                                    ? Colors.white
+                                    : const Color(0xFFA1A1AA),
+                              ),
+                            ),
+                            onChanged: (val) {
+                              setDialogState(() {
+                                if (val == true) {
+                                  if (!selectedFacilities.contains(amenity)) {
+                                    selectedFacilities.add(amenity);
+                                  }
+                                } else {
+                                  selectedFacilities.remove(amenity);
                                 }
-                              } else {
-                                selectedFacilities.remove(amenity);
-                              }
-                            });
-                          },
+                              });
+                            },
+                          ),
                         ),
                       );
                     }),

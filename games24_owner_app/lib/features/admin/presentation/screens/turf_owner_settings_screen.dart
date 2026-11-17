@@ -254,7 +254,6 @@ class _TurfOwnerSettingsScreenState
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF141414),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0xFF262626)),
               boxShadow: [
@@ -265,76 +264,81 @@ class _TurfOwnerSettingsScreenState
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                SwitchListTile(
-                  activeTrackColor: const Color(0xFFD4FF00),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  secondary: Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF221133),
-                      borderRadius: BorderRadius.circular(8),
+            child: Material(
+              color: const Color(0xFF141414),
+              borderRadius: BorderRadius.circular(16),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    activeTrackColor: const Color(0xFFD4FF00),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
-                    child: const Icon(
-                      Icons.notifications_active_rounded,
-                      color: Color(0xFFA855F7),
-                      size: 16,
+                    secondary: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF221133),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_active_rounded,
+                        color: Color(0xFFA855F7),
+                        size: 16,
+                      ),
                     ),
-                  ),
-                  title: const Text(
-                    'Booking Push Notifications',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    title: const Text(
+                      'Booking Push Notifications',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
+                    value: _pushNotifications,
+                    onChanged: (val) {
+                      setState(() => _pushNotifications = val);
+                      ToastUtils.showSuccess(
+                        context,
+                        val ? 'Push alerts enabled' : 'Push alerts disabled',
+                      );
+                    },
                   ),
-                  value: _pushNotifications,
-                  onChanged: (val) {
-                    setState(() => _pushNotifications = val);
-                    ToastUtils.showSuccess(
-                      context,
-                      val ? 'Push alerts enabled' : 'Push alerts disabled',
-                    );
-                  },
-                ),
-                const Divider(height: 1, indent: 56, color: Color(0xFF1C1C1C)),
-                SwitchListTile(
-                  activeTrackColor: const Color(0xFFD4FF00),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 4,
-                  ),
-                  secondary: Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0F2FE),
-                      borderRadius: BorderRadius.circular(8),
+                  const Divider(height: 1, indent: 56, color: Color(0xFF1C1C1C)),
+                  SwitchListTile(
+                    activeTrackColor: const Color(0xFFD4FF00),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
                     ),
-                    child: const Icon(
-                      Icons.volume_up_rounded,
-                      color: Color(0xFF0284C7),
-                      size: 16,
+                    secondary: Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0F2FE),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.volume_up_rounded,
+                        color: Color(0xFF0284C7),
+                        size: 16,
+                      ),
                     ),
-                  ),
-                  title: const Text(
-                    'Check-In Audio Chime',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                    title: const Text(
+                      'Check-In Audio Chime',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
+                    value: _audioCheckInAlerts,
+                    onChanged: (val) {
+                      setState(() => _audioCheckInAlerts = val);
+                    },
                   ),
-                  value: _audioCheckInAlerts,
-                  onChanged: (val) {
-                    setState(() => _audioCheckInAlerts = val);
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 24),

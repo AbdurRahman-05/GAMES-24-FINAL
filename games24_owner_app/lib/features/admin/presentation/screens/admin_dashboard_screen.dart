@@ -154,7 +154,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     }
 
     final bookings = _getFilteredBookings(profile);
-    final nowFormatted = DateFormat('EEEE, d MMM yyyy').format(DateTime.now());
     final spotlightBanner = _buildMatchSpotlightBanner(context, profile);
 
     return Scaffold(
@@ -183,10 +182,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 const SizedBox(height: 14),
               ],
 
-              // 1. Live Operating Status & Quick Date Bar
-              _buildVenueHeaderPulseBar(profile, nowFormatted),
-              const SizedBox(height: 14),
-
               if (profile.isSubscriptionEndingSoon) ...[
                 _buildSubscriptionCard(context, profile),
                 const SizedBox(height: 14),
@@ -208,45 +203,49 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     );
   }
 
-  // --- 1. PRO APP BAR ---
+  // --- 1. PRO LUXURY APP BAR ---
   PreferredSizeWidget _buildProAppBar(
     BuildContext context,
     TurfProfileState profile,
   ) {
+    final branchCount = profile.branches.length;
+    final areaText = profile.area.isNotEmpty ? profile.area : 'Main Turf';
+
     return AppBar(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: const Color(0xFF090909),
       elevation: 0,
       scrolledUnderElevation: 0,
       titleSpacing: 16,
-      toolbarHeight: 64,
+      toolbarHeight: 60,
       shape: const Border(
-        bottom: BorderSide(color: Color(0xFF262626), width: 1),
+        bottom: BorderSide(color: Color(0xFF1A1A1A), width: 1),
       ),
       title: Row(
         children: [
+          // Sleek Brand Emblem
           InkWell(
             onTap: () => _showBranchSwitcherBottomSheet(context, profile),
             borderRadius: BorderRadius.circular(12),
             child: Container(
-              width: 44,
-              height: 44,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
-                  width: 1.2,
+                  color: const Color(0xFF262626),
+                  width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
-                    blurRadius: 6,
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               clipBehavior: Clip.antiAlias,
-              padding: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(5),
               child: Center(
                 child: Hero(
                   tag: 'gamez24_logo_emblem',
@@ -265,17 +264,22 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
             ),
           ),
           const SizedBox(width: 12),
+
+          // Turf Identity & Modern Branch Switcher
           Expanded(
             child: InkWell(
               onTap: () => _showBranchSwitcherBottomSheet(context, profile),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
+              splashColor: Colors.white.withValues(alpha: 0.05),
+              highlightColor: Colors.white.withValues(alpha: 0.03),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Flexible(
                           child: Text(
@@ -283,47 +287,69 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                 ? profile.venueName
                                 : 'Turf Partner Hub',
                             style: const TextStyle(
-                              fontSize: 15.5,
+                              fontSize: 16,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
-                              letterSpacing: -0.3,
+                              letterSpacing: -0.4,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 4),
                         const Icon(
-                          Icons.arrow_drop_down_circle_outlined,
-                          size: 16,
-                          color: Color(0xFFD4FF00),
+                          Icons.keyboard_arrow_down_rounded,
+                          size: 19,
+                          color: Color(0xFFA1A1AA),
                         ),
                       ],
                     ),
                     const SizedBox(height: 2),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 6.5,
-                          height: 6.5,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF16A34A),
-                            shape: BoxShape.circle,
-                          ),
+                        const Icon(
+                          Icons.location_on_rounded,
+                          size: 11.5,
+                          color: Color(0xFF71717A),
                         ),
-                        const SizedBox(width: 5),
-                        Expanded(
+                        const SizedBox(width: 3),
+                        Flexible(
                           child: Text(
-                            profile.area.isNotEmpty
-                                ? '${profile.area} • Tap to Switch Branch'
-                                : 'Tap to Switch Branch',
+                            areaText,
                             style: const TextStyle(
-                              fontSize: 11,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF16A34A),
+                              color: Color(0xFFA1A1AA),
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (branchCount > 1) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF162312),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: const Color(0xFF2B4420),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              '$branchCount Venues',
+                              style: const TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF86EFAC),
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ],
@@ -334,27 +360,46 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
         ],
       ),
       actions: [
-        // Fast Gate QR Scanner Shortcut (positioned at top right)
-        IconButton(
-          onPressed: () => context.push('/admin/qr-scanner'),
-          tooltip: 'Fast Gate QR Scanner',
-          icon: Container(
-            padding: const EdgeInsets.all(7),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
+        // Fast Gate QR Scanner Button (Precision Luxury Style)
+        Padding(
+          padding: const EdgeInsets.only(right: 14),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                context.push('/admin/qr-scanner');
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF141414),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF262626),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.qr_code_scanner_rounded,
+                    color: Color(0xFFD4FF00),
+                    size: 19,
+                  ),
+                ),
               ),
-            ),
-            child: const Icon(
-              Icons.qr_code_scanner_rounded,
-              color: Color(0xFFD4FF00),
-              size: 18,
             ),
           ),
         ),
-        const SizedBox(width: 6),
       ],
     );
   }
@@ -2859,18 +2904,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Header (clean, authoritative)
-        const Text(
-          'Turf Command Centre',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-            letterSpacing: -0.3,
-          ),
-        ),
-        const SizedBox(height: 10),
-
         // Hero Metric Card: Monthly Revenue GMV (Stadium Box Office Pass)
         Container(
           decoration: BoxDecoration(
@@ -3255,9 +3288,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     BuildContext context,
     TurfProfileState profile,
   ) {
-    if (_selectedFilter != 'Upcoming' &&
-        _selectedFilter != 'All' &&
-        _selectedFilter != 'Live Now') {
+    // Do NOT show upcoming matches in this spotlight banner
+    // Do NOT show when 'Upcoming' tab is selected
+    if (_selectedFilter == 'Upcoming' ||
+        (_selectedFilter != 'All' && _selectedFilter != 'Live Now')) {
       return null;
     }
 
@@ -3266,15 +3300,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     final liveMatches = allList
         .where((b) => !b.isCancelled && b.isLiveNow(now))
         .toList();
-    final upcomingMatches = allList
-        .where((b) => !b.isCancelled && b.isUpcoming(now))
-        .toList();
 
-    final spotlight = liveMatches.isNotEmpty
-        ? liveMatches.first
-        : (upcomingMatches.isNotEmpty ? upcomingMatches.first : null);
+    // Upcoming matches must not show here; only an active live match currently in progress
+    if (liveMatches.isEmpty) return null;
 
-    if (spotlight == null) return null;
+    final spotlight = liveMatches.first;
 
     final isLive = spotlight.isLiveNow(now);
     final sportColor = _getSportColor(spotlight.sport);
@@ -3514,6 +3544,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     final upcomingCount = allList.where((b) => b.isUpcoming(now)).length;
     final liveNowCount = allList.where((b) => b.isLiveNow(now)).length;
     final completedCount = allList.where((b) => b.isCompleted(now)).length;
+    final notVisitedCount = allList.where((b) => b.isNotVisited(now)).length;
     final cancelledCount = allList
         .where((b) => b.status.toLowerCase() == 'cancelled')
         .length;
@@ -3573,6 +3604,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               _buildFilterPill('Live Now', liveNowCount),
               const SizedBox(width: 8),
               _buildFilterPill('Completed', completedCount),
+              if (notVisitedCount > 0) ...[
+                const SizedBox(width: 8),
+                _buildFilterPill('Not Visited', notVisitedCount),
+              ],
               if (cancelledCount > 0) ...[
                 const SizedBox(width: 8),
                 _buildFilterPill('Cancelled', cancelledCount),
@@ -3822,6 +3857,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
   ) {
     final now = DateTime.now();
     final isCompleted = booking.isCompleted(now);
+    final isNotVisited = booking.isNotVisited(now);
     final isCancelled = booking.status.toLowerCase() == 'cancelled';
 
     showModalBottomSheet(
@@ -3929,12 +3965,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   context,
                   booking,
                   isCompleted: isCompleted,
+                  isNotVisited: isNotVisited,
                   isCancelled: isCancelled,
                 ),
                 const SizedBox(height: 20),
 
                 // Operational Action Buttons
-                if (!isCancelled && !isCompleted) ...[
+                if (!isCancelled && !isCompleted && !isNotVisited) ...[
                   SizedBox(
                     width: double.infinity,
                     height: 46,
@@ -4050,6 +4087,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     BuildContext context,
     TurfBookingHistoryItem booking, {
     required bool isCompleted,
+    required bool isNotVisited,
     required bool isCancelled,
   }) {
     final sportColor = _getSportColor(booking.sport);
@@ -4069,6 +4107,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       statusTextColor = const Color(0xFFF87171);
       statusDisplay = 'CANCELLED';
       statusIcon = Icons.cancel_outlined;
+    } else if (isNotVisited) {
+      statusBgColor = const Color(0xFF2A0D12);
+      statusTextColor = const Color(0xFFFB7185);
+      statusDisplay = 'THEY NOT VISIT THE TURF';
+      statusIcon = Icons.person_off_rounded;
     } else if (isCompleted) {
       statusBgColor = const Color(0xFF1C1C1C);
       statusTextColor = const Color(0xFFA1A1AA);
@@ -4779,6 +4822,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       return source.where((b) => b.isUpcoming(now)).toList();
     } else if (_selectedFilter == 'Completed') {
       return source.where((b) => b.isCompleted(now)).toList();
+    } else if (_selectedFilter == 'Not Visited') {
+      return source.where((b) => b.isNotVisited(now)).toList();
     } else if (_selectedFilter == 'Cancelled') {
       return source
           .where((b) => b.status.toLowerCase() == 'cancelled')
@@ -5645,10 +5690,11 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
 
     final now = DateTime.now();
     final isCompleted = widget.booking.isCompleted(now);
+    final isNotVisited = widget.booking.isNotVisited(now);
     final isCancelled = widget.booking.status.toLowerCase() == 'cancelled';
 
-    // If match is already closed or cancelled, open modal directly without tear
-    if (isCompleted || isCancelled) {
+    // If match is already closed, cancelled, or player did not visit, open modal directly without tear
+    if (isCompleted || isCancelled || isNotVisited) {
       widget.onOpenDetails();
       return;
     }
@@ -5689,6 +5735,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final isCompleted = widget.booking.isCompleted(now);
+    final isNotVisited = widget.booking.isNotVisited(now);
     final isLiveNow = widget.booking.isLiveNow(now);
     final isCancelled = widget.booking.status.toLowerCase() == 'cancelled';
     final isUpi =
@@ -5702,12 +5749,15 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
     if (isCancelled) {
       badgeTextColor = const Color(0xFFFB7185);
       badgeLabel = 'CANCELLED';
+    } else if (isNotVisited) {
+      badgeTextColor = const Color(0xFFFB7185);
+      badgeLabel = 'THEY NOT VISIT THE TURF';
     } else if (isCompleted) {
       badgeTextColor = const Color(0xFFA1A1AA);
       badgeLabel = 'COMPLETED';
     } else if (isLiveNow) {
       badgeTextColor = const Color(0xFFD4FF00);
-      badgeLabel = 'LIVE NOW';
+      badgeLabel = widget.booking.status.toLowerCase() == 'checked in' ? 'CHECKED IN (LIVE)' : 'LIVE NOW';
     } else {
       badgeTextColor = isUpi
           ? const Color(0xFFD4FF00)
@@ -5798,7 +5848,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                             alignment: Alignment.topLeft,
                             child: Opacity(
                               opacity: (1.0 - (progress * 0.15)).clamp(0.0, 1.0),
-                              child: _buildBottomStub(isCompleted, isCancelled),
+                              child: _buildBottomStub(isCompleted, isCancelled, isNotVisited),
                             ),
                           ),
                         ),
@@ -6158,10 +6208,56 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
     );
   }
 
-  Widget _buildBottomStub(bool isCompleted, bool isCancelled) {
+  Widget _buildBottomStub(bool isCompleted, bool isCancelled, bool isNotVisited) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-      child: isCompleted
+      child: isNotVisited
+          ? Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                vertical: 9,
+                horizontal: 12,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF201214),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF421C22),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.person_off_rounded,
+                        size: 15,
+                        color: Color(0xFFFB7185),
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'They Not Visit The Turf',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFFB7185),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    '₹${widget.booking.amount.toInt()} Unattended',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFFD4FF00),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : isCompleted
           ? Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(

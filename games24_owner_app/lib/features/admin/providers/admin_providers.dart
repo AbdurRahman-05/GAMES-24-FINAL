@@ -433,12 +433,13 @@ class TurfBookingHistoryItem {
     return hour * 60 + min;
   }
 
-  bool isCompleted([DateTime? nowTime]) {
-    final now = nowTime ?? DateTime.now();
+  bool get isCheckedIn {
     final s = status.toLowerCase();
-    if (s == 'cancelled') return false;
-    if (s == 'completed') return true;
+    return s == 'checked in' || s == 'completed';
+  }
 
+  bool isSlotEnded([DateTime? nowTime]) {
+    final now = nowTime ?? DateTime.now();
     final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
     final d = effectiveDate;
 
@@ -455,11 +456,38 @@ class TurfBookingHistoryItem {
     return currentMin >= endMin;
   }
 
+  bool isCompleted([DateTime? nowTime]) {
+    final now = nowTime ?? DateTime.now();
+    final s = status.toLowerCase();
+    if (s == 'cancelled' || s == 'not visited') return false;
+    if (s == 'completed') return true;
+
+    // Must have been checked in by turf owner QR scanner, AND slot ended
+    if (s == 'checked in') {
+      return isSlotEnded(now);
+    }
+
+    // Never checked in with QR code: never completed!
+    return false;
+  }
+
+  bool isNotVisited([DateTime? nowTime]) {
+    final now = nowTime ?? DateTime.now();
+    final s = status.toLowerCase();
+    if (s == 'cancelled') return false;
+    if (s == 'not visited') return true;
+    if (s == 'completed' || s == 'checked in') return false;
+
+    // Slot has ended but owner app never scanned QR code: Player did not visit!
+    return isSlotEnded(now);
+  }
+
   bool isLiveNow([DateTime? nowTime]) {
     final now = nowTime ?? DateTime.now();
     final s = status.toLowerCase();
     if (s == 'cancelled') return false;
     if (isCompleted(now)) return false;
+    if (isNotVisited(now)) return false;
 
     final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
     final d = effectiveDate;
@@ -481,8 +509,23 @@ class TurfBookingHistoryItem {
     final s = status.toLowerCase();
     if (s == 'cancelled') return false;
     if (isCompleted(now)) return false;
+    if (isNotVisited(now)) return false;
     if (isLiveNow(now)) return false;
-    return true;
+
+    final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    final d = effectiveDate;
+
+    if (d.isNotEmpty) {
+      if (d.toLowerCase() == 'yesterday') return false;
+      if (d.toLowerCase() == 'tomorrow') return true;
+      if (d.compareTo(todayStr) < 0) return false;
+      if (d.compareTo(todayStr) > 0) return true;
+    }
+
+    final startMin = parseSlotStartMinutes(effectiveTimeSlot);
+    if (startMin == -1) return true;
+    final currentMin = now.hour * 60 + now.minute;
+    return currentMin < startMin;
   }
 
   bool get isCancelled => status.toLowerCase() == 'cancelled';
@@ -749,6 +792,50 @@ class OwnerTurfBranchItem {
     this.isCloned = false,
     this.clonedFrom,
   });
+
+  OwnerTurfBranchItem copyWith({
+    int? id,
+    String? venueName,
+    String? neighborhoodArea,
+    String? streetAddress,
+    String? ownerPhone,
+    String? status,
+    int? todayBookingsCount,
+    double? todayRevenue,
+    double? monthRevenue,
+    int? monthTotalBookings,
+    bool? isActive,
+    bool? isPending,
+    List<String>? sports,
+    Map<String, double>? sportRates,
+    String? timings,
+    String? surface,
+    List<String>? amenities,
+    bool? isCloned,
+    String? clonedFrom,
+  }) {
+    return OwnerTurfBranchItem(
+      id: id ?? this.id,
+      venueName: venueName ?? this.venueName,
+      neighborhoodArea: neighborhoodArea ?? this.neighborhoodArea,
+      streetAddress: streetAddress ?? this.streetAddress,
+      ownerPhone: ownerPhone ?? this.ownerPhone,
+      status: status ?? this.status,
+      todayBookingsCount: todayBookingsCount ?? this.todayBookingsCount,
+      todayRevenue: todayRevenue ?? this.todayRevenue,
+      monthRevenue: monthRevenue ?? this.monthRevenue,
+      monthTotalBookings: monthTotalBookings ?? this.monthTotalBookings,
+      isActive: isActive ?? this.isActive,
+      isPending: isPending ?? this.isPending,
+      sports: sports ?? this.sports,
+      sportRates: sportRates ?? this.sportRates,
+      timings: timings ?? this.timings,
+      surface: surface ?? this.surface,
+      amenities: amenities ?? this.amenities,
+      isCloned: isCloned ?? this.isCloned,
+      clonedFrom: clonedFrom ?? this.clonedFrom,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -1373,7 +1460,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         revenueBadge: '₹0 GMV',
         todayBookingsGrowth: '0% Today',
         branches: state.branches
-            .map((b) => b.copyWith(isActive: b.id == branchId))
+            .map<OwnerTurfBranchItem>((b) => b.copyWith(isActive: b.id == branchId))
             .toList(),
       );
       return;

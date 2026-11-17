@@ -151,6 +151,16 @@ export function getISTDateAndMinutes(): { todayStr: string; currentMinutes: numb
   }
 }
 
+export function isBookingSlotEnded(date: string, timeSlot: string, todayStr: string, currentMinutes: number): boolean {
+  if (!date) return false;
+  const cleanDate = date.trim();
+  if (cleanDate < todayStr) return true;
+  if (cleanDate > todayStr) return false;
+  const endMin = parseSlotEndMinutes(timeSlot);
+  if (endMin === -1) return false;
+  return currentMinutes >= endMin;
+}
+
 export function generateTimeSlots(openingTime: string, closingTime: string): string[] {
   let startHour = parseHour(openingTime || '06:00 AM');
   let endHour = parseHour(closingTime || '11:00 PM');
@@ -355,6 +365,42 @@ export class TurfService {
     const sportsItems = this.getSportsForTurf(turf.id);
     const courtsList = getCourtsForTurf(turf.id, turf.venueName, sportsItems, turf.courts);
 
+    const { todayStr, currentMinutes } = getISTDateAndMinutes();
+    let sanitizedBookings = turf.bookings || [];
+    if (sanitizedBookings.length > 0) {
+      const unvisitedIds: number[] = [];
+      const completedIds: number[] = [];
+
+      for (const b of sanitizedBookings) {
+        const s = (b.status || '').toLowerCase();
+        if (s === 'cancelled' || s === 'completed' || s === 'not visited') continue;
+        if (isBookingSlotEnded(b.date, b.timeSlot, todayStr, currentMinutes)) {
+          if (s === 'checked in') {
+            b.status = 'Completed';
+            completedIds.push(b.id);
+          } else {
+            // Player booked but never scanned QR with owner app: did NOT visit the turf!
+            b.status = 'Not Visited';
+            unvisitedIds.push(b.id);
+          }
+        }
+      }
+
+      if (unvisitedIds.length > 0) {
+        this.prisma.turfBooking.updateMany({
+          where: { id: { in: unvisitedIds } },
+          data: { status: 'Not Visited' },
+        }).catch((e) => console.error('Error updating unvisited bookings:', e));
+      }
+
+      if (completedIds.length > 0) {
+        this.prisma.turfBooking.updateMany({
+          where: { id: { in: completedIds } },
+          data: { status: 'Completed' },
+        }).catch((e) => console.error('Error updating completed bookings:', e));
+      }
+    }
+
     return {
       id: turf.id,
       venueName: turf.venueName,
@@ -382,7 +428,7 @@ export class TurfService {
       sportsList: sportsItems,
       courts: courtsList,
       dashboard: turf.dashboard,
-      bookings: turf.bookings,
+      bookings: sanitizedBookings,
       blockedSlots: turf.blockedSlots,
     };
   }
@@ -1354,6 +1400,40 @@ export class TurfService {
       const allBookings = await this.prisma.turfBooking.findMany({
         where: { verifiedAdminId },
       });
+
+      // Automatically transition un-checked past bookings to 'Not Visited' in database
+      const unvisitedPast = allBookings.filter((b) => {
+        const s = (b.status || '').toLowerCase();
+        if (s === 'cancelled' || s === 'completed' || s === 'not visited' || s === 'checked in') return false;
+        return isBookingSlotEnded(b.date, b.timeSlot, todayStr, currentMinutes);
+      });
+
+      if (unvisitedPast.length > 0) {
+        await this.prisma.turfBooking.updateMany({
+          where: { id: { in: unvisitedPast.map((b) => b.id) } },
+          data: { status: 'Not Visited' },
+        }).catch((err) => console.error('Error updating unvisited bookings:', err));
+        for (const b of unvisitedPast) {
+          b.status = 'Not Visited';
+        }
+      }
+
+      // Automatically transition checked-in past bookings to 'Completed' in database
+      const checkedInPast = allBookings.filter((b) => {
+        const s = (b.status || '').toLowerCase();
+        if (s !== 'checked in') return false;
+        return isBookingSlotEnded(b.date, b.timeSlot, todayStr, currentMinutes);
+      });
+
+      if (checkedInPast.length > 0) {
+        await this.prisma.turfBooking.updateMany({
+          where: { id: { in: checkedInPast.map((b) => b.id) } },
+          data: { status: 'Completed' },
+        }).catch((err) => console.error('Error updating completed bookings:', err));
+        for (const b of checkedInPast) {
+          b.status = 'Completed';
+        }
+      }
 
       const activeBookings = allBookings.filter((b) => b.status !== 'Cancelled');
       const cancelledBookings = allBookings.filter((b) => b.status === 'Cancelled');
