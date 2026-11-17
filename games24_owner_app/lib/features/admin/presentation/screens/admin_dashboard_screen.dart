@@ -3199,20 +3199,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     height: 38,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
-                        foregroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFD4FF00),
+                        foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         elevation: 0,
                       ),
-                      icon: const Icon(Icons.bolt_rounded, size: 16),
+                      icon: const Icon(
+                        Icons.bolt_rounded,
+                        size: 16,
+                        color: Colors.black,
+                      ),
                       label: const Text(
                         'View Match Pass & Check-In',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
                         ),
                       ),
                       onPressed: () =>
@@ -3318,18 +3323,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF16A34A) : const Color(0xFF141414),
+          color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF22C55E)
+                ? const Color(0xFFD4FF00)
                 : const Color(0xFF262626),
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF16A34A).withValues(alpha: 0.3),
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -3343,8 +3348,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               title,
               style: TextStyle(
                 fontSize: 11.5,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
               ),
             ),
             const SizedBox(width: 6),
@@ -3352,7 +3357,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.black.withValues(alpha: 0.25)
+                    ? Colors.black.withValues(alpha: 0.18)
                     : const Color(0xFF1C1C1C),
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -3360,8 +3365,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 '$count',
                 style: TextStyle(
                   fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
                 ),
               ),
             ),
@@ -5977,7 +5982,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                 Expanded(
                   flex: 3,
                   child: Material(
-                    color: const Color(0xFF16A34A),
+                    color: const Color(0xFFD4FF00),
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
@@ -5995,7 +6000,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                             Icon(
                               Icons.confirmation_number_rounded,
                               size: 15,
-                              color: Colors.white,
+                              color: Colors.black,
                             ),
                             SizedBox(width: 6),
                             FittedBox(
@@ -6004,8 +6009,8 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                                 'Pass & Actions',
                                 style: TextStyle(
                                   fontSize: 12.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
                                   letterSpacing: -0.1,
                                 ),
                               ),
@@ -6021,8 +6026,14 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                 Expanded(
                   flex: 2,
                   child: Material(
-                    color: const Color(0xFF14240A),
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFF141A0A),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                        width: 1.0,
+                      ),
+                    ),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12),
                       onTap: widget.onCall,
@@ -6039,7 +6050,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                             Icon(
                               Icons.call_rounded,
                               size: 15,
-                              color: Color(0xFF86EFAC),
+                              color: Color(0xFFD4FF00),
                             ),
                             SizedBox(width: 5),
                             FittedBox(
@@ -6048,8 +6059,8 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                                 'Call',
                                 style: TextStyle(
                                   fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF86EFAC),
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFD4FF00),
                                   letterSpacing: -0.1,
                                 ),
                               ),

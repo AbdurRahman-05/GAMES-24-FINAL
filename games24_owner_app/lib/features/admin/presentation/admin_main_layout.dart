@@ -125,12 +125,12 @@ class AdminMainLayout extends StatelessWidget {
           horizontal: 2,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF16A34A) : Colors.transparent,
+          color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF16A34A).withValues(alpha: 0.35),
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -144,7 +144,7 @@ class AdminMainLayout extends StatelessWidget {
             Icon(
               icon,
               size: isSelected ? 21 : 19,
-              color: isSelected ? Colors.white : const Color(0xFF71717A),
+              color: isSelected ? Colors.black : const Color(0xFF71717A),
             ),
             const SizedBox(height: 2),
             Padding(
@@ -154,8 +154,8 @@ class AdminMainLayout extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF71717A),
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w700,
+                    color: isSelected ? Colors.black : const Color(0xFF71717A),
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
                     fontSize: isSelected ? 10.5 : 9.5,
                     letterSpacing: -0.2,
                   ),
