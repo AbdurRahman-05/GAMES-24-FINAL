@@ -46,6 +46,16 @@ export default function RegistrationDetailModal({
 
   if (!registration) return null;
 
+  const isRegistrationComplete = registration.isBranch
+    ? true
+    : Boolean(
+        registration.isMobileVerified &&
+        registration.isEmailVerified &&
+        (registration.photosCount > 0 || (registration.photoUrls && registration.photoUrls.length > 0)) &&
+        registration.aadhaarNumber &&
+        registration.bankAccount
+      );
+
   const getFullFileUrl = (url: string | null) => {
     if (!url) return '';
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
@@ -137,6 +147,19 @@ export default function RegistrationDetailModal({
           <div className="mx-6 mt-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs font-medium flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{actionError}</span>
+          </div>
+        )}
+
+        {/* Incomplete Registration Warning */}
+        {!isRegistrationComplete && (
+          <div className="mx-6 mt-4 p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-200 text-xs flex items-start gap-3">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-amber-300">Incomplete Application Notice</p>
+              <p className="mt-0.5 text-slate-300 leading-relaxed">
+                The turf owner has not completed all mandatory steps (OTP verification, venue photos, or KYC documents). Verification is disabled until all data is fully submitted.
+              </p>
+            </div>
           </div>
         )}
 
@@ -430,9 +453,10 @@ export default function RegistrationDetailModal({
                   </button>
                   <button
                     type="button"
-                    disabled={isVerifying}
+                    disabled={isVerifying || !isRegistrationComplete}
                     onClick={handleVerify}
-                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50"
+                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    title={!isRegistrationComplete ? 'Application is incomplete - cannot verify' : 'Approve & Activate Venue'}
                   >
                     <Check className="w-4 h-4" />
                     {isVerifying ? 'Verifying & Deploying...' : 'Approve & Activate Venue'}

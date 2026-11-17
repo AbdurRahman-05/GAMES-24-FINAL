@@ -849,6 +849,7 @@ class _TurfOwnerRegistrationScreenState
           Uri.parse('${ApiConfig.baseUrl}/auth/register-admin'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
+            if (_registeredAdminId != null) 'adminId': _registeredAdminId,
             'venueName': _venueNameController.text.trim(),
             'ownerName': _ownerNameController.text.trim(),
             'ownerPhone': _phoneController.text.trim(),
@@ -940,45 +941,70 @@ class _TurfOwnerRegistrationScreenState
       if (_hasChangingRoom) amenitiesList.add('Changing Room');
       if (_hasFirstAid) amenitiesList.add('First Aid');
 
-      if (_registeredAdminId != null) {
-        try {
-          final response = await http.post(
-            Uri.parse('${ApiConfig.baseUrl}/auth/update-admin-kyc'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'adminId': _registeredAdminId,
-              'isMobileVerified': _isMobileVerified,
-              'isEmailVerified': _isEmailVerified,
-              'photosCount': _photosUploadedCount,
-              'photoUrls': _venuePhotoUrls,
-              'sports': _selectedSports.toList(),
-              'amenities': amenitiesList,
-              'gstin': _gstinController.text.trim(),
-              'panNumber': _panController.text.trim(),
-              'aadhaarNumber': _aadhaarController.text.trim(),
-              'aadhaarDocUrl': _aadhaarDocUrl,
-              'panDocUrl': _panDocUrl,
-              'gstDocUrl': _gstDocUrl,
-              'bankAccount': _bankAccountController.text.trim(),
-              'ifscCode': _ifscController.text.trim(),
-              'upiId': _upiIdController.text.trim(),
-            }),
+      if (_registeredAdminId == null) {
+        if (mounted) {
+          ToastUtils.showError(
+            context,
+            "Registration session not found. Please restart registration.",
           );
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            final data = jsonDecode(response.body);
-            if (data['trackingCode'] != null) {
-              _trackingCode = data['trackingCode'];
-            }
-            if (mounted) {
-              ToastUtils.showSuccess(
-                context,
-                "KYC & Bank details updated in database!",
-              );
-            }
-          }
-        } catch (e) {
-          debugPrint("Error connecting to server for KYC: $e");
         }
+        return;
+      }
+
+      try {
+        final response = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/auth/update-admin-kyc'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'adminId': _registeredAdminId,
+            'isMobileVerified': _isMobileVerified,
+            'isEmailVerified': _isEmailVerified,
+            'photosCount': _photosUploadedCount,
+            'photoUrls': _venuePhotoUrls,
+            'sports': _selectedSports.toList(),
+            'amenities': amenitiesList,
+            'gstin': _gstinController.text.trim(),
+            'panNumber': _panController.text.trim(),
+            'aadhaarNumber': _aadhaarController.text.trim(),
+            'aadhaarDocUrl': _aadhaarDocUrl,
+            'panDocUrl': _panDocUrl,
+            'gstDocUrl': _gstDocUrl,
+            'bankAccount': _bankAccountController.text.trim(),
+            'ifscCode': _ifscController.text.trim(),
+            'upiId': _upiIdController.text.trim(),
+          }),
+        );
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final data = jsonDecode(response.body);
+          if (data['trackingCode'] != null) {
+            _trackingCode = data['trackingCode'];
+          }
+          if (mounted) {
+            ToastUtils.showSuccess(
+              context,
+              "Registration application submitted to Super Admin for verification!",
+            );
+          }
+        } else {
+          final data = jsonDecode(response.body);
+          if (mounted) {
+            ToastUtils.showError(
+              context,
+              data['message'] ??
+                  "Please complete all registration steps before submitting.",
+            );
+          }
+          return;
+        }
+      } catch (e) {
+        debugPrint("Error connecting to server for KYC: $e");
+        if (mounted) {
+          ToastUtils.showError(
+            context,
+            "Error connecting to server. Please try again.",
+          );
+        }
+        return;
       }
     }
 

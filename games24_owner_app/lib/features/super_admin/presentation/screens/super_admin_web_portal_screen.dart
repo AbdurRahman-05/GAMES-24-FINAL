@@ -566,12 +566,23 @@ class _SuperAdminWebPortalScreenState
                             child: AppButton(
                               text: 'Approve Venue Owner',
                               height: 38,
-                              onPressed: () {
-                                ref.read(superAdminProvider.notifier).updatePartnerStatus(
-                                      partner.id,
-                                      AccountStatus.active,
+                              onPressed: () async {
+                                final success = await ref
+                                    .read(superAdminProvider.notifier)
+                                    .verifyPartnerRegistration(partner.id);
+                                if (context.mounted) {
+                                  if (success) {
+                                    ToastUtils.showSuccess(
+                                      context,
+                                      "${partner.turfName} Approved & Verified!",
                                     );
-                                ToastUtils.showSuccess(context, "${partner.turfName} Approved!");
+                                  } else {
+                                    ToastUtils.showError(
+                                      context,
+                                      "Cannot verify: Application is incomplete or unsubmitted.",
+                                    );
+                                  }
+                                }
                               },
                             ),
                           ),

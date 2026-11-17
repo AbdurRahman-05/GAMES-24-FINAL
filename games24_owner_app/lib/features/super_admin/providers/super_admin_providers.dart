@@ -239,13 +239,18 @@ class SuperAdminNotifier extends Notifier<SuperAdminState> {
         if (res.statusCode == 200 || res.statusCode == 201) {
           await fetchRegistrationsFromBackend();
           return true;
+        } else {
+          final data = jsonDecode(res.body);
+          debugPrint('Backend rejected verification: ${data['message']}');
+          return false;
         }
       } catch (e) {
         debugPrint('Error verifying partner in backend: $e');
+        return false;
       }
     }
 
-    // Fallback local state update
+    // Fallback local state update only if no backend ID
     updatePartnerStatus(partnerId, AccountStatus.active);
     return true;
   }

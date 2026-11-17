@@ -291,8 +291,23 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const isRegComplete = (r: AdminRegistration) => {
+    if (r.isBranch) return true;
+    return Boolean(
+      r.isMobileVerified &&
+      r.isEmailVerified &&
+      (r.photosCount > 0 || (r.photoUrls && r.photoUrls.length > 0)) &&
+      r.aadhaarNumber &&
+      r.bankAccount
+    );
+  };
+
   // ACTION: Quick Verify Registration
   const handleQuickVerify = async (reg: AdminRegistration) => {
+    if (!isRegComplete(reg)) {
+      showToast('Cannot verify incomplete registration. Owner has not submitted all details.', 'error');
+      return;
+    }
     setQuickVerifyingId(reg.id);
     try {
       await verifyRegistration(reg.id, { verifiedBy: 'Super Admin' });
@@ -1004,9 +1019,10 @@ export default function SuperAdminDashboard() {
                       {reg.status === 'PENDING_APPROVAL' && (
                         <>
                           <button
-                            disabled={quickVerifyingId === reg.id}
+                            disabled={quickVerifyingId === reg.id || !isRegComplete(reg)}
                             onClick={() => handleQuickVerify(reg)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all disabled:opacity-50"
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            title={!isRegComplete(reg) ? 'Incomplete application - cannot verify' : 'Approve and activate'}
                           >
                             <Check className="w-3.5 h-3.5" />
                             <span>{quickVerifyingId === reg.id ? 'Approving...' : 'Approve'}</span>

@@ -7,12 +7,14 @@ export class SuperAdminService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getStats() {
-    const total = await this.prisma.adminUser.count();
+    const total = await this.prisma.adminUser.count({
+      where: { status: { not: 'DRAFT' } },
+    });
     const waiting = await this.prisma.adminUser.count({
       where: { status: 'PENDING_APPROVAL' },
     });
     const verified = await this.prisma.adminUser.count({
-      where: { status: 'VERIFIED' },
+      where: { status: { in: ['VERIFIED', 'APPROVED'] } },
     });
     const cancelled = await this.prisma.adminUser.count({
       where: { status: 'CANCELLED' },
@@ -42,7 +44,15 @@ export class SuperAdminService {
 
     if (query.status && query.status.toUpperCase() !== 'ALL') {
       where.status = query.status.toUpperCase();
+    } else {
+      where.status = { not: 'DRAFT' };
     }
+
+    // Safety constraint: Never return DRAFT registrations to Super Admin
+    where.AND = [
+      ...(where.AND || []),
+      { status: { not: 'DRAFT' } },
+    ];
 
     if (query.search && query.search.trim() !== '') {
       const s = query.search.trim();
@@ -125,8 +135,8 @@ export class SuperAdminService {
     const admin = await this.prisma.adminUser.findUnique({
       where: { id },
     });
-    if (!admin) {
-      throw new NotFoundException(`Admin registration #${id} not found`);
+    if (!admin || admin.status === 'DRAFT') {
+      throw new NotFoundException(`Admin registration #${id} not found or incomplete draft`);
     }
 
     const verifiedRecord = await this.prisma.verifiedAdmin.findUnique({
@@ -181,6 +191,22 @@ export class SuperAdminService {
     });
     if (!admin) {
       throw new NotFoundException(`Admin registration #${id} not found`);
+    }
+
+    if (admin.status === 'DRAFT') {
+      throw new BadRequestException('Cannot verify incomplete draft registration. The turf owner has not completed all steps and submitted the application.');
+    }
+
+    if (!admin.isBranch) {
+      if (!admin.isMobileVerified || !admin.isEmailVerified) {
+        throw new BadRequestException('Cannot verify registration: Mobile or Email OTP verification is incomplete.');
+      }
+      if (admin.photosCount === 0 && (!admin.photoUrls || admin.photoUrls.length === 0)) {
+        throw new BadRequestException('Cannot verify registration: Venue photos must be uploaded.');
+      }
+      if (!admin.aadhaarNumber || !admin.panNumber || !admin.bankAccount) {
+        throw new BadRequestException('Cannot verify registration: Complete KYC and Bank details are required.');
+      }
     }
 
     // 1. Update AdminUser status

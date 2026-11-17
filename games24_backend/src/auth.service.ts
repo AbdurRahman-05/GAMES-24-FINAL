@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import fs from 'fs';
@@ -261,7 +261,10 @@ export class AuthService {
 
     if (phone) {
       const existingPhone = await this.prisma.adminUser.findFirst({
-        where: { ownerPhone: phone },
+        where: { 
+          ownerPhone: phone,
+          status: { not: 'DRAFT' },
+        },
       });
       if (existingPhone) {
         phoneExists = true;
@@ -270,6 +273,7 @@ export class AuthService {
 
     if (mail) {
       const allAdmins = await this.prisma.adminUser.findMany({
+        where: { status: { not: 'DRAFT' } },
         select: { ownerEmail: true },
       });
       emailExists = allAdmins.some(
@@ -293,7 +297,7 @@ export class AuthService {
   }
 
   async registerAdmin(body: any) {
-    const { venueName, ownerName, ownerPhone, ownerEmail, streetAddress, neighborhoodArea } = body;
+    const { adminId, venueName, ownerName, ownerPhone, ownerEmail, streetAddress, neighborhoodArea } = body;
 
     if (!venueName || !ownerName || !ownerPhone || !ownerEmail || !streetAddress || !neighborhoodArea) {
       throw new BadRequestException('Missing required fields');
@@ -302,14 +306,66 @@ export class AuthService {
     const cleanPhone = String(ownerPhone).trim();
     const cleanEmail = String(ownerEmail).trim().toLowerCase();
 
+    // If an explicit adminId is provided and is a draft, update it
+    if (adminId) {
+      const existingDraftById = await this.prisma.adminUser.findUnique({
+        where: { id: Number(adminId) },
+      });
+      if (existingDraftById && existingDraftById.status === 'DRAFT') {
+        const updatedDraft = await this.prisma.adminUser.update({
+          where: { id: existingDraftById.id },
+          data: {
+            venueName: venueName.trim(),
+            ownerName: ownerName.trim(),
+            ownerPhone: cleanPhone,
+            ownerEmail: cleanEmail,
+            streetAddress: streetAddress.trim(),
+            neighborhoodArea: neighborhoodArea.trim(),
+            status: 'DRAFT',
+          },
+        });
+        const trackingCode = updatedDraft.trackingCode || `REG-MAD-${(1000 + updatedDraft.id).toString()}`;
+        return { 
+          message: 'Draft registration updated successfully', 
+          adminId: updatedDraft.id,
+          trackingCode,
+          venueName: updatedDraft.venueName,
+          ownerName: updatedDraft.ownerName,
+        };
+      }
+    }
+
     const existingPhone = await this.prisma.adminUser.findFirst({
       where: { ownerPhone: cleanPhone },
     });
     if (existingPhone) {
+      if (existingPhone.status === 'DRAFT') {
+        // Reuse and update the existing draft for this phone
+        const updatedDraft = await this.prisma.adminUser.update({
+          where: { id: existingPhone.id },
+          data: {
+            venueName: venueName.trim(),
+            ownerName: ownerName.trim(),
+            ownerEmail: cleanEmail,
+            streetAddress: streetAddress.trim(),
+            neighborhoodArea: neighborhoodArea.trim(),
+            status: 'DRAFT',
+          },
+        });
+        const trackingCode = updatedDraft.trackingCode || `REG-MAD-${(1000 + updatedDraft.id).toString()}`;
+        return { 
+          message: 'Draft registration updated successfully', 
+          adminId: updatedDraft.id,
+          trackingCode,
+          venueName: updatedDraft.venueName,
+          ownerName: updatedDraft.ownerName,
+        };
+      }
       throw new BadRequestException('This mobile number is already registered. Please use another mobile number.');
     }
 
     const allAdmins = await this.prisma.adminUser.findMany({
+      where: { status: { not: 'DRAFT' } },
       select: { ownerEmail: true },
     });
     const existingEmail = allAdmins.some(
@@ -327,6 +383,7 @@ export class AuthService {
         ownerEmail: cleanEmail,
         streetAddress: streetAddress.trim(),
         neighborhoodArea: neighborhoodArea.trim(),
+        status: 'DRAFT', // Always starts as DRAFT; only submitted to Super Admin after full completion
       },
     });
 
@@ -337,7 +394,7 @@ export class AuthService {
     });
 
     return { 
-      message: 'Admin account created successfully', 
+      message: 'Admin draft account created successfully', 
       adminId: newAdmin.id,
       trackingCode,
       venueName: newAdmin.venueName,
@@ -352,6 +409,7 @@ export class AuthService {
       isEmailVerified, 
       photosCount, 
       photoUrls,
+      sports,
       amenities, 
       gstin, 
       panNumber, 
@@ -372,16 +430,59 @@ export class AuthService {
       where: { id: Number(adminId) },
     });
 
-    const trackingCode = admin?.trackingCode || `REG-MAD-${(1000 + Number(adminId)).toString()}`;
+    if (!admin) {
+      throw new NotFoundException(`AdminUser #${adminId} not found`);
+    }
 
+    const parsedPhotosCount = photosCount != null 
+      ? Number(photosCount) 
+      : (Array.isArray(photoUrls) ? photoUrls.length : 0);
+    const parsedPhotoUrls = Array.isArray(photoUrls) 
+      ? photoUrls.filter((u: any) => typeof u === 'string' && u.trim().length > 0) 
+      : (photoUrls ? [photoUrls] : []);
+
+    // Validation: Only allow final submission to Super Admin if all steps are completed
+    const hasOtp = Boolean(isMobileVerified) && Boolean(isEmailVerified);
+    const hasPhotos = parsedPhotosCount > 0 || parsedPhotoUrls.length > 0;
+    const hasKyc = Boolean(aadhaarNumber) && Boolean(panNumber);
+    const hasBank = Boolean(bankAccount) && Boolean(ifscCode);
+
+    if (!hasOtp || !hasPhotos || !hasKyc || !hasBank) {
+      // Save partial draft data, keep status as DRAFT
+      await this.prisma.adminUser.update({
+        where: { id: Number(adminId) },
+        data: {
+          status: 'DRAFT',
+          isMobileVerified: Boolean(isMobileVerified),
+          isEmailVerified: Boolean(isEmailVerified),
+          photosCount: parsedPhotosCount,
+          photoUrls: parsedPhotoUrls,
+          amenities: Array.isArray(amenities) ? amenities : [],
+          gstin: gstin || undefined,
+          panNumber: panNumber || undefined,
+          aadhaarNumber: aadhaarNumber || undefined,
+          aadhaarDocUrl: aadhaarDocUrl || undefined,
+          panDocUrl: panDocUrl || undefined,
+          gstDocUrl: gstDocUrl || undefined,
+          bankAccount: bankAccount || undefined,
+          ifscCode: ifscCode || undefined,
+          upiId: upiId || undefined,
+        },
+      });
+      throw new BadRequestException('Incomplete registration. Please complete all steps (Mobile & Email OTP verification, venue photos, KYC documents, and bank details) before submitting for verification.');
+    }
+
+    const trackingCode = admin.trackingCode || `REG-MAD-${(1000 + Number(adminId)).toString()}`;
+
+    // COMPLETE AND SUBMIT TO SUPER ADMIN AS PENDING_APPROVAL
     const updatedAdmin = await this.prisma.adminUser.update({
       where: { id: Number(adminId) },
       data: {
         trackingCode,
-        isMobileVerified: isMobileVerified !== undefined ? Boolean(isMobileVerified) : true,
-        isEmailVerified: isEmailVerified !== undefined ? Boolean(isEmailVerified) : true,
-        photosCount: photosCount != null ? Number(photosCount) : 0,
-        photoUrls: Array.isArray(photoUrls) ? photoUrls : (photoUrls ? [photoUrls] : []),
+        isMobileVerified: true,
+        isEmailVerified: true,
+        photosCount: parsedPhotosCount,
+        photoUrls: parsedPhotoUrls,
         amenities: Array.isArray(amenities) ? amenities : [],
         gstin: gstin || undefined,
         panNumber: panNumber || undefined,
@@ -392,7 +493,7 @@ export class AuthService {
         bankAccount: bankAccount || undefined,
         ifscCode: ifscCode || undefined,
         upiId: upiId || undefined,
-        status: 'PENDING_APPROVAL',
+        status: 'PENDING_APPROVAL', // Fully completed & ready for Super Admin verification
       },
     });
 
@@ -409,7 +510,7 @@ export class AuthService {
     }
 
     return { 
-      message: 'Admin KYC and venue details submitted successfully', 
+      message: 'Admin KYC and venue details submitted successfully for Super Admin verification', 
       adminId: updatedAdmin.id,
       trackingCode: updatedAdmin.trackingCode,
       venueName: updatedAdmin.venueName,
