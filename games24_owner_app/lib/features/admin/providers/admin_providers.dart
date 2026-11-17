@@ -1250,13 +1250,28 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
         );
       }
       final phone = prefs.getString('owner_phone');
+      final cleanPhone = (phone ?? '').replaceAll(RegExp(r'[^0-9]'), '');
+      final last10 = cleanPhone.length >= 10 ? cleanPhone.substring(cleanPhone.length - 10) : cleanPhone;
       final savedTurfId = prefs.getInt('selected_turf_id');
-      final savedBranches = prefs.getString('owner_saved_branches');
+
+      // Clear legacy global key so old mixed account data doesn't leak
+      await prefs.remove('owner_saved_branches');
+
+      final savedBranchesKey = last10.isNotEmpty ? 'owner_saved_branches_$last10' : 'owner_saved_branches';
+      final savedBranches = prefs.getString(savedBranchesKey);
       if (savedBranches != null && savedBranches.isNotEmpty) {
         try {
           final List bList = jsonDecode(savedBranches);
           final loaded = bList
               .map((i) => OwnerTurfBranchItem.fromJson(Map<String, dynamic>.from(i)))
+              .where((b) {
+                if (last10.isNotEmpty && b.ownerPhone.isNotEmpty) {
+                  final bClean = b.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
+                  final bLast10 = bClean.length >= 10 ? bClean.substring(bClean.length - 10) : bClean;
+                  return bLast10 == last10;
+                }
+                return true;
+              })
               .toList();
           if (loaded.isNotEmpty) {
             state = state.copyWith(branches: loaded);
@@ -1276,8 +1291,14 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
   Future<void> _persistBranchesLocally(List<OwnerTurfBranchItem> list) async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final phone = state.ownerPhone;
+      final clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
+      final last10 = clean.length >= 10 ? clean.substring(clean.length - 10) : clean;
       final encoded = jsonEncode(list.map((b) => b.toJson()).toList());
-      await prefs.setString('owner_saved_branches', encoded);
+      if (last10.isNotEmpty) {
+        await prefs.setString('owner_saved_branches_$last10', encoded);
+      }
+      await prefs.remove('owner_saved_branches');
     } catch (e) {
       debugPrint("Error saving branches locally: $e");
     }
@@ -1368,7 +1389,7 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
       venueName: venueName,
       neighborhoodArea: neighborhoodArea,
       streetAddress: streetAddress,
-      ownerPhone: alternativePhone.isNotEmpty ? alternativePhone : state.ownerPhone,
+      ownerPhone: state.ownerPhone,
       status: 'PENDING_APPROVAL',
       todayBookingsCount: 0,
       todayRevenue: 0.0,
@@ -1650,29 +1671,59 @@ class TurfProfileNotifier extends Notifier<TurfProfileState> {
     final dynamicOccupancyPct = totalSlotsSafe > 0 ? ((activeBookedSlotsCount / totalSlotsSafe.toDouble()) * 100).round() : 0;
     final dynamicSlotsBadge = '$dynamicOccupancyPct% Full';
 
-    final Map<int, OwnerTurfBranchItem> branchMap = {};
-    for (final b in state.branches) {
-      branchMap[b.id] = b;
-    }
+    final cleanOwnerPhone = ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final ownerLast10 = cleanOwnerPhone.length >= 10 ? cleanOwnerPhone.substring(cleanOwnerPhone.length - 10) : cleanOwnerPhone;
+
+    // Deduplicate branches strictly by normalized venue name and scope to this owner's account
+    final Map<String, OwnerTurfBranchItem> venueMap = {};
+
+    // 1. Primary turf venue
+    final primaryTurf = OwnerTurfBranchItem(
+      id: verifiedAdminId,
+      venueName: venueName,
+      neighborhoodArea: neighborhoodArea.isNotEmpty ? neighborhoodArea : 'Main Arena',
+      streetAddress: streetAddress,
+      ownerPhone: ownerPhone,
+      status: (data['status']?.toString() ?? 'VERIFIED'),
+      todayBookingsCount: finalTodayBookingsCount,
+      todayRevenue: double.tryParse((dash['todayRevenue'] ?? data['todayRevenue'])?.toString() ?? '') ?? 0.0,
+      monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
+      monthTotalBookings: monthTotalBookings,
+      isActive: true,
+    );
+    venueMap[venueName.trim().toLowerCase()] = primaryTurf;
+
+    // 2. Verified & Pending branches returned from backend for this owner
     for (final b in branches) {
-      branchMap[b.id] = b;
+      if (ownerLast10.isNotEmpty && b.ownerPhone.isNotEmpty) {
+        final bClean = b.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
+        final bLast10 = bClean.length >= 10 ? bClean.substring(bClean.length - 10) : bClean;
+        if (bLast10 != ownerLast10 && b.id != verifiedAdminId) {
+          continue; // Discard leaked branches belonging to another account
+        }
+      }
+      final key = b.venueName.trim().toLowerCase();
+      venueMap[key] = b.copyWith(
+        isActive: b.id == verifiedAdminId,
+      );
     }
-    final mergedBranches = branchMap.values.toList();
-    if (mergedBranches.isEmpty) {
-      mergedBranches.add(OwnerTurfBranchItem(
-        id: verifiedAdminId,
-        venueName: venueName,
-        neighborhoodArea: neighborhoodArea.isNotEmpty ? neighborhoodArea : 'Main Arena',
-        streetAddress: streetAddress,
-        ownerPhone: ownerPhone,
-        status: (data['status']?.toString() ?? 'VERIFIED'),
-        todayBookingsCount: finalTodayBookingsCount,
-        todayRevenue: double.tryParse((dash['todayRevenue'] ?? data['todayRevenue'])?.toString() ?? '') ?? 0.0,
-        monthRevenue: double.tryParse((dash['monthRevenue'] ?? data['monthRevenue'])?.toString() ?? '') ?? 0.0,
-        monthTotalBookings: monthTotalBookings,
-        isActive: true,
-      ));
+
+    // 3. Keep local state pending branches only if not already provided by backend
+    for (final b in state.branches) {
+      if (ownerLast10.isNotEmpty && b.ownerPhone.isNotEmpty) {
+        final bClean = b.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
+        final bLast10 = bClean.length >= 10 ? bClean.substring(bClean.length - 10) : bClean;
+        if (bLast10 != ownerLast10 && b.id != verifiedAdminId) {
+          continue; // Discard branches from previous account session
+        }
+      }
+      final key = b.venueName.trim().toLowerCase();
+      if (!venueMap.containsKey(key)) {
+        venueMap[key] = b;
+      }
     }
+
+    final mergedBranches = venueMap.values.toList();
     _persistBranchesLocally(mergedBranches);
 
     state = state.copyWith(

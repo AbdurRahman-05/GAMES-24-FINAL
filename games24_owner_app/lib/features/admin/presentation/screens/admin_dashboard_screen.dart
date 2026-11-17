@@ -475,8 +475,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     BuildContext context,
     TurfProfileState profile,
   ) {
-    final branches = profile.branches.isNotEmpty
-        ? profile.branches
+    final cleanPhone = profile.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final ownerLast10 = cleanPhone.length >= 10 ? cleanPhone.substring(cleanPhone.length - 10) : cleanPhone;
+
+    // Deduplicate branches and filter to ensure only this owner's venues are shown
+    final Map<String, OwnerTurfBranchItem> deduplicated = {};
+    for (final b in profile.branches) {
+      if (ownerLast10.isNotEmpty && b.ownerPhone.isNotEmpty) {
+        final bClean = b.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
+        final bLast10 = bClean.length >= 10 ? bClean.substring(bClean.length - 10) : bClean;
+        if (bLast10 != ownerLast10 && b.id != profile.verifiedAdminId) {
+          continue; // Filter out foreign account branches
+        }
+      }
+      final key = b.venueName.trim().toLowerCase();
+      if (!deduplicated.containsKey(key) || (!b.isPending && deduplicated[key]!.isPending)) {
+        deduplicated[key] = b;
+      }
+    }
+
+    final branches = deduplicated.values.isNotEmpty
+        ? deduplicated.values.toList()
         : [
             OwnerTurfBranchItem(
               id: profile.verifiedAdminId ?? 1,

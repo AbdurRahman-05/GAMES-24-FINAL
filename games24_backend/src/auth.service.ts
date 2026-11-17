@@ -829,21 +829,25 @@ export class AuthService {
       },
     }).catch(() => {});
 
+    const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+
     // Fetch pending branch applications submitted by this owner waiting for Super Admin
     const pendingBranches = await this.prisma.adminUser.findMany({
       where: {
         isBranch: true,
         status: 'PENDING_APPROVAL',
         OR: [
+          { parentTurfId: verifiedAdmin.id },
           { ownerPhone: cleanPhone },
-          { ownerPhone: { contains: cleanPhone } },
+          { ownerPhone: last10 },
+          { ownerPhone: { contains: last10 } },
         ],
       },
       orderBy: { createdAt: 'desc' },
     });
 
     // Compute all branches summary for multi-branch switching (both verified and pending review)
-    const branches = [
+    const rawBranches = [
       ...allAdmins.map((va: any) => {
         const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
         const tdBks = bks.filter((b: any) => b.date === todayStr);
@@ -881,6 +885,17 @@ export class AuthService {
       })),
     ];
 
+    // Deduplicate branches by normalized venueName (verified venues take precedence)
+    const seenNames = new Set<string>();
+    const branches: any[] = [];
+    for (const b of rawBranches) {
+      const key = (b.venueName || '').trim().toLowerCase();
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
+        branches.push(b);
+      }
+    }
+
     const sportsList = getAdminSports(verifiedAdmin.id);
     const courtsList = getAdminCourts(verifiedAdmin.id, verifiedAdmin.venueName, sportsList, verifiedAdmin.courts);
 
@@ -912,6 +927,7 @@ export class AuthService {
         sports: sportsList.map((s: any) => s.name),
         sportsList,
         courts: courtsList,
+        branches,
       },
       branches,
     };
@@ -920,11 +936,13 @@ export class AuthService {
   async getVerifiedAdminByPhone(phone: string, queryTurfId?: number) {
     const clean = phone.trim().replace(/[^0-9]/g, '');
     const cleanPhone = clean;
+    const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
     const allAdmins = await this.prisma.verifiedAdmin.findMany({
       where: {
         OR: [
           { ownerPhone: cleanPhone },
-          { ownerPhone: { contains: cleanPhone } },
+          { ownerPhone: last10 },
+          { ownerPhone: { contains: last10 } },
         ],
       },
       include: {
@@ -1049,15 +1067,17 @@ export class AuthService {
         isBranch: true,
         status: 'PENDING_APPROVAL',
         OR: [
+          { parentTurfId: admin.id },
           { ownerPhone: cleanPhone },
-          { ownerPhone: { contains: cleanPhone } },
+          { ownerPhone: last10 },
+          { ownerPhone: { contains: last10 } },
         ],
       },
       orderBy: { createdAt: 'desc' },
     });
 
     // Compute all branches summary for multi-branch switching (both verified and pending review)
-    const branches = [
+    const rawBranches = [
       ...allAdmins.map((va: any) => {
         const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
         const tdBks = bks.filter((b: any) => b.date === todayStr);
@@ -1095,6 +1115,17 @@ export class AuthService {
       })),
     ];
 
+    // Deduplicate branches by normalized venueName (verified venues take precedence)
+    const seenNames = new Set<string>();
+    const branches: any[] = [];
+    for (const b of rawBranches) {
+      const key = (b.venueName || '').trim().toLowerCase();
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
+        branches.push(b);
+      }
+    }
+
     const sportsList = getAdminSports(admin.id);
     const courtsList = getAdminCourts(admin.id, admin.venueName, sportsList, admin.courts);
 
@@ -1125,6 +1156,7 @@ export class AuthService {
         sports: sportsList.map((s: any) => s.name),
         sportsList,
         courts: courtsList,
+        branches,
       },
       branches,
     };
