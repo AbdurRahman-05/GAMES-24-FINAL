@@ -242,8 +242,6 @@ class _AdminTournamentManagerScreenState
       debugPrint("Error creating tournament on backend: $e");
       ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
     }
-      ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
-    }
 
     // Auto Lock Court Slots in Admin Slot Provider
     ref.read(adminSlotProvider.notifier).reserveTournamentSlots(
