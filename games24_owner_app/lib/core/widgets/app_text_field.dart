@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 
 class AppTextField extends StatelessWidget {
@@ -12,6 +13,9 @@ class AppTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final int maxLines;
   final String? errorText;
+  final List<TextInputFormatter>? inputFormatters;
+  final TextCapitalization textCapitalization;
+  final int? maxLength;
 
   const AppTextField({
     super.key,
@@ -25,6 +29,9 @@ class AppTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.maxLines = 1,
     this.errorText,
+    this.inputFormatters,
+    this.textCapitalization = TextCapitalization.none,
+    this.maxLength,
   });
 
   @override
@@ -51,6 +58,10 @@ class AppTextField extends StatelessWidget {
           obscureText: obscureText,
           keyboardType: keyboardType,
           maxLines: maxLines,
+          inputFormatters: inputFormatters,
+          textCapitalization: textCapitalization,
+          maxLength: maxLength,
+          buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 15,

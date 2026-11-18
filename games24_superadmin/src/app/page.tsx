@@ -22,6 +22,7 @@ import {
   deleteTournament,
   deploySuperAdminTournament,
   BACKEND_URL,
+  resolveFileUrl,
 } from '@/lib/api';
 import {
   ShieldCheck,
@@ -116,9 +117,7 @@ export default function SuperAdminDashboard() {
   };
 
   const getFullFileUrl = (url: string | null) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    return resolveFileUrl(url);
   };
 
   // Load Overview Data

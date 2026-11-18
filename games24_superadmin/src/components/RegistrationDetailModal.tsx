@@ -4,6 +4,7 @@ import { useState } from 'react';
 import {
   AdminRegistration,
   BACKEND_URL,
+  resolveFileUrl,
   verifyRegistration,
   cancelRegistration,
 } from '@/lib/api';
@@ -57,9 +58,7 @@ export default function RegistrationDetailModal({
       );
 
   const getFullFileUrl = (url: string | null) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    return resolveFileUrl(url);
   };
 
   const handleVerify = async () => {

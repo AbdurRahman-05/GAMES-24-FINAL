@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { VerifiedAdmin, BACKEND_URL, verifyRegistration, cancelRegistration } from '@/lib/api';
+import { VerifiedAdmin, BACKEND_URL, resolveFileUrl, verifyRegistration, cancelRegistration } from '@/lib/api';
 import {
   X,
   ShieldCheck,
@@ -73,9 +73,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
   };
 
   const getFullFileUrl = (url: string | null) => {
-    if (!url) return '';
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `${BACKEND_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+    return resolveFileUrl(url);
   };
 
   return (
@@ -182,6 +180,80 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
               <div className="p-3 rounded-lg bg-[#161D2F] border border-[#232C42]">
                 <span className="text-[11px] text-slate-400">Night Slot (Floodlights)</span>
                 <p className="font-mono text-sm font-bold text-amber-300 mt-1">₹{admin.nightRate || 1800}/hr</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tax & Identity KYC Compliance */}
+          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+              <FileText className="w-4 h-4" /> Tax & Identity KYC Compliance
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Aadhaar */}
+              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-slate-400">Aadhaar Card</span>
+                  {admin.aadhaarDocUrl ? (
+                    <a
+                      href={getFullFileUrl(admin.aadhaarDocUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono font-semibold"
+                    >
+                      View PDF <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-[10px] text-slate-500 font-mono">No Doc</span>
+                  )}
+                </div>
+                <p className="font-mono text-xs font-semibold text-white">
+                  {admin.aadhaarNumber ? `•••• •••• ${admin.aadhaarNumber.slice(-4)}` : 'Not provided'}
+                </p>
+              </div>
+
+              {/* PAN */}
+              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-slate-400">PAN Card</span>
+                  {admin.panDocUrl ? (
+                    <a
+                      href={getFullFileUrl(admin.panDocUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono font-semibold"
+                    >
+                      View PDF <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-[10px] text-slate-500 font-mono">No Doc</span>
+                  )}
+                </div>
+                <p className="font-mono text-xs font-semibold text-white">
+                  {admin.panNumber || 'Not provided'}
+                </p>
+              </div>
+
+              {/* GSTIN */}
+              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-slate-400">GST Registration</span>
+                  {admin.gstDocUrl ? (
+                    <a
+                      href={getFullFileUrl(admin.gstDocUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono font-semibold"
+                    >
+                      View PDF <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="text-[10px] text-slate-500 font-mono">No Doc</span>
+                  )}
+                </div>
+                <p className="font-mono text-xs font-semibold text-white">
+                  {admin.gstin || 'Unregistered'}
+                </p>
               </div>
             </div>
           </div>

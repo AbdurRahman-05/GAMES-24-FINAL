@@ -20,6 +20,49 @@ export function setEffectiveBackendUrl(url: string | null) {
 
 export const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LIVE_BACKEND_URL).trim().replace(/\/+$/, '');
 export const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET || 'g24_super_admin_secret_2026';
+
+/**
+ * Resolves uploaded photo or PDF document URL so it always opens cleanly in Super Admin:
+ * - Keeps Cloudinary and external CDN URLs as-is
+ * - Replaces localhost / emulator origins with active backend URL
+ * - Prepend backend URL to relative paths
+ */
+export function resolveFileUrl(url: string | null | undefined): string {
+  if (!url || !url.trim()) return '';
+  const trimmed = url.trim();
+  const effectiveBase = getEffectiveBackendUrl();
+
+  // Cloudinary or other cloud CDN URLs
+  if (
+    trimmed.includes('res.cloudinary.com') ||
+    trimmed.includes('cloudinary') ||
+    trimmed.includes('amazonaws.com') ||
+    trimmed.includes('storage.googleapis.com')
+  ) {
+    return trimmed;
+  }
+
+  // Rewrite localhost / emulator URLs to the live/current backend
+  if (trimmed.startsWith('http://localhost:3000')) {
+    return trimmed.replace('http://localhost:3000', effectiveBase);
+  }
+  if (trimmed.startsWith('http://127.0.0.1:3000')) {
+    return trimmed.replace('http://127.0.0.1:3000', effectiveBase);
+  }
+  if (trimmed.startsWith('http://10.0.2.2:3000')) {
+    return trimmed.replace('http://10.0.2.2:3000', effectiveBase);
+  }
+
+  // Relative path
+  if (trimmed.startsWith('/')) {
+    return `${effectiveBase}${trimmed}`;
+  }
+  if (trimmed.startsWith('uploads/')) {
+    return `${effectiveBase}/${trimmed}`;
+  }
+
+  return trimmed;
+}
 export const adminHeaders = (extra: Record<string, string> = {}) => ({
   'x-admin-key': ADMIN_SECRET,
   ...extra,

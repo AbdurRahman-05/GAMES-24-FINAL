@@ -289,3 +289,13 @@ model PlayerNotification {
   updatedAt DateTime @updatedAt
 }
 
+model UploadedFile {
+  id           String   @id @default(uuid())
+  filename     String   @unique
+  originalName String
+  mimetype     String
+  size         Int
+  data         Bytes
+  createdAt    DateTime @default(now())
+}
+

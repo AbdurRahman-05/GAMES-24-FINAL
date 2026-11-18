@@ -3,7 +3,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
-import { UploadController } from './upload.controller.js';
+import { UploadController, UploadsServeController } from './upload.controller.js';
 import { PrismaService } from './prisma.service.js';
 
 import { SuperAdminController } from './super-admin.controller.js';
@@ -19,6 +19,7 @@ import { CashfreeService } from './cashfree.service.js';
     AppController,
     AuthController,
     UploadController,
+    UploadsServeController,
     SuperAdminController,
     TurfController,
     CashfreeController,

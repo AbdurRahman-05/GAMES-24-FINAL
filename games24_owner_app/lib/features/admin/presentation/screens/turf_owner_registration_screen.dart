@@ -1,5 +1,6 @@
 import '../../../../api_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:games24_owner_app/core/utils/toast_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
@@ -13,6 +14,47 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_text_field.dart';
+
+/// Formats alphanumeric text into uppercase automatically
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return TextEditingValue(
+      text: newValue.text.toUpperCase(),
+      selection: newValue.selection,
+    );
+  }
+}
+
+/// Automatically formats 12-digit Aadhaar input into `XXXX XXXX XXXX`
+class AadhaarInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text.replaceAll(' ', '');
+    final cleanDigits = text.replaceAll(RegExp(r'\D'), '');
+    if (cleanDigits.length > 12) {
+      return oldValue;
+    }
+    final buffer = StringBuffer();
+    for (int i = 0; i < cleanDigits.length; i++) {
+      if (i > 0 && i % 4 == 0) {
+        buffer.write(' ');
+      }
+      buffer.write(cleanDigits[i]);
+    }
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class TurfOwnerRegistrationScreen extends StatefulWidget {
   const TurfOwnerRegistrationScreen({super.key});
@@ -91,16 +133,108 @@ class _TurfOwnerRegistrationScreenState
     return hasPhotos && hasAmenities;
   }
 
+  // --- KYC Step 4 Strict Validation Rules ---
+  bool get _isGstinValid {
+    final text = _gstinController.text.trim().toUpperCase();
+    return RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$')
+        .hasMatch(text);
+  }
+
+  bool get _isPanValid {
+    final text = _panController.text.trim().toUpperCase();
+    return RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$').hasMatch(text);
+  }
+
+  bool get _isAadhaarValid {
+    final digits = _aadhaarController.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length != 12) return false;
+    if (digits.startsWith('0') || digits.startsWith('1')) return false;
+    return true;
+  }
+
+  bool get _isBankAccountValid {
+    final text = _bankAccountController.text.trim();
+    return RegExp(r'^[0-9]{9,18}$').hasMatch(text);
+  }
+
+  bool get _isIfscValid {
+    final text = _ifscController.text.trim().toUpperCase();
+    return RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(text);
+  }
+
+  bool get _isUpiValid {
+    final text = _upiIdController.text.trim().toLowerCase();
+    return RegExp(r'^[a-zA-Z0-9.\-_]{2,64}@[a-zA-Z0-9]{2,32}$').hasMatch(text);
+  }
+
+  String? get _gstinError {
+    final text = _gstinController.text.trim();
+    if (text.isEmpty) return null;
+    if (!_isGstinValid) {
+      return 'Format: 15 chars (e.g. 33AAACM1234F1Z8)';
+    }
+    return null;
+  }
+
+  String? get _panError {
+    final text = _panController.text.trim();
+    if (text.isEmpty) return null;
+    if (!_isPanValid) {
+      return 'Format: 5 letters, 4 numbers, 1 letter (e.g. ABCDE1234F)';
+    }
+    return null;
+  }
+
+  String? get _aadhaarError {
+    final text = _aadhaarController.text.trim();
+    if (text.isEmpty) return null;
+    final digits = text.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('0') || digits.startsWith('1')) {
+      return 'Aadhaar cannot start with 0 or 1';
+    }
+    if (digits.length < 12) {
+      return 'Enter 12-digit Aadhaar (${12 - digits.length} digits left)';
+    }
+    return null;
+  }
+
+  String? get _bankAccountError {
+    final text = _bankAccountController.text.trim();
+    if (text.isEmpty) return null;
+    if (!_isBankAccountValid) {
+      return 'Bank account must be 9 to 18 digits';
+    }
+    return null;
+  }
+
+  String? get _ifscError {
+    final text = _ifscController.text.trim();
+    if (text.isEmpty) return null;
+    if (!_isIfscValid) {
+      return '11 characters, 5th char 0 (e.g. HDFC0001234)';
+    }
+    return null;
+  }
+
+  String? get _upiError {
+    final text = _upiIdController.text.trim();
+    if (text.isEmpty) return null;
+    if (!_isUpiValid) {
+      return 'Format: user@bank (e.g. owner@okhdfcbank)';
+    }
+    return null;
+  }
+
   bool get _isStep3Valid {
-    return _gstinController.text.trim().isNotEmpty &&
-        _panController.text.trim().isNotEmpty &&
-        _aadhaarController.text.trim().isNotEmpty &&
+    return _isGstinValid &&
+        _isPanValid &&
+        _isAadhaarValid &&
         _isAadhaarUploaded &&
         _isPanUploaded &&
         _isGstUploaded &&
-        _bankAccountController.text.trim().isNotEmpty &&
-        _ifscController.text.trim().isNotEmpty &&
-        _upiIdController.text.trim().isNotEmpty;
+        _isBankAccountValid &&
+        _isIfscValid &&
+        _isUpiValid;
   }
 
   void _onPhoneChanged() {
@@ -963,15 +1097,15 @@ class _TurfOwnerRegistrationScreenState
             'photoUrls': _venuePhotoUrls,
             'sports': _selectedSports.toList(),
             'amenities': amenitiesList,
-            'gstin': _gstinController.text.trim(),
-            'panNumber': _panController.text.trim(),
-            'aadhaarNumber': _aadhaarController.text.trim(),
+            'gstin': _gstinController.text.trim().toUpperCase(),
+            'panNumber': _panController.text.trim().toUpperCase(),
+            'aadhaarNumber': _aadhaarController.text.replaceAll(RegExp(r'\D'), '').trim(),
             'aadhaarDocUrl': _aadhaarDocUrl,
             'panDocUrl': _panDocUrl,
             'gstDocUrl': _gstDocUrl,
             'bankAccount': _bankAccountController.text.trim(),
-            'ifscCode': _ifscController.text.trim(),
-            'upiId': _upiIdController.text.trim(),
+            'ifscCode': _ifscController.text.trim().toUpperCase(),
+            'upiId': _upiIdController.text.trim().toLowerCase(),
           }),
         );
         if (response.statusCode == 200 || response.statusCode == 201) {
@@ -1927,6 +2061,12 @@ class _TurfOwnerRegistrationScreenState
           hint: 'e.g. 33AAACM1234F1Z8',
           controller: _gstinController,
           prefixIcon: Icons.receipt_long_rounded,
+          errorText: _gstinError,
+          textCapitalization: TextCapitalization.characters,
+          inputFormatters: [
+            UpperCaseTextFormatter(),
+            LengthLimitingTextInputFormatter(15),
+          ],
         ),
         const SizedBox(height: 14),
 
@@ -1935,6 +2075,12 @@ class _TurfOwnerRegistrationScreenState
           hint: 'e.g. ABCDE1234F',
           controller: _panController,
           prefixIcon: Icons.badge_rounded,
+          errorText: _panError,
+          textCapitalization: TextCapitalization.characters,
+          inputFormatters: [
+            UpperCaseTextFormatter(),
+            LengthLimitingTextInputFormatter(10),
+          ],
         ),
         const SizedBox(height: 14),
 
@@ -1944,6 +2090,10 @@ class _TurfOwnerRegistrationScreenState
           controller: _aadhaarController,
           keyboardType: TextInputType.number,
           prefixIcon: Icons.credit_card_rounded,
+          errorText: _aadhaarError,
+          inputFormatters: [
+            AadhaarInputFormatter(),
+          ],
         ),
         const SizedBox(height: 20),
 
@@ -2190,6 +2340,11 @@ class _TurfOwnerRegistrationScreenState
           controller: _bankAccountController,
           keyboardType: TextInputType.number,
           prefixIcon: Icons.account_balance_rounded,
+          errorText: _bankAccountError,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(18),
+          ],
         ),
         const SizedBox(height: 14),
 
@@ -2198,6 +2353,12 @@ class _TurfOwnerRegistrationScreenState
           hint: 'e.g. HDFC0001234',
           controller: _ifscController,
           prefixIcon: Icons.code_rounded,
+          errorText: _ifscError,
+          textCapitalization: TextCapitalization.characters,
+          inputFormatters: [
+            UpperCaseTextFormatter(),
+            LengthLimitingTextInputFormatter(11),
+          ],
         ),
         const SizedBox(height: 14),
 
@@ -2205,7 +2366,9 @@ class _TurfOwnerRegistrationScreenState
           label: 'Partner UPI ID',
           hint: 'e.g. owner@okhdfcbank',
           controller: _upiIdController,
+          keyboardType: TextInputType.emailAddress,
           prefixIcon: Icons.payment_rounded,
+          errorText: _upiError,
         ),
       ],
     );
@@ -2772,17 +2935,36 @@ class _TurfOwnerRegistrationScreenState
         }
         return 'Select at least 1 amenity/facility to activate Continue.';
       case 3:
-        final missing = <String>[];
-        if (_gstinController.text.trim().isEmpty) missing.add('GSTIN');
-        if (_panController.text.trim().isEmpty) missing.add('PAN');
-        if (_aadhaarController.text.trim().isEmpty) missing.add('Aadhaar');
-        if (!_isAadhaarUploaded) missing.add('Aadhaar PDF');
-        if (!_isPanUploaded) missing.add('PAN PDF');
-        if (!_isGstUploaded) missing.add('GST PDF');
-        if (_bankAccountController.text.trim().isEmpty) missing.add('Bank A/c');
-        if (_ifscController.text.trim().isEmpty) missing.add('IFSC');
-        if (_upiIdController.text.trim().isEmpty) missing.add('UPI ID');
-        return 'Required: ${missing.take(3).join(', ')}${missing.length > 3 ? ' + ${missing.length - 3} more' : ''}';
+        if (!_isGstinValid) {
+          return _gstinController.text.trim().isEmpty
+              ? 'Enter 15-character GSTIN business number.'
+              : 'Invalid GSTIN format (e.g. 33AAACM1234F1Z8).';
+        }
+        if (!_isPanValid) {
+          return _panController.text.trim().isEmpty
+              ? 'Enter 10-character PAN card number.'
+              : 'Invalid PAN format (e.g. ABCDE1234F).';
+        }
+        if (!_isAadhaarValid) {
+          final d = _aadhaarController.text.replaceAll(RegExp(r'\D'), '');
+          if (d.startsWith('0') || d.startsWith('1')) {
+            return 'Aadhaar number cannot start with 0 or 1.';
+          }
+          return 'Enter valid 12-digit Aadhaar number (${d.length}/12).';
+        }
+        if (!_isAadhaarUploaded) return 'Attach Aadhaar Card (PDF only).';
+        if (!_isPanUploaded) return 'Attach PAN Card (PDF only).';
+        if (!_isGstUploaded) return 'Attach GST Certificate (PDF only).';
+        if (!_isBankAccountValid) {
+          return 'Enter valid 9 to 18-digit Bank Account number.';
+        }
+        if (!_isIfscValid) {
+          return 'Enter valid 11-char Bank IFSC code (e.g. HDFC0001234).';
+        }
+        if (!_isUpiValid) {
+          return 'Enter valid Partner UPI ID (e.g. owner@okhdfcbank).';
+        }
+        return 'Complete all KYC details to activate Continue.';
       default:
         return '';
     }
