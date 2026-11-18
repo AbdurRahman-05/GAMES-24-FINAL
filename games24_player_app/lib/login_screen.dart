@@ -45,13 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // Logo with Shared Element Hero Tag
                 Center(
-                  child: Hero(
-                    tag: 'gamez24_logo_emblem',
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 80,
-                      fit: BoxFit.contain,
-                    ),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    height: 80,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 const SizedBox(height: 16),

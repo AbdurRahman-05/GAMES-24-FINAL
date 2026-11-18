@@ -290,11 +290,25 @@ class _TournamentRegistrationScreenState
             'Entry Fee',
             widget.tournament.entryFee,
           ),
-          _summaryRow(
-            Icons.emoji_events,
-            'Prize Pool',
-            widget.tournament.prizePool,
-          ),
+          if (widget.tournament.championPrize != null && widget.tournament.championPrize!.trim().isNotEmpty) ...[
+            _summaryRow(
+              Icons.emoji_events,
+              'Winner Prize',
+              widget.tournament.championPrize!,
+            ),
+            if (widget.tournament.runnerUpPrize != null && widget.tournament.runnerUpPrize!.trim().isNotEmpty)
+              _summaryRow(
+                Icons.military_tech_rounded,
+                'Runner-Up Prize',
+                widget.tournament.runnerUpPrize!,
+              ),
+          ] else ...[
+            _summaryRow(
+              Icons.emoji_events,
+              'Prize Pool',
+              widget.tournament.prizePool,
+            ),
+          ],
           _summaryRow(
             Icons.group,
             'Available Slots',

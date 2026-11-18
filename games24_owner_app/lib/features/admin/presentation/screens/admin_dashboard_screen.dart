@@ -244,18 +244,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               clipBehavior: Clip.antiAlias,
               padding: const EdgeInsets.all(5),
               child: Center(
-                child: Hero(
-                  tag: 'gamez24_logo_emblem',
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'assets/images/image.png',
-                        fit: BoxFit.contain,
-                      );
-                    },
-                  ),
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'assets/images/image.png',
+                      fit: BoxFit.contain,
+                    );
+                  },
                 ),
               ),
             ),

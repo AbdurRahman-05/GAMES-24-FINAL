@@ -254,6 +254,24 @@ class TournamentDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildFinancials() {
+    final entryFeeRaw = tournament.entryFee.trim();
+    final formattedEntryFee = entryFeeRaw.startsWith('₹') ? entryFeeRaw : '₹$entryFeeRaw';
+
+    final prizePoolRaw = tournament.prizePool.trim();
+    final formattedPrizePool = RegExp(r'^\d+$').hasMatch(prizePoolRaw) ? '₹$prizePoolRaw' : prizePoolRaw;
+
+    final winnerRaw = (tournament.championPrize != null && tournament.championPrize!.trim().isNotEmpty)
+        ? tournament.championPrize!.trim()
+        : tournament.grandPrize.trim();
+    final formattedWinner = RegExp(r'^\d+$').hasMatch(winnerRaw) ? '₹$winnerRaw' : winnerRaw;
+
+    final runnerRaw = (tournament.runnerUpPrize != null && tournament.runnerUpPrize!.trim().isNotEmpty)
+        ? tournament.runnerUpPrize!.trim()
+        : '';
+    final formattedRunner = runnerRaw.isNotEmpty
+        ? (RegExp(r'^\d+$').hasMatch(runnerRaw) ? '₹$runnerRaw' : runnerRaw)
+        : 'Trophy + Medals';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -273,21 +291,91 @@ class TournamentDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          // Top Row: Entry Fee & Prize Pool
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _financeItem(
-                'Entry Fee',
-                tournament.entryFee,
-                Icons.monetization_on,
+              Expanded(
+                child: _financeCard(
+                  'Entry Fee',
+                  formattedEntryFee,
+                  Icons.payments_rounded,
+                  const Color(0xFFD4FF00),
+                ),
               ),
-              _financeItem(
-                'Prize Pool',
-                tournament.prizePool,
-                Icons.emoji_events,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _financeCard(
+                  'Prize Pool',
+                  formattedPrizePool,
+                  Icons.account_balance_wallet_rounded,
+                  const Color(0xFF38BDF8),
+                ),
               ),
-              _financeItem('Grand Prize', tournament.grandPrize, Icons.star),
             ],
+          ),
+          const SizedBox(height: 10),
+          // Bottom Row: Winner Prize & Runner-Up Prize
+          Row(
+            children: [
+              Expanded(
+                child: _financeCard(
+                  'Winner Prize',
+                  formattedWinner,
+                  Icons.emoji_events_rounded,
+                  const Color(0xFFFBBF24),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _financeCard(
+                  'Runner-Up Prize',
+                  formattedRunner,
+                  Icons.military_tech_rounded,
+                  const Color(0xFFA1A1AA),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _financeCard(String label, String value, IconData icon, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B1B1B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF262626)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: iconColor, size: 20),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA), fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -377,27 +465,6 @@ class TournamentDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _financeItem(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: const Color(0xFFD4FF00), size: 28),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildRules() {
     final rulesList = tournament.rules;

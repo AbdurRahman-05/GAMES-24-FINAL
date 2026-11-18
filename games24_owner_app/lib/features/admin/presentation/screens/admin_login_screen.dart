@@ -170,13 +170,10 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               // Official Games24 Brand Logo
               if (widget.showLogo)
                 Center(
-                  child: Hero(
-                    tag: 'gamez24_logo_emblem',
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 80,
-                      fit: BoxFit.contain,
-                    ),
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    height: 80,
+                    fit: BoxFit.contain,
                   ),
                 )
               else

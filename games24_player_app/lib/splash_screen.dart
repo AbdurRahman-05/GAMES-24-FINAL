@@ -532,11 +532,9 @@ class _SplashScreenState extends State<SplashScreen>
                   left: (screenSize.width - currentWidth) / 2,
                   width: currentWidth,
                   height: currentHeight,
-                  child: Hero(
-                    tag: 'gamez24_logo_emblem',
-                    child: Transform.scale(
-                      scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
-                      child: Stack(
+                  child: Transform.scale(
+                    scale: _emblemYTransition.value > 0.0 ? 1.0 : _fullLogoPulse.value,
+                    child: Stack(
                         fit: StackFit.expand,
                         children: [
                           if (_masterSymbolCrossfade.value < 1.0 && _emblemYTransition.value == 0.0) ...[
@@ -637,7 +635,6 @@ class _SplashScreenState extends State<SplashScreen>
                         ],
                       ),
                     ),
-                  ),
                 ),
 
 
