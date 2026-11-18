@@ -229,18 +229,25 @@ class TournamentDetailsScreen extends StatelessWidget {
               ],
             ),
           )
-        else
+        else ...[
           _detailRow(
             Icons.location_on,
             'Venue',
             '${tournament.venue}, ${tournament.location}',
           ),
-        if (tournament.courtsCount > 0)
-          _detailRow(
-            Icons.stadium_rounded,
-            'Facilities',
-            '${tournament.courtsCount} Dedicated Courts / Pitches Allocated',
-          ),
+          if (tournament.courtAllocation != null && tournament.courtAllocation!.isNotEmpty)
+            _detailRow(
+              Icons.stadium_rounded,
+              'Court Allocation',
+              tournament.courtAllocation!,
+            )
+          else if (tournament.courtsCount > 0)
+            _detailRow(
+              Icons.stadium_rounded,
+              'Facilities',
+              '${tournament.courtsCount} Dedicated Courts / Pitches Allocated',
+            ),
+        ],
         _detailRow(Icons.sports, 'Format', tournament.format),
       ],
     );

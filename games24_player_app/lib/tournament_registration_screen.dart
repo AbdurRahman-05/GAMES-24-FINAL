@@ -77,7 +77,14 @@ class _TournamentRegistrationScreenState
               _dialogRow('Team', _teamNameCtrl.text),
               _dialogRow('Players', _playersCountCtrl.text),
               _dialogRow('Entry Fee', widget.tournament.entryFee),
-              _dialogRow('Venue', widget.tournament.venue),
+              _dialogRow(
+                'Venue',
+                (widget.tournament.courtAllocation != null &&
+                        widget.tournament.courtAllocation!.isNotEmpty &&
+                        widget.tournament.courtAllocation != widget.tournament.venue)
+                    ? '${widget.tournament.venue} (${widget.tournament.courtAllocation})'
+                    : widget.tournament.venue,
+              ),
             ],
           ),
           actions: [
@@ -269,7 +276,15 @@ class _TournamentRegistrationScreenState
           _summaryRow(Icons.sports_soccer, 'Sport', widget.tournament.sport),
           _summaryRow(Icons.calendar_today, 'Date', widget.tournament.date),
           _summaryRow(Icons.access_time, 'Time', widget.tournament.time),
-          _summaryRow(Icons.location_on, 'Venue', widget.tournament.venue),
+          _summaryRow(
+            Icons.location_on,
+            'Venue',
+            (widget.tournament.courtAllocation != null &&
+                    widget.tournament.courtAllocation!.isNotEmpty &&
+                    widget.tournament.courtAllocation != widget.tournament.venue)
+                ? '${widget.tournament.venue} (${widget.tournament.courtAllocation})'
+                : widget.tournament.venue,
+          ),
           _summaryRow(
             Icons.monetization_on,
             'Entry Fee',

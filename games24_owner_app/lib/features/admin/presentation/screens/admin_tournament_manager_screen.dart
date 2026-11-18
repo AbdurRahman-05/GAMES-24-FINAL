@@ -47,7 +47,99 @@ class _AdminTournamentManagerScreenState
 
   String _selectedSport = 'Cricket';
   String _selectedType = 'Knockout';
-  String _selectedCourt = 'Turf A (Football / Cricket)';
+
+  // Dynamic Owner Branch & Court State (Strictly real data, no mocks)
+  int? _selectedBranchId;
+  String _selectedCourt = 'Entire Venue';
+  List<String> _branchCourts = ['Entire Venue'];
+  bool _isLoadingCourts = false;
+
+  List<OwnerTurfBranchItem> _getOwnerBranches(TurfProfileState profile) {
+    final Map<int, OwnerTurfBranchItem> map = {};
+    if (profile.branches.isNotEmpty) {
+      for (final b in profile.branches) {
+        map[b.id] = b;
+      }
+    }
+    final activeId = profile.turfId > 0 ? profile.turfId : 1;
+    if (!map.containsKey(activeId) && profile.venueName.isNotEmpty) {
+      map[activeId] = OwnerTurfBranchItem(
+        id: activeId,
+        venueName: profile.venueName,
+        neighborhoodArea: profile.area.isNotEmpty ? profile.area : 'Main Area',
+        streetAddress: profile.address,
+        ownerPhone: profile.ownerPhone,
+        status: profile.branchStatus,
+        todayBookingsCount: profile.todayBookingsCount,
+        todayRevenue: profile.todayRevenue,
+        monthRevenue: profile.monthRevenue,
+        monthTotalBookings: profile.monthTotalBookings,
+        isActive: true,
+      );
+    }
+    return map.values.toList();
+  }
+
+  Future<void> _fetchCourtsForBranch(OwnerTurfBranchItem branch, TurfProfileState profile) async {
+    setState(() => _isLoadingCourts = true);
+    List<String> courts = [];
+
+    // If active branch and profile already has configured courts
+    if (branch.id == profile.turfId && profile.courts.isNotEmpty) {
+      for (final c in profile.courts) {
+        final name = c.name.trim();
+        if (name.isNotEmpty && !courts.contains(name)) {
+          courts.add(name);
+        }
+      }
+    } else {
+      try {
+        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs/${branch.id}/courts')).timeout(const Duration(seconds: 8));
+        if (res.statusCode == 200) {
+          final decoded = jsonDecode(res.body);
+          if (decoded is List && decoded.isNotEmpty) {
+            for (final c in decoded) {
+              final name = (c['name'] ?? '').toString().trim();
+              if (name.isNotEmpty && !courts.contains(name)) {
+                courts.add(name);
+              }
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (courts.isEmpty) {
+      courts.add('${branch.venueName} (Main Ground)');
+    }
+
+    if (!courts.contains('Entire Venue')) {
+      courts.add('Entire Venue');
+    }
+
+    if (mounted) {
+      setState(() {
+        _isLoadingCourts = false;
+        _branchCourts = courts;
+        if (!_branchCourts.contains(_selectedCourt)) {
+          _selectedCourt = _branchCourts.first;
+        }
+      });
+    }
+  }
+
+  void _initBranchAndCourts(TurfProfileState profile) {
+    final branches = _getOwnerBranches(profile);
+    if (branches.isEmpty) return;
+
+    final targetBranch = branches.firstWhere(
+      (b) => b.id == (_selectedBranchId ?? profile.turfId),
+      orElse: () => branches.first,
+    );
+
+    _selectedBranchId = targetBranch.id;
+    _fetchCourtsForBranch(targetBranch, profile);
+  }
 
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
   DateTime _endDate = DateTime.now().add(const Duration(days: 10));
@@ -107,6 +199,7 @@ class _AdminTournamentManagerScreenState
             phone: profile.ownerPhone,
             venue: profile.venueName,
           );
+      _initBranchAndCourts(profile);
     });
   }
 
@@ -140,8 +233,32 @@ class _AdminTournamentManagerScreenState
         "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
 
     final venueProfile = ref.read(turfProfileProvider);
-    final verifiedAdminId = venueProfile.turfId;
-    final venueName = venueProfile.venueName.isNotEmpty ? venueProfile.venueName : 'Champions Arena';
+    final branches = _getOwnerBranches(venueProfile);
+    final selectedBranch = branches.firstWhere(
+      (b) => b.id == _selectedBranchId,
+      orElse: () => branches.isNotEmpty
+          ? branches.first
+          : OwnerTurfBranchItem(
+              id: venueProfile.turfId > 0 ? venueProfile.turfId : 1,
+              venueName: venueProfile.venueName.isNotEmpty ? venueProfile.venueName : 'Champions Arena',
+              neighborhoodArea: venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai',
+              streetAddress: venueProfile.address,
+              ownerPhone: venueProfile.ownerPhone,
+              status: 'Active',
+              todayBookingsCount: 0,
+              todayRevenue: 0,
+              monthRevenue: 0,
+              monthTotalBookings: 0,
+              isActive: true,
+            ),
+    );
+
+    final verifiedAdminId = selectedBranch.id;
+    final venueName = selectedBranch.venueName.isNotEmpty ? selectedBranch.venueName : 'Champions Arena';
+    final location = selectedBranch.neighborhoodArea.isNotEmpty
+        ? selectedBranch.neighborhoodArea
+        : (venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai');
+    final courtAllocation = _selectedCourt.isNotEmpty ? _selectedCourt : '$venueName (Main Ground)';
 
     final sportBanner = _selectedSport.toLowerCase().contains('cricket')
         ? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'
@@ -173,7 +290,8 @@ class _AdminTournamentManagerScreenState
       email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : venueProfile.ownerEmail,
       tournamentType: _selectedType,
       sportType: _selectedSport,
-      courtAllocation: _selectedCourt,
+      venueName: venueName,
+      courtAllocation: courtAllocation,
       regStartDate: todayStr,
       regEndDate: _formatDate(_regEndDate),
       startDate: _formatDate(_startDate),
@@ -191,6 +309,9 @@ class _AdminTournamentManagerScreenState
       championPrize: _championPrizeCtrl.text.trim().isNotEmpty ? _championPrizeCtrl.text.trim() : '₹15,000 Cash',
       runnerUpPrize: _runnerUpPrizeCtrl.text.trim(),
       status: 'Upcoming',
+      verifiedAdminId: verifiedAdminId,
+      isOwnerCreated: true,
+      createdByRole: 'OWNER',
     );
 
     // 1. Immediately persist tournament to backend database
@@ -209,7 +330,7 @@ class _AdminTournamentManagerScreenState
         'date': newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr,
         'time': newTournament.matchStartTime,
         'venueName': venueName,
-        'location': venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai',
+        'location': location,
         'entryFee': newTournament.teamEntryFee,
         'prizePool': newTournament.championPrize,
         'championPrize': newTournament.championPrize,
@@ -1854,7 +1975,9 @@ class _AdminTournamentManagerScreenState
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      '${t.courtAllocation} • ${t.startDate} to ${t.endDate}',
+                      t.courtAllocation.isNotEmpty && t.courtAllocation != t.venueName
+                          ? '${t.venueName} (${t.courtAllocation}) • ${t.startDate} to ${t.endDate}'
+                          : '${t.venueName} • ${t.startDate} to ${t.endDate}',
                       style: TextStyle(fontSize: 10.5, color: Colors.white.withValues(alpha: 0.85), fontWeight: FontWeight.w500),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2119,6 +2242,17 @@ class _AdminTournamentManagerScreenState
 
   // --- TAB 2: CREATE TOURNAMENT WIZARD ---
   Widget _buildCreateTournamentTab() {
+    final profile = ref.watch(turfProfileProvider);
+    final branches = _getOwnerBranches(profile);
+
+    if (_selectedBranchId == null && branches.isNotEmpty) {
+      final initialBranch = branches.firstWhere(
+        (b) => b.id == profile.turfId,
+        orElse: () => branches.first,
+      );
+      _selectedBranchId = initialBranch.id;
+    }
+
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
@@ -2204,10 +2338,39 @@ class _AdminTournamentManagerScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
+                const Text('Select Turf Branch / Venue:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  value: branches.any((b) => b.id == _selectedBranchId)
+                      ? _selectedBranchId
+                      : (branches.isNotEmpty ? branches.first.id : null),
+                  isExpanded: true,
+                  decoration: _inputDecoration('Select Branch / Venue', '', Icons.location_city_rounded),
+                  items: branches.map((b) {
+                    return DropdownMenuItem<int>(
+                      value: b.id,
+                      child: Text(
+                        '${b.venueName}${b.neighborhoodArea.isNotEmpty ? ' (${b.neighborhoodArea})' : ''}',
+                        style: const TextStyle(fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setState(() {
+                        _selectedBranchId = val;
+                      });
+                      final branch = branches.firstWhere((b) => b.id == val, orElse: () => branches.first);
+                      _fetchCourtsForBranch(branch, profile);
+                    }
+                  },
+                ),
+                const SizedBox(height: 14),
                 const Text('Tournament Format:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  initialValue: _selectedType,
+                  value: _selectedType,
                   isExpanded: true,
                   decoration: _inputDecoration('Select Format', '', Icons.alt_route_rounded),
                   items: _formatsList.map((f) {
@@ -2220,18 +2383,45 @@ class _AdminTournamentManagerScreenState
                     if (val != null) setState(() => _selectedType = val);
                   },
                 ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedCourt,
-                  isExpanded: true,
-                  decoration: _inputDecoration('Court Allocation', '', Icons.stadium_outlined),
-                  items: ['Turf A (Football / Cricket)', 'Turf B (Box Cricket)', 'Badminton Court 1', 'Entire Venue']
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)))
-                      .toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _selectedCourt = val);
-                  },
-                ),
+                const SizedBox(height: 14),
+                const Text('Court Allocation:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
+                const SizedBox(height: 8),
+                _isLoadingCourts
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF141414),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                        ),
+                        child: Row(
+                          children: const [
+                            SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4FF00)),
+                            ),
+                            SizedBox(width: 10),
+                            Text('Loading branch courts...', style: TextStyle(fontSize: 12, color: Colors.white70)),
+                          ],
+                        ),
+                      )
+                    : DropdownButtonFormField<String>(
+                        value: _branchCourts.contains(_selectedCourt)
+                            ? _selectedCourt
+                            : (_branchCourts.isNotEmpty ? _branchCourts.first : null),
+                        isExpanded: true,
+                        decoration: _inputDecoration('Court Allocation', '', Icons.stadium_outlined),
+                        items: _branchCourts.map((c) {
+                          return DropdownMenuItem<String>(
+                            value: c,
+                            child: Text(c, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedCourt = val);
+                        },
+                      ),
               ],
             ),
             const SizedBox(height: 14),

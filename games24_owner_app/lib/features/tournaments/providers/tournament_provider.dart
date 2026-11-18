@@ -83,9 +83,13 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
                 }
 
                 // Owner-only filter: only tournaments created by / for this turf owner
-                if (targetTurfId != null && t.verifiedAdminId != null) {
-                  if (t.verifiedAdminId == targetTurfId) return true;
+                final ownerBranchIds = profile.branches.map((b) => b.id).toSet();
+                if (profile.turfId > 0) ownerBranchIds.add(profile.turfId);
+                if (targetTurfId != null) ownerBranchIds.add(targetTurfId);
+                if (t.verifiedAdminId != null && ownerBranchIds.contains(t.verifiedAdminId)) {
+                  return true;
                 }
+
                 final cleanTargetPhone = targetPhone.replaceAll(RegExp(r'[^0-9]'), '');
                 final cleanTournPhone = t.phone.replaceAll(RegExp(r'[^0-9]'), '');
                 if (cleanTargetPhone.isNotEmpty && cleanTournPhone.isNotEmpty) {
@@ -93,14 +97,26 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
                   final tournEnd = cleanTournPhone.length >= 10 ? cleanTournPhone.substring(cleanTournPhone.length - 10) : cleanTournPhone;
                   if (targetEnd == tournEnd) return true;
                 }
+
                 if (targetVenue.isNotEmpty) {
                   final vLower = targetVenue.toLowerCase();
-                  if (t.courtAllocation.toLowerCase().contains(vLower) ||
+                  if (t.venueName.toLowerCase().contains(vLower) ||
+                      vLower.contains(t.venueName.toLowerCase()) ||
+                      t.courtAllocation.toLowerCase().contains(vLower) ||
                       vLower.contains(t.courtAllocation.toLowerCase()) ||
                       t.organizerName.toLowerCase().contains(vLower)) {
                     return true;
                   }
                 }
+
+                for (final b in profile.branches) {
+                  if (b.venueName.isNotEmpty &&
+                      (t.venueName.toLowerCase().contains(b.venueName.toLowerCase()) ||
+                       b.venueName.toLowerCase().contains(t.venueName.toLowerCase()))) {
+                    return true;
+                  }
+                }
+
                 // If no specific owner criteria was supplied, or if the backend already filtered by ownerOnly
                 if (targetTurfId == null && cleanTargetPhone.isEmpty && targetVenue.isEmpty) {
                   return true;

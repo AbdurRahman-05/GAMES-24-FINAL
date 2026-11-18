@@ -225,6 +225,7 @@ class TournamentModel {
 
   final String tournamentType; // Knockout, League, Round Robin, etc.
   final String sportType; // Football, Cricket, Futsal, etc.
+  final String venueName;
   final String courtAllocation; // 'Turf A', 'Entire Turf', etc.
 
   final String regStartDate;
@@ -286,6 +287,7 @@ class TournamentModel {
     required this.email,
     required this.tournamentType,
     required this.sportType,
+    this.venueName = 'Champions Arena',
     required this.courtAllocation,
     required this.regStartDate,
     required this.regEndDate,
@@ -428,6 +430,7 @@ class TournamentModel {
       email: 'support@games24.live',
       tournamentType: json['format']?.toString() ?? 'Knockout',
       sportType: json['sport']?.toString() ?? 'Football',
+      venueName: venueName,
       courtAllocation: json['courtAllocation']?.toString() ?? venueName,
       regStartDate: regStartVal,
       regEndDate: regEndVal,
@@ -461,6 +464,8 @@ class TournamentModel {
   TournamentModel copyWith({
     String? status,
     String? tournamentType,
+    String? venueName,
+    String? courtAllocation,
     int? registeredTeamsCount,
     double? totalRevenue,
     String? liveScore,
@@ -489,7 +494,8 @@ class TournamentModel {
       email: email,
       tournamentType: tournamentType ?? this.tournamentType,
       sportType: sportType,
-      courtAllocation: courtAllocation,
+      venueName: venueName ?? this.venueName,
+      courtAllocation: courtAllocation ?? this.courtAllocation,
       regStartDate: regStartDate,
       regEndDate: regEndDate,
       startDate: startDate,

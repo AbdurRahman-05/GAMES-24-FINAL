@@ -627,7 +627,11 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       Text(
                         tournament.isVenueTBA
                             ? 'Venue Details Launching Soon (TBA)'
-                            : '${tournament.venue}, ${tournament.location}',
+                            : (tournament.courtAllocation != null &&
+                                    tournament.courtAllocation!.isNotEmpty &&
+                                    tournament.courtAllocation != tournament.venue)
+                                ? '${tournament.venue} (${tournament.courtAllocation}), ${tournament.location}'
+                                : '${tournament.venue}, ${tournament.location}',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 13,
