@@ -263,6 +263,8 @@ class TournamentModel {
   final String championTeam;
   final String championLogo;
   final int? verifiedAdminId;
+  final bool isOwnerCreated;
+  final String createdByRole;
 
   final List<TournamentFixture> fixtures;
   final List<LeagueStandingRow> standings;
@@ -316,6 +318,8 @@ class TournamentModel {
     this.championTeam = '',
     this.championLogo = '',
     this.verifiedAdminId,
+    this.isOwnerCreated = true,
+    this.createdByRole = 'OWNER',
     this.fixtures = const [],
     this.standings = const [],
     this.registeredTeams = const [],
@@ -432,6 +436,11 @@ class TournamentModel {
       registeredTeamsCount: actualTeamsCount,
       totalRevenue: entryFeeNum * actualTeamsCount,
       verifiedAdminId: adminIdNum,
+      isOwnerCreated: json['isOwnerCreated'] == true ||
+          json['createdByRole'] == 'OWNER' ||
+          (adminIdNum != null && adminIdNum != 0),
+      createdByRole: json['createdByRole']?.toString() ??
+          ((json['isOwnerCreated'] == true || adminIdNum != null) ? 'OWNER' : 'PLAYER'),
       registeredTeams: parsedTeams,
     );
   }
@@ -446,6 +455,8 @@ class TournamentModel {
     String? championTeam,
     String? championLogo,
     int? verifiedAdminId,
+    bool? isOwnerCreated,
+    String? createdByRole,
     List<TournamentFixture>? fixtures,
     List<LeagueStandingRow>? standings,
     List<TeamRegistrationModel>? registeredTeams,
@@ -497,6 +508,8 @@ class TournamentModel {
       championTeam: championTeam ?? this.championTeam,
       championLogo: championLogo ?? this.championLogo,
       verifiedAdminId: verifiedAdminId ?? this.verifiedAdminId,
+      isOwnerCreated: isOwnerCreated ?? this.isOwnerCreated,
+      createdByRole: createdByRole ?? this.createdByRole,
       fixtures: fixtures ?? this.fixtures,
       standings: standings ?? this.standings,
       registeredTeams: registeredTeams ?? this.registeredTeams,

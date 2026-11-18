@@ -220,6 +220,8 @@ class _AdminTournamentManagerScreenState
         'organizerPhone': newTournament.phone,
         'bannerUrl': newTournament.bannerUrl,
         'verifiedAdminId': verifiedAdminId,
+        'isOwnerCreated': true,
+        'createdByRole': 'OWNER',
       };
 
       final response = await http.post(

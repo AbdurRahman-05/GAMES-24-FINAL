@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:games24_player_app/tournament_manager.dart';
 import 'package:games24_player_app/tournament_details_screen.dart';
 import 'package:games24_player_app/create_tournament_dialog.dart';
@@ -545,6 +545,66 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       ],
                     ],
                   ),
+                ),
+                Positioned(
+                  top: 14,
+                  right: 14,
+                  child: tournament.isOwnerCreated
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF141F0A).withValues(alpha: 0.95),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFD4FF00), width: 1.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_rounded, size: 13, color: Color(0xFFD4FF00)),
+                              SizedBox(width: 4),
+                              Text(
+                                'TURF OWNER',
+                                style: TextStyle(
+                                  color: Color(0xFFD4FF00),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.75),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFF3F3F46), width: 1.0),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.groups_rounded, size: 12, color: Color(0xFFA1A1AA)),
+                              SizedBox(width: 4),
+                              Text(
+                                'COMMUNITY',
+                                style: TextStyle(
+                                  color: Color(0xFFA1A1AA),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                 ),
                 Positioned(
                   bottom: 16,

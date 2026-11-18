@@ -76,6 +76,11 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
           final items = decoded
               .map((item) => TournamentModel.fromJson(Map<String, dynamic>.from(item)))
               .where((t) {
+                // Strictly OWNER ONLY! Player-created tournaments never merge into Owner App!
+                if (!t.isOwnerCreated || t.createdByRole == 'PLAYER') {
+                  return false;
+                }
+
                 // Owner-only filter: only tournaments created by / for this turf owner
                 if (targetTurfId != null && t.verifiedAdminId != null) {
                   if (t.verifiedAdminId == targetTurfId) return true;

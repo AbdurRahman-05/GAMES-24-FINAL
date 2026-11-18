@@ -65,6 +65,8 @@ class TournamentFormData {
       isVenueTBA: isVenueTBA,
       externalTicketUrl: externalTicketUrl.isNotEmpty ? externalTicketUrl : null,
       courtsCount: courtsCount,
+      isOwnerCreated: false,
+      createdByRole: 'PLAYER',
     );
   }
 
@@ -88,7 +90,9 @@ class TournamentFormData {
       'bannerUrl': imageUrl,
       'isPrivate': isPrivate,
       'accessCode': isPrivate ? accessCode : null,
-      'verifiedAdminId': verifiedAdminId,
+      'verifiedAdminId': null,
+      'isOwnerCreated': false,
+      'createdByRole': 'PLAYER',
     };
   }
 }

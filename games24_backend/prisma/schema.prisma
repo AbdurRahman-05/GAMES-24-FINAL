@@ -244,6 +244,8 @@ model Tournament {
   bannerUrl       String?
   organizerName   String?
   organizerPhone  String?
+  isOwnerCreated  Boolean        @default(true)
+  createdByRole   String         @default("OWNER") // "OWNER" or "PLAYER"
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 }

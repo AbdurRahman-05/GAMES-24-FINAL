@@ -2679,7 +2679,11 @@ export class TurfService {
         ownerConditions.push({ venueName: { equals: venue.trim(), mode: 'insensitive' } });
       }
       if (ownerConditions.length > 0) {
-        where.OR = ownerConditions;
+        where.AND = [
+          { isOwnerCreated: true },
+          { createdByRole: 'OWNER' },
+          { OR: ownerConditions },
+        ];
       } else if (ownerOnly === 'true') {
         return [];
       }
@@ -2738,6 +2742,8 @@ export class TurfService {
       organizerName: t.organizerName,
       organizerPhone: t.organizerPhone,
       verifiedAdminId: t.verifiedAdminId,
+      isOwnerCreated: t.isOwnerCreated ?? (t.createdByRole === 'OWNER' || Boolean(t.verifiedAdminId)),
+      createdByRole: t.createdByRole || (t.verifiedAdminId ? 'OWNER' : 'PLAYER'),
     }));
   }
 
@@ -2772,8 +2778,11 @@ export class TurfService {
     const organizerPhone = (body?.organizerPhone || body?.phone || '9876543210').toString().trim();
     const bannerUrl = (body?.bannerUrl || body?.imageUrl || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80').toString().trim();
 
-    let verifiedAdminId = body?.verifiedAdminId ? Number(body.verifiedAdminId) : null;
-    if (!verifiedAdminId && venueName && !venueName.toLowerCase().includes('tba')) {
+    const isOwnerCreated = body?.isOwnerCreated === false || body?.createdByRole === 'PLAYER' ? false : true;
+    const createdByRole = isOwnerCreated ? 'OWNER' : 'PLAYER';
+
+    let verifiedAdminId = isOwnerCreated && body?.verifiedAdminId ? Number(body.verifiedAdminId) : null;
+    if (isOwnerCreated && !verifiedAdminId && venueName && !venueName.toLowerCase().includes('tba')) {
       const match = await this.prisma.verifiedAdmin.findFirst({
         where: { venueName: { equals: venueName, mode: 'insensitive' } },
       });
@@ -2810,6 +2819,8 @@ export class TurfService {
         status: 'UPCOMING',
         isHold: false,
         verifiedAdminId,
+        isOwnerCreated,
+        createdByRole,
       },
     });
 

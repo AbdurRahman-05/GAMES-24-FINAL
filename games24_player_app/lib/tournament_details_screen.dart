@@ -144,6 +144,55 @@ class TournamentDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(width: 8),
+            if (tournament.isOwnerCreated)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF141F0A),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFD4FF00), width: 1.2),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified_rounded, size: 13, color: Color(0xFFD4FF00)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Turf Owner Official',
+                      style: TextStyle(
+                        color: Color(0xFFD4FF00),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C1C1E),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF3A3A3C), width: 1.0),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.groups_rounded, size: 13, color: Color(0xFFA1A1AA)),
+                    SizedBox(width: 4),
+                    Text(
+                      'Community Hosted',
+                      style: TextStyle(
+                        color: Color(0xFFA1A1AA),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
         const SizedBox(height: 16),

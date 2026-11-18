@@ -44,6 +44,8 @@ class Tournament {
   final int playersPerTeam;
   final String? championPrize;
   final String? runnerUpPrize;
+  final bool isOwnerCreated;
+  final String createdByRole;
 
   Tournament({
     required this.id,
@@ -82,6 +84,8 @@ class Tournament {
     this.playersPerTeam = 8,
     this.championPrize,
     this.runnerUpPrize,
+    this.isOwnerCreated = true,
+    this.createdByRole = 'OWNER',
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -153,6 +157,11 @@ class Tournament {
       playersPerTeam: (json['playersPerTeam'] is num) ? (json['playersPerTeam'] as num).toInt() : (int.tryParse(json['playersPerTeam']?.toString() ?? '') ?? 8),
       championPrize: json['championPrize']?.toString() ?? json['prizePool']?.toString(),
       runnerUpPrize: json['runnerUpPrize']?.toString(),
+      isOwnerCreated: json['isOwnerCreated'] == true ||
+          json['createdByRole'] == 'OWNER' ||
+          (json['verifiedAdminId'] != null && json['verifiedAdminId'] != 0),
+      createdByRole: json['createdByRole']?.toString() ??
+          ((json['isOwnerCreated'] == true || json['verifiedAdminId'] != null) ? 'OWNER' : 'PLAYER'),
     );
   }
 
@@ -180,6 +189,17 @@ class Tournament {
     String? accessCode,
     String? organizerPhone,
     String? organizerName,
+    String? subtitle,
+    String? description,
+    String? courtAllocation,
+    String? startDate,
+    String? endDate,
+    String? registrationDeadline,
+    int? playersPerTeam,
+    String? championPrize,
+    String? runnerUpPrize,
+    bool? isOwnerCreated,
+    String? createdByRole,
   }) {
     return Tournament(
       id: id ?? this.id,
@@ -205,6 +225,17 @@ class Tournament {
       accessCode: accessCode ?? this.accessCode,
       organizerPhone: organizerPhone ?? this.organizerPhone,
       organizerName: organizerName ?? this.organizerName,
+      subtitle: subtitle ?? this.subtitle,
+      description: description ?? this.description,
+      courtAllocation: courtAllocation ?? this.courtAllocation,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      registrationDeadline: registrationDeadline ?? this.registrationDeadline,
+      playersPerTeam: playersPerTeam ?? this.playersPerTeam,
+      championPrize: championPrize ?? this.championPrize,
+      runnerUpPrize: runnerUpPrize ?? this.runnerUpPrize,
+      isOwnerCreated: isOwnerCreated ?? this.isOwnerCreated,
+      createdByRole: createdByRole ?? this.createdByRole,
     );
   }
 }
