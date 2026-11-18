@@ -2694,8 +2694,8 @@ export class TurfService {
     // Exclude tournaments if tournament itself is held, or if the host turf is held or inactive
     const activeTournaments = tournaments.filter((t) => {
       if (t.isHold || t.status === 'ON_HOLD' || t.status === 'CANCELLED') return false;
-      if (t.verifiedAdmin) {
-        if (t.verifiedAdmin.isBookingHold || t.verifiedAdmin.status !== 'VERIFIED') {
+      if (t.verifiedAdmin && !isOwnerFilter) {
+        if (t.verifiedAdmin.isBookingHold || t.verifiedAdmin.status === 'REJECTED' || t.verifiedAdmin.status === 'SUSPENDED') {
           return false;
         }
       }
@@ -2705,20 +2705,32 @@ export class TurfService {
     return activeTournaments.map((t) => ({
       id: t.id.toString(),
       title: t.title,
+      subtitle: t.subtitle || t.format || 'Open Championship',
       sport: t.sport,
       format: t.format,
       status: t.status.toLowerCase(),
       date: t.date,
+      startDate: t.startDate || t.date,
+      endDate: t.endDate || t.date,
+      registrationDeadline: t.registrationDeadline || t.date,
       time: t.time || '09:00 AM',
       venue: t.venueName,
       venueName: t.venueName,
+      courtAllocation: t.courtAllocation || t.venueName,
       location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
       entryFee: `₹${t.entryFee.toFixed(0)}`,
-      prizePool: t.prizePool || '₹15,000',
-      grandPrize: t.prizePool || '₹15,000',
+      teamEntryFee: t.entryFee,
+      prizePool: t.prizePool || t.championPrize || '₹15,000',
+      grandPrize: t.championPrize || t.prizePool || '₹15,000',
+      championPrize: t.championPrize || t.prizePool || '₹15,000',
+      runnerUpPrize: t.runnerUpPrize || '',
       maxTeams: t.maxTeams,
       registeredTeams: t.registeredTeams,
+      playersPerTeam: t.playersPerTeam || 8,
+      description: t.description || `Official tournament at ${t.venueName}`,
+      rules: t.rules ? [t.rules] : ['1. Standard tournament rules apply.'],
       imageUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
+      bannerUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
       reportingTime: '30 mins before match',
       matchDay: 'Day 1',
       tournamentProgress: t.status === 'LIVE' ? 'Ongoing' : 'Upcoming',
@@ -2733,19 +2745,29 @@ export class TurfService {
     const title = (body?.title || '').toString().trim();
     const venueName = (body?.venueName || body?.venue || 'Games24 Arena').toString().trim();
     const todayStr = new Date().toISOString().split('T')[0];
-    const date = (body?.date || todayStr).toString().trim();
+    const date = (body?.startDate || body?.date || todayStr).toString().trim();
 
     if (!title) {
       throw new BadRequestException('Tournament title is required for creating a tournament');
     }
 
+    const subtitle = (body?.subtitle || '').toString().trim() || null;
+    const description = (body?.description || '').toString().trim() || null;
+    const rules = (body?.rules || '').toString().trim() || null;
+    const courtAllocation = (body?.courtAllocation || body?.court || venueName).toString().trim();
+    const startDate = (body?.startDate || date).toString().trim();
+    const endDate = (body?.endDate || body?.startDate || date).toString().trim();
+    const registrationDeadline = (body?.registrationDeadline || body?.regEndDate || date).toString().trim();
     const sport = (body?.sport || body?.sportType || 'Football').toString().trim();
     const format = (body?.format || body?.tournamentType || 'Knockout').toString().trim();
     const time = (body?.time || body?.matchStartTime || '09:00 AM').toString().trim();
     const location = (body?.location || 'Madurai').toString().trim();
     const entryFee = Number(body?.entryFee ?? body?.teamEntryFee ?? 1500) || 0;
-    const prizePool = (body?.prizePool || body?.championPrize || '₹15,000').toString().trim();
+    const championPrize = (body?.championPrize || body?.prizePool || '₹15,000').toString().trim();
+    const runnerUpPrize = (body?.runnerUpPrize || '').toString().trim() || null;
+    const prizePool = championPrize;
     const maxTeams = Number(body?.maxTeams) || 16;
+    const playersPerTeam = Number(body?.playersPerTeam ?? body?.playersPerSquad ?? 8) || 8;
     const organizerName = (body?.organizerName || 'Games24 Community').toString().trim();
     const organizerPhone = (body?.organizerPhone || body?.phone || '9876543210').toString().trim();
     const bannerUrl = (body?.bannerUrl || body?.imageUrl || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80').toString().trim();
@@ -2761,6 +2783,16 @@ export class TurfService {
     const created = await this.prisma.tournament.create({
       data: {
         title,
+        subtitle,
+        description,
+        rules,
+        courtAllocation,
+        startDate,
+        endDate,
+        registrationDeadline,
+        playersPerTeam,
+        championPrize,
+        runnerUpPrize,
         sport,
         format,
         date,
@@ -2799,8 +2831,8 @@ export class TurfService {
     if (tournament.isHold || tournament.status === 'ON_HOLD' || tournament.status === 'CANCELLED') {
       throw new BadRequestException('This tournament is currently placed on hold by platform administrator and cannot accept registrations.');
     }
-    if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status !== 'VERIFIED')) {
-      throw new BadRequestException('The venue for this tournament is currently on hold by platform administrator.');
+    if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status === 'REJECTED' || tournament.verifiedAdmin.status === 'SUSPENDED')) {
+      throw new BadRequestException('The venue for this tournament is currently on hold or inactive.');
     }
     if (tournament.registeredTeams >= tournament.maxTeams) {
       throw new BadRequestException('Tournament registration is full!');

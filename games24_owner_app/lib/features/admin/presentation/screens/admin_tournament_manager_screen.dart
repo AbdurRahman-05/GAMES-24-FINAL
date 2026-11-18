@@ -143,14 +143,21 @@ class _AdminTournamentManagerScreenState
     final verifiedAdminId = venueProfile.turfId;
     final venueName = venueProfile.venueName.isNotEmpty ? venueProfile.venueName : 'Champions Arena';
 
+    final sportBanner = _selectedSport.toLowerCase().contains('cricket')
+        ? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'
+        : _selectedSport.toLowerCase().contains('badminton')
+            ? 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80'
+            : _selectedSport.toLowerCase().contains('futsal')
+                ? 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=800&q=80'
+                : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80';
+
     final newTournament = TournamentModel(
       id: 'tourn_${DateTime.now().millisecondsSinceEpoch}',
       title: _titleCtrl.text.trim(),
       subtitle: _subtitleCtrl.text.trim().isEmpty
           ? 'Open Championship'
           : _subtitleCtrl.text.trim(),
-      bannerUrl:
-          'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
+      bannerUrl: sportBanner,
       logoUrl:
           'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
       description: _descCtrl.text.trim().isEmpty
@@ -190,6 +197,13 @@ class _AdminTournamentManagerScreenState
     try {
       final payload = {
         'title': newTournament.title,
+        'subtitle': newTournament.subtitle,
+        'description': newTournament.description,
+        'rules': newTournament.rules,
+        'courtAllocation': newTournament.courtAllocation,
+        'startDate': newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr,
+        'endDate': newTournament.endDate.isNotEmpty ? newTournament.endDate : (newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr),
+        'registrationDeadline': newTournament.regEndDate.isNotEmpty ? newTournament.regEndDate : (newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr),
         'sport': newTournament.sportType,
         'format': newTournament.tournamentType,
         'date': newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr,
@@ -198,7 +212,10 @@ class _AdminTournamentManagerScreenState
         'location': venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai',
         'entryFee': newTournament.teamEntryFee,
         'prizePool': newTournament.championPrize,
+        'championPrize': newTournament.championPrize,
+        'runnerUpPrize': newTournament.runnerUpPrize,
         'maxTeams': newTournament.maxTeams,
+        'playersPerTeam': newTournament.playersPerTeam,
         'organizerName': newTournament.organizerName,
         'organizerPhone': newTournament.phone,
         'bannerUrl': newTournament.bannerUrl,
@@ -223,6 +240,8 @@ class _AdminTournamentManagerScreenState
       }
     } catch (e) {
       debugPrint("Error creating tournament on backend: $e");
+      ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
+    }
       ref.read(adminTournamentProvider.notifier).addTournament(newTournament);
     }
 

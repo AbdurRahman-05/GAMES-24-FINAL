@@ -228,6 +228,16 @@ model Tournament {
   location        String?
   entryFee        Float          @default(1500.0)
   prizePool       String?        @default("₹15,000")
+  subtitle        String?
+  description     String?
+  rules           String?
+  courtAllocation String?
+  startDate       String?
+  endDate         String?
+  registrationDeadline String?
+  playersPerTeam  Int?           @default(8)
+  championPrize   String?
+  runnerUpPrize   String?
   maxTeams        Int            @default(12)
   registeredTeams Int            @default(0)
   registeredUsers Json?          @default("[]")

@@ -28,7 +28,14 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
   }
 
   void _onTournamentUpdate() {
-    setState(() {}); // Rebuild when tournaments are added/registered
+    if (mounted) {
+      if (_selectedTabIndex == 0 &&
+          TournamentManager().ongoingTournaments.isEmpty &&
+          TournamentManager().upcomingTournaments.isNotEmpty) {
+        _selectedTabIndex = 1;
+      }
+      setState(() {}); // Rebuild when tournaments are added/registered
+    }
   }
 
   @override
@@ -185,6 +192,35 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               ),
             ),
             const SizedBox(height: 24),
+            if (_selectedTabIndex == 0 && TournamentManager().upcomingTournaments.isNotEmpty)
+              ElevatedButton.icon(
+                onPressed: () => setState(() => _selectedTabIndex = 1),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD4FF00),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                icon: const Icon(
+                  Icons.calendar_month_rounded,
+                  size: 18,
+                  color: Colors.black,
+                ),
+                label: const Text(
+                  'Explore Upcoming Tournaments',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13.5,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
             if (_selectedTabIndex == 1)
               ElevatedButton.icon(
                 onPressed: () => showCreateTournamentDialog(context),

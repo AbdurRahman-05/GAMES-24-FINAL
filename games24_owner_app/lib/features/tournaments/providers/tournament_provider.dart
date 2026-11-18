@@ -22,7 +22,7 @@ class AdminTournamentState {
   int get liveCount => tournaments.where((t) => t.status == 'Live').length;
   int get completedCount => tournaments.where((t) => t.status == 'Completed').length;
 
-  int get totalParticipants => tournaments.fold(0, (sum, t) => sum + (t.registeredTeamsCount * t.playersPerTeam));
+  int get totalParticipants => tournaments.fold(0, (sum, t) => sum + (t.registeredTeamsCount > 0 ? t.registeredTeamsCount : t.registeredTeams.length));
   double get totalRevenue => tournaments.fold(0.0, (sum, t) => sum + t.totalRevenue);
   int get pendingApprovals => tournaments.where((t) => t.status == 'Upcoming' && t.registeredTeamsCount < t.maxTeams).length;
   int get availableSlots => tournaments.fold(0, (sum, t) => sum + (t.maxTeams - t.registeredTeamsCount));
@@ -88,12 +88,18 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
                   if (targetEnd == tournEnd) return true;
                 }
                 if (targetVenue.isNotEmpty) {
-                  if (t.courtAllocation.toLowerCase().contains(targetVenue.toLowerCase()) ||
-                      targetVenue.toLowerCase().contains(t.courtAllocation.toLowerCase())) {
+                  final vLower = targetVenue.toLowerCase();
+                  if (t.courtAllocation.toLowerCase().contains(vLower) ||
+                      vLower.contains(t.courtAllocation.toLowerCase()) ||
+                      t.organizerName.toLowerCase().contains(vLower)) {
                     return true;
                   }
                 }
-                return targetTurfId == null && targetPhone.isEmpty && targetVenue.isEmpty;
+                // If no specific owner criteria was supplied, or if the backend already filtered by ownerOnly
+                if (targetTurfId == null && cleanTargetPhone.isEmpty && targetVenue.isEmpty) {
+                  return true;
+                }
+                return false;
               })
               .toList();
           state = state.copyWith(tournaments: items);

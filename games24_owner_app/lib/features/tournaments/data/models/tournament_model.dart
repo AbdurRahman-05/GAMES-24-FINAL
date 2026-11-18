@@ -374,16 +374,36 @@ class TournamentModel {
       }
     }
 
-    final actualTeamsCount = parsedTeams.isNotEmpty ? parsedTeams.length : regTeamsNum;
+    final actualTeamsCount = parsedTeams.length > regTeamsNum ? parsedTeams.length : regTeamsNum;
+
+    final rulesRaw = json['rules'];
+    String parsedRules = '1. Standard tournament rules apply.\n2. Referee decision is final.';
+    if (rulesRaw is List) {
+      parsedRules = rulesRaw.join('\n');
+    } else if (rulesRaw != null && rulesRaw.toString().trim().isNotEmpty) {
+      parsedRules = rulesRaw.toString();
+    }
+
+    final startDateVal = json['startDate']?.toString() ?? (json['date']?.toString() ?? '');
+    final endDateVal = json['endDate']?.toString() ?? (json['startDate']?.toString() ?? (json['date']?.toString() ?? ''));
+    final regEndVal = json['registrationDeadline']?.toString() ?? (json['regEndDate']?.toString() ?? (json['date']?.toString() ?? ''));
+    final regStartVal = json['regStartDate']?.toString() ?? (json['startDate']?.toString() ?? (json['date']?.toString() ?? ''));
+
+    final playersPerTeamVal = (json['playersPerTeam'] is num)
+        ? (json['playersPerTeam'] as num).toInt()
+        : (int.tryParse(json['playersPerTeam']?.toString() ?? '') ?? 8);
+
+    final champPrize = json['championPrize']?.toString() ?? (json['prizePool']?.toString() ?? (json['grandPrize']?.toString() ?? '₹15,000'));
+    final runnerPrize = json['runnerUpPrize']?.toString() ?? 'Trophy + Medals';
 
     return TournamentModel(
       id: json['id']?.toString() ?? 'tourn_${DateTime.now().millisecondsSinceEpoch}',
       title: json['title']?.toString() ?? 'Championship Tournament',
-      subtitle: json['format']?.toString() ?? 'Open Tournament',
+      subtitle: json['subtitle']?.toString() ?? (json['format']?.toString() ?? 'Open Tournament'),
       bannerUrl: json['imageUrl']?.toString() ?? (json['bannerUrl']?.toString() ?? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'),
       logoUrl: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
-      description: 'Official tournament at $venueName',
-      rules: '1. Standard tournament rules apply.\n2. Referee decision is final.',
+      description: json['description']?.toString() ?? 'Official tournament at $venueName',
+      rules: parsedRules,
       organizerName: json['organizerName']?.toString() ?? 'Games24 Community',
       contactPerson: 'Venue Manager',
       phone: json['organizerPhone']?.toString() ?? '9876543210',
@@ -391,11 +411,11 @@ class TournamentModel {
       email: 'support@games24.live',
       tournamentType: json['format']?.toString() ?? 'Knockout',
       sportType: json['sport']?.toString() ?? 'Football',
-      courtAllocation: venueName,
-      regStartDate: json['date']?.toString() ?? '',
-      regEndDate: json['date']?.toString() ?? '',
-      startDate: json['date']?.toString() ?? '',
-      endDate: json['date']?.toString() ?? '',
+      courtAllocation: json['courtAllocation']?.toString() ?? venueName,
+      regStartDate: regStartVal,
+      regEndDate: regEndVal,
+      startDate: startDateVal,
+      endDate: endDateVal,
       matchStartTime: json['time']?.toString() ?? '09:00 AM',
       matchEndTime: '06:00 PM',
       matchDurationMinutes: 40,
@@ -404,10 +424,10 @@ class TournamentModel {
       regularPrice: entryFeeNum,
       maxTeams: maxTeamsNum,
       minTeams: 4,
-      playersPerTeam: 8,
+      playersPerTeam: playersPerTeamVal,
       substitutePlayers: 2,
-      championPrize: json['prizePool']?.toString() ?? (json['grandPrize']?.toString() ?? '₹15,000'),
-      runnerUpPrize: 'Trophy + Medals',
+      championPrize: champPrize,
+      runnerUpPrize: runnerPrize,
       status: normalizedStatus,
       registeredTeamsCount: actualTeamsCount,
       totalRevenue: entryFeeNum * actualTeamsCount,

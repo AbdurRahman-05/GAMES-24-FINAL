@@ -35,6 +35,15 @@ class Tournament {
   final int courtsCount;
   final String? organizerPhone;
   final String? organizerName;
+  final String? subtitle;
+  final String? description;
+  final String? courtAllocation;
+  final String? startDate;
+  final String? endDate;
+  final String? registrationDeadline;
+  final int playersPerTeam;
+  final String? championPrize;
+  final String? runnerUpPrize;
 
   Tournament({
     required this.id,
@@ -64,6 +73,15 @@ class Tournament {
     this.courtsCount = 2,
     this.organizerPhone,
     this.organizerName,
+    this.subtitle,
+    this.description,
+    this.courtAllocation,
+    this.startDate,
+    this.endDate,
+    this.registrationDeadline,
+    this.playersPerTeam = 8,
+    this.championPrize,
+    this.runnerUpPrize,
   });
 
   factory Tournament.fromJson(Map<String, dynamic> json) {
@@ -126,6 +144,15 @@ class Tournament {
       courtsCount: (json['courtsCount'] is num) ? (json['courtsCount'] as num).toInt() : 2,
       organizerPhone: json['organizerPhone']?.toString(),
       organizerName: json['organizerName']?.toString(),
+      subtitle: json['subtitle']?.toString(),
+      description: json['description']?.toString(),
+      courtAllocation: json['courtAllocation']?.toString(),
+      startDate: json['startDate']?.toString() ?? json['date']?.toString(),
+      endDate: json['endDate']?.toString(),
+      registrationDeadline: json['registrationDeadline']?.toString(),
+      playersPerTeam: (json['playersPerTeam'] is num) ? (json['playersPerTeam'] as num).toInt() : (int.tryParse(json['playersPerTeam']?.toString() ?? '') ?? 8),
+      championPrize: json['championPrize']?.toString() ?? json['prizePool']?.toString(),
+      runnerUpPrize: json['runnerUpPrize']?.toString(),
     );
   }
 
