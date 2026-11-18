@@ -2052,9 +2052,49 @@ class _AdminTournamentManagerScreenState
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: () {
-                        ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
-                        ToastUtils.showInfo(context, 'Tournament "${t.title}" deleted');
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: const Color(0xFF141414),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(color: Color(0xFF262626)),
+                            ),
+                            title: const Row(
+                              children: [
+                                Icon(Icons.delete_forever_rounded, color: Color(0xFFEF4444), size: 22),
+                                SizedBox(width: 8),
+                                Text('Delete Tournament', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            content: Text(
+                              'Are you sure you want to permanently delete "${t.title}" from the database?',
+                              style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel', style: TextStyle(color: Color(0xFFA1A1AA))),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Delete Permanently', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirm == true) {
+                          await ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
+                          if (context.mounted) {
+                            ToastUtils.showSuccess(context, 'Tournament "${t.title}" permanently deleted from database');
+                          }
+                        }
                       },
                       borderRadius: BorderRadius.circular(10),
                       child: Container(

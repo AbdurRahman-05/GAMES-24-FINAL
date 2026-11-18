@@ -2831,6 +2831,25 @@ export class TurfService {
     };
   }
 
+  async deleteTournament(tournamentId: number) {
+    const tourn = await this.prisma.tournament.findUnique({
+      where: { id: tournamentId },
+    });
+    if (!tourn) {
+      throw new NotFoundException(`Tournament #${tournamentId} not found`);
+    }
+
+    await this.prisma.tournament.delete({
+      where: { id: tournamentId },
+    });
+
+    return {
+      success: true,
+      tournamentId,
+      message: `Tournament "${tourn.title}" has been permanently deleted from database.`,
+    };
+  }
+
   async registerTournament(id: number, body: any) {
     const tournament = await this.prisma.tournament.findUnique({
       where: { id },

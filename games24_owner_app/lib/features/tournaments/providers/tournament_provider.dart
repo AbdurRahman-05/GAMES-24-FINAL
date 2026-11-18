@@ -598,9 +598,31 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
     state = state.copyWith(tournaments: updatedList);
   }
 
-  void deleteTournament(String tournamentId) {
+  Future<bool> deleteTournament(String tournamentId) async {
     final updatedList = state.tournaments.where((t) => t.id != tournamentId).toList();
     state = state.copyWith(tournaments: updatedList);
+
+    // Permanently delete at database level via backend API
+    try {
+      final cleanId = int.tryParse(tournamentId.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (cleanId != null && cleanId > 0) {
+        final res = await http.delete(
+          Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$cleanId'),
+        ).timeout(const Duration(seconds: 10));
+
+        if (res.statusCode == 200 || res.statusCode == 204) {
+          return true;
+        } else {
+          final postRes = await http.post(
+            Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$cleanId/delete'),
+          ).timeout(const Duration(seconds: 10));
+          return postRes.statusCode == 200 || postRes.statusCode == 204;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error deleting tournament from database: $e");
+    }
+    return false;
   }
 }
 

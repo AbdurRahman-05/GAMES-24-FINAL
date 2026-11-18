@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -42,6 +43,16 @@ export class TurfController {
     @Body() body: any,
   ) {
     return this.turfService.registerTournament(id, body);
+  }
+
+  @Delete('tournaments/:id')
+  async deleteTournament(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.deleteTournament(id);
+  }
+
+  @Post('tournaments/:id/delete')
+  async deleteTournamentPost(@Param('id', ParseIntPipe) id: number) {
+    return this.turfService.deleteTournament(id);
   }
 
   @Get('user-bookings')
