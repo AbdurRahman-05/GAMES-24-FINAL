@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'login_screen.dart';
 import 'main_layout.dart';
 import 'welcome_screen.dart';
@@ -62,8 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
   bool _prefsLoaded = false;
   Widget _nextScreenWidget = const WelcomeScreen();
 
-  // Sound Effects & Haptics
-  AudioPlayer? _audioPlayer;
+  // Haptics
   final Set<int> _triggeredHaptics = {};
 
   final List<String> _letterFiles = [
@@ -275,21 +273,8 @@ class _SplashScreenState extends State<SplashScreen>
       }
     });
 
-    _initAudio();
     _controller.forward();
     _preloadSessionData();
-  }
-
-  Future<void> _initAudio() async {
-    try {
-      final player = AudioPlayer();
-      _audioPlayer = player;
-      await player.setPlayerMode(PlayerMode.lowLatency);
-      await player.setVolume(1.0);
-      await player.play(AssetSource('audio/gamez24_intro.wav'));
-    } catch (e) {
-      debugPrint('SplashScreen audio error: $e');
-    }
   }
 
   Future<void> _preloadSessionData() async {
@@ -354,10 +339,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _controller.dispose();
-    try {
-      _audioPlayer?.stop();
-      _audioPlayer?.dispose();
-    } catch (_) {}
     super.dispose();
   }
 
