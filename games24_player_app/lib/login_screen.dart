@@ -474,11 +474,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: Colors.green.shade600),
+        Icon(icon, size: 14, color: const Color(0xFFD4FF00)),
         const SizedBox(width: 4),
         Text(
           text,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+          style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
         ),
       ],
     );

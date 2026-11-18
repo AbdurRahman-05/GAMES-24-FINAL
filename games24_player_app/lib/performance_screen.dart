@@ -54,7 +54,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF141414),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
@@ -206,9 +206,9 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Column(
                 children: [
@@ -249,9 +249,9 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Column(
                 children: [
@@ -273,9 +273,9 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                  border: Border.all(color: const Color(0xFF262626)),
                 ),
                 child: Column(
                   children: const [
@@ -300,9 +300,9 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF141414),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Row(
                     children: [
@@ -321,7 +321,7 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
                           children: [
                             Text(
                               b['courtName'] ?? 'Turf Match',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -376,9 +376,9 @@ class _PerformanceScreenState extends State<PerformanceScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -106,7 +106,7 @@ class BookingQrPassModal extends StatelessWidget {
 
       List<String> splitSlotRange(String s) {
         return s
-            .split(RegExp(r'\s*[-–]\s*|\s+to\s+', caseSensitive: false))
+            .split(RegExp(r'\s*[--]\s*|\s+to\s+', caseSensitive: false))
             .map((p) => p.trim())
             .where((p) => p.isNotEmpty)
             .toList();
@@ -458,17 +458,20 @@ class BookingQrPassModal extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         if (isCheckedIn)
-                          const Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
+                            children: const [
                               Icon(Icons.check_circle_rounded, size: 15, color: Color(0xFFD4FF00)),
                               SizedBox(width: 6),
-                              Text(
-                                'Pass verified at gate. Enjoy your game!',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFD4FF00),
+                              Flexible(
+                                child: Text(
+                                  'Pass verified at gate. Enjoy your game!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFD4FF00),
+                                  ),
                                 ),
                               ),
                             ],
@@ -476,13 +479,15 @@ class BookingQrPassModal extends StatelessWidget {
                         else if (isBeforeWindow)
                           Column(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 6,
                                 children: [
                                   const Icon(Icons.hourglass_top_rounded, size: 14, color: Color(0xFFFBBF24)),
-                                  const SizedBox(width: 5),
                                   Text(
                                     'Check-in unlocks at $opensAtStr (20m before match)',
+                                    textAlign: TextAlign.center,
                                     style: const TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
@@ -494,22 +499,26 @@ class BookingQrPassModal extends StatelessWidget {
                               const SizedBox(height: 3),
                               const Text(
                                 'Gate scan only verifies within 20m of start time • Single-use pass',
+                                textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA)),
                               ),
                             ],
                           )
                         else
-                          const Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
+                            children: const [
                               Icon(Icons.qr_code_scanner_rounded, size: 14, color: Color(0xFFD4FF00)),
                               SizedBox(width: 5),
-                              Text(
-                                'Present this QR at turf gate for check-in',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFD4FF00),
+                              Flexible(
+                                child: Text(
+                                  'Present this QR at turf gate for check-in',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFD4FF00),
+                                  ),
                                 ),
                               ),
                             ],

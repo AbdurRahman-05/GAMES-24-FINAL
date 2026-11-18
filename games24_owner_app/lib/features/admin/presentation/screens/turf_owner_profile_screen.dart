@@ -2036,60 +2036,14 @@ class _TurfOwnerProfileScreenState
           }
         },
       ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Flexible(
-                child: Text(
-                  'VENUE OPERATIONS & PASSPORT',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.6,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 1.5,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD4FF00),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: const Color(0xFFD4FF00).withValues(alpha: 0.4),
-                  ),
-                ),
-                child: const Text(
-                  'PRO',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${profile.venueName} • Madurai Regional Hub',
-            style: const TextStyle(
-              color: Color(0xFFD4FF00),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+      title: const Text(
+        'VENUE PROFILE',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
+        ),
       ),
       actions: [
         IconButton(
@@ -2127,8 +2081,6 @@ class _TurfOwnerProfileScreenState
   }
 
   Widget _buildExecutivePassportHeader(TurfProfileState profile) {
-    final isActive = profile.isSubscriptionActive;
-
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -2175,73 +2127,40 @@ class _TurfOwnerProfileScreenState
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Modern Stadium Crest Squircle with Verified Seal
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 62,
-                          height: 62,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF134530), Color(0xFF0B2F20)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: const Color(
-                                0xFFD4FF00,
-                              ).withValues(alpha: 0.6),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(
-                                  0xFF10B981,
-                                ).withValues(alpha: 0.25),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.stadium_rounded,
-                              size: 32,
-                              color: Color(0xFFFBBF24),
-                            ),
-                          ),
+                    // Modern Stadium Crest Squircle
+                    Container(
+                      width: 62,
+                      height: 62,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF134530), Color(0xFF0B2F20)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        Positioned(
-                          bottom: -3,
-                          right: -3,
-                          child: Container(
-                            padding: const EdgeInsets.all(3.5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFF03160D),
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFF10B981,
-                                  ).withValues(alpha: 0.5),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.check_rounded,
-                              size: 11,
-                              color: Color(0xFF141414),
-                            ),
-                          ),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.6),
+                          width: 1.5,
                         ),
-                      ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.stadium_rounded,
+                          size: 32,
+                          color: Color(0xFFFBBF24),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 14),
 
@@ -2394,21 +2313,6 @@ class _TurfOwnerProfileScreenState
                             'Target ${_formatTargetLabel(profile.monthlyRevenueTarget > 0 ? profile.monthlyRevenueTarget : 50000.0)}',
                         accentColor: const Color(0xFFFBBF24),
                         onTap: () => _showEditMonthlyTargetDialog(profile),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildCreativeMetricCard(
-                        icon: isActive
-                            ? Icons.sensors_rounded
-                            : Icons.pause_circle_rounded,
-                        label: 'Status',
-                        value: isActive ? 'LIVE' : 'HOLD',
-                        tag: isActive ? 'Player App' : 'Expired',
-                        accentColor: isActive
-                            ? const Color(0xFFD4FF00)
-                            : const Color(0xFFF87171),
-                        isLiveIndicator: isActive,
                       ),
                     ),
                   ],
@@ -5467,7 +5371,7 @@ class _TurfOwnerProfileScreenState
                 final vArea = areaCtrl.text.trim();
                 if (vName.isEmpty || vArea.isEmpty) {
                   ToastUtils.showError(
-                    context,
+                    ctx,
                     'Please enter branch name and area',
                   );
                   return;
@@ -5488,7 +5392,7 @@ class _TurfOwnerProfileScreenState
                     );
                 if (ok && mounted) {
                   ToastUtils.showSuccess(
-                    context,
+                    this.context,
                     'Branch "$vName" registered! Super Admin verification in progress.',
                   );
                 }

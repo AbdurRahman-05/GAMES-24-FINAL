@@ -141,7 +141,7 @@ export function getISTDateAndMinutes(): { todayStr: string; currentMinutes: numb
     const todayStr = `${getP('year')}-${getP('month')}-${getP('day')}`;
     const currentMinutes = parseInt(getP('hour'), 10) * 60 + parseInt(getP('minute'), 10);
     return { todayStr, currentMinutes };
-  } catch (e) {
+  } catch {
     const now = new Date();
     const istMs = now.getTime() + (330 + now.getTimezoneOffset()) * 60000;
     const ist = new Date(istMs);
@@ -1860,8 +1860,7 @@ export class TurfService {
     const scannerOwnerPhone = b.ownerPhone || b.masterPhone;
     const scannerTurfId = verifiedAdminId || b.scannerAdminId || b.turfId;
 
-    let isAuthorized = false;
-    let allowedVenueNames: string[] = [];
+        let allowedVenueNames: string[] = [];
 
     if (scannerOwnerPhone || (scannerTurfId && !isNaN(Number(scannerTurfId)))) {
       const cleanPhone = String(scannerOwnerPhone || '').trim().replace(/\D/g, '');
@@ -1907,8 +1906,7 @@ export class TurfService {
 
       // Check if the booked venue is part of this owner's branch network
       if (allowedIds.has(booking.verifiedAdminId)) {
-        isAuthorized = true;
-      } else {
+              } else {
         // Pass was booked for a completely different turf owner
         const bookedVenue = booking.verifiedAdmin?.venueName || 'another venue';
         return {
@@ -1927,8 +1925,7 @@ export class TurfService {
           message: `Invalid Pass! This booking is for "${bookedVenue}" and not recognized under this venue.`,
         };
       }
-      isAuthorized = true;
-    }
+          }
 
     verifiedAdminId = booking.verifiedAdminId;
 

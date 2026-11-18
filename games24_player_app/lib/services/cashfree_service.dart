@@ -210,17 +210,16 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
@@ -240,7 +239,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
               width: 44,
               height: 5,
               decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.grey.shade300,
+                color: const Color(0xFF3F3F46),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -253,30 +252,38 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF154D36).withValues(alpha: 0.12),
+                  color: const Color(0xFF1F2916),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
+                  ),
                 ),
-                child: const Icon(Icons.shield_rounded, color: Color(0xFF154D36), size: 22),
+                child: const Icon(
+                  Icons.shield_rounded,
+                  color: Color(0xFFD4FF00),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
+                  children: const [
+                    Text(
                       'Cashfree Payments',
                       style: TextStyle(
                         fontFamily: 'Delight',
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
+                        color: Colors.white,
                       ),
                     ),
                     Text(
                       '256-bit Encrypted Checkout',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                        color: Color(0xFFA1A1AA),
                       ),
                     ),
                   ],
@@ -286,16 +293,17 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF154D36), Color(0xFF0D3323)],
-                  ),
+                  color: const Color(0xFF1F2916),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Text(
                   '₹${widget.amount.toInt()}',
                   style: const TextStyle(
                     fontFamily: 'Delight',
-                    color: Colors.white,
+                    color: Color(0xFFD4FF00),
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
@@ -305,7 +313,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
           ),
 
           const SizedBox(height: 16),
-          const Divider(height: 1),
+          const Divider(height: 1, color: Color(0xFF262626)),
           const SizedBox(height: 16),
 
           // Payment Methods Selector
@@ -315,7 +323,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.8,
-              color: Color(0xFF94A3B8),
+              color: Color(0xFFA1A1AA),
             ),
           ),
           const SizedBox(height: 12),
@@ -326,7 +334,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
             title: 'UPI Instant Pay',
             subtitle: 'Google Pay, PhonePe, Paytm, BHIM',
             icon: Icons.flash_on_rounded,
-            iconColor: const Color(0xFF059669),
+            iconColor: const Color(0xFFD4FF00),
           ),
           const SizedBox(height: 8),
 
@@ -336,7 +344,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
             title: 'Credit / Debit Card',
             subtitle: 'Visa, Mastercard, RuPay',
             icon: Icons.credit_card_rounded,
-            iconColor: const Color(0xFF0284C7),
+            iconColor: const Color(0xFF38BDF8),
           ),
           const SizedBox(height: 8),
 
@@ -346,7 +354,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
             title: 'Net Banking',
             subtitle: 'All Indian Major Banks',
             icon: Icons.account_balance_rounded,
-            iconColor: const Color(0xFF7C3AED),
+            iconColor: const Color(0xFFA78BFA),
           ),
 
           if (_selectedMethod == 'UPI') ...[
@@ -367,16 +375,21 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
+                color: const Color(0xFF1F2916),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF86EFAC)),
+                border: Border.all(
+                  color: const Color(0xFFD4FF00).withValues(alpha: 0.4),
+                ),
               ),
               child: Row(
                 children: [
                   const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF154D36)),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFFD4FF00),
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -385,7 +398,7 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF154D36),
+                        color: Color(0xFFD4FF00),
                       ),
                     ),
                   ),
@@ -403,39 +416,50 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
             child: ElevatedButton(
               onPressed: _isProcessing ? null : _handlePayment,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF154D36),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFFD4FF00),
+                foregroundColor: Colors.black,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
               child: _isProcessing
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                  )
-                : Text(
-                    'Pay ₹${widget.amount.toInt()} with Cashfree',
-                    style: const TextStyle(
-                      fontFamily: 'Delight',
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w800,
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.black,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Text(
+                      'Pay ₹${widget.amount.toInt()} with Cashfree',
+                      style: const TextStyle(
+                        fontFamily: 'Delight',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                        letterSpacing: 0.2,
+                      ),
                     ),
-                  ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Center(
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.lock_outline_rounded, size: 13, color: Color(0xFF94A3B8)),
-                const SizedBox(width: 4),
+              children: const [
+                Icon(
+                  Icons.lock_outline_rounded,
+                  size: 13,
+                  color: Color(0xFF71717A),
+                ),
+                SizedBox(width: 4),
                 Text(
                   'Powered by Cashfree Payments India',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: Colors.grey.shade500,
+                    color: Color(0xFF71717A),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -460,22 +484,37 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF154D36).withValues(alpha: 0.06) : Colors.transparent,
+          color: isSelected ? const Color(0xFF1F2916) : const Color(0xFF181818),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? const Color(0xFF154D36) : const Color(0xFFE2E8F0),
-            width: isSelected ? 1.8 : 1.0,
+            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+            width: isSelected ? 1.5 : 1.0,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.12),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
+                color: isSelected
+                    ? const Color(0xFFD4FF00).withValues(alpha: 0.18)
+                    : iconColor.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: iconColor, size: 18),
+              child: Icon(
+                icon,
+                color: isSelected ? const Color(0xFFD4FF00) : iconColor,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -486,21 +525,27 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
                     title,
                     style: TextStyle(
                       fontFamily: 'Delight',
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       fontSize: 14,
-                      color: isSelected ? const Color(0xFF154D36) : null,
+                      color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 11.5, color: Colors.grey.shade600),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: Color(0xFFA1A1AA),
+                    ),
                   ),
                 ],
               ),
             ),
             Icon(
-              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
-              color: isSelected ? const Color(0xFF154D36) : Colors.grey.shade400,
+              isSelected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
+              color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF71717A),
               size: 20,
             ),
           ],
@@ -515,18 +560,31 @@ class _CashfreeCheckoutSheetState extends State<_CashfreeCheckoutSheet> {
       child: GestureDetector(
         onTap: () => setState(() => _selectedUpiApp = code),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 9),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF154D36) : const Color(0xFFF1F5F9),
+            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF181818),
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF2E2E32),
+              width: 1.0,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: Text(
             name,
             style: TextStyle(
               fontSize: 11.5,
-              fontWeight: FontWeight.w700,
-              color: isSelected ? Colors.white : const Color(0xFF334155),
+              fontWeight: FontWeight.w800,
+              color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
             ),
           ),
         ),

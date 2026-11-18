@@ -11,10 +11,7 @@ import 'tournaments_screen.dart';
 class MatchScheduleScreen extends StatefulWidget {
   final int initialTab;
 
-  const MatchScheduleScreen({
-    super.key,
-    this.initialTab = 0,
-  });
+  const MatchScheduleScreen({super.key, this.initialTab = 0});
 
   @override
   State<MatchScheduleScreen> createState() => _MatchScheduleScreenState();
@@ -45,19 +42,23 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF141414),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
           onPressed: () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          } else {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const MainLayout()),
-            );
-          }
-        },
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const MainLayout()),
+              );
+            }
+          },
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,9 +101,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           children: [
             _buildTabSelector(),
             _buildSportFilter(),
-            Expanded(
-              child: _buildMatchList(),
-            ),
+            Expanded(child: _buildMatchList()),
           ],
         ),
       ),
@@ -115,12 +114,13 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     final completedMatches = MatchScoreManager().matches;
 
     return Container(
-      color: Colors.white,
+      color: const Color(0xFF080808),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Container(
         height: 44,
         decoration: BoxDecoration(
-          color: const Color(0xFFF3F4F6),
+          color: const Color(0xFF141414),
+          border: Border.all(color: const Color(0xFF262626)),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -134,7 +134,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     );
   }
 
-  Widget _buildTabItem(String label, int index, int count, {bool isLive = false}) {
+  Widget _buildTabItem(
+    String label,
+    int index,
+    int count, {
+    bool isLive = false,
+  }) {
     final isSelected = _selectedTab == index;
 
     return Expanded(
@@ -149,7 +154,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Color(0xFFD4FF00).withValues(alpha: 0.2),
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.25),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -167,7 +172,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   height: 7,
                   margin: const EdgeInsets.only(right: 5),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.redAccent : Colors.red,
+                    color: isSelected ? Colors.black : Colors.red,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -175,23 +180,30 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF4B5563),
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
                   fontSize: 12.5,
                 ),
               ),
               if (count > 0) ...[
                 const SizedBox(width: 5),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1.5,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.white.withValues(alpha: 0.25) : const Color(0xFFE5E7EB),
+                    color: isSelected
+                        ? Colors.black.withValues(alpha: 0.15)
+                        : const Color(0xFF262626),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     '$count',
                     style: TextStyle(
-                      color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                      color: isSelected
+                          ? Colors.black
+                          : const Color(0xFFA1A1AA),
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
                     ),
@@ -207,7 +219,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
 
   Widget _buildSportFilter() {
     return Container(
-      color: Colors.white,
+      color: const Color(0xFF080808),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -234,7 +246,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                    color: isSelected
+                        ? const Color(0xFFD4FF00)
+                        : const Color(0xFF262626),
                   ),
                 ),
                 onSelected: (selected) {
@@ -266,11 +280,13 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
   List<Map<String, dynamic>> _getLiveMatches() {
     final allBookings = BookingManager().activeBookings;
     final now = DateTime.now();
-    final todayStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
 
     return allBookings.where((b) {
       final date = (b['date'] ?? '').toString();
-      final isToday = date.contains(todayStr) || date.toLowerCase().contains('today');
+      final isToday =
+          date.contains(todayStr) || date.toLowerCase().contains('today');
       return isToday;
     }).toList();
   }
@@ -294,7 +310,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         return _buildEmptyState(
           icon: Icons.calendar_month_outlined,
           title: 'No Upcoming Matches Scheduled',
-          subtitle: 'Book a turf slot or join an open challenge to get your match on the schedule!',
+          subtitle:
+              'Book a turf slot or join an open challenge to get your match on the schedule!',
           showBookAction: true,
         );
       }
@@ -348,7 +365,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         return _buildEmptyState(
           icon: Icons.sensors_outlined,
           title: 'No Live Matches Ongoing Right Now',
-          subtitle: 'Matches scheduled for today will automatically appear here with live digital scoring controls.',
+          subtitle:
+              'Matches scheduled for today will automatically appear here with live digital scoring controls.',
           showBookAction: true,
         );
       }
@@ -371,7 +389,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
         return _buildEmptyState(
           icon: Icons.emoji_events_outlined,
           title: 'No Completed Matches Yet',
-          subtitle: 'Finished matches and saved official scorecards will be archived here with detailed performance stats.',
+          subtitle:
+              'Finished matches and saved official scorecards will be archived here with detailed performance stats.',
           showBookAction: false,
         );
       }
@@ -387,22 +406,26 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
   }
 
   Widget _buildBookingMatchCard(Map<String, dynamic> booking) {
-    final bookingId = (booking['id'] ?? booking['bookingId'] ?? 'BK-G24').toString();
-    final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
+    final bookingId = (booking['id'] ?? booking['bookingId'] ?? 'BK-G24')
+        .toString();
+    final turfName =
+        (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena')
+            .toString();
     final sport = (booking['sport'] ?? 'Football').toString();
     final date = (booking['date'] ?? 'Upcoming').toString();
     final timeSlot = (booking['timeSlot'] ?? '06:00 PM - 07:00 PM').toString();
-    final courtName = (booking['courtName'] ?? 'Main Arena (Court A)').toString();
+    final courtName = (booking['courtName'] ?? 'Main Arena (Court A)')
+        .toString();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -415,9 +438,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
+              color: Color(0xFF1F1F1F),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+              border: Border(bottom: BorderSide(color: Color(0xFF262626))),
             ),
             child: Row(
               children: [
@@ -426,21 +449,32 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 Expanded(
                   child: Text(
                     sport,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Colors.white,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
+                    color: const Color(0xFF1F2916),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFBBF7D0)),
+                    border: Border.all(color: const Color(0xFF2E4020)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, size: 11, color: Color(0xFFD4FF00)),
+                      Icon(
+                        Icons.check_circle,
+                        size: 11,
+                        color: Color(0xFFD4FF00),
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Confirmed & Booked',
@@ -468,19 +502,26 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
+                    color: Colors.white,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 13, color: Color(0xFFA1A1AA)),
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 13,
+                      color: Color(0xFFA1A1AA),
+                    ),
                     const SizedBox(width: 3),
                     Expanded(
                       child: Text(
                         courtName,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFA1A1AA),
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -490,25 +531,45 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
 
                 // Date & Time Box
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFFD4FF00)),
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 13,
+                        color: Color(0xFFD4FF00),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         date,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFFD4FF00)),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 13,
+                        color: Color(0xFFD4FF00),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         timeSlot,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFD4FF00),
+                        ),
                       ),
                     ],
                   ),
@@ -523,13 +584,22 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFFD4FF00),
-                          side: BorderSide(color: Color(0xFFD4FF00)),
+                          side: const BorderSide(color: Color(0xFFD4FF00)),
                           padding: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         icon: const Icon(Icons.qr_code_2_rounded, size: 16),
-                        label: const Text('QR Pass', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        onPressed: () => BookingQrPassModal.show(context, booking),
+                        label: const Text(
+                          'QR Pass',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        onPressed: () =>
+                            BookingQrPassModal.show(context, booking),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -537,37 +607,63 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                       child: ValueListenableBuilder<int>(
                         valueListenable: MatchScoreManager().liveStateNotifier,
                         builder: (context, _, child) {
-                          final live = MatchScoreManager().getLiveStateSync(bookingId);
-                          final results = MatchScoreManager().getAllResultsForBooking(bookingId);
-                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
-                            dateStr: date,
-                            timeSlot: timeSlot,
+                          final live = MatchScoreManager().getLiveStateSync(
+                            bookingId,
                           );
+                          final results = MatchScoreManager()
+                              .getAllResultsForBooking(bookingId);
+                          final remainingSlotMins =
+                              BookingManager.getRemainingSlotMinutes(
+                                dateStr: date,
+                                timeSlot: timeSlot,
+                              );
                           final isSlotActive = remainingSlotMins > 0;
                           final isLive = live != null && live.isLive;
-                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                          final canPlayNext =
+                              !isLive && isSlotActive && results.isNotEmpty;
                           final isDone = !isSlotActive && results.isNotEmpty;
 
                           final btnText = isLive
                               ? 'Continue Match'
-                              : (canPlayNext ? 'Match #${results.length + 1}' : (isDone ? 'Scorecard' : 'Scorecard'));
+                              : (canPlayNext
+                                    ? 'Match #${results.length + 1}'
+                                    : (isDone ? 'Scorecard' : 'Scorecard'));
                           final btnColor = (isLive || canPlayNext)
                               ? const Color(0xFFDC2626)
-                              : (isDone ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00));
-                          final targetTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
+                              : const Color(0xFFD4FF00);
+                          final isDarkBtn = !isLive && !canPlayNext;
+                          final initialTab = isLive
+                              ? 2
+                              : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                           return ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: btnColor,
-                              foregroundColor: Colors.white,
+                              foregroundColor: isDarkBtn
+                                  ? Colors.black
+                                  : Colors.white,
                               elevation: (isLive || canPlayNext) ? 2 : 0,
                               padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            icon: Icon(isLive ? Icons.play_circle_fill_rounded : (canPlayNext ? Icons.flash_on_rounded : Icons.scoreboard_outlined), size: 16),
+                            icon: Icon(
+                              isLive
+                                  ? Icons.play_circle_fill_rounded
+                                  : (canPlayNext
+                                        ? Icons.flash_on_rounded
+                                        : Icons.scoreboard_outlined),
+                              size: 16,
+                              color: isDarkBtn ? Colors.black : Colors.white,
+                            ),
                             label: Text(
                               btnText,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12,
+                                color: isDarkBtn ? Colors.black : Colors.white,
+                              ),
                             ),
                             onPressed: () {
                               Navigator.push(
@@ -579,9 +675,10 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                     sport: sport,
                                     date: date,
                                     timeSlot: timeSlot,
-                                    initialTab: targetTab,
+                                    initialTab: initialTab,
                                     startNewMatchImmediately: canPlayNext,
-                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                    isOpenMatch:
+                                        booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),
                                 ),
@@ -605,12 +702,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -622,9 +719,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
+              color: Color(0xFF1F1F1F),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+              border: Border(bottom: BorderSide(color: Color(0xFF262626))),
             ),
             child: Row(
               children: [
@@ -632,24 +729,31 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '${challenge.sport} • ${challenge.teamSize}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
+                    '${challenge.sport} \u2022 ${challenge.teamSize}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Colors.white,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: const Color(0xFF0F1E36),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFBFDBFE)),
+                    border: Border.all(color: const Color(0xFF1E3A8A)),
                   ),
                   child: const Text(
                     'Open Match',
                     style: TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1D4ED8),
+                      color: Color(0xFF60A5FA),
                     ),
                   ),
                 ),
@@ -663,7 +767,11 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               children: [
                 Text(
                   challenge.turfName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
@@ -671,17 +779,27 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   children: [
                     CircleAvatar(
                       radius: 12,
-                      backgroundColor: challenge.challengerColor.withValues(alpha: 0.2),
+                      backgroundColor: challenge.challengerColor.withValues(
+                        alpha: 0.2,
+                      ),
                       child: Text(
                         challenge.challengerTeamInitials,
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: challenge.challengerColor),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: challenge.challengerColor,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         'Host: ${challenge.challengerName}',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563), fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFFA1A1AA),
+                          fontWeight: FontWeight.w500,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -689,25 +807,45 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFFD4FF00)),
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 13,
+                        color: Color(0xFFD4FF00),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         challenge.date,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                       const Spacer(),
-                      const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFFD4FF00)),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 13,
+                        color: Color(0xFFD4FF00),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         challenge.time,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFD4FF00),
+                        ),
                       ),
                     ],
                   ),
@@ -718,37 +856,65 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   child: ValueListenableBuilder<int>(
                     valueListenable: MatchScoreManager().liveStateNotifier,
                     builder: (context, _, child) {
-                      final live = MatchScoreManager().getLiveStateSync(challenge.id);
-                      final results = MatchScoreManager().getAllResultsForBooking(challenge.id);
-                      final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
-                        dateStr: challenge.date,
-                        timeSlot: challenge.time,
+                      final live = MatchScoreManager().getLiveStateSync(
+                        challenge.id,
                       );
+                      final results = MatchScoreManager()
+                          .getAllResultsForBooking(challenge.id);
+                      final remainingSlotMins =
+                          BookingManager.getRemainingSlotMinutes(
+                            dateStr: challenge.date,
+                            timeSlot: challenge.time,
+                          );
                       final isSlotActive = remainingSlotMins > 0;
                       final isLive = live != null && live.isLive;
-                      final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                      final canPlayNext =
+                          !isLive && isSlotActive && results.isNotEmpty;
                       final isDone = !isSlotActive && results.isNotEmpty;
 
                       final btnText = isLive
                           ? 'Continue Match (${live.liveScoreSummary})'
-                          : (canPlayNext ? 'Play Match #${results.length + 1} (~${remainingSlotMins}m left)' : (isDone ? 'View Scorecard' : 'Open Scorecard'));
+                          : (canPlayNext
+                                ? 'Play Match #${results.length + 1} (~${remainingSlotMins}m left)'
+                                : (isDone
+                                      ? 'View Scorecard'
+                                      : 'Open Scorecard'));
                       final btnColor = (isLive || canPlayNext)
                           ? const Color(0xFFDC2626)
-                          : (isDone ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00));
-                      final targetTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
+                          : const Color(0xFFD4FF00);
+                      final isDarkBtn = !isLive && !canPlayNext;
+                      final initialTab = isLive
+                          ? 2
+                          : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                       return ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: btnColor,
-                          foregroundColor: Colors.white,
+                          foregroundColor: isDarkBtn
+                              ? Colors.black
+                              : Colors.white,
                           elevation: (isLive || canPlayNext) ? 2 : 0,
                           padding: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        icon: Icon(isLive ? Icons.play_circle_fill_rounded : (canPlayNext ? Icons.flash_on_rounded : Icons.scoreboard_outlined), size: 16),
+                        icon: Icon(
+                          isLive
+                              ? Icons.play_circle_fill_rounded
+                              : (canPlayNext
+                                    ? Icons.flash_on_rounded
+                                    : Icons.scoreboard_outlined),
+                          size: 16,
+                          color: isDarkBtn ? Colors.black : Colors.white,
+                        ),
                         label: Text(
                           btnText,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            color: isDarkBtn ? Colors.black : Colors.white,
+                          ),
                         ),
                         onPressed: () {
                           Navigator.push(
@@ -760,7 +926,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                 sport: challenge.sport,
                                 date: challenge.date,
                                 timeSlot: challenge.time,
-                                initialTab: targetTab,
+                                initialTab: initialTab,
                                 startNewMatchImmediately: canPlayNext,
                                 isOpenMatch: true,
                               ),
@@ -780,8 +946,11 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
   }
 
   Widget _buildLiveMatchCard(Map<String, dynamic> booking) {
-    final bookingId = (booking['id'] ?? booking['bookingId'] ?? 'BK-G24').toString();
-    final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
+    final bookingId = (booking['id'] ?? booking['bookingId'] ?? 'BK-G24')
+        .toString();
+    final turfName =
+        (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena')
+            .toString();
     final sport = (booking['sport'] ?? 'Football').toString();
     final date = (booking['date'] ?? 'Today').toString();
     final timeSlot = (booking['timeSlot'] ?? 'Now Playing').toString();
@@ -789,12 +958,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF86EFAC), width: 1.5),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Color(0xFFD4FF00).withValues(alpha: 0.08),
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.1),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -806,8 +975,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: const BoxDecoration(
-              color: Color(0xFFF0FDF4),
+              color: Color(0xFF1F1F1F),
               borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+              border: Border(bottom: BorderSide(color: Color(0xFF262626))),
             ),
             child: Row(
               children: [
@@ -816,16 +986,23 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 Expanded(
                   child: Text(
                     sport,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD4FF00)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Color(0xFFD4FF00),
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEE2E2),
+                    color: const Color(0xFF2E1515),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFFCA5A5)),
+                    border: Border.all(color: const Color(0xFF5C2424)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -844,7 +1021,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFDC2626),
+                          color: Color(0xFFEF4444),
                         ),
                       ),
                     ],
@@ -860,17 +1037,29 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               children: [
                 Text(
                   turfName,
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded, size: 13, color: Color(0xFFD4FF00)),
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 13,
+                      color: Color(0xFFD4FF00),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '$date • $timeSlot',
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFD4FF00),
+                      ),
                     ),
                   ],
                 ),
@@ -881,46 +1070,87 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                       child: OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFFD4FF00),
-                          side: BorderSide(color: Color(0xFFD4FF00)),
+                          side: const BorderSide(color: Color(0xFFD4FF00)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                         icon: const Icon(Icons.qr_code_2_rounded, size: 16),
-                        label: const Text('Gate QR Pass', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        onPressed: () => BookingQrPassModal.show(context, booking),
+                        label: const Text(
+                          'Gate QR Pass',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                        onPressed: () =>
+                            BookingQrPassModal.show(context, booking),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Builder(
                         builder: (context) {
-                          final liveState = MatchScoreManager().getLiveStateSync(bookingId);
-                          final results = MatchScoreManager().getAllResultsForBooking(bookingId);
-                          final remainingSlotMins = BookingManager.getRemainingSlotMinutes(
-                            dateStr: date,
-                            timeSlot: timeSlot,
-                          );
+                          final liveState = MatchScoreManager()
+                              .getLiveStateSync(bookingId);
+                          final results = MatchScoreManager()
+                              .getAllResultsForBooking(bookingId);
+                          final remainingSlotMins =
+                              BookingManager.getRemainingSlotMinutes(
+                                dateStr: date,
+                                timeSlot: timeSlot,
+                              );
                           final isSlotActive = remainingSlotMins > 0;
                           final isLive = liveState != null && liveState.isLive;
-                          final canPlayNext = !isLive && isSlotActive && results.isNotEmpty;
+                          final canPlayNext =
+                              !isLive && isSlotActive && results.isNotEmpty;
                           final isDone = !isSlotActive && results.isNotEmpty;
 
                           final btnLabel = isLive
                               ? 'Continue Match'
-                              : (canPlayNext ? 'Match #${results.length + 1}' : (isDone ? 'Scorecard' : 'Live Scorecard'));
-                          final btnColor = (isLive || canPlayNext) ? const Color(0xFFDC2626) : (isDone ? const Color(0xFFD4FF00) : const Color(0xFFD4FF00));
-                          final initialTab = isLive ? 2 : (canPlayNext ? 1 : (isDone ? 3 : 0));
+                              : (canPlayNext
+                                    ? 'Match #${results.length + 1}'
+                                    : (isDone
+                                          ? 'Scorecard'
+                                          : 'Live Scorecard'));
+                          final btnColor = (isLive || canPlayNext)
+                              ? const Color(0xFFDC2626)
+                              : const Color(0xFFD4FF00);
+                          final isDarkBtn = !isLive && !canPlayNext;
+                          final initialTab = isLive
+                              ? 2
+                              : (canPlayNext ? 1 : (isDone ? 3 : 0));
 
                           return ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: btnColor,
-                              foregroundColor: Colors.white,
+                              foregroundColor: isDarkBtn
+                                  ? Colors.black
+                                  : Colors.white,
                               elevation: (isLive || canPlayNext) ? 2 : 0,
                               padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            icon: Icon(isLive ? Icons.play_circle_fill : (canPlayNext ? Icons.flash_on_rounded : Icons.sports_cricket), size: 16),
-                            label: Text(btnLabel, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            icon: Icon(
+                              isLive
+                                  ? Icons.play_circle_fill
+                                  : (canPlayNext
+                                        ? Icons.flash_on_rounded
+                                        : Icons.sports_cricket),
+                              size: 16,
+                              color: isDarkBtn ? Colors.black : Colors.white,
+                            ),
+                            label: Text(
+                              btnLabel,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12,
+                                color: isDarkBtn ? Colors.black : Colors.white,
+                              ),
+                            ),
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -933,7 +1163,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                                     timeSlot: timeSlot,
                                     initialTab: initialTab,
                                     startNewMatchImmediately: canPlayNext,
-                                    isOpenMatch: booking['isOpenMatch'] == true ||
+                                    isOpenMatch:
+                                        booking['isOpenMatch'] == true ||
                                         booking['is_open_match'] == true,
                                   ),
                                 ),
@@ -957,12 +1188,12 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -974,9 +1205,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: const BoxDecoration(
-              color: Color(0xFFF8FAFC),
+              color: Color(0xFF1F1F1F),
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+              border: Border(bottom: BorderSide(color: Color(0xFF262626))),
             ),
             child: Row(
               children: [
@@ -985,16 +1216,23 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 Expanded(
                   child: Text(
                     '${match.sport} Match Results',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF1E293B)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Colors.white,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
+                    color: const Color(0xFF262626),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: const Color(0xFF333333)),
                   ),
                   child: const Text(
                     'Finished',
@@ -1015,7 +1253,11 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               children: [
                 Text(
                   match.turfName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 10),
@@ -1024,9 +1266,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: const Color(0xFF1E1E1E),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: const Color(0xFF262626)),
                   ),
                   child: Column(
                     children: [
@@ -1036,8 +1278,11 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             child: Text(
                               match.teamAName,
                               style: TextStyle(
-                                fontWeight: match.winner == match.teamAName ? FontWeight.bold : FontWeight.w500,
+                                fontWeight: match.winner == match.teamAName
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
                                 fontSize: 13,
+                                color: Colors.white,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1047,7 +1292,9 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: match.winner == match.teamAName ? const Color(0xFFD4FF00) : const Color(0xFFA1A1AA),
+                              color: match.winner == match.teamAName
+                                  ? const Color(0xFFD4FF00)
+                                  : const Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
@@ -1059,8 +1306,11 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             child: Text(
                               match.teamBName,
                               style: TextStyle(
-                                fontWeight: match.winner == match.teamBName ? FontWeight.bold : FontWeight.w500,
+                                fontWeight: match.winner == match.teamBName
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
                                 fontSize: 13,
+                                color: Colors.white,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1070,16 +1320,22 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: match.winner == match.teamBName ? const Color(0xFFD4FF00) : const Color(0xFFA1A1AA),
+                              color: match.winner == match.teamBName
+                                  ? const Color(0xFFD4FF00)
+                                  : const Color(0xFFA1A1AA),
                             ),
                           ),
                         ],
                       ),
                       if (match.winningMargin.isNotEmpty) ...[
-                        const Divider(height: 16),
+                        const Divider(height: 16, color: Color(0xFF262626)),
                         Text(
                           '${match.winner} won ${match.winningMargin}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00)),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFD4FF00),
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
@@ -1095,10 +1351,18 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                       foregroundColor: const Color(0xFFD4FF00),
                       side: BorderSide(color: Color(0xFFD4FF00)),
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     icon: const Icon(Icons.analytics_outlined, size: 16),
-                    label: const Text('View Match Summary & Stats', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    label: const Text(
+                      'View Match Summary & Stats',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -1210,26 +1474,50 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD4FF00),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Book Turf Slot', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                    label: const Text(
+                      'Book Turf Slot',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12.5,
+                      ),
+                    ),
                     onPressed: () => Navigator.maybePop(context),
                   ),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFD4FF00),
                     side: BorderSide(color: Color(0xFFD4FF00)),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   icon: const Icon(Icons.groups_outlined, size: 16),
-                  label: const Text('Join Open Match', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                  label: const Text(
+                    'Join Open Match',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12.5,
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const TeamsHubScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const TeamsHubScreen(),
+                      ),
                     );
                   },
                 ),
@@ -1237,15 +1525,29 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFA1A1AA),
                     side: const BorderSide(color: Color(0xFFCBD5E1)),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   icon: const Icon(Icons.emoji_events_outlined, size: 16),
-                  label: const Text('Tournaments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+                  label: const Text(
+                    'Tournaments',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12.5,
+                    ),
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const TournamentsScreen(isStandalone: true)),
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const TournamentsScreen(isStandalone: true),
+                      ),
                     );
                   },
                 ),
@@ -1257,4 +1559,3 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
     );
   }
 }
-

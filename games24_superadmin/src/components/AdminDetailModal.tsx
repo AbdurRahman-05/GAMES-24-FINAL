@@ -9,12 +9,8 @@ import {
   Phone,
   Mail,
   MapPin,
-  Sparkles,
   Image as ImageIcon,
-  FileText,
   CreditCard,
-  ExternalLink,
-  Calendar,
   CheckCircle2,
   Tag,
   Trash2,
@@ -22,6 +18,8 @@ import {
   Check,
   AlertCircle,
   Loader2,
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 
 interface Props {
@@ -48,8 +46,8 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
       if (onBranchUpdated) {
         setTimeout(() => onBranchUpdated(), 600);
       }
-    } catch (err: any) {
-      setActionMsg({ text: err.message || 'Failed to approve branch', type: 'error' });
+    } catch (err: unknown) {
+      setActionMsg({ text: (err as Error).message || 'Failed to approve branch', type: 'error' });
     } finally {
       setActionLoadingId(null);
     }
@@ -65,8 +63,8 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
       if (onBranchUpdated) {
         setTimeout(() => onBranchUpdated(), 600);
       }
-    } catch (err: any) {
-      setActionMsg({ text: err.message || 'Failed to reject branch', type: 'error' });
+    } catch (err: unknown) {
+      setActionMsg({ text: (err as Error).message || 'Failed to reject branch', type: 'error' });
     } finally {
       setActionLoadingId(null);
     }

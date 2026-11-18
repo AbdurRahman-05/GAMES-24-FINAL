@@ -285,7 +285,7 @@ class _CreatePrivateTournamentScreenState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF141414),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -300,7 +300,7 @@ class _CreatePrivateTournamentScreenState
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCBD5E1),
+                  color: const Color(0xFF333333),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -308,12 +308,12 @@ class _CreatePrivateTournamentScreenState
             const SizedBox(height: 16),
             const Text(
               'Select Tournament Poster Theme 🎨',
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 4),
             const Text(
               'Choose a high-impact theme or upload your custom design',
-              style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
             ),
             const SizedBox(height: 16),
             ..._presetPosters.map((p) {
@@ -458,10 +458,10 @@ class _CreatePrivateTournamentScreenState
     return Scaffold(
       backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF141414),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 18),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -480,7 +480,7 @@ class _CreatePrivateTournamentScreenState
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
+                color: Colors.white,
               ),
             ),
             Text(
@@ -592,10 +592,10 @@ class _CreatePrivateTournamentScreenState
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: isSel ? const Color(0xFFFFFBEB) : const Color(0xFFF8FAFC),
+                              color: isSel ? const Color(0xFF1F2916) : const Color(0xFF141414),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: isSel ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                                color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                                 width: isSel ? 1.5 : 1,
                               ),
                             ),
@@ -603,7 +603,7 @@ class _CreatePrivateTournamentScreenState
                               children: [
                                 Icon(
                                   isSel ? Icons.radio_button_checked : Icons.radio_button_off,
-                                  color: isSel ? const Color(0xFFD97706) : const Color(0xFF94A3B8),
+                                  color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF71717A),
                                   size: 18,
                                 ),
                                 const SizedBox(width: 10),
@@ -612,7 +612,7 @@ class _CreatePrivateTournamentScreenState
                                   style: TextStyle(
                                     fontSize: 12.5,
                                     fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                                    color: const Color(0xFF0F172A),
+                                    color: isSel ? const Color(0xFFD4FF00) : Colors.white,
                                   ),
                                 ),
                               ],
@@ -713,10 +713,10 @@ class _CreatePrivateTournamentScreenState
                                 height: 38,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: isSel ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                                  color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF1E1E1E),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: isSel ? const Color(0xFF0F172A) : const Color(0xFFCBD5E1),
+                                    color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF262626),
                                     width: isSel ? 1.5 : 1.0,
                                   ),
                                 ),
@@ -727,7 +727,7 @@ class _CreatePrivateTournamentScreenState
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: isSel ? Colors.white : const Color(0xFF1E293B),
+                                      color: isSel ? Colors.black : const Color(0xFFA1A1AA),
                                     ),
                                   ),
                                 ),
@@ -747,22 +747,22 @@ class _CreatePrivateTournamentScreenState
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
+                                color: const Color(0xFF1E1E1E),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                border: Border.all(color: const Color(0xFF262626)),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.calendar_today_rounded, size: 16, color: Color(0xFFD97706)),
+                                  const Icon(Icons.calendar_today_rounded, size: 16, color: Color(0xFFD4FF00)),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Match Date', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                                        const Text('Match Date', style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA))),
                                         Text(
                                           _formatDate(_selectedDate),
-                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
@@ -781,22 +781,22 @@ class _CreatePrivateTournamentScreenState
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
+                                color: const Color(0xFF1E1E1E),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                border: Border.all(color: const Color(0xFF262626)),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_rounded, size: 16, color: Color(0xFFD97706)),
+                                  const Icon(Icons.access_time_rounded, size: 16, color: Color(0xFFD4FF00)),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Time Slot', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                                        const Text('Time Slot', style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA))),
                                         Text(
                                           _selectedTimeSlot,
-                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
@@ -822,14 +822,14 @@ class _CreatePrivateTournamentScreenState
                   children: [
                     // Decide Venue Later (TBA) Switch Card
                     Material(
-                      color: _isVenueTBA ? const Color(0xFFFEF3C7) : const Color(0xFFF8FAFC),
+                      color: _isVenueTBA ? const Color(0xFF1F1A12) : const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _isVenueTBA ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                            color: _isVenueTBA ? const Color(0xFFFBBF24) : const Color(0xFF262626),
                             width: _isVenueTBA ? 1.5 : 1,
                           ),
                         ),
@@ -870,19 +870,20 @@ class _CreatePrivateTournamentScreenState
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8FAFC),
+                            color: const Color(0xFF1E1E1E),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(color: const Color(0xFF262626)),
                           ),
                           child: Row(
                             children: [
                               Container(
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFEF3C7),
+                                  color: const Color(0xFF1F1A12),
                                   borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF3D2A14)),
                                 ),
-                                child: const Icon(Icons.stadium_rounded, color: Color(0xFFD97706), size: 22),
+                                child: const Icon(Icons.stadium_rounded, color: Color(0xFFFBBF24), size: 22),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -894,7 +895,7 @@ class _CreatePrivateTournamentScreenState
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.5,
-                                        color: _selectedVenue.isNotEmpty ? const Color(0xFF0F172A) : const Color(0xFF94A3B8),
+                                        color: _selectedVenue.isNotEmpty ? Colors.white : const Color(0xFFA1A1AA),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -916,18 +917,18 @@ class _CreatePrivateTournamentScreenState
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
+                          color: const Color(0xFF1F1A12),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFDE68A)),
+                          border: Border.all(color: const Color(0xFF3D2A14)),
                         ),
                         child: Row(
                           children: const [
-                            Icon(Icons.info_outline_rounded, color: Color(0xFF92400E), size: 20),
+                            Icon(Icons.info_outline_rounded, color: Color(0xFFFBBF24), size: 20),
                             SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'Venue Launching Soon mode active. Invited teams will receive notification when venue is finalized.',
-                                style: TextStyle(color: Color(0xFF92400E), fontSize: 11.5, fontWeight: FontWeight.w600),
+                                style: TextStyle(color: Color(0xFFFBBF24), fontSize: 11.5, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -1236,9 +1237,9 @@ class _CreatePrivateTournamentScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
+        color: const Color(0xFF1F1A12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+        border: Border.all(color: const Color(0xFF3D2A14), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1248,18 +1249,18 @@ class _CreatePrivateTournamentScreenState
             children: [
               Row(
                 children: const [
-                  Icon(Icons.key_rounded, color: Color(0xFFD97706), size: 18),
+                  Icon(Icons.key_rounded, color: Color(0xFFFBBF24), size: 18),
                   SizedBox(width: 6),
                   Text(
                     'Tournament Security PIN',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF92400E)),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFFBBF24)),
                   ),
                 ],
               ),
               TextButton.icon(
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
-                  foregroundColor: const Color(0xFFD97706),
+                  foregroundColor: const Color(0xFFFBBF24),
                 ),
                 icon: const Icon(Icons.refresh_rounded, size: 14),
                 label: const Text('Generate New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
@@ -1270,16 +1271,18 @@ class _CreatePrivateTournamentScreenState
           const SizedBox(height: 8),
           TextFormField(
             controller: _pinController,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2, color: Color(0xFF78350F)),
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2, color: Colors.white),
             decoration: InputDecoration(
               filled: true,
-              fillColor: Colors.white,
+              fillColor: const Color(0xFF141414),
               hintText: 'e.g. G24-5821',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFFDE68A))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD97706), width: 2)),
+              hintStyle: const TextStyle(color: Color(0xFFA1A1AA)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF262626))),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF262626))),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 2)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFFD97706)),
+                icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFFFBBF24)),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: _pinController.text.trim()));
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1307,7 +1310,7 @@ class _CreatePrivateTournamentScreenState
           const SizedBox(height: 6),
           const Text(
             'Teams will be prompted to enter this PIN when accepting your invitation.',
-            style: TextStyle(fontSize: 11, color: Color(0xFFB45309)),
+            style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
           ),
         ],
       ),
@@ -1321,12 +1324,12 @@ class _CreatePrivateTournamentScreenState
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1336,9 +1339,9 @@ class _CreatePrivateTournamentScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Color(0xFF0F172A))),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white)),
           const SizedBox(height: 2),
-          Text(subtitle, style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B))),
+          Text(subtitle, style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA))),
           const SizedBox(height: 14),
           child,
         ],
@@ -1348,9 +1351,9 @@ class _CreatePrivateTournamentScreenState
 
   Widget _buildPresetChip(String label, VoidCallback onTap) {
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFFD97706), fontWeight: FontWeight.bold)),
-      backgroundColor: const Color(0xFFFFFBEB),
-      side: const BorderSide(color: Color(0xFFFDE68A)),
+      label: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFFFBBF24), fontWeight: FontWeight.bold)),
+      backgroundColor: const Color(0xFF1F1A12),
+      side: const BorderSide(color: Color(0xFF3D2A14)),
       onPressed: onTap,
     );
   }
@@ -1393,7 +1396,7 @@ class _CreatePrivateTournamentScreenState
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF141414),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -1405,29 +1408,29 @@ class _CreatePrivateTournamentScreenState
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: const Color(0xFFCBD5E1), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: const Color(0xFF333333), borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Select Host Turf Venue 🏟️', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A))),
+                const Text('Select Host Turf Venue 🏟️', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white)),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: const Color(0xFFFEF3C7), borderRadius: BorderRadius.circular(8)),
-                  child: const Text('Live App Turfs', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF92400E))),
+                  decoration: BoxDecoration(color: const Color(0xFF1F1A12), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF3D2A14))),
+                  child: const Text('Live App Turfs', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24))),
                 ),
               ],
             ),
             const SizedBox(height: 4),
-            const Text('Showing verified turfs present in the app with active court counts', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+            const Text('Showing verified turfs present in the app with active court counts', style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
             const SizedBox(height: 16),
             if (_isLoadingVenues)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(24.0),
-                  child: CircularProgressIndicator(color: Color(0xFFD97706)),
+                  child: CircularProgressIndicator(color: Color(0xFFD4FF00)),
                 ),
               )
             else
@@ -1436,7 +1439,7 @@ class _CreatePrivateTournamentScreenState
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: venuesToShow.length,
-                separatorBuilder: (_, index) => const Divider(height: 1),
+                separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFF262626)),
                 itemBuilder: (c, idx) {
                   final v = venuesToShow[idx];
                   final isSel = _selectedVenue == v['venue'];
@@ -1447,36 +1450,37 @@ class _CreatePrivateTournamentScreenState
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: isSel ? const Color(0xFFD97706) : const Color(0xFFFEF3C7),
+                        color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF1E1E1E),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(Icons.stadium_rounded, color: isSel ? Colors.white : const Color(0xFFD97706), size: 22),
+                      child: Icon(Icons.stadium_rounded, color: isSel ? Colors.black : const Color(0xFFD4FF00), size: 22),
                     ),
                     title: Row(
                       children: [
                         Expanded(
-                          child: Text(v['venue'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
+                          child: Text(v['venue'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Colors.white)),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFEF3C7),
+                            color: const Color(0xFF1F1A12),
                             borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF3D2A14)),
                           ),
                           child: Text(
                             '$courtCount Courts',
-                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF92400E)),
+                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24)),
                           ),
                         ),
                       ],
                     ),
                     subtitle: Text(
                       '${v['loc']} • ${v['sports'] ?? 'All Sports'}',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                      style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
                     ),
                     trailing: isSel
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD97706))
-                        : const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD4FF00))
+                        : const Icon(Icons.chevron_right_rounded, color: Color(0xFF71717A)),
                     onTap: () {
                       setState(() {
                         _selectedVenue = v['venue'] as String;

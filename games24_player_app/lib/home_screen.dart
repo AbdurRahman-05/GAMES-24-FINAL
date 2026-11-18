@@ -15,6 +15,17 @@ import 'package:games24_player_app/match_schedule_screen.dart';
 import 'package:games24_player_app/location_manager.dart';
 import 'package:games24_player_app/core/widgets/turf_card_carousel.dart';
 
+String _cleanSportName(String sport) {
+  return sport
+      .replaceAll('âš½', '')
+      .replaceAll('â€¢', '')
+      .replaceAll('⚽', '')
+      .replaceAll('🏏', '')
+      .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+      .replaceAll(RegExp(r'[\u{2600}-\u{26FF}]', unicode: true), '')
+      .trim();
+}
+
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onExploreTap;
 
@@ -246,112 +257,6 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  Widget _buildLocationBanner() {
-    return ValueListenableBuilder<String>(
-      valueListenable: LocationManager().locationNotifier,
-      builder: (context, loc, _) {
-        final isAll = loc == 'All Madurai' || loc == 'All';
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF141414),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF262626)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.25),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF141A0A),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.location_on,
-                  color: Color(0xFFD4FF00),
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isAll ? 'Exploring All Madurai' : 'Locality: $loc',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      isAll
-                          ? 'Showing turfs & matches across the city'
-                          : 'Filtered for turfs & open matches nearby',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFFA1A1AA),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () => LocationManager.showLocationPicker(context),
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD4FF00),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Text(
-                        'Change',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 2),
-                      Icon(
-                        Icons.keyboard_arrow_right,
-                        size: 14,
-                        color: Colors.black,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -377,9 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 12),
-                  _buildLocationBanner(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: _buildSectionHeader('Categories', ''),
@@ -512,7 +415,9 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: _isSearchOpen ? const Color(0xFFD4FF00) : const Color(0xFF141414),
+              color: _isSearchOpen
+                  ? const Color(0xFFD4FF00)
+                  : const Color(0xFF141414),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _isSearchOpen
@@ -872,12 +777,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               width: 88,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF141414),
+                color: isSelected
+                    ? const Color(0xFFD4FF00)
+                    : const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.35),
                           blurRadius: 12,
                           offset: const Offset(0, 6),
                         ),
@@ -1042,9 +951,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final todayStr =
           "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
       if (date == todayStr) {
-        formattedDateTime = 'Today • $timeSlot';
+        formattedDateTime = 'Today \u2022 $timeSlot';
       } else {
-        formattedDateTime = '$date • $timeSlot';
+        formattedDateTime = '$date \u2022 $timeSlot';
       }
     }
 
@@ -1644,7 +1553,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               btnText,
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: btnFgColor == Colors.black ? FontWeight.w900 : FontWeight.bold,
+                                fontWeight: btnFgColor == Colors.black
+                                    ? FontWeight.w900
+                                    : FontWeight.bold,
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
@@ -1761,7 +1672,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
         return SizedBox(
-          height: 168,
+          height: 190,
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             scrollDirection: Axis.horizontal,
@@ -1778,9 +1689,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _formatChallengeDateTime(String dateStr, String timeSlot) {
-    String cleanDate = dateStr;
+    String cleanDate = dateStr.replaceAll('â€¢', '').trim();
+    final cleanSlot = timeSlot.replaceAll('â€¢', '').trim();
     try {
-      final parts = dateStr.split('-');
+      final parts = cleanDate.split('-');
       if (parts.length == 3) {
         final year = int.tryParse(parts[0]);
         final month = int.tryParse(parts[1]);
@@ -1804,298 +1716,426 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     } catch (_) {}
-    if (timeSlot.trim().isEmpty) return cleanDate;
-    return '$cleanDate • $timeSlot';
+    if (cleanSlot.isEmpty) return cleanDate;
+    return '$cleanDate \u2022 $cleanSlot';
   }
 
   Widget _buildChallengeCard(Challenge challenge) {
     return Container(
       width: 295,
-      padding: const EdgeInsets.all(16),
+      height: 184,
       decoration: BoxDecoration(
         color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withValues(alpha: 0.45),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
-        ],
-        border: Border.all(color: const Color(0xFF262626)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1F2916),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  challenge.sport,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFD4FF00),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  _formatChallengeDateTime(challenge.date, challenge.time),
-                  textAlign: TextAlign.end,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFFA1A1AA),
-                  ),
-                ),
-              ),
-            ],
+          BoxShadow(
+            color: const Color(0xFFD4FF00).withValues(alpha: 0.08),
+            blurRadius: 20,
+            spreadRadius: -2,
           ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTeamAvatar(
-                challenge.challengerTeamInitials,
-                challenge.challengerName,
-                challenge.challengerColor,
-              ),
-              const SizedBox(width: 16),
-              const Text(
-                'VS',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFA1A1AA)),
-              ),
-              const SizedBox(width: 16),
-              if (challenge.isJoined)
-                _buildTeamAvatar(
-                  challenge.opponentName != null &&
-                          challenge.opponentName!.length >= 2
-                      ? challenge.opponentName!.substring(0, 2).toUpperCase()
-                      : 'VS',
-                  challenge.opponentName ?? 'Opponent',
-                  const Color(0xFFBE123C),
-                )
-              else
-                Column(
+        ],
+        border: Border.all(color: const Color(0xFF262626), width: 1.2),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: CustomPaint(
+          painter: ThunderBoltSplitPainter(),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Top row: Sport badge & Date/Time
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3.5,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
-                        shape: BoxShape.circle,
+                        color: const Color(0xFF1F2916),
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF2E2E2E),
-                          style: BorderStyle.solid,
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.35),
+                          width: 1,
                         ),
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.help_outline,
-                          color: Color(0xFF71717A),
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Open Slot',
-                      style: TextStyle(fontSize: 10, color: Color(0xFF71717A)),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      challenge.turfName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (challenge.location.trim().isNotEmpty)
-                      Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.location_on,
-                            size: 11,
+                            Icons.bolt_rounded,
+                            size: 12,
                             color: Color(0xFFD4FF00),
                           ),
-                          const SizedBox(width: 2),
-                          Flexible(
-                            child: Text(
-                              challenge.location,
-                              style: const TextStyle(
-                                color: Color(0xFFA1A1AA),
-                                fontSize: 10,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 3),
+                          Text(
+                            _cleanSportName(challenge.sport),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFD4FF00),
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _formatChallengeDateTime(
+                          challenge.date,
+                          challenge.time,
+                        ),
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFA1A1AA),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              if (challenge.isJoined)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1F2916),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        size: 12,
-                        color: Color(0xFFD4FF00),
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Matched',
-                        style: TextStyle(
-                          color: Color(0xFFD4FF00),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+
+                // Center Battle Zone with Big 3D Shadowed VS & Lightning Strike
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Challenger Team Avatar
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: _buildTeamAvatar(
+                          challenge.challengerTeamInitials,
+                          challenge.challengerName,
+                          challenge.challengerColor,
                         ),
                       ),
-                    ],
-                  ),
-                )
-              else if (challenge.isCreator)
-                GestureDetector(
-                  onTap: () {
-                    _showRequestsDialog(challenge);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
                     ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD4FF00),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.mail_outline_rounded,
-                          size: 13,
-                          color: Colors.black,
+
+                    const SizedBox(width: 10),
+
+                    // Big 3D Shadowed VS Battle Emblem
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF0A0A0A),
+                        border: Border.all(
+                          color: const Color(0xFFD4FF00),
+                          width: 2.0,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          challenge.joinRequests.isNotEmpty
-                              ? 'See Requests (${challenge.joinRequests.length})'
-                              : 'See Requests',
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFD4FF00,
+                            ).withValues(alpha: 0.6),
+                            blurRadius: 18,
+                            spreadRadius: 2,
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.95),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Icon(
+                            Icons.bolt_rounded,
+                            size: 36,
+                            color: Color(0x44D4FF00),
+                          ),
+                          Transform.rotate(
+                            angle: -0.06,
+                            child: const Text(
+                              'VS',
+                              style: TextStyle(
+                                fontFamily: 'Delight',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                fontStyle: FontStyle.italic,
+                                letterSpacing: 1.8,
+                                color: Color(0xFFD4FF00),
+                                shadows: [
+                                  Shadow(
+                                    color: Color(0xFFD4FF00),
+                                    blurRadius: 14,
+                                  ),
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(2.5, 2.5),
+                                    blurRadius: 4,
+                                  ),
+                                  Shadow(
+                                    color: Colors.black,
+                                    offset: Offset(-1.5, -1.5),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    // Opponent or Open Slot Avatar
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: challenge.isJoined
+                            ? _buildTeamAvatar(
+                                challenge.opponentName != null &&
+                                        challenge.opponentName!.length >= 2
+                                    ? challenge.opponentName!
+                                          .substring(0, 2)
+                                          .toUpperCase()
+                                    : 'VS',
+                                challenge.opponentName ?? 'Opponent',
+                                const Color(0xFFBE123C),
+                              )
+                            : Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E1E1E),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF3F3F46),
+                                        width: 1.4,
+                                      ),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.help_outline_rounded,
+                                        color: Color(0xFF9CA3AF),
+                                        size: 20,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Open Slot',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // Bottom Row: Turf name, location & Action Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            challenge.turfName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (challenge.location.trim().isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  size: 11,
+                                  color: Color(0xFFD4FF00),
+                                ),
+                                const SizedBox(width: 2),
+                                Flexible(
+                                  child: Text(
+                                    challenge.location,
+                                    style: const TextStyle(
+                                      color: Color(0xFFA1A1AA),
+                                      fontSize: 10.5,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (challenge.isJoined)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F2916),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(
+                              0xFFD4FF00,
+                            ).withValues(alpha: 0.3),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                )
-              else if (challenge.userHasRequested)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade900.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.shade700),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.hourglass_top_rounded,
-                        size: 12,
-                        color: Colors.orange.shade400,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Requested',
-                        style: TextStyle(
-                          color: Colors.orange.shade300,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              size: 12,
+                              color: Color(0xFFD4FF00),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Matched',
+                              style: TextStyle(
+                                color: Color(0xFFD4FF00),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                GestureDetector(
-                  onTap: () {
-                    _showJoinChallengeDialog(challenge);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD4FF00),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.sports_rounded,
+                      )
+                    else if (challenge.isCreator)
+                      GestureDetector(
+                        onTap: () => _showRequestsDialog(challenge),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD4FF00),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.mail_outline_rounded,
+                                size: 12,
+                                color: Colors.black,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                challenge.joinRequests.isNotEmpty
+                                    ? 'Requests (${challenge.joinRequests.length})'
+                                    : 'Requests',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else if (challenge.userHasRequested)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade900.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.shade700),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.hourglass_top_rounded,
+                              size: 12,
+                              color: Colors.orange.shade400,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Requested',
+                              style: TextStyle(
+                                color: Colors.orange.shade300,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ElevatedButton.icon(
+                        onPressed: () => _showJoinChallengeDialog(challenge),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4FF00),
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.shield_rounded,
                           size: 13,
                           color: Colors.black,
                         ),
-                        SizedBox(width: 4),
-                        Text(
+                        label: const Text(
                           'Join',
                           style: TextStyle(
                             color: Colors.black,
-                            fontSize: 11,
+                            fontSize: 12,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                  ],
                 ),
-            ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -2448,7 +2488,10 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: const Text(
                 'Reset Filters',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ],
@@ -2464,15 +2507,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
         final List<String> rawPhotos = (turf['photoUrls'] is List)
             ? (turf['photoUrls'] as List)
-                .map((e) => e.toString().trim())
-                .where((e) => e.isNotEmpty && e != 'null' && !e.contains('unsplash.com') && !e.contains('picsum.photos'))
-                .toList()
+                  .map((e) => e.toString().trim())
+                  .where(
+                    (e) =>
+                        e.isNotEmpty &&
+                        e != 'null' &&
+                        !e.contains('unsplash.com') &&
+                        !e.contains('picsum.photos'),
+                  )
+                  .toList()
             : <String>[];
 
         String resolvedImg = '';
-        if (turf['imageUrl'] != null && turf['imageUrl'].toString().trim().isNotEmpty && turf['imageUrl'].toString().trim() != 'null') {
+        if (turf['imageUrl'] != null &&
+            turf['imageUrl'].toString().trim().isNotEmpty &&
+            turf['imageUrl'].toString().trim() != 'null') {
           final trimmed = turf['imageUrl'].toString().trim();
-          if (!trimmed.contains('unsplash.com') && !trimmed.contains('picsum.photos')) {
+          if (!trimmed.contains('unsplash.com') &&
+              !trimmed.contains('picsum.photos')) {
             resolvedImg = trimmed;
           }
         }
@@ -2485,9 +2537,9 @@ class _HomeScreenState extends State<HomeScreen> {
             : (resolvedImg.isNotEmpty ? [resolvedImg] : <String>[]);
 
         final sportsStr = (turf['sports'] is List)
-            ? (turf['sports'] as List).join(' • ')
+            ? (turf['sports'] as List).join(' \u2022 ')
             : (turf['sports']?.toString() ??
-                  'Cricket • Football • Pickle ball • Badminton');
+                  'Cricket \u2022 Football \u2022 Pickle ball \u2022 Badminton');
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -2532,7 +2584,11 @@ class _HomeScreenState extends State<HomeScreen> {
     List<dynamic>? sportsList,
     required List<String> tags,
   }) {
-    final effectiveImageUrl = (imageUrl.trim().isNotEmpty && imageUrl.trim() != 'null' && !imageUrl.contains('unsplash.com') && !imageUrl.contains('picsum.photos'))
+    final effectiveImageUrl =
+        (imageUrl.trim().isNotEmpty &&
+            imageUrl.trim() != 'null' &&
+            !imageUrl.contains('unsplash.com') &&
+            !imageUrl.contains('picsum.photos'))
         ? imageUrl.trim()
         : '';
 
@@ -2562,10 +2618,7 @@ class _HomeScreenState extends State<HomeScreen> {
               topRight: Radius.circular(24),
             ),
             topTrailing: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFF141414).withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(16),
@@ -2602,14 +2655,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             bottomLeading: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 0.8),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 0.8,
+                ),
               ),
               child: Text(
                 sports,
@@ -2634,7 +2687,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     closingTime: closingTime,
                     price: price,
                     location: location,
-                    sports: sports.split(' • '),
+                    sports: sports.split(RegExp(r'[\u2022•,]')).map((s) => s.trim()).toList(),
                     sportsList: sportsList,
                   ),
                 ),
@@ -2757,7 +2810,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               closingTime: closingTime,
                               price: price,
                               location: location,
-                              sports: sports.split(' • '),
+                              sports: sports.split(RegExp(r'[\u2022•,]')).map((s) => s.trim()).toList(),
                               sportsList: sportsList,
                             ),
                           ),
@@ -3051,7 +3104,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             offset: const Offset(0, -4),
                           ),
                         ],
-                        border: const Border(top: BorderSide(color: Color(0xFF262626))),
+                        border: const Border(
+                          top: BorderSide(color: Color(0xFF262626)),
+                        ),
                       ),
                       child: SafeArea(
                         child: SizedBox(
@@ -3168,9 +3223,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
   }
 
   String _formatMatchDateTime(String dateStr, String timeSlot) {
-    String cleanDate = dateStr;
+    String cleanDate = dateStr.replaceAll('â€¢', '').trim();
+    final cleanSlot = timeSlot.replaceAll('â€¢', '').trim();
     try {
-      final parts = dateStr.split('-');
+      final parts = cleanDate.split('-');
       if (parts.length == 3) {
         final year = int.tryParse(parts[0]);
         final month = int.tryParse(parts[1]);
@@ -3194,8 +3250,8 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
         }
       }
     } catch (_) {}
-    if (timeSlot.trim().isEmpty) return cleanDate;
-    return '$cleanDate • $timeSlot';
+    if (cleanSlot.isEmpty) return cleanDate;
+    return '$cleanDate \u2022 $cleanSlot';
   }
 
   void _onFormatSelected(String format) {
@@ -3304,7 +3360,6 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final isCricket = widget.challenge.sport.toLowerCase().contains('cricket');
-    final sportEmoji = isCricket ? '🏏' : '⚽';
     final sportIcon = isCricket
         ? Icons.sports_cricket_rounded
         : Icons.sports_soccer_rounded;
@@ -3590,7 +3645,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
                     children: [
                       _buildMatchBadge(
                         sportIcon,
-                        '${widget.challenge.sport} $sportEmoji',
+                        _cleanSportName(widget.challenge.sport),
                         const Color(0xFF1F2916),
                         const Color(0xFFD4FF00),
                       ),
@@ -3633,7 +3688,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'e.g. Thunder Smashers FC',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF71717A)),
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF71717A),
+                ),
                 prefixIcon: const Icon(
                   Icons.shield_outlined,
                   color: Color(0xFFD4FF00),
@@ -3738,7 +3796,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'e.g. 7 Players (7v7)',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF71717A)),
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF71717A),
+                ),
                 prefixIcon: const Icon(
                   Icons.groups_outlined,
                   color: Color(0xFFD4FF00),
@@ -3786,7 +3847,10 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: '10-digit mobile number',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF71717A)),
+                hintStyle: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF71717A),
+                ),
                 prefixIcon: const Icon(
                   Icons.phone_rounded,
                   color: Color(0xFFD4FF00),
@@ -3921,4 +3985,118 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
       ),
     );
   }
+}
+
+class ThunderBoltSplitPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final midX = w / 2;
+
+    // 1. Dual-zone Battle Atmosphere Shading
+    // Left Challenger Territory (Neon emerald ambient gradient)
+    final leftClip = Path()
+      ..moveTo(0, 0)
+      ..lineTo(midX + 2, 0)
+      ..lineTo(midX - 9, h * 0.26)
+      ..lineTo(midX + 9, h * 0.42)
+      ..lineTo(midX - 7, h * 0.58)
+      ..lineTo(midX + 8, h * 0.74)
+      ..lineTo(midX - 2, h)
+      ..lineTo(0, h)
+      ..close();
+    final leftShader = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: [
+        const Color(0xFFD4FF00).withValues(alpha: 0.08),
+        const Color(0xFFD4FF00).withValues(alpha: 0.02),
+        Colors.transparent,
+      ],
+    ).createShader(Rect.fromLTWH(0, 0, midX + 10, h));
+    canvas.drawPath(leftClip, Paint()..shader = leftShader);
+
+    // Right Opponent Territory (Subtle crimson battle aura)
+    final rightClip = Path()
+      ..moveTo(w, 0)
+      ..lineTo(midX + 2, 0)
+      ..lineTo(midX - 9, h * 0.26)
+      ..lineTo(midX + 9, h * 0.42)
+      ..lineTo(midX - 7, h * 0.58)
+      ..lineTo(midX + 8, h * 0.74)
+      ..lineTo(midX - 2, h)
+      ..lineTo(w, h)
+      ..close();
+    final rightShader = LinearGradient(
+      begin: Alignment.centerRight,
+      end: Alignment.centerLeft,
+      colors: [
+        const Color(0xFFFF1744).withValues(alpha: 0.07),
+        const Color(0xFFFF1744).withValues(alpha: 0.01),
+        Colors.transparent,
+      ],
+    ).createShader(Rect.fromLTWH(midX - 10, 0, w - midX + 10, h));
+    canvas.drawPath(rightClip, Paint()..shader = rightShader);
+
+    // 2. High-Voltage Jagged Lightning Fracture tearing the card in half
+    final boltPath = Path()
+      ..moveTo(midX + 2, 0)
+      ..lineTo(midX - 9, h * 0.26)
+      ..lineTo(midX + 9, h * 0.42)
+      ..lineTo(midX - 7, h * 0.58)
+      ..lineTo(midX + 8, h * 0.74)
+      ..lineTo(midX - 2, h);
+
+    // Outer Neon Glow Aura
+    final auraPaint = Paint()
+      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.35)
+      ..strokeWidth = 7.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+
+    // Mid Electric Corona
+    final glowPaint = Paint()
+      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.85)
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+
+    // Core White Hot Lightning Bolt
+    final corePaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 1.4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(boltPath, auraPaint);
+    canvas.drawPath(boltPath, glowPaint);
+    canvas.drawPath(boltPath, corePaint);
+
+    // Lateral electric spark forks
+    final branch1 = Path()
+      ..moveTo(midX - 9, h * 0.26)
+      ..lineTo(midX - 22, h * 0.30);
+    final branch2 = Path()
+      ..moveTo(midX + 8, h * 0.74)
+      ..lineTo(midX + 24, h * 0.70);
+
+    canvas.drawPath(branch1, glowPaint..strokeWidth = 1.2);
+    canvas.drawPath(branch1, corePaint..strokeWidth = 0.8);
+    canvas.drawPath(branch2, glowPaint..strokeWidth = 1.2);
+    canvas.drawPath(branch2, corePaint..strokeWidth = 0.8);
+
+    // Spark nodes
+    final sparkGlow = Paint()..color = const Color(0xFFD4FF00);
+    final sparkCore = Paint()..color = Colors.white;
+    canvas.drawCircle(Offset(midX - 9, h * 0.26), 2.8, sparkGlow);
+    canvas.drawCircle(Offset(midX - 9, h * 0.26), 1.2, sparkCore);
+    canvas.drawCircle(Offset(midX + 8, h * 0.74), 2.8, sparkGlow);
+    canvas.drawCircle(Offset(midX + 8, h * 0.74), 1.2, sparkCore);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

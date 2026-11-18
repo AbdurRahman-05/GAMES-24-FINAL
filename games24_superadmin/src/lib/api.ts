@@ -102,7 +102,7 @@ export async function safeAdminFetch(
     }
 
     return res;
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeoutId);
     throw err;
   }
@@ -123,7 +123,7 @@ export interface AdminRegistration {
   photoUrls: string[];
   amenities: string[];
   sports?: string[];
-  sportsList?: any[];
+  sportsList?: unknown[];
   gstin: string | null;
   panNumber: string | null;
   aadhaarNumber: string | null;
@@ -170,7 +170,7 @@ export interface VerifiedAdmin {
   photoUrls: string[];
   amenities: string[];
   sports?: string[];
-  sportsList?: any[];
+  sportsList?: unknown[];
   gstin: string | null;
   panNumber: string | null;
   aadhaarNumber: string | null;

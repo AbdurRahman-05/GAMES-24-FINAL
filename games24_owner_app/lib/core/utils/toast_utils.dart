@@ -18,11 +18,7 @@ class ToastUtils {
   }
 
   static void showError(BuildContext context, String message) {
-    _showLuxuryToast(
-      context: context,
-      message: message,
-      type: ToastType.error,
-    );
+    _showLuxuryToast(context: context, message: message, type: ToastType.error);
   }
 
   static void showWarning(BuildContext context, String message) {
@@ -34,11 +30,7 @@ class ToastUtils {
   }
 
   static void showInfo(BuildContext context, String message) {
-    _showLuxuryToast(
-      context: context,
-      message: message,
-      type: ToastType.info,
-    );
+    _showLuxuryToast(context: context, message: message, type: ToastType.info);
   }
 
   static void dismiss() {
@@ -62,7 +54,8 @@ class ToastUtils {
       _activeEntry = null;
     }
 
-    final overlay = Overlay.maybeOf(context, rootOverlay: true) ??
+    final overlay =
+        Overlay.maybeOf(context, rootOverlay: true) ??
         AppRouter.rootNavigatorKey.currentState?.overlay ??
         Navigator.maybeOf(context, rootNavigator: true)?.overlay;
 
@@ -109,8 +102,7 @@ class _LuxuryToastOverlayWidget extends StatefulWidget {
     required this.type,
     this.onStateCreated,
     required this.onDismissed,
-    this.displayDuration = const Duration(milliseconds: 3200),
-  });
+  }) : displayDuration = const Duration(milliseconds: 3200);
 
   @override
   State<_LuxuryToastOverlayWidget> createState() =>
@@ -140,18 +132,12 @@ class _LuxuryToastOverlayWidgetState extends State<_LuxuryToastOverlayWidget>
       duration: const Duration(milliseconds: 380),
     );
 
-    _inSlide = Tween<Offset>(
-      begin: const Offset(-1.25, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _inController,
-      curve: Curves.easeOutCubic,
-    ));
+    _inSlide = Tween<Offset>(begin: const Offset(-1.25, 0.0), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _inController, curve: Curves.easeOutCubic),
+        );
 
-    _inFade = CurvedAnimation(
-      parent: _inController,
-      curve: Curves.easeOut,
-    );
+    _inFade = CurvedAnimation(parent: _inController, curve: Curves.easeOut);
 
     // Slide out to RIGHT: begins at (0, 0), accelerates to +1.25
     _outController = AnimationController(
@@ -159,21 +145,15 @@ class _LuxuryToastOverlayWidgetState extends State<_LuxuryToastOverlayWidget>
       duration: const Duration(milliseconds: 300),
     );
 
-    _outSlide = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(1.25, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _outController,
-      curve: Curves.easeInCubic,
-    ));
+    _outSlide = Tween<Offset>(begin: Offset.zero, end: const Offset(1.25, 0.0))
+        .animate(
+          CurvedAnimation(parent: _outController, curve: Curves.easeInCubic),
+        );
 
     _outFade = Tween<double>(
       begin: 1.0,
       end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _outController,
-      curve: Curves.easeIn,
-    ));
+    ).animate(CurvedAnimation(parent: _outController, curve: Curves.easeIn));
 
     _inController.forward().then((_) {
       if (mounted && !_isExiting) {
@@ -326,16 +306,9 @@ class _LuxuryToastOverlayWidgetState extends State<_LuxuryToastOverlayWidget>
             decoration: BoxDecoration(
               color: badgeBgColor,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: borderColor,
-                width: 1,
-              ),
+              border: Border.all(color: borderColor, width: 1),
             ),
-            child: Icon(
-              icon,
-              color: accentColor,
-              size: 20,
-            ),
+            child: Icon(icon, color: accentColor, size: 20),
           ),
           const SizedBox(width: 12),
 
