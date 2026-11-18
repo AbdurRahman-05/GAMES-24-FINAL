@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'api_config.dart';
 import 'core/theme/app_theme.dart';
 import 'splash_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ApiConfig.init();
 
   // Guard against harmless Flutter Web Hot Restart engine view disposal race condition
   FlutterError.onError = (FlutterErrorDetails details) {

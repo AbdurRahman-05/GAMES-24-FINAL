@@ -1,3 +1,4 @@
+export const DEFAULT_LOCAL_BACKEND_URL = 'http://localhost:3000';
 export const DEFAULT_LIVE_BACKEND_URL = 'https://games-24-final.onrender.com';
 
 export function getEffectiveBackendUrl(): string {
@@ -5,7 +6,7 @@ export function getEffectiveBackendUrl(): string {
     const override = localStorage.getItem('g24_superadmin_backend_url');
     if (override && override.trim()) return override.trim().replace(/\/+$/, '');
   }
-  return (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LIVE_BACKEND_URL).trim().replace(/\/+$/, '');
+  return (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LOCAL_BACKEND_URL).trim().replace(/\/+$/, '');
 }
 
 export function setEffectiveBackendUrl(url: string | null) {
@@ -18,7 +19,7 @@ export function setEffectiveBackendUrl(url: string | null) {
   }
 }
 
-export const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LIVE_BACKEND_URL).trim().replace(/\/+$/, '');
+export const BACKEND_URL = (process.env.NEXT_PUBLIC_BACKEND_URL || DEFAULT_LOCAL_BACKEND_URL).trim().replace(/\/+$/, '');
 export const ADMIN_SECRET = process.env.NEXT_PUBLIC_ADMIN_SECRET || 'g24_super_admin_secret_2026';
 
 /**
@@ -103,29 +104,6 @@ export async function safeAdminFetch(
     return res;
   } catch (err: any) {
     clearTimeout(timeoutId);
-
-    // If localhost failed (not running / connection refused) and allowFallback is true,
-    // automatically fallback to live Render cloud!
-    if (allowFallback && base !== DEFAULT_LIVE_BACKEND_URL) {
-      console.warn(`[SuperAdmin] Primary backend ${base} unreachable (${err?.message || err}). Auto-falling back to live Render cloud...`);
-      const fallbackUrl = `${DEFAULT_LIVE_BACKEND_URL}${cleanPath}`;
-      const fallbackController = new AbortController();
-      const fbTimeoutId = setTimeout(() => fallbackController.abort(), 25000);
-
-      try {
-        const fbRes = await fetch(fallbackUrl, {
-          ...options,
-          headers: mergedHeaders,
-          signal: fallbackController.signal,
-        });
-        clearTimeout(fbTimeoutId);
-        return fbRes;
-      } catch (fbErr: any) {
-        clearTimeout(fbTimeoutId);
-        throw new Error(`Failed to reach live backend (${DEFAULT_LIVE_BACKEND_URL}): ${fbErr?.message || fbErr}`);
-      }
-    }
-
     throw err;
   }
 }
