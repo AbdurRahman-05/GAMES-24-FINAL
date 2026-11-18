@@ -2145,13 +2145,25 @@ class _AdminTournamentManagerScreenState
                 TextFormField(
                   controller: _descCtrl,
                   maxLines: 2,
-                  decoration: _inputDecoration('Description', 'Provide details about the tournament...', Icons.description_outlined),
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: _inputDecoration(
+                    'Description',
+                    'Provide details about the tournament...',
+                    Icons.description_outlined,
+                    isMultiline: true,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _rulesCtrl,
                   maxLines: 2,
-                  decoration: _inputDecoration('Rules & Regulations', 'e.g. 8 overs per side, standard ICC rules...', Icons.gavel_rounded),
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: _inputDecoration(
+                    'Rules & Regulations',
+                    'e.g. 8 overs per side, standard ICC rules...',
+                    Icons.gavel_rounded,
+                    isMultiline: true,
+                  ),
                 ),
               ],
             ),
@@ -2456,16 +2468,37 @@ class _AdminTournamentManagerScreenState
     );
   }
 
-  InputDecoration _inputDecoration(String label, String hint, IconData icon) {
+  InputDecoration _inputDecoration(
+    String label,
+    String hint,
+    IconData icon, {
+    bool isMultiline = false,
+  }) {
     return InputDecoration(
       labelText: label,
       hintText: hint,
+      alignLabelWithHint: isMultiline,
       filled: true,
       fillColor: const Color(0xFF181818),
-      prefixIcon: Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
+      prefixIcon: isMultiline
+          ? Container(
+              padding: const EdgeInsets.only(left: 12, right: 8, top: 12),
+              alignment: Alignment.topLeft,
+              width: 36,
+              child: Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
+            )
+          : Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
+      prefixIconConstraints: isMultiline
+          ? const BoxConstraints(minWidth: 36, maxWidth: 36)
+          : const BoxConstraints(minWidth: 40, minHeight: 40),
       labelStyle: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
       hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF71717A)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      contentPadding: EdgeInsets.only(
+        left: 10,
+        right: 12,
+        top: isMultiline ? 12 : 10,
+        bottom: isMultiline ? 12 : 10,
+      ),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 1.5)),
