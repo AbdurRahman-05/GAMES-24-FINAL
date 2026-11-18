@@ -1535,7 +1535,6 @@ class _TurfOwnerRegistrationScreenState
 
   // STEP 3: Photos & Facilities (Pricing configured per sport in Profile Page)
   Widget _buildStep3PricingAndFacilities(ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

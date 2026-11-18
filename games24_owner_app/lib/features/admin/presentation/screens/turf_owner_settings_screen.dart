@@ -305,7 +305,11 @@ class _TurfOwnerSettingsScreenState
                       );
                     },
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF1C1C1C)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF1C1C1C),
+                  ),
                   SwitchListTile(
                     activeTrackColor: const Color(0xFFD4FF00),
                     contentPadding: const EdgeInsets.symmetric(
@@ -379,10 +383,7 @@ class _TurfOwnerSettingsScreenState
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: const Color(0xFF3B522E),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFF3B522E), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.6),
@@ -1992,8 +1993,12 @@ class _TurfOwnerSettingsScreenState
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.lock_rounded, size: 14, color: AppColors.warning),
-                                  const SizedBox(width: 6),
+                                  Icon(
+                                    Icons.lock_rounded,
+                                    size: 14,
+                                    color: AppColors.warning,
+                                  ),
+                                  SizedBox(width: 6),
                                   Text(
                                     'Verified Legal Identity Locked',
                                     style: TextStyle(
@@ -2250,7 +2255,9 @@ class _TurfOwnerSettingsScreenState
                           itemBuilder: (context, index) {
                             final item = filteredBookings[index];
                             Color statusColor = AppColors.success;
-                            if (item.status.toLowerCase().contains('confirmed')) {
+                            if (item.status.toLowerCase().contains(
+                              'confirmed',
+                            )) {
                               statusColor = const Color(0xFFD4FF00);
                             }
                             if (item.status.toLowerCase().contains('checked')) {

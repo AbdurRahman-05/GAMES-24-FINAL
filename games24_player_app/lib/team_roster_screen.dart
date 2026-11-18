@@ -25,7 +25,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D0D0D),
       body: SafeArea(
         child: Stack(
           children: [
@@ -71,9 +71,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF1C1C1E),
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: const Color(0xFF2E2E32)),
                   ),
                   child: const Icon(
                     Icons.arrow_back,
@@ -97,7 +97,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   SizedBox(height: 2),
                   Text(
                     'Squad Management & Tactics',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                    style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                   ),
                 ],
               ),
@@ -108,8 +108,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF262626),
+                  color: const Color(0xFF1C1C1E),
                   shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF2E2E32)),
                 ),
                 child: const Icon(
                   Icons.share_outlined,
@@ -121,8 +122,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF262626),
+                  color: const Color(0xFF1C1C1E),
                   shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF2E2E32)),
                 ),
                 child: const Icon(
                   Icons.settings_outlined,
@@ -143,9 +145,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF141414),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: const Color(0xFF262626)),
         ),
         child: Column(
           children: [
@@ -334,9 +336,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFFBEB),
+                      color: const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFEF3C7)),
+                      border: Border.all(color: const Color(0xFF262626)),
                     ),
                     child: Column(
                       children: [
@@ -345,7 +347,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFD97706),
+                            color: Color(0xFFFBBF24),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -636,14 +638,14 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   ),
                   child: Row(
                     children: const [
-                      Icon(Icons.contacts, size: 14, color: Colors.white),
+                      Icon(Icons.contacts, size: 14, color: Colors.black),
                       SizedBox(width: 4),
                       Text(
                         'Import Contacts',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
                         ),
                       ),
                     ],
@@ -661,9 +663,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
+                color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE5E7EB)),
+                border: Border.all(color: const Color(0xFF262626)),
               ),
               child: Column(
                 children: [
@@ -685,16 +687,22 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   const Text(
                     'Access contacts from your mobile phone to add players to this team.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                    style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
                   ),
                   const SizedBox(height: 14),
                   ElevatedButton.icon(
                     onPressed: _openContactsPicker,
-                    icon: const Icon(Icons.contacts, size: 16),
-                    label: const Text('Access Mobile Contacts'),
+                    icon: const Icon(Icons.contacts, size: 16, color: Colors.black),
+                    label: const Text(
+                      'Access Mobile Contacts',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF141414),
-                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0xFFD4FF00),
+                      foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -716,11 +724,11 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
             final isVice = role.toLowerCase().contains('vice');
 
             final roleBadgeColor = isCap
-                ? const Color(0xFFFFFBEB)
-                : (isVice ? const Color(0xFFECFDF5) : Colors.transparent);
+                ? const Color(0xFF1F1A12)
+                : (isVice ? const Color(0xFF132A1C) : Colors.transparent);
             final roleBadgeTextColor = isCap
-                ? const Color(0xFFD97706)
-                : (isVice ? const Color(0xFF047857) : const Color(0xFF6B7280));
+                ? const Color(0xFFFBBF24)
+                : (isVice ? const Color(0xFF34D399) : const Color(0xFFA1A1AA));
 
             return Column(
               children: [

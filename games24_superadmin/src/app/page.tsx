@@ -24,45 +24,27 @@ import {
   BACKEND_URL,
 } from '@/lib/api';
 import {
-  ShieldCheck,
   CheckCircle2,
-  XCircle,
-  Clock,
   AlertCircle,
   AlertTriangle,
   Trash2,
-  Building,
-  Calendar,
   Users,
   Trophy,
-  Activity,
-  ArrowUpRight,
-  TrendingUp,
   DollarSign,
-  Phone,
-  Mail,
   MapPin,
-  ExternalLink,
   PauseCircle,
   PlayCircle,
   Plus,
   RefreshCw,
   Search,
-  Filter,
   Check,
   X,
   FileCheck2,
   CalendarDays,
-  LayoutDashboard,
   Image as ImageIcon,
-  Layers,
   ChevronRight,
-  Sparkles,
-  Tag,
-  CreditCard,
   Building2,
   Terminal,
-  Radio,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -127,8 +109,8 @@ export default function SuperAdminDashboard() {
     try {
       const data = await getDashboardOverview();
       setOverview(data);
-    } catch (err: any) {
-      showToast(err.message || 'Error loading dashboard metrics', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Error loading dashboard metrics', 'error');
     } finally {
       setOverviewLoading(false);
     }
@@ -150,8 +132,8 @@ export default function SuperAdminDashboard() {
 
       setRegItems(data.items);
       setRegStats(data.stats);
-    } catch (err: any) {
-      showToast(err.message || 'Error loading registrations', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Error loading registrations', 'error');
     } finally {
       setRegLoading(false);
     }
@@ -167,8 +149,8 @@ export default function SuperAdminDashboard() {
         limit: 50,
       });
       setBookings(data.items);
-    } catch (err: any) {
-      showToast(err.message || 'Error loading bookings', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Error loading bookings', 'error');
     } finally {
       setBookingsLoading(false);
     }
@@ -182,8 +164,8 @@ export default function SuperAdminDashboard() {
         status: tournStatusFilter === 'ALL' ? undefined : tournStatusFilter,
       });
       setTournaments(data.items);
-    } catch (err: any) {
-      showToast(err.message || 'Error loading tournaments', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Error loading tournaments', 'error');
     } finally {
       setTournLoading(false);
     }
@@ -207,8 +189,8 @@ export default function SuperAdminDashboard() {
       const res = await toggleTurfBookingHold(turfId, !currentHold);
       showToast(res.message);
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to update turf booking hold status', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to update turf booking hold status', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -222,8 +204,8 @@ export default function SuperAdminDashboard() {
       showToast(res.message);
       loadBookings();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to update booking hold status', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to update booking hold status', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -238,8 +220,8 @@ export default function SuperAdminDashboard() {
       showToast(res.message);
       loadBookings();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to cancel booking', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to cancel booking', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -253,8 +235,8 @@ export default function SuperAdminDashboard() {
       showToast(res.message);
       loadTournaments();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to update tournament hold', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to update tournament hold', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -269,8 +251,8 @@ export default function SuperAdminDashboard() {
       setDeleteConfirmTourn(null);
       loadTournaments();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to delete tournament', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to delete tournament', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -284,8 +266,8 @@ export default function SuperAdminDashboard() {
       showToast(res.message);
       setDeleteConfirmTurf(null);
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to delete turf owner account', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to delete turf owner account', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -314,8 +296,8 @@ export default function SuperAdminDashboard() {
       showToast(`Venue "${reg.venueName}" successfully verified & activated!`);
       loadRegistrations();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to verify registration', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to verify registration', 'error');
     } finally {
       setQuickVerifyingId(null);
     }
@@ -334,8 +316,8 @@ export default function SuperAdminDashboard() {
       setCancelReasonText('');
       loadRegistrations();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to cancel registration', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to cancel registration', 'error');
     }
   };
 
@@ -362,8 +344,8 @@ export default function SuperAdminDashboard() {
       setNewTournVenue('');
       loadTournaments();
       loadOverview();
-    } catch (err: any) {
-      showToast(err.message || 'Error creating tournament', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Error creating tournament', 'error');
     }
   };
 
@@ -394,7 +376,7 @@ export default function SuperAdminDashboard() {
       <Navbar
         waitingCount={regStats.waiting || kpis.pendingOwners}
         activeSection={activeSection}
-        onSelectSection={(sec) => setActiveSection(sec as any)}
+        onSelectSection={(sec) => setActiveSection(sec as typeof activeSection)}
       />
 
       {/* Floating Toast Notification */}

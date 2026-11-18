@@ -34,7 +34,7 @@ export function getAdminSports(adminId: number) {
         return data[adminId];
       }
     }
-  } catch (e) {}
+  } catch {}
   return DEFAULT_TURF_SPORTS;
 }
 
@@ -47,7 +47,7 @@ export function saveAdminSports(adminId: number, sports: any[]) {
     }
     data[adminId] = sports;
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-  } catch (e) {}
+  } catch {}
 }
 
 @Injectable()
@@ -409,8 +409,8 @@ export class AuthService {
       isEmailVerified, 
       photosCount, 
       photoUrls,
-      sports,
-      amenities, 
+      sports: _sports,
+ 
       gstin, 
       panNumber, 
       aadhaarNumber, 
@@ -1199,10 +1199,10 @@ export class AuthService {
       alternativeNumber,
       parentTurfId,
       turfId,
-      dayRate,
-      nightRate,
-      weekdayRate,
-      weekendRate,
+      _dayRate,
+      _nightRate,
+      _weekdayRate,
+      _weekendRate,
     } = body;
 
     if (!ownerPhone || !venueName) {

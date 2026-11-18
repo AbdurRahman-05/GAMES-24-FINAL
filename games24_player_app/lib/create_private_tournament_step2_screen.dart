@@ -109,14 +109,14 @@ class _CreatePrivateTournamentStep2ScreenState
     final d = widget.formData;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF080808),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF141414),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Colors.white,
             size: 18,
           ),
           onPressed: () {
@@ -137,12 +137,12 @@ class _CreatePrivateTournamentStep2ScreenState
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF0F172A),
+                color: Colors.white,
               ),
             ),
             Text(
               'Step 2 of 2 • Invite-Only Cup',
-              style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+              style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
             ),
           ],
         ),
@@ -327,22 +327,23 @@ class _CreatePrivateTournamentStep2ScreenState
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
+                  color: const Color(0xFF1F1A12),
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF3D2A14)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
                     Icon(
                       Icons.lock_rounded,
-                      color: Color(0xFFB45309),
+                      color: Color(0xFFFBBF24),
                       size: 13,
                     ),
                     SizedBox(width: 5),
                     Text(
                       'PRIVATE INVITATIONAL',
                       style: TextStyle(
-                        color: Color(0xFF92400E),
+                        color: Color(0xFFFBBF24),
                         fontSize: 10.5,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 0.5,
@@ -489,21 +490,21 @@ class _CreatePrivateTournamentStep2ScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
+        color: const Color(0xFF1F1A12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+        border: Border.all(color: const Color(0xFF3D2A14), width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
+            decoration: const BoxDecoration(
+              color: Color(0xFF2E2413),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.key_rounded,
-              color: Color(0xFFD97706),
+              color: Color(0xFFFBBF24),
               size: 22,
             ),
           ),
@@ -517,7 +518,7 @@ class _CreatePrivateTournamentStep2ScreenState
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
-                    color: Color(0xFF92400E),
+                    color: Color(0xFFFBBF24),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -527,31 +528,31 @@ class _CreatePrivateTournamentStep2ScreenState
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 2.0,
-                    color: Color(0xFF78350F),
+                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
                 const Text(
                   'Share this PIN only with invited teams to enter bracket.',
-                  style: TextStyle(fontSize: 10.5, color: Color(0xFFB45309)),
+                  style: TextStyle(fontSize: 10.5, color: Color(0xFFA1A1AA)),
                 ),
               ],
             ),
           ),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706),
-              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFFD4FF00),
+              foregroundColor: Colors.black,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            icon: const Icon(Icons.copy_rounded, size: 14),
+            icon: const Icon(Icons.copy_rounded, size: 14, color: Colors.black),
             label: const Text(
               'Copy',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.black),
             ),
             onPressed: _copyPin,
           ),
@@ -563,9 +564,9 @@ class _CreatePrivateTournamentStep2ScreenState
   Widget _buildDetailsCard(TournamentFormData d) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -576,27 +577,27 @@ class _CreatePrivateTournamentStep2ScreenState
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF0F172A),
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 12),
           _buildParamRow('Sport Discipline', d.sport, Icons.sports_rounded),
-          const Divider(height: 16),
+          const Divider(height: 16, color: Color(0xFF262626)),
           _buildParamRow('Cup Structure', d.format, Icons.schema_rounded),
-          const Divider(height: 16),
+          const Divider(height: 16, color: Color(0xFF262626)),
           _buildParamRow(
             'Max Capacity',
             '${d.maxTeams} Teams (Invite Only)',
             Icons.groups_rounded,
           ),
-          const Divider(height: 16),
+          const Divider(height: 16, color: Color(0xFF262626)),
           _buildParamRow(
             'Security Level',
             'Private / PIN Protected',
             Icons.security_rounded,
           ),
           if (d.courtsCount > 0) ...[
-            const Divider(height: 16),
+            const Divider(height: 16, color: Color(0xFF262626)),
             _buildParamRow(
               'Turf Facilities',
               '${d.courtsCount} Courts / Pitches',
@@ -604,7 +605,7 @@ class _CreatePrivateTournamentStep2ScreenState
             ),
           ],
           if (d.externalTicketUrl.isNotEmpty) ...[
-            const Divider(height: 16),
+            const Divider(height: 16, color: Color(0xFF262626)),
             _buildParamRow(
               'External Ticket Link',
               d.externalTicketUrl,
@@ -619,9 +620,9 @@ class _CreatePrivateTournamentStep2ScreenState
   Widget _buildVenueCard(TournamentFormData d) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -636,7 +637,7 @@ class _CreatePrivateTournamentStep2ScreenState
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -665,7 +666,7 @@ class _CreatePrivateTournamentStep2ScreenState
                       style: TextStyle(
                         fontSize: 11.5,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF92400E),
+                        color: Color(0xFFFBBF24),
                       ),
                     ),
                   ),
@@ -675,12 +676,12 @@ class _CreatePrivateTournamentStep2ScreenState
           ],
           Text(
             d.venue,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
           ),
           const SizedBox(height: 2),
           Text(
             d.location,
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+            style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
           ),
           if (d.courtsCount > 0) ...[
             const SizedBox(height: 6),
@@ -715,7 +716,7 @@ class _CreatePrivateTournamentStep2ScreenState
                 const Icon(
                   Icons.access_time_rounded,
                   size: 14,
-                  color: Color(0xFFD97706),
+                  color: Color(0xFFD4FF00),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -724,6 +725,7 @@ class _CreatePrivateTournamentStep2ScreenState
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -739,9 +741,9 @@ class _CreatePrivateTournamentStep2ScreenState
   Widget _buildRulesCard(TournamentFormData d) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -749,14 +751,14 @@ class _CreatePrivateTournamentStep2ScreenState
         children: [
           Row(
             children: const [
-              Icon(Icons.gavel_rounded, color: Color(0xFFD97706), size: 18),
+              Icon(Icons.gavel_rounded, color: Color(0xFFD4FF00), size: 18),
               SizedBox(width: 8),
               Text(
                 'Match Guidelines & Conduct ⚖️',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F172A),
+                  color: Colors.white,
                 ),
               ),
             ],
@@ -770,7 +772,7 @@ class _CreatePrivateTournamentStep2ScreenState
                 children: [
                   const Icon(
                     Icons.check_circle_rounded,
-                    color: Color(0xFFD97706),
+                    color: Color(0xFFD4FF00),
                     size: 15,
                   ),
                   const SizedBox(width: 8),
@@ -779,7 +781,7 @@ class _CreatePrivateTournamentStep2ScreenState
                       r,
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF334155),
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -801,7 +803,7 @@ class _CreatePrivateTournamentStep2ScreenState
                 'Note: ${d.customRules}',
                 style: const TextStyle(
                   fontSize: 11.5,
-                  color: Color(0xFF92400E),
+                  color: Color(0xFFFBBF24),
                 ),
               ),
             ),
@@ -814,9 +816,9 @@ class _CreatePrivateTournamentStep2ScreenState
   Widget _buildTermsCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: const Color(0xFF262626)),
       ),
       padding: const EdgeInsets.all(12),
       child: Row(
@@ -824,7 +826,9 @@ class _CreatePrivateTournamentStep2ScreenState
         children: [
           Checkbox(
             value: _agreedToTerms,
-            activeColor: const Color(0xFF0F172A),
+            activeColor: const Color(0xFFD4FF00),
+            checkColor: Colors.black,
+            side: const BorderSide(color: Color(0xFF3F3F46)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
@@ -838,8 +842,8 @@ class _CreatePrivateTournamentStep2ScreenState
                 style: TextStyle(
                   fontSize: 11.5,
                   color: _agreedToTerms
-                      ? const Color(0xFF1E293B)
-                      : const Color(0xFF94A3B8),
+                      ? Colors.white
+                      : const Color(0xFFA1A1AA),
                   height: 1.35,
                 ),
               ),
@@ -853,11 +857,11 @@ class _CreatePrivateTournamentStep2ScreenState
   Widget _buildParamRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF64748B)),
+        Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
+          style: const TextStyle(fontSize: 12.5, color: Color(0xFFA1A1AA)),
         ),
         const Spacer(),
         Text(
@@ -865,7 +869,7 @@ class _CreatePrivateTournamentStep2ScreenState
           style: const TextStyle(
             fontSize: 12.5,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF0F172A),
+            color: Colors.white,
           ),
         ),
       ],

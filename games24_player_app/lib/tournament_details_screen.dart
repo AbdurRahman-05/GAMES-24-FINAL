@@ -154,15 +154,15 @@ class TournamentDetailsScreen extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 8),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
+              color: const Color(0xFF1F1A12),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFFDE68A)),
+              border: Border.all(color: const Color(0xFF3D2A14)),
             ),
             child: Row(
               children: const [
                 Icon(
                   Icons.location_searching_rounded,
-                  color: Color(0xFFD97706),
+                  color: Color(0xFFFBBF24),
                   size: 20,
                 ),
                 SizedBox(width: 10),
@@ -170,7 +170,7 @@ class TournamentDetailsScreen extends StatelessWidget {
                   child: Text(
                     'Venue Details Launching Soon (TBA)\nExact arena and court schedule will be announced closer to kickoff.',
                     style: TextStyle(
-                      color: Color(0xFF92400E),
+                      color: Color(0xFFFBBF24),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       height: 1.3,

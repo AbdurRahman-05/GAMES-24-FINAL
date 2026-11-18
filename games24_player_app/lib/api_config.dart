@@ -1,4 +1,4 @@
-class ApiConfig {
+﻿class ApiConfig {
   /// Base URL of the backend API.
   /// Hardcoded to live Render deployment, with optional build-time override via --dart-define=API_URL=...
   static const String baseUrl = String.fromEnvironment(

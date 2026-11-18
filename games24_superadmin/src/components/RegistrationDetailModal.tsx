@@ -11,7 +11,6 @@ import {
   X,
   CheckCircle2,
   XCircle,
-  Clock,
   ShieldCheck,
   MapPin,
   Phone,
@@ -69,8 +68,8 @@ export default function RegistrationDetailModal({
       await verifyRegistration(registration.id, { verifiedBy: 'Super Admin' });
       onActionComplete();
       onClose();
-    } catch (err: any) {
-      setActionError(err.message || 'Failed to verify registration');
+    } catch (err: unknown) {
+      setActionError((err as Error).message || 'Failed to verify registration');
     } finally {
       setIsVerifying(false);
     }
@@ -87,8 +86,8 @@ export default function RegistrationDetailModal({
       await cancelRegistration(registration.id, { reason: cancelReason.trim() });
       onActionComplete();
       onClose();
-    } catch (err: any) {
-      setActionError(err.message || 'Failed to cancel registration');
+    } catch (err: unknown) {
+      setActionError((err as Error).message || 'Failed to cancel registration');
     } finally {
       setIsCancelling(false);
     }

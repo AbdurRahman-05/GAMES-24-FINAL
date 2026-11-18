@@ -99,13 +99,24 @@ class Challenge {
     'userHasRequested': userHasRequested,
   };
 
+  static String _cleanString(dynamic raw, [String defaultValue = '']) {
+    if (raw == null) return defaultValue;
+    return raw
+        .toString()
+        .replaceAll('âš½', '')
+        .replaceAll('â€¢', '\u2022')
+        .replaceAll('⚽', '')
+        .replaceAll('🏏', '')
+        .trim();
+  }
+
   factory Challenge.fromJson(Map<String, dynamic> json) => Challenge(
     id: json['id']?.toString() ?? '',
     turfName: json['turfName']?.toString() ?? '',
     location: json['location']?.toString() ?? 'Madurai',
-    date: json['date']?.toString() ?? '',
-    time: json['time']?.toString() ?? '',
-    sport: json['sport']?.toString() ?? 'Football',
+    date: _cleanString(json['date']),
+    time: _cleanString(json['time']),
+    sport: _cleanString(json['sport'], 'Football'),
     challengerName: json['challengerName']?.toString() ?? '',
     challengerTeamInitials: json['challengerTeamInitials']?.toString() ?? 'TC',
     challengerColor: Color(

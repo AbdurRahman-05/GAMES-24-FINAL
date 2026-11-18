@@ -11,9 +11,6 @@ import {
   LayoutDashboard,
   Building2,
   Terminal,
-  Activity,
-  ChevronRight,
-  ExternalLink,
 } from 'lucide-react';
 import { getEffectiveBackendUrl, setEffectiveBackendUrl, DEFAULT_LIVE_BACKEND_URL } from '@/lib/api';
 
@@ -31,11 +28,19 @@ export default function Navbar({
 }: NavbarProps) {
   const pathname = usePathname();
   const isMainPage = pathname === '/';
-  const [backendUrl, setBackendUrl] = useState<string>('https://games-24-final.onrender.com');
+  const [backendUrl, setBackendUrl] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return getEffectiveBackendUrl();
+    }
+    return DEFAULT_LIVE_BACKEND_URL;
+  });
 
   useEffect(() => {
-    setBackendUrl(getEffectiveBackendUrl());
-  }, []);
+    const current = getEffectiveBackendUrl();
+    if (current !== backendUrl) {
+      setBackendUrl(current);
+    }
+  }, [backendUrl]);
 
   const handleToggleBackend = () => {
     const isLive = backendUrl.includes('onrender');

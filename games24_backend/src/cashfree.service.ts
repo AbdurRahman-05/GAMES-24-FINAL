@@ -127,7 +127,7 @@ export class CashfreeService {
           isMock = true;
         }
       } catch (err) {
-        this.logger.error(`Cashfree API call error: ${err}`);
+        this.logger.error(`Cashfree API call error: ${String(err)}`);
         paymentSessionId = `session_cf_test_${orderId}`;
         isMock = true;
       }
@@ -211,7 +211,7 @@ export class CashfreeService {
           }
         }
       } catch (err) {
-        this.logger.error(`Cashfree payment verification query failed: ${err}`);
+        this.logger.error(`Cashfree payment verification query failed: ${String(err)}`);
       }
     } else {
       // In preview / test mode, auto-confirm for seamless sandbox testing
@@ -263,7 +263,7 @@ export class CashfreeService {
           },
         });
       } catch (e) {
-        this.logger.error(`Error auto-finalizing booking on payment success: ${e}`);
+        this.logger.error(`Error auto-finalizing booking on payment success: ${String(e)}`);
       }
     }
 
@@ -323,7 +323,7 @@ export class CashfreeService {
           throw new BadRequestException('Cashfree webhook signature mismatch');
         }
       } catch (e) {
-        this.logger.error(`Webhook signature verification error: ${e}`);
+        this.logger.error(`Webhook signature verification error: ${String(e)}`);
       }
     }
 

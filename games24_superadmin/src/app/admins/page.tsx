@@ -11,24 +11,14 @@ import {
   getStats,
   toggleTurfBookingHold,
   deleteVerifiedAdmin,
-  BACKEND_URL,
 } from '@/lib/api';
 import {
   ShieldCheck,
   Search,
   RefreshCw,
-  Building,
-  User,
   Phone,
-  Mail,
   MapPin,
-  ExternalLink,
   ChevronRight,
-  FileCheck2,
-  Calendar,
-  Sparkles,
-  Tag,
-  CheckCircle2,
   Trash2,
   AlertTriangle,
   Check,
@@ -120,8 +110,8 @@ export default function AdminsPage() {
           status: !isCurrentlyHold ? 'HOLD' : 'VERIFIED',
         });
       }
-    } catch (err: any) {
-      showToast(err.message || 'Failed to toggle account hold status', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to toggle account hold status', 'error');
     } finally {
       setActionLoadingId(null);
     }
@@ -161,8 +151,8 @@ export default function AdminsPage() {
         setSelectedAdmin(null);
       }
       setDeleteConfirmAdmin(null);
-    } catch (err: any) {
-      showToast(err.message || 'Failed to delete turf owner account', 'error');
+    } catch (err: unknown) {
+      showToast((err as Error).message || 'Failed to delete turf owner account', 'error');
     } finally {
       setActionLoadingId(null);
     }

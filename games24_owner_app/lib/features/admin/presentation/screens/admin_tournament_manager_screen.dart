@@ -28,6 +28,7 @@ class _AdminTournamentManagerScreenState
   bool get wantKeepAlive => true;
 
   late TabController _tabController;
+  bool _isCreatingTournament = false;
 
   // Form Controllers for Create Tournament Wizard
   final _formKey = GlobalKey<FormState>();
@@ -95,7 +96,7 @@ class _AdminTournamentManagerScreenState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -242,6 +243,9 @@ class _AdminTournamentManagerScreenState
     _descCtrl.clear();
     _rulesCtrl.clear();
 
+    setState(() {
+      _isCreatingTournament = false;
+    });
     _tabController.animateTo(0);
 
     if (mounted) {
@@ -1058,156 +1062,235 @@ class _AdminTournamentManagerScreenState
     return Scaffold(
       backgroundColor: const Color(0xFF080808),
       appBar: _buildExecutiveAppBar(context),
-      body: Column(
-        children: [
-          // Custom Segmented Capsule Navigation Tabs
-          _buildSegmentedTabCapsules(tournState),
+      body: PopScope(
+        canPop: !_isCreatingTournament,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && _isCreatingTournament) {
+            setState(() => _isCreatingTournament = false);
+          }
+        },
+        child: _isCreatingTournament
+            ? _buildCreateTournamentTab()
+            : Column(
+                children: [
+                  // Custom Segmented Capsule Navigation Tabs (Tournaments, Live & Fixtures, Financials)
+                  _buildSegmentedTabCapsules(tournState),
 
-          // Main View
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildTournamentDashboardTab(tournState),
-                _buildCreateTournamentTab(),
-                _buildLiveAndFixturesTab(tournState),
-                _buildAnalyticsTab(tournState),
-              ],
-            ),
-          ),
-        ],
+                  // Main View
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildTournamentDashboardTab(tournState),
+                        _buildLiveAndFixturesTab(tournState),
+                        _buildAnalyticsTab(tournState),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 
   // --- 1. PRO EXECUTIVE APP BAR ---
   PreferredSizeWidget _buildExecutiveAppBar(BuildContext context) {
+    if (_isCreatingTournament) {
+      return AppBar(
+        backgroundColor: const Color(0xFF0D0D0D),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        toolbarHeight: 64,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFF1E281A), width: 1),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => setState(() => _isCreatingTournament = false),
+                child: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1C1C),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFF2E2E2E), width: 1),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Create Tournament',
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 1),
+                    Text(
+                      'Step-by-step Championship Setup',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFA1A1AA),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return AppBar(
       backgroundColor: const Color(0xFF0D0D0D),
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       toolbarHeight: 64,
+      automaticallyImplyLeading: false,
       titleSpacing: 0,
       shape: const Border(
         bottom: BorderSide(color: Color(0xFF1E281A), width: 1),
       ),
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(7),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1C1C1C),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 15,
-            color: Colors.white,
-          ),
-        ),
-        onPressed: () {
-          if (Navigator.of(context).canPop()) {
-            context.pop();
-          } else {
-            context.go('/admin/dashboard');
-          }
-        },
-        tooltip: 'Back to Dashboard',
-      ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Championship & Leagues',
-            style: TextStyle(
-              fontSize: 14.5,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: -0.3,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Row(
+          children: [
+            // Left: Back button
+            InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () {
+                if (Navigator.of(context).canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/admin/dashboard');
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C1C1C),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF2E2E2E), width: 1),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 1),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4ADE80),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 5),
-              const Flexible(
-                child: Text(
-                  'Live Fixture & Bracket Engine',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFA1A1AA),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 14),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(9),
-            onTap: () {
-              HapticFeedback.lightImpact();
-              _tabController.animateTo(1);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6.5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF141A0A),
-                borderRadius: BorderRadius.circular(9),
-                border: Border.all(
-                  color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Row(
+            const SizedBox(width: 10),
+
+            // Center: Championship on top, & Leagues below (no truncation)
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.add_rounded,
-                    size: 15,
-                    color: Color(0xFFD4FF00),
-                  ),
-                  SizedBox(width: 4),
                   Text(
-                    'New Tourney',
+                    'Championship',
                     style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFFD4FF00),
-                      letterSpacing: 0.2,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                      height: 1.15,
                     ),
+                    maxLines: 1,
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    '& Leagues',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFA1A1AA),
+                      letterSpacing: -0.1,
+                      height: 1.15,
+                    ),
+                    maxLines: 1,
                   ),
                 ],
               ),
             ),
-          ),
+
+            // Guaranteed Gap - Never touches on any screen size
+            const SizedBox(width: 12),
+
+            // Right: Create Tournament button
+            InkWell(
+              borderRadius: BorderRadius.circular(9),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() => _isCreatingTournament = true);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF141A0A),
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.add_rounded,
+                      size: 14,
+                      color: Color(0xFFD4FF00),
+                    ),
+                    SizedBox(width: 3.5),
+                    Text(
+                      'Create Tournament',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFFD4FF00),
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -1215,7 +1298,6 @@ class _AdminTournamentManagerScreenState
   Widget _buildSegmentedTabCapsules(AdminTournamentState tournState) {
     final tabs = [
       {'label': 'Tournaments (${tournState.tournaments.length})', 'icon': Icons.emoji_events_rounded},
-      {'label': 'Create Tourney', 'icon': Icons.add_circle_outline_rounded},
       {'label': 'Live & Fixtures', 'icon': Icons.live_tv_rounded},
       {'label': 'Financials', 'icon': Icons.bar_chart_rounded},
     ];
@@ -1631,7 +1713,7 @@ class _AdminTournamentManagerScreenState
             ),
             icon: const Icon(Icons.add_rounded, size: 16),
             label: const Text('Create Tournament Now', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            onPressed: () => _tabController.animateTo(1),
+            onPressed: () => setState(() => _isCreatingTournament = true),
           ),
         ],
       ),
@@ -1945,7 +2027,7 @@ class _AdminTournamentManagerScreenState
                           overflow: TextOverflow.ellipsis,
                         ),
                         onPressed: () {
-                          _tabController.animateTo(2);
+                          _tabController.animateTo(1);
                         },
                       ),
                     ),
@@ -2382,7 +2464,7 @@ class _AdminTournamentManagerScreenState
             const SizedBox(height: 12),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4FF00), foregroundColor: Colors.black),
-              onPressed: () => _tabController.animateTo(1),
+              onPressed: () => setState(() => _isCreatingTournament = true),
               child: const Text('Create Tournament'),
             ),
           ],

@@ -987,8 +987,7 @@ export class SuperAdminService {
         await this.prisma.adminUser.delete({
           where: { id: adminUserId },
         });
-      } catch (e) {
-        // Ignored if already deleted
+      } catch {// Ignored if already deleted
       }
     }
 

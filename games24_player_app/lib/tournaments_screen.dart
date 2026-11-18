@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:games24_player_app/tournament_manager.dart';
 import 'package:games24_player_app/tournament_details_screen.dart';
 import 'package:games24_player_app/create_tournament_dialog.dart';

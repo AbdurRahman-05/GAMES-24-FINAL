@@ -58,13 +58,14 @@ export async function safeAdminFetch(
     }
 
     return res;
-  } catch (err: any) {
+  } catch (err: unknown) {
     clearTimeout(timeoutId);
 
     // If localhost failed (not running / connection refused) and allowFallback is true,
     // automatically fallback to live Render cloud!
     if (allowFallback && base !== DEFAULT_LIVE_BACKEND_URL) {
-      console.warn(`[SuperAdmin] Primary backend ${base} unreachable (${err?.message || err}). Auto-falling back to live Render cloud...`);
+      const errMsg = (err as Error)?.message || String(err);
+      console.warn(`[SuperAdmin] Primary backend ${base} unreachable (${errMsg}). Auto-falling back to live Render cloud...`);
       const fallbackUrl = `${DEFAULT_LIVE_BACKEND_URL}${cleanPath}`;
       const fallbackController = new AbortController();
       const fbTimeoutId = setTimeout(() => fallbackController.abort(), 25000);
@@ -77,9 +78,10 @@ export async function safeAdminFetch(
         });
         clearTimeout(fbTimeoutId);
         return fbRes;
-      } catch (fbErr: any) {
+      } catch (fbErr: unknown) {
         clearTimeout(fbTimeoutId);
-        throw new Error(`Failed to reach live backend (${DEFAULT_LIVE_BACKEND_URL}): ${fbErr?.message || fbErr}`);
+        const fbErrMsg = (fbErr as Error)?.message || String(fbErr);
+        throw new Error(`Failed to reach live backend (${DEFAULT_LIVE_BACKEND_URL}): ${fbErrMsg}`);
       }
     }
 
@@ -102,7 +104,7 @@ export interface AdminRegistration {
   photoUrls: string[];
   amenities: string[];
   sports?: string[];
-  sportsList?: any[];
+  sportsList?: unknown[];
   gstin: string | null;
   panNumber: string | null;
   aadhaarNumber: string | null;
@@ -149,7 +151,7 @@ export interface VerifiedAdmin {
   photoUrls: string[];
   amenities: string[];
   sports?: string[];
-  sportsList?: any[];
+  sportsList?: unknown[];
   gstin: string | null;
   panNumber: string | null;
   aadhaarNumber: string | null;

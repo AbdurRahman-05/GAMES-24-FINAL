@@ -232,10 +232,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
               decoration: BoxDecoration(
                 color: const Color(0xFF141414),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF262626),
-                  width: 1,
-                ),
+                border: Border.all(color: const Color(0xFF262626), width: 1),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.5),
@@ -377,10 +374,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 decoration: BoxDecoration(
                   color: const Color(0xFF141414),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF262626),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0xFF262626), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.4),
@@ -521,20 +515,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     TurfProfileState profile,
   ) {
     final cleanPhone = profile.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
-    final ownerLast10 = cleanPhone.length >= 10 ? cleanPhone.substring(cleanPhone.length - 10) : cleanPhone;
+    final ownerLast10 = cleanPhone.length >= 10
+        ? cleanPhone.substring(cleanPhone.length - 10)
+        : cleanPhone;
 
     // Deduplicate branches and filter to ensure only this owner's venues are shown
     final Map<String, OwnerTurfBranchItem> deduplicated = {};
     for (final b in profile.branches) {
       if (ownerLast10.isNotEmpty && b.ownerPhone.isNotEmpty) {
         final bClean = b.ownerPhone.replaceAll(RegExp(r'[^0-9]'), '');
-        final bLast10 = bClean.length >= 10 ? bClean.substring(bClean.length - 10) : bClean;
+        final bLast10 = bClean.length >= 10
+            ? bClean.substring(bClean.length - 10)
+            : bClean;
         if (bLast10 != ownerLast10 && b.id != profile.verifiedAdminId) {
           continue; // Filter out foreign account branches
         }
       }
       final key = b.venueName.trim().toLowerCase();
-      if (!deduplicated.containsKey(key) || (!b.isPending && deduplicated[key]!.isPending)) {
+      if (!deduplicated.containsKey(key) ||
+          (!b.isPending && deduplicated[key]!.isPending)) {
         deduplicated[key] = b;
       }
     }
@@ -569,15 +568,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
         decoration: const BoxDecoration(
           color: Color(0xFF121212),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(
-            top: BorderSide(color: Color(0xFF262626), width: 1),
-          ),
+          border: Border(top: BorderSide(color: Color(0xFF262626), width: 1)),
         ),
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(ctx).padding.bottom + 24),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              12,
+              16,
+              MediaQuery.of(ctx).padding.bottom + 24,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -692,7 +694,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 // Connected Branches List (Instagram-Style Cards)
                 ...branches.map((b) {
                   final isCurrent = b.id == profile.verifiedAdminId;
-                  final isPending = b.isPending || b.status == 'PENDING_APPROVAL';
+                  final isPending =
+                      b.isPending || b.status == 'PENDING_APPROVAL';
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 10),
@@ -707,8 +710,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                           color: isCurrent
                               ? const Color(0xFF22C55E)
                               : isPending
-                                  ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
-                                  : const Color(0xFF27272A),
+                              ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                              : const Color(0xFF27272A),
                           width: isCurrent ? 1.5 : 1.0,
                         ),
                       ),
@@ -750,7 +753,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                 height: 44,
                                 decoration: BoxDecoration(
                                   color: isCurrent
-                                      ? const Color(0xFF16A34A).withValues(alpha: 0.2)
+                                      ? const Color(
+                                          0xFF16A34A,
+                                        ).withValues(alpha: 0.2)
                                       : const Color(0xFF27272A),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
@@ -884,8 +889,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                                       style: TextStyle(
                                         fontSize: 11.5,
                                         color: isPending
-                                            ? const Color(0xFFFBBF24)
-                                                .withValues(alpha: 0.8)
+                                            ? const Color(
+                                                0xFFFBBF24,
+                                              ).withValues(alpha: 0.8)
                                             : const Color(0xFFA1A1AA),
                                       ),
                                       maxLines: 1,
@@ -974,10 +980,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     ),
                     subtitle: const Text(
                       'Clone current specs or configure a new arena • Admin Approval',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFFA1A1AA),
-                      ),
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                     ),
                     trailing: const Icon(
                       Icons.chevron_right_rounded,
@@ -1028,10 +1031,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     ),
                     subtitle: const Text(
                       'Multi-sport pricing (Cricket, Football, Pickleball & more)',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFFA1A1AA),
-                      ),
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                     ),
                     trailing: const Icon(
                       Icons.chevron_right_rounded,
@@ -1065,15 +1065,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
         decoration: const BoxDecoration(
           color: Color(0xFF121212),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border(
-            top: BorderSide(color: Color(0xFF262626), width: 1),
-          ),
+          border: Border(top: BorderSide(color: Color(0xFF262626), width: 1)),
         ),
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(16, 14, 16, MediaQuery.of(ctx).padding.bottom + 24),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              14,
+              16,
+              MediaQuery.of(ctx).padding.bottom + 24,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1157,7 +1160,10 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   color: const Color(0xFF142414),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Color(0xFF22C55E), width: 1.2),
+                    side: const BorderSide(
+                      color: Color(0xFF22C55E),
+                      width: 1.2,
+                    ),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
@@ -1174,7 +1180,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF16A34A).withValues(alpha: 0.2),
+                              color: const Color(
+                                0xFF16A34A,
+                              ).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -1248,14 +1256,21 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   color: const Color(0xFF18181B),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Color(0xFF27272A), width: 1.0),
+                    side: const BorderSide(
+                      color: Color(0xFF27272A),
+                      width: 1.0,
+                    ),
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: () {
                       HapticFeedback.lightImpact();
                       Navigator.pop(ctx);
-                      _showAddBranchFormDialog(context, profile, isClone: false);
+                      _showAddBranchFormDialog(
+                        context,
+                        profile,
+                        isClone: false,
+                      );
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(14),
@@ -1399,8 +1414,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 final request = http.MultipartRequest('POST', uri);
                 final bytes = await img.readAsBytes();
                 final ext = img.name.split('.').last.toLowerCase();
-                final mimeSubtype =
-                    ext == 'png' ? 'png' : (ext == 'webp' ? 'webp' : 'jpeg');
+                final mimeSubtype = ext == 'png'
+                    ? 'png'
+                    : (ext == 'webp' ? 'webp' : 'jpeg');
 
                 request.files.add(
                   http.MultipartFile.fromBytes(
@@ -1432,653 +1448,676 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
           }
 
           return AlertDialog(
-          backgroundColor: const Color(0xFF141414),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Color(0xFF27272A), width: 1),
-          ),
-          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF16A34A).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+            backgroundColor: const Color(0xFF141414),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: const BorderSide(color: Color(0xFF27272A), width: 1),
+            ),
+            titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF16A34A).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    isClone
+                        ? Icons.copy_all_rounded
+                        : Icons.add_business_rounded,
+                    color: const Color(0xFF22C55E),
+                    size: 20,
+                  ),
                 ),
-                child: Icon(
-                  isClone ? Icons.copy_all_rounded : Icons.add_business_rounded,
-                  color: const Color(0xFF22C55E),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isClone
-                          ? 'Clone to New Branch'
-                          : 'Register New Branch',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16.5,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      isClone
-                          ? 'Pre-filled from ${profile.venueName}'
-                          : 'Enter branch location & game pricing',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFFA1A1AA),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-
-                  // Mode Indicator Chip
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isClone
-                          ? const Color(0xFF162A16)
-                          : const Color(0xFF202024),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isClone
-                            ? const Color(0xFF2E4D2E)
-                            : const Color(0xFF333338),
-                        width: 0.8,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          isClone ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded,
-                          size: 14,
-                          color: isClone ? const Color(0xFF86EFAC) : const Color(0xFFA1A1AA),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            isClone
-                                ? 'Timings, surface & specs copied from current venue'
-                                : 'Primary Owner Account: ${profile.ownerPhone}',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w600,
-                              color: isClone
-                                  ? const Color(0xFF86EFAC)
-                                  : const Color(0xFFD4D4D8),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  TextField(
-                    controller: nameCtrl,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
-                    decoration: const InputDecoration(
-                      labelText: 'New Branch Name *',
-                      hintText: 'e.g. Vicky Turf - Anna Nagar',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: areaCtrl,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
-                    decoration: const InputDecoration(
-                      labelText: 'Neighborhood / Area *',
-                      hintText: 'e.g. Anna Nagar / KK Nagar',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: addressCtrl,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
-                    decoration: const InputDecoration(
-                      labelText: 'Full Street Address *',
-                      hintText: 'e.g. 14, 2nd Main Road, Madurai',
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: altPhoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    style: const TextStyle(color: Colors.white, fontSize: 13.5),
-                    decoration: const InputDecoration(
-                      labelText: 'Manager Mobile Number * (Mandatory)',
-                      hintText: '10-digit number for this branch',
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Supported Sports Multi-Select
-                  const Text(
-                    'Supported Sports (Multi-Select) *',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Select the sports offered at this branch. Each sport can have its own hourly rate.',
-                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
-                  ),
-                  const SizedBox(height: 8),
-
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: allSports.map((sport) {
-                      final isChecked = selectedSports.contains(sport);
-                      return FilterChip(
-                        label: Text(sport),
-                        selected: isChecked,
-                        selectedColor: const Color(0xFFD4FF00),
-                        checkmarkColor: Colors.black,
-                        labelStyle: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight:
-                              isChecked ? FontWeight.w900 : FontWeight.w600,
-                          color: isChecked
-                              ? Colors.black
-                              : const Color(0xFFE4E4E7),
-                        ),
-                        side: BorderSide(
-                          color: isChecked
-                              ? const Color(0xFFD4FF00)
-                              : const Color(0xFF333333),
-                          width: 1,
-                        ),
-                        backgroundColor: const Color(0xFF1C1C1C),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        onSelected: (selected) {
-                          setDlgState(() {
-                            if (selected) {
-                              selectedSports.add(sport);
-                            } else {
-                              if (selectedSports.length > 1) {
-                                selectedSports.remove(sport);
-                              }
-                            }
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // PER-GAME / SPORT SPECIFIC PRICING (User Request!)
-                  const Row(
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.payments_outlined,
-                        size: 15,
-                        color: Color(0xFF86EFAC),
-                      ),
-                      SizedBox(width: 6),
                       Text(
-                        'Per-Game Hourly Rates (₹)',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
+                        isClone ? 'Clone to New Branch' : 'Register New Branch',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16.5,
                           color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        isClone
+                            ? 'Pre-filled from ${profile.venueName}'
+                            : 'Enter branch location & game pricing',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFFA1A1AA),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Set individual rates for each selected sport:',
-                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
-                  ),
-                  const SizedBox(height: 8),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
 
-                  // Individual rate inputs for each selected sport
-                  ...selectedSports.map((sport) {
-                    final ctrl = sportPriceControllers[sport]!;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
+                    // Mode Indicator Chip
+                    Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                        horizontal: 10,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1A1A1E),
-                        borderRadius: BorderRadius.circular(10),
+                        color: isClone
+                            ? const Color(0xFF162A16)
+                            : const Color(0xFF202024),
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF2A2A30),
+                          color: isClone
+                              ? const Color(0xFF2E4D2E)
+                              : const Color(0xFF333338),
                           width: 0.8,
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            _getSportIcon(sport),
-                            size: 18,
-                            color: const Color(0xFF86EFAC),
+                            isClone
+                                ? Icons.check_circle_outline_rounded
+                                : Icons.info_outline_rounded,
+                            size: 14,
+                            color: isClone
+                                ? const Color(0xFF86EFAC)
+                                : const Color(0xFFA1A1AA),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              sport,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 110,
-                            height: 38,
-                            child: TextField(
-                              controller: ctrl,
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                              decoration: InputDecoration(
-                                prefixText: '₹ ',
-                                prefixStyle: const TextStyle(
-                                  color: Color(0xFF86EFAC),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                filled: true,
-                                fillColor: const Color(0xFF101014),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF33333A),
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF33333A),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF22C55E),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Text(
-                            '/hr',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFFA1A1AA),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 14),
-
-                  // Branch Venue Photos (Images)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(
-                            Icons.photo_library_outlined,
-                            size: 15,
-                            color: Color(0xFF86EFAC),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            'Branch Venue Photos',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (branchPhotos.isNotEmpty)
-                        Text(
-                          '${branchPhotos.length} uploaded',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF86EFAC),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Upload photos of your courts, turf pitch, and amenities for player app listing:',
-                    style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Upload Button / Progress
-                  InkWell(
-                    onTap: isUploadingPhoto ? null : pickAndUploadPhoto,
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 12,
-                        horizontal: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF161E14),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFF2E4D2E),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          if (isUploadingPhoto) ...[
-                            const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFF86EFAC),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Uploading Photos...',
+                              isClone
+                                  ? 'Timings, surface & specs copied from current venue'
+                                  : 'Primary Owner Account: ${profile.ownerPhone}',
                               style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF86EFAC),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: isClone
+                                    ? const Color(0xFF86EFAC)
+                                    : const Color(0xFFD4D4D8),
                               ),
                             ),
-                          ] else ...[
-                            const Icon(
-                              Icons.add_photo_alternate_rounded,
-                              size: 18,
-                              color: Color(0xFF86EFAC),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              branchPhotos.isEmpty
-                                  ? 'Select & Upload Venue Photos'
-                                  : 'Add More Photos',
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF86EFAC),
-                              ),
-                            ),
-                          ],
+                          ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
 
-                  // Thumbnails row
-                  if (branchPhotos.isNotEmpty) ...[
+                    TextField(
+                      controller: nameCtrl,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'New Branch Name *',
+                        hintText: 'e.g. Vicky Turf - Anna Nagar',
+                      ),
+                    ),
                     const SizedBox(height: 10),
-                    SizedBox(
-                      height: 72,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: branchPhotos.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, idx) {
-                          final photoUrl = branchPhotos[idx];
-                          return Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  photoUrl,
-                                  width: 72,
-                                  height: 72,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: 72,
-                                    height: 72,
-                                    color: const Color(0xFF202024),
-                                    child: const Icon(
-                                      Icons.broken_image_rounded,
-                                      size: 24,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                top: 2,
-                                right: 2,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setDlgState(() {
-                                      branchPhotos.removeAt(idx);
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black87,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.close_rounded,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
 
-                  // Super Admin Approval Requirement Notice
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF281C08),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                        width: 0.8,
+                    TextField(
+                      controller: areaCtrl,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Neighborhood / Area *',
+                        hintText: 'e.g. Anna Nagar / KK Nagar',
                       ),
                     ),
-                    child: const Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: addressCtrl,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Full Street Address *',
+                        hintText: 'e.g. 14, 2nd Main Road, Madurai',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: altPhoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Manager Mobile Number * (Mandatory)',
+                        hintText: '10-digit number for this branch',
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Supported Sports Multi-Select
+                    const Text(
+                      'Supported Sports (Multi-Select) *',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Select the sports offered at this branch. Each sport can have its own hourly rate.',
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                    ),
+                    const SizedBox(height: 8),
+
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: allSports.map((sport) {
+                        final isChecked = selectedSports.contains(sport);
+                        return FilterChip(
+                          label: Text(sport),
+                          selected: isChecked,
+                          selectedColor: const Color(0xFFD4FF00),
+                          checkmarkColor: Colors.black,
+                          labelStyle: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: isChecked
+                                ? FontWeight.w900
+                                : FontWeight.w600,
+                            color: isChecked
+                                ? Colors.black
+                                : const Color(0xFFE4E4E7),
+                          ),
+                          side: BorderSide(
+                            color: isChecked
+                                ? const Color(0xFFD4FF00)
+                                : const Color(0xFF333333),
+                            width: 1,
+                          ),
+                          backgroundColor: const Color(0xFF1C1C1C),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          onSelected: (selected) {
+                            setDlgState(() {
+                              if (selected) {
+                                selectedSports.add(sport);
+                              } else {
+                                if (selectedSports.length > 1) {
+                                  selectedSports.remove(sport);
+                                }
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // PER-GAME / SPORT SPECIFIC PRICING (User Request!)
+                    const Row(
                       children: [
                         Icon(
-                          Icons.verified_user_outlined,
-                          size: 16,
-                          color: Color(0xFFFBBF24),
+                          Icons.payments_outlined,
+                          size: 15,
+                          color: Color(0xFF86EFAC),
                         ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Super Admin Approval Required: After submission, this branch will be verified by Super Admin for safety & KYC standards before opening player bookings.',
-                            style: TextStyle(
-                              fontSize: 10.5,
-                              color: Color(0xFFFDE68A),
-                              height: 1.35,
-                            ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Per-Game Hourly Rates (₹)',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Set individual rates for each selected sport:',
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Individual rate inputs for each selected sport
+                    ...selectedSports.map((sport) {
+                      final ctrl = sportPriceControllers[sport]!;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A1E),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: const Color(0xFF2A2A30),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _getSportIcon(sport),
+                              size: 18,
+                              color: const Color(0xFF86EFAC),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                sport,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 110,
+                              height: 38,
+                              child: TextField(
+                                controller: ctrl,
+                                keyboardType: TextInputType.number,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                                decoration: InputDecoration(
+                                  prefixText: '₹ ',
+                                  prefixStyle: const TextStyle(
+                                    color: Color(0xFF86EFAC),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  filled: true,
+                                  fillColor: const Color(0xFF101014),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF33333A),
+                                    ),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF33333A),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: const BorderSide(
+                                      color: Color(0xFF22C55E),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              '/hr',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFFA1A1AA),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 14),
+
+                    // Branch Venue Photos (Images)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.photo_library_outlined,
+                              size: 15,
+                              color: Color(0xFF86EFAC),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'Branch Venue Photos',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (branchPhotos.isNotEmpty)
+                          Text(
+                            '${branchPhotos.length} uploaded',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF86EFAC),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Upload photos of your courts, turf pitch, and amenities for player app listing:',
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Upload Button / Progress
+                    InkWell(
+                      onTap: isUploadingPhoto ? null : pickAndUploadPhoto,
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161E14),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: const Color(0xFF2E4D2E),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isUploadingPhoto) ...[
+                              const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Color(0xFF86EFAC),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Uploading Photos...',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF86EFAC),
+                                ),
+                              ),
+                            ] else ...[
+                              const Icon(
+                                Icons.add_photo_alternate_rounded,
+                                size: 18,
+                                color: Color(0xFF86EFAC),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                branchPhotos.isEmpty
+                                    ? 'Select & Upload Venue Photos'
+                                    : 'Add More Photos',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF86EFAC),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Thumbnails row
+                    if (branchPhotos.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 72,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: branchPhotos.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (context, idx) {
+                            final photoUrl = branchPhotos[idx];
+                            return Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network(
+                                    photoUrl,
+                                    width: 72,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Container(
+                                      width: 72,
+                                      height: 72,
+                                      color: const Color(0xFF202024),
+                                      child: const Icon(
+                                        Icons.broken_image_rounded,
+                                        size: 24,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 2,
+                                  right: 2,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      setDlgState(() {
+                                        branchPhotos.removeAt(idx);
+                                      });
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black87,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close_rounded,
+                                        size: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+
+                    // Super Admin Approval Requirement Notice
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF281C08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFF59E0B,
+                          ).withValues(alpha: 0.35),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.verified_user_outlined,
+                            size: 16,
+                            color: Color(0xFFFBBF24),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Super Admin Approval Required: After submission, this branch will be verified by Super Admin for safety & KYC standards before opening player bookings.',
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: Color(0xFFFDE68A),
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ),
+            actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dlgCtx),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Color(0xFFA1A1AA)),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD4FF00),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
                   ),
-                  const SizedBox(height: 10),
-                ],
-              ),
-            ),
-          ),
-          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dlgCtx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Color(0xFFA1A1AA)),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4FF00),
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () async {
-                final vName = nameCtrl.text.trim();
-                final vArea = areaCtrl.text.trim();
-                final altPhone = altPhoneCtrl.text
-                    .trim()
-                    .replaceAll(RegExp(r'\D'), '');
-
-                if (vName.isEmpty || vArea.isEmpty) {
-                  ToastUtils.showError(
-                    context,
-                    'Please enter branch name and area',
+                onPressed: () async {
+                  final vName = nameCtrl.text.trim();
+                  final vArea = areaCtrl.text.trim();
+                  final altPhone = altPhoneCtrl.text.trim().replaceAll(
+                    RegExp(r'\D'),
+                    '',
                   );
-                  return;
-                }
 
-                if (altPhone.length < 10) {
-                  ToastUtils.showError(
-                    context,
-                    'Manager mobile number is mandatory (10 digits)',
-                  );
-                  return;
-                }
-
-                final primaryDigits = profile.ownerPhone.replaceAll(
-                  RegExp(r'\D'),
-                  '',
-                );
-                if (primaryDigits.isNotEmpty &&
-                    primaryDigits.endsWith(
-                      altPhone.length >= 10
-                          ? altPhone.substring(altPhone.length - 10)
-                          : altPhone,
-                    )) {
-                  ToastUtils.showError(
-                    context,
-                    'Manager phone must be different from primary owner phone',
-                  );
-                  return;
-                }
-
-                Navigator.pop(dlgCtx);
-
-                // Collect per-sport prices
-                final Map<String, double> perSportRates = {};
-                for (final sport in selectedSports) {
-                  final text = sportPriceControllers[sport]?.text.trim() ?? '';
-                  final rate = double.tryParse(text) ?? 1000.0;
-                  perSportRates[sport] = rate;
-                }
-
-                final baseDayRate = perSportRates.values.isNotEmpty
-                    ? perSportRates.values.first
-                    : 1000.0;
-
-                final success = await ref.read(turfProfileProvider.notifier).addNewBranch(
-                      venueName: vName,
-                      neighborhoodArea: vArea,
-                      streetAddress: addressCtrl.text.trim().isNotEmpty
-                          ? addressCtrl.text.trim()
-                          : vArea,
-                      alternativePhone: altPhone,
-                      dayRate: baseDayRate,
-                      nightRate: baseDayRate + 200,
-                      photoUrls: branchPhotos,
-                      sports: selectedSports.toList(),
-                      sportRates: perSportRates,
-                      isCloned: isClone,
-                      clonedFromVenue: isClone ? profile.venueName : null,
-                    );
-
-                if (context.mounted) {
-                  if (success) {
-                    ToastUtils.showSuccess(
-                      context,
-                      'Branch "$vName" submitted for Super Admin verification!',
-                    );
-                  } else {
+                  if (vName.isEmpty || vArea.isEmpty) {
                     ToastUtils.showError(
                       context,
-                      'Failed to submit branch application. Please try again.',
+                      'Please enter branch name and area',
                     );
+                    return;
                   }
-                }
-              },
-              child: const Text(
-                'Submit for Admin Approval',
-                style: TextStyle(fontWeight: FontWeight.w900),
+
+                  if (altPhone.length < 10) {
+                    ToastUtils.showError(
+                      context,
+                      'Manager mobile number is mandatory (10 digits)',
+                    );
+                    return;
+                  }
+
+                  final primaryDigits = profile.ownerPhone.replaceAll(
+                    RegExp(r'\D'),
+                    '',
+                  );
+                  if (primaryDigits.isNotEmpty &&
+                      primaryDigits.endsWith(
+                        altPhone.length >= 10
+                            ? altPhone.substring(altPhone.length - 10)
+                            : altPhone,
+                      )) {
+                    ToastUtils.showError(
+                      context,
+                      'Manager phone must be different from primary owner phone',
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(dlgCtx);
+
+                  // Collect per-sport prices
+                  final Map<String, double> perSportRates = {};
+                  for (final sport in selectedSports) {
+                    final text =
+                        sportPriceControllers[sport]?.text.trim() ?? '';
+                    final rate = double.tryParse(text) ?? 1000.0;
+                    perSportRates[sport] = rate;
+                  }
+
+                  final baseDayRate = perSportRates.values.isNotEmpty
+                      ? perSportRates.values.first
+                      : 1000.0;
+
+                  final success = await ref
+                      .read(turfProfileProvider.notifier)
+                      .addNewBranch(
+                        venueName: vName,
+                        neighborhoodArea: vArea,
+                        streetAddress: addressCtrl.text.trim().isNotEmpty
+                            ? addressCtrl.text.trim()
+                            : vArea,
+                        alternativePhone: altPhone,
+                        dayRate: baseDayRate,
+                        nightRate: baseDayRate + 200,
+                        photoUrls: branchPhotos,
+                        sports: selectedSports.toList(),
+                        sportRates: perSportRates,
+                        isCloned: isClone,
+                        clonedFromVenue: isClone ? profile.venueName : null,
+                      );
+
+                  if (context.mounted) {
+                    if (success) {
+                      ToastUtils.showSuccess(
+                        context,
+                        'Branch "$vName" submitted for Super Admin verification!',
+                      );
+                    } else {
+                      ToastUtils.showError(
+                        context,
+                        'Failed to submit branch application. Please try again.',
+                      );
+                    }
+                  }
+                },
+                child: const Text(
+                  'Submit for Admin Approval',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
               ),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-}
+            ],
+          );
+        },
+      ),
+    );
+  }
 
   // --- ADD COURT / PITCH (SAME PLACE) WITH PER-SPORT PRICING ---
   void _showAddCourtSamePlaceDialog(
@@ -2158,10 +2197,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     ),
                     const Text(
                       'Add additional courts or pitches in the same venue ground.',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFFA1A1AA),
-                      ),
+                      style: TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
                     ),
                   ],
                 ),
@@ -2214,8 +2250,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                         checkmarkColor: Colors.black,
                         labelStyle: TextStyle(
                           fontSize: 12,
-                          fontWeight:
-                              isChecked ? FontWeight.w900 : FontWeight.w600,
+                          fontWeight: isChecked
+                              ? FontWeight.w900
+                              : FontWeight.w600,
                           color: isChecked
                               ? Colors.black
                               : const Color(0xFFE4E4E7),
@@ -2251,7 +2288,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                     style: const TextStyle(color: Colors.white, fontSize: 13.5),
                     decoration: const InputDecoration(
                       labelText: 'Surface Type',
-                      hintText: 'e.g. Synthetic Grass Turf, Astro Turf, Hard Court',
+                      hintText:
+                          'e.g. Synthetic Grass Turf, Astro Turf, Hard Court',
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -2461,120 +2499,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     );
   }
 
-  // --- 2. OPERATING STATUS & DATE BAR ---
-  Widget _buildVenueHeaderPulseBar(
-    TurfProfileState profile,
-    String formattedDate,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF141414),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF262626)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: IntrinsicHeight(
-          child: Row(
-            children: [
-              // Tactical Left Accent Ribbon
-              Container(width: 4, color: const Color(0xFFD4FF00)),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(7.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1C1C1C),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.calendar_today_rounded,
-                          size: 15,
-                          color: Color(0xFFD4FF00),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              formattedDate,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              'Hours: ${profile.weekdayOpeningTime} – ${profile.weekdayClosingTime} • Floodlights Active',
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                color: Color(0xFFA1A1AA),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF132204),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFF262626)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.fiber_manual_record_rounded,
-                              color: Color(0xFF16A34A),
-                              size: 8,
-                            ),
-                            SizedBox(width: 4),
-                            Text(
-                              'Courts Open',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFFD4FF00),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // --- 3. SUBSCRIPTION CARD (URGENT ALERT vs SLEEK MEMBERSHIP PILL) ---
   Widget _buildSubscriptionCard(
     BuildContext context,
@@ -2710,10 +2634,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF3B522E),
-          width: 1.0,
-        ),
+        border: Border.all(color: const Color(0xFF3B522E), width: 1.0),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.4),
@@ -2814,8 +2735,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     final now = DateTime.now();
     final todayStr =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    final isPending = profile.branchStatus == 'PENDING_APPROVAL' || (profile.verifiedAdminId ?? 0) < 0;
-    final allList = isPending ? <TurfBookingHistoryItem>[] : _getAllBookingsSource(profile);
+    final isPending =
+        profile.branchStatus == 'PENDING_APPROVAL' ||
+        (profile.verifiedAdminId ?? 0) < 0;
+    final allList = isPending
+        ? <TurfBookingHistoryItem>[]
+        : _getAllBookingsSource(profile);
 
     // Dynamic metrics strictly based on actual bookings for this selected branch
     final cancelledList = allList.where((b) => b.isCancelled).toList();
@@ -2823,7 +2748,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
         ? cancelledList.length
         : profile.cancelledCount;
     final dynamicShiftedCount = isPending ? 0 : profile.shiftedCount;
-    final dynamicCancelledTotal = isPending ? 0 : (dynamicCancelledCount + dynamicShiftedCount);
+    final dynamicCancelledTotal = isPending
+        ? 0
+        : (dynamicCancelledCount + dynamicShiftedCount);
 
     // Active (non-cancelled) bookings for today for this branch
     final activeTodayList = allList.where((b) {
@@ -2836,13 +2763,13 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     final dynamicTodayRev = isPending
         ? 0.0
         : (profile.todayRevenue > 0
-            ? profile.todayRevenue
-            : activeTodayList.fold<double>(0.0, (sum, b) => sum + b.amount));
+              ? profile.todayRevenue
+              : activeTodayList.fold<double>(0.0, (sum, b) => sum + b.amount));
     final dynamicMonthRev = isPending
         ? 0.0
         : (profile.monthRevenue > 0
-            ? profile.monthRevenue
-            : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount));
+              ? profile.monthRevenue
+              : activeMonthList.fold<double>(0.0, (sum, b) => sum + b.amount));
     final monthTarget = profile.monthlyRevenueTarget > 0
         ? profile.monthlyRevenueTarget
         : 50000.0;
@@ -2891,15 +2818,15 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     final dynamicRemainingSlots = isPending
         ? 0
         : ((totalDailySlots -
+                      passedSlotsCount -
+                      upcomingBookedSlots -
+                      profile.blockedSlotsCount) >
+                  0
+              ? (totalDailySlots -
                     passedSlotsCount -
                     upcomingBookedSlots -
-                    profile.blockedSlotsCount) >
-                0
-            ? (totalDailySlots -
-                  passedSlotsCount -
-                  upcomingBookedSlots -
-                  profile.blockedSlotsCount)
-            : 0);
+                    profile.blockedSlotsCount)
+              : 0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3221,10 +3148,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF141415),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFF262626),
-                width: 1.0,
-              ),
+              border: Border.all(color: const Color(0xFF262626), width: 1.0),
               gradient: RadialGradient(
                 center: const Alignment(-0.8, -0.8),
                 radius: 1.4,
@@ -3241,11 +3165,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(
-                      icon,
-                      color: iconColor,
-                      size: 20,
-                    ),
+                    Icon(icon, color: iconColor, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -3720,24 +3640,31 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 6,
+          runSpacing: 3,
           children: [
-            const Icon(
-              Icons.calendar_today_rounded,
-              size: 11,
-              color: Color(0xFFA1A1AA),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.calendar_today_rounded,
+                  size: 11,
+                  color: Color(0xFFA1A1AA),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  dateLabel.isNotEmpty ? dateLabel : 'Today',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 4),
-            Text(
-              dateLabel.isNotEmpty ? dateLabel : 'Today',
-              style: const TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            if (slotList.length > 1) ...[
-              const SizedBox(width: 6),
+            if (slotList.length > 1)
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 6,
@@ -3756,7 +3683,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                   ),
                 ),
               ),
-            ],
           ],
         ),
         const SizedBox(height: 3),
@@ -3789,8 +3715,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                 .map(
                   (slot) => Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2.5,
+                      horizontal: 6,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1C1C1C),
@@ -3802,16 +3728,20 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
                       children: [
                         const Icon(
                           Icons.access_time_rounded,
-                          size: 10,
+                          size: 9.5,
                           color: Color(0xFFE4E4E7),
                         ),
                         const SizedBox(width: 3),
-                        Text(
-                          slot,
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                        Flexible(
+                          child: Text(
+                            slot,
+                            style: const TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -4806,7 +4736,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
   }
 
   List<TurfBookingHistoryItem> _getAllBookingsSource(TurfProfileState profile) {
-    if (profile.branchStatus == 'PENDING_APPROVAL' || (profile.verifiedAdminId ?? 0) < 0) {
+    if (profile.branchStatus == 'PENDING_APPROVAL' ||
+        (profile.verifiedAdminId ?? 0) < 0) {
       return const [];
     }
     return profile.bookingHistory;
@@ -4835,7 +4766,9 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
   IconData _getSportIcon(String sport) {
     final lower = sport.toLowerCase();
     if (lower.contains('cricket')) return Icons.sports_cricket_rounded;
-    if (lower.contains('foot') || lower.contains('soccer')) return Icons.sports_soccer_rounded;
+    if (lower.contains('foot') || lower.contains('soccer')) {
+      return Icons.sports_soccer_rounded;
+    }
     if (lower.contains('badminton')) return Icons.sports_tennis_rounded;
     if (lower.contains('pickle')) return Icons.sports_tennis_rounded;
     if (lower.contains('tennis')) return Icons.sports_tennis_rounded;
@@ -4858,7 +4791,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
     if (lower.contains('basket')) return const Color(0xFFEA580C); // Warm Orange
     return const Color(0xFFD4FF00);
   }
-
 
   // --- 8. BLOCKED ACCESS SCAFFOLD ---
   Widget _buildBlockedAccessScaffold(
@@ -5757,7 +5689,9 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
       badgeLabel = 'COMPLETED';
     } else if (isLiveNow) {
       badgeTextColor = const Color(0xFFD4FF00);
-      badgeLabel = widget.booking.status.toLowerCase() == 'checked in' ? 'CHECKED IN (LIVE)' : 'LIVE NOW';
+      badgeLabel = widget.booking.status.toLowerCase() == 'checked in'
+          ? 'CHECKED IN (LIVE)'
+          : 'LIVE NOW';
     } else {
       badgeTextColor = isUpi
           ? const Color(0xFFD4FF00)
@@ -5772,16 +5706,8 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isLiveNow
-              ? const [
-                  Color(0xFF172412),
-                  Color(0xFF10160D),
-                  Color(0xFF0C100A),
-                ]
-              : const [
-                  Color(0xFF181A15),
-                  Color(0xFF12140F),
-                  Color(0xFF0E0F0C),
-                ],
+              ? const [Color(0xFF172412), Color(0xFF10160D), Color(0xFF0C100A)]
+              : const [Color(0xFF181A15), Color(0xFF12140F), Color(0xFF0E0F0C)],
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
@@ -5847,8 +5773,15 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                             angle: progress * 0.02,
                             alignment: Alignment.topLeft,
                             child: Opacity(
-                              opacity: (1.0 - (progress * 0.15)).clamp(0.0, 1.0),
-                              child: _buildBottomStub(isCompleted, isCancelled, isNotVisited),
+                              opacity: (1.0 - (progress * 0.15)).clamp(
+                                0.0,
+                                1.0,
+                              ),
+                              child: _buildBottomStub(
+                                isCompleted,
+                                isCancelled,
+                                isNotVisited,
+                              ),
                             ),
                           ),
                         ),
@@ -5889,19 +5822,12 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                 decoration: BoxDecoration(
                   color: const Color(0xFF161814),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFF262C20),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0xFF262C20), width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      widget.sportIcon,
-                      size: 13,
-                      color: widget.sportColor,
-                    ),
+                    Icon(widget.sportIcon, size: 13, color: widget.sportColor),
                     const SizedBox(width: 5),
                     Text(
                       widget.booking.sport,
@@ -5923,10 +5849,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                 decoration: BoxDecoration(
                   color: const Color(0xFF161814),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFF262C20),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0xFF262C20), width: 1),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -5940,9 +5863,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                         boxShadow: isLiveNow || isUpi
                             ? [
                                 BoxShadow(
-                                  color: badgeTextColor.withValues(
-                                    alpha: 0.6,
-                                  ),
+                                  color: badgeTextColor.withValues(alpha: 0.6),
                                   blurRadius: 3,
                                 ),
                               ]
@@ -6123,8 +6044,9 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                   children: List.generate(dashCount, (index) {
                     final dashFraction = (index + 1) / dashCount;
                     final isTorn = progress > 0.0 && dashFraction <= progress;
-                    final verticalJitter =
-                        isTorn ? (index.isEven ? 1.0 : -1.0) * progress * 2.5 : 0.0;
+                    final verticalJitter = isTorn
+                        ? (index.isEven ? 1.0 : -1.0) * progress * 2.5
+                        : 0.0;
 
                     return Transform.translate(
                       offset: Offset(0, verticalJitter),
@@ -6132,12 +6054,16 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                         width: dashWidth,
                         height: isTorn ? 2.0 : 1.5,
                         decoration: BoxDecoration(
-                          color: isTorn ? const Color(0xFFD4FF00) : Colors.white,
+                          color: isTorn
+                              ? const Color(0xFFD4FF00)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(0.8),
                           boxShadow: isTorn
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFFD4FF00).withValues(alpha: 0.6),
+                                    color: const Color(
+                                      0xFFD4FF00,
+                                    ).withValues(alpha: 0.6),
                                     blurRadius: 3,
                                   ),
                                 ]
@@ -6208,48 +6134,55 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
     );
   }
 
-  Widget _buildBottomStub(bool isCompleted, bool isCancelled, bool isNotVisited) {
+  Widget _buildBottomStub(
+    bool isCompleted,
+    bool isCancelled,
+    bool isNotVisited,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
       child: isNotVisited
           ? Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                vertical: 9,
-                horizontal: 12,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF201214),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF421C22),
-                ),
+                border: Border.all(color: const Color(0xFF421C22)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
-                    children: [
-                      Icon(
-                        Icons.person_off_rounded,
-                        size: 15,
-                        color: Color(0xFFFB7185),
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        'They Not Visit The Turf',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
+                  const Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.person_off_rounded,
+                          size: 15,
                           color: Color(0xFFFB7185),
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'They Not Visit The Turf',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFFB7185),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     '₹${widget.booking.amount.toInt()} Unattended',
                     style: const TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFD4FF00),
                     ),
@@ -6260,42 +6193,45 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
           : isCompleted
           ? Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                vertical: 9,
-                horizontal: 12,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF121411),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF22261E),
-                ),
+                border: Border.all(color: const Color(0xFF22261E)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
-                    children: [
-                      Icon(
-                        Icons.check_circle_rounded,
-                        size: 15,
-                        color: Color(0xFF16A34A),
-                      ),
-                      SizedBox(width: 6),
-                      Text(
-                        'Match Completed & Closed',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFE4E4E7),
+                  const Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 15,
+                          color: Color(0xFF16A34A),
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Match Completed & Closed',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFE4E4E7),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     '₹${widget.booking.amount.toInt()} Settled',
                     style: const TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 11,
                       fontWeight: FontWeight.w800,
                       color: Color(0xFFD4FF00),
                     ),
@@ -6306,16 +6242,11 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
           : isCancelled
           ? Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                vertical: 9,
-                horizontal: 12,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF2A1215),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF4A1A20),
-                ),
+                border: Border.all(color: const Color(0xFF4A1A20)),
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -6350,9 +6281,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                       onTap: _triggerTear,
                       child: Container(
                         height: 42,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         alignment: Alignment.center,
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -6400,9 +6329,7 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
                       onTap: widget.onCall,
                       child: Container(
                         height: 42,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                         alignment: Alignment.center,
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -6437,5 +6364,3 @@ class _TearableBookingCardState extends State<_TearableBookingCard>
     );
   }
 }
-
-

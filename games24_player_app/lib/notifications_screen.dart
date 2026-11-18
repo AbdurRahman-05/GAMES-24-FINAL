@@ -192,7 +192,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF141414),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),

@@ -571,42 +571,49 @@ class _AdminSlotManagerScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0D120B).withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFF2A3A20),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D120B).withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF2A3A20),
                         ),
-                      ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.schedule_rounded,
+                        color: Color(0xFFFBBF24),
+                        size: 16,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.schedule_rounded,
-                      color: Color(0xFFFBBF24),
-                      size: 16,
+                    const SizedBox(width: 9),
+                    const Flexible(
+                      child: Text(
+                        'Operating Schedule',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 9),
-                  const Text(
-                    'Operating Schedule',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               InkWell(
                 onTap: () => _openEditScheduleDialog(context, opening, closing),
                 borderRadius: BorderRadius.circular(10),
@@ -2032,15 +2039,17 @@ class _AdminSlotManagerScreenState
           children: [
             const Icon(Icons.bolt_rounded, size: 11, color: Color(0xFFD4FF00)),
             const SizedBox(width: 3),
-            Text(
-              '$percent% OFF ${label.isNotEmpty ? "• $label" : ""}',
-              style: const TextStyle(
-                fontSize: 9.5,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFFD4FF00),
+            Flexible(
+              child: Text(
+                '$percent% OFF ${label.isNotEmpty ? "\u2022 $label" : ""}',
+                style: const TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFD4FF00),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -2067,12 +2076,16 @@ class _AdminSlotManagerScreenState
               ),
             ),
             const SizedBox(width: 4),
-            Text(
-              '₹$discounted',
-              style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFFD4FF00),
+            Flexible(
+              child: Text(
+                '₹$discounted',
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFFD4FF00),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -2617,12 +2630,16 @@ class _AdminSlotManagerScreenState
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Configure Deal - $slot',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 16,
-                            color: Colors.white,
+                        Expanded(
+                          child: Text(
+                            'Configure Deal - $slot',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         IconButton(
