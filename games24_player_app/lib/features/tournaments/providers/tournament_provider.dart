@@ -86,15 +86,9 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
       if (t.id != tournamentId) return t;
 
       List<TeamRegistrationModel> registeredList = List.from(t.registeredTeams);
-      if (registeredList.isEmpty) {
-        registeredList = const [
-          TeamRegistrationModel(id: 'reg_1', teamName: 'Super Strikers', captainName: 'Rajesh', captainPhone: '9876543210', captainEmail: 'raj@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-01', logoUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=100&q=80'),
-          TeamRegistrationModel(id: 'reg_2', teamName: 'Royal Kings', captainName: 'Karthik', captainPhone: '9876543211', captainEmail: 'karthik@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-02', logoUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=100&q=80'),
-          TeamRegistrationModel(id: 'reg_3', teamName: 'Madurai Panthers', captainName: 'Suresh', captainPhone: '9876543212', captainEmail: 'suresh@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-03', logoUrl: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=100&q=80'),
-          TeamRegistrationModel(id: 'reg_4', teamName: 'KK Nagar XI', captainName: 'Vijay', captainPhone: '9876543213', captainEmail: 'vijay@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-04', logoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=100&q=80'),
-          TeamRegistrationModel(id: 'reg_5', teamName: 'Anna Nagar Titans', captainName: 'Anand', captainPhone: '9876543214', captainEmail: 'anand@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-04', logoUrl: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=100&q=80'),
-          TeamRegistrationModel(id: 'reg_6', teamName: 'Chola Warriors', captainName: 'Mano', captainPhone: '9876543215', captainEmail: 'mano@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-05', logoUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=100&q=80'),
-        ];
+      if (registeredList.length < 2) {
+        // Real players only from player app
+        return t;
       }
 
       List<TournamentFixture> generated = [];
@@ -132,16 +126,10 @@ class AdminTournamentNotifier extends Notifier<AdminTournamentState> {
   void generateFixtures(String tournamentId) {
     final updatedList = state.tournaments.map((t) {
       if (t.id == tournamentId) {
-        // Collect team models from registrations or provide default mock registered teams
         List<TeamRegistrationModel> registeredList = List.from(t.registeredTeams);
-        if (registeredList.isEmpty) {
-          registeredList = const [
-            TeamRegistrationModel(id: 'reg_1', teamName: 'Super Strikers', captainName: 'Rajesh', captainPhone: '9876543210', captainEmail: 'raj@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-01', logoUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=100&q=80'),
-            TeamRegistrationModel(id: 'reg_2', teamName: 'Royal Kings', captainName: 'Karthik', captainPhone: '9876543211', captainEmail: 'karthik@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-02', logoUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=100&q=80'),
-            TeamRegistrationModel(id: 'reg_3', teamName: 'Madurai Panthers', captainName: 'Suresh', captainPhone: '9876543212', captainEmail: 'suresh@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-03', logoUrl: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=100&q=80'),
-            TeamRegistrationModel(id: 'reg_4', teamName: 'KK Nagar XI', captainName: 'Vijay', captainPhone: '9876543213', captainEmail: 'vijay@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-04', logoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=100&q=80'),
-            TeamRegistrationModel(id: 'reg_5', teamName: 'Anna Nagar Titans', captainName: 'Anand', captainPhone: '9876543214', captainEmail: 'anand@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-04', logoUrl: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=100&q=80'),
-          ];
+        if (registeredList.length < 2) {
+          // Real players only from player app
+          return t;
         }
 
         List<TournamentFixture> generatedFixtures = [];

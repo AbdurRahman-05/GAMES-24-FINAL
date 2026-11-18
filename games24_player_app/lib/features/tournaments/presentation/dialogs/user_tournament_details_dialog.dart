@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../../../../api_config.dart';
 import 'package:games24_player_app/core/utils/toast_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -119,7 +122,7 @@ class _UserTournamentDetailsDialogState
                       }
 
                       final newReg = TeamRegistrationModel(
-                        id: 'reg_${DateTime.now().millisecondsSinceEpoch}',
+                        id: 'squad_${DateTime.now().millisecondsSinceEpoch}',
                         teamName: _teamNameCtrl.text.trim(),
                         captainName: _captainNameCtrl.text.trim(),
                         captainPhone: _phoneCtrl.text.trim(),
@@ -130,6 +133,26 @@ class _UserTournamentDetailsDialogState
                       );
 
                       ref.read(adminTournamentProvider.notifier).registerTeam(widget.tournament.id, newReg);
+
+                      // Persist to backend database
+                      try {
+                        final cleanId = widget.tournament.id.replaceAll(RegExp(r'[^0-9]'), '');
+                        final intId = int.tryParse(cleanId);
+                        if (intId != null && intId > 0) {
+                          http.post(
+                            Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$intId/register'),
+                            headers: {'Content-Type': 'application/json'},
+                            body: jsonEncode({
+                              'teamName': newReg.teamName,
+                              'captainName': newReg.captainName,
+                              'contact': newReg.captainPhone,
+                              'email': newReg.captainEmail,
+                              'playersCount': newReg.playerCount,
+                              'paymentStatus': newReg.paymentStatus,
+                            }),
+                          ).catchError((_) {});
+                        }
+                      } catch (_) {}
 
                       Navigator.pop(ctx);
                       Navigator.pop(context);

@@ -2658,6 +2658,10 @@ class _AdminTournamentManagerScreenState
                           avatar: const Icon(Icons.alt_route_rounded, size: 12, color: Color(0xFFD4FF00)),
                           label: const Text('Seeded Knockout', style: TextStyle(fontSize: 10)),
                           onPressed: () {
+                            if (t.registeredTeams.length < 2) {
+                              ToastUtils.showError(context, "Cannot generate fixtures: At least 2 squads must register from Player App first!");
+                              return;
+                            }
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Seeded Knockout');
                             ToastUtils.showSuccess(context, "Generated Top Seed Protection Bracket for ${t.title}");
                           },
@@ -2667,6 +2671,10 @@ class _AdminTournamentManagerScreenState
                           avatar: const Icon(Icons.shield_outlined, size: 12, color: Colors.amber),
                           label: const Text('Double Elimination', style: TextStyle(fontSize: 10)),
                           onPressed: () {
+                            if (t.registeredTeams.length < 2) {
+                              ToastUtils.showError(context, "Cannot generate fixtures: At least 2 squads must register from Player App first!");
+                              return;
+                            }
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Double Elimination');
                             ToastUtils.showSuccess(context, "Generated Double Elimination Bracket for ${t.title}");
                           },
@@ -2676,6 +2684,10 @@ class _AdminTournamentManagerScreenState
                           avatar: const Icon(Icons.groups_rounded, size: 12, color: Colors.purple),
                           label: const Text('Group Stage + Knockout', style: TextStyle(fontSize: 10)),
                           onPressed: () {
+                            if (t.registeredTeams.length < 4) {
+                              ToastUtils.showError(context, "Cannot generate group stage: At least 4 squads must register from Player App first!");
+                              return;
+                            }
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Group Stage + Knockout');
                             ToastUtils.showSuccess(context, "Generated Hybrid Group + Knockout for ${t.title}");
                           },
@@ -2697,6 +2709,10 @@ class _AdminTournamentManagerScreenState
                         icon: const Icon(Icons.auto_awesome_rounded, size: 14),
                         label: const Text('Auto-Generate Fixtures & Brackets', style: TextStyle(fontSize: 11.5)),
                         onPressed: () {
+                          if (t.registeredTeams.length < 2) {
+                            ToastUtils.showError(context, "Cannot generate fixtures: At least 2 squads must register from Player App first!");
+                            return;
+                          }
                           ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
                           ToastUtils.showSuccess(context, "Auto-generated Fixtures for ${t.title}");
                         },

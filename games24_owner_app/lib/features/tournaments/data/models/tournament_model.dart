@@ -355,16 +355,29 @@ class TournamentModel {
 
     // Parse registeredUsers into List<TeamRegistrationModel>
     List<TeamRegistrationModel> parsedTeams = [];
+    final mockNames = {
+      'super strikers',
+      'royal kings',
+      'madurai panthers',
+      'kk nagar xi',
+      'anna nagar titans',
+      'chola warriors',
+    };
     if (json['registeredUsers'] is List) {
       final list = json['registeredUsers'] as List;
       for (int i = 0; i < list.length; i++) {
         final u = list[i];
         if (u is Map) {
           final map = Map<String, dynamic>.from(u);
+          final tName = (map['teamName'] ?? '').toString().trim();
+          final regId = (map['id'] ?? '').toString();
+          if (tName.isEmpty || mockNames.contains(tName.toLowerCase()) || regId.startsWith('reg_')) {
+            continue; // Strictly purge mock teams
+          }
           parsedTeams.add(
             TeamRegistrationModel(
-              id: map['id']?.toString() ?? 'reg_${i + 1}',
-              teamName: (map['teamName'] ?? 'Team ${i + 1}').toString(),
+              id: regId.isNotEmpty ? regId : 'squad_reg_${i + 1}',
+              teamName: tName,
               captainName: (map['captainName'] ?? 'Captain').toString(),
               captainPhone: (map['contact'] ?? map['phone'] ?? map['captainPhone'] ?? '').toString(),
               captainEmail: (map['email'] ?? map['captainEmail'] ?? '').toString(),
@@ -378,7 +391,7 @@ class TournamentModel {
       }
     }
 
-    final actualTeamsCount = parsedTeams.length > regTeamsNum ? parsedTeams.length : regTeamsNum;
+    final actualTeamsCount = parsedTeams.length;
 
     final rulesRaw = json['rules'];
     String parsedRules = '1. Standard tournament rules apply.\n2. Referee decision is final.';

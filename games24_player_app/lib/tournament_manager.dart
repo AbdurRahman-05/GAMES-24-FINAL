@@ -107,18 +107,31 @@ class Tournament {
         ? (json['maxTeams'] as num).toInt()
         : (int.tryParse(json['maxTeams']?.toString() ?? '') ?? 12);
 
-    final regTeamsVal = (json['registeredTeams'] is num)
-        ? (json['registeredTeams'] as num).toInt()
-        : (int.tryParse(json['registeredTeams']?.toString() ?? '') ?? 0);
+    final mockNames = {
+      'super strikers',
+      'royal kings',
+      'madurai panthers',
+      'kk nagar xi',
+      'anna nagar titans',
+      'chola warriors',
+    };
 
     List<Map<String, dynamic>> regUsers = [];
     if (json['registeredUsers'] is List) {
-      regUsers = (json['registeredUsers'] as List).map((u) {
-        if (u is Map<String, dynamic>) return u;
-        if (u is Map) return Map<String, dynamic>.from(u);
-        return <String, dynamic>{};
-      }).toList();
+      for (final u in (json['registeredUsers'] as List)) {
+        if (u is Map) {
+          final m = Map<String, dynamic>.from(u);
+          final tName = (m['teamName'] ?? '').toString().trim();
+          final regId = (m['id'] ?? '').toString();
+          if (tName.isEmpty || mockNames.contains(tName.toLowerCase()) || regId.startsWith('reg_')) {
+            continue; // Skip mock teams
+          }
+          regUsers.add(m);
+        }
+      }
     }
+
+    final realTeamsCount = regUsers.length;
 
     return Tournament(
       id: json['id']?.toString() ?? '',
@@ -133,7 +146,7 @@ class Tournament {
       prizePool: json['prizePool']?.toString() ?? '₹15,000',
       grandPrize: json['grandPrize']?.toString() ?? (json['prizePool']?.toString() ?? '₹15,000'),
       maxTeams: maxTeamsVal,
-      registeredTeams: regTeamsVal,
+      registeredTeams: realTeamsCount,
       format: json['format']?.toString() ?? 'Knockout',
       imageUrl: json['imageUrl']?.toString() ?? (json['bannerUrl']?.toString() ?? 'https://picsum.photos/seed/tournament/800/400'),
       reportingTime: json['reportingTime']?.toString() ?? '30 minutes before match',
@@ -418,8 +431,9 @@ class TournamentManager extends ChangeNotifier {
 
         // Sync with backend database
         try {
-          final intId = int.tryParse(tournamentId);
-          if (intId != null) {
+          final cleanId = tournamentId.replaceAll(RegExp(r'[^0-9]'), '');
+          final intId = int.tryParse(cleanId);
+          if (intId != null && intId > 0) {
             await http.post(
               Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$intId/register'),
               headers: {'Content-Type': 'application/json'},
@@ -429,6 +443,7 @@ class TournamentManager extends ChangeNotifier {
         } catch (e) {
           debugPrint("Error registering tournament in backend: $e");
         }
+        await fetchTournaments();
         return true;
       }
     }

@@ -2706,45 +2706,76 @@ export class TurfService {
       return true;
     });
 
-    return activeTournaments.map((t) => ({
-      id: t.id.toString(),
-      title: t.title,
-      subtitle: t.subtitle || t.format || 'Open Championship',
-      sport: t.sport,
-      format: t.format,
-      status: t.status.toLowerCase(),
-      date: t.date,
-      startDate: t.startDate || t.date,
-      endDate: t.endDate || t.date,
-      registrationDeadline: t.registrationDeadline || t.date,
-      time: t.time || '09:00 AM',
-      venue: t.venueName,
-      venueName: t.venueName,
-      courtAllocation: t.courtAllocation || t.venueName,
-      location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
-      entryFee: `₹${t.entryFee.toFixed(0)}`,
-      teamEntryFee: t.entryFee,
-      prizePool: t.prizePool || t.championPrize || '₹15,000',
-      grandPrize: t.championPrize || t.prizePool || '₹15,000',
-      championPrize: t.championPrize || t.prizePool || '₹15,000',
-      runnerUpPrize: t.runnerUpPrize || '',
-      maxTeams: t.maxTeams,
-      registeredTeams: t.registeredTeams,
-      playersPerTeam: t.playersPerTeam || 8,
-      description: t.description || `Official tournament at ${t.venueName}`,
-      rules: t.rules ? [t.rules] : ['1. Standard tournament rules apply.'],
-      imageUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
-      bannerUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
-      reportingTime: '30 mins before match',
-      matchDay: 'Day 1',
-      tournamentProgress: t.status === 'LIVE' ? 'Ongoing' : 'Upcoming',
-      registeredUsers: Array.isArray(t.registeredUsers) ? t.registeredUsers : [],
-      organizerName: t.organizerName,
-      organizerPhone: t.organizerPhone,
-      verifiedAdminId: t.verifiedAdminId,
-      isOwnerCreated: t.isOwnerCreated ?? (t.createdByRole === 'OWNER' || Boolean(t.verifiedAdminId)),
-      createdByRole: t.createdByRole || (t.verifiedAdminId ? 'OWNER' : 'PLAYER'),
-    }));
+    const mockNames = [
+      'super strikers',
+      'royal kings',
+      'madurai panthers',
+      'kk nagar xi',
+      'anna nagar titans',
+      'chola warriors',
+    ];
+
+    return activeTournaments.map((t) => {
+      const rawUsers = Array.isArray(t.registeredUsers) ? (t.registeredUsers as any[]) : [];
+      // Strictly purge any legacy mock squads: only real user registrations from player app allowed
+      const realUsers = rawUsers.filter((u) => {
+        const name = (u?.teamName || '').toLowerCase().trim();
+        return name && !mockNames.includes(name) && !String(u?.id || '').startsWith('reg_');
+      });
+
+      // Asynchronously heal database if mock squads or mismatched count existed
+      if (realUsers.length !== rawUsers.length || t.registeredTeams !== realUsers.length) {
+        this.prisma.tournament
+          .update({
+            where: { id: t.id },
+            data: {
+              registeredTeams: realUsers.length,
+              registeredUsers: realUsers,
+            },
+          })
+          .catch(() => {});
+      }
+
+      return {
+        id: t.id.toString(),
+        title: t.title,
+        subtitle: t.subtitle || t.format || 'Open Championship',
+        sport: t.sport,
+        format: t.format,
+        status: t.status.toLowerCase(),
+        date: t.date,
+        startDate: t.startDate || t.date,
+        endDate: t.endDate || t.date,
+        registrationDeadline: t.registrationDeadline || t.date,
+        time: t.time || '09:00 AM',
+        venue: t.venueName,
+        venueName: t.venueName,
+        courtAllocation: t.courtAllocation || t.venueName,
+        location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
+        entryFee: `₹${t.entryFee.toFixed(0)}`,
+        teamEntryFee: t.entryFee,
+        prizePool: t.prizePool || t.championPrize || '₹15,000',
+        grandPrize: t.championPrize || t.prizePool || '₹15,000',
+        championPrize: t.championPrize || t.prizePool || '₹15,000',
+        runnerUpPrize: t.runnerUpPrize || '',
+        maxTeams: t.maxTeams,
+        registeredTeams: realUsers.length,
+        playersPerTeam: t.playersPerTeam || 8,
+        description: t.description || `Official tournament at ${t.venueName}`,
+        rules: t.rules ? [t.rules] : ['1. Standard tournament rules apply.'],
+        imageUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
+        bannerUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
+        reportingTime: '30 mins before match',
+        matchDay: 'Day 1',
+        tournamentProgress: t.status === 'LIVE' ? 'Ongoing' : 'Upcoming',
+        registeredUsers: realUsers,
+        organizerName: t.organizerName,
+        organizerPhone: t.organizerPhone,
+        verifiedAdminId: t.verifiedAdminId,
+        isOwnerCreated: t.isOwnerCreated ?? (t.createdByRole === 'OWNER' || Boolean(t.verifiedAdminId)),
+        createdByRole: t.createdByRole || (t.verifiedAdminId ? 'OWNER' : 'PLAYER'),
+      };
+    });
   }
 
   async createTournament(body: any) {

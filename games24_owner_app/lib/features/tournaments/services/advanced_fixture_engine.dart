@@ -8,7 +8,7 @@ class AdvancedFixtureEngine {
     TournamentModel t,
     List<TeamRegistrationModel> registeredList,
   ) {
-    if (registeredList.isEmpty) return const [];
+    if (registeredList.length < 2) return const [];
 
     List<String> teamNames = registeredList.map((tr) => tr.teamName).toList();
     List<String> teamLogos = registeredList.map((tr) => tr.logoUrl).toList();
@@ -206,6 +206,8 @@ class AdvancedFixtureEngine {
     TournamentModel t,
     List<TeamRegistrationModel> registeredList,
   ) {
+    if (registeredList.length < 2) return const [];
+
     final teamNames = registeredList.map((tr) => tr.teamName).toList();
     final teamLogos = registeredList.map((tr) => tr.logoUrl).toList();
 
@@ -307,12 +309,7 @@ class AdvancedFixtureEngine {
   ) {
     List<TeamRegistrationModel> teams = List.from(registeredList);
     if (teams.length < 4) {
-      teams = const [
-        TeamRegistrationModel(id: 'reg_1', teamName: 'Super Strikers', captainName: 'Rajesh', captainPhone: '9876543210', captainEmail: 'raj@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-01', logoUrl: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=100&q=80'),
-        TeamRegistrationModel(id: 'reg_2', teamName: 'Royal Kings', captainName: 'Karthik', captainPhone: '9876543211', captainEmail: 'karthik@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-02', logoUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=100&q=80'),
-        TeamRegistrationModel(id: 'reg_3', teamName: 'Madurai Panthers', captainName: 'Suresh', captainPhone: '9876543212', captainEmail: 'suresh@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-03', logoUrl: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=100&q=80'),
-        TeamRegistrationModel(id: 'reg_4', teamName: 'KK Nagar XI', captainName: 'Vijay', captainPhone: '9876543213', captainEmail: 'vijay@gmail.com', playerCount: 8, paymentStatus: 'Paid', registrationDate: '2026-08-04', logoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=100&q=80'),
-      ];
+      return const [];
     }
 
     List<TournamentFixture> fixtures = [];
