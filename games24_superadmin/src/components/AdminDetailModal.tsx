@@ -141,8 +141,8 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                 <div className="flex items-center gap-2 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-mono text-white font-medium">{admin.ownerPhone}</span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                    Verified ✓
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    <Check className="w-3 h-3" /> Verified
                   </span>
                 </div>
               </div>

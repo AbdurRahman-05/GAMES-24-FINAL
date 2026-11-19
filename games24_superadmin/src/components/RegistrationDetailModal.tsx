@@ -25,6 +25,7 @@ import {
   Check,
   Building2,
   Clock,
+  CheckCheck,
 } from 'lucide-react';
 
 interface Props {
@@ -110,7 +111,7 @@ export default function RegistrationDetailModal({
                 </span>
                 {registration.status === 'PENDING_APPROVAL' && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                     PENDING KYC REVIEW
                   </span>
                 )}
@@ -155,7 +156,7 @@ export default function RegistrationDetailModal({
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-amber-300">Incomplete Application Notice</p>
-              <p className="mt-0.5 text-slate-300 leading-relaxed">
+              <p className="mt-0.5 text-slate-300 leading-relaxed font-mono text-[11px]">
                 The turf owner has not completed all mandatory steps (OTP verification, venue photos, or KYC documents). Verification is disabled until all data is fully submitted.
               </p>
             </div>
@@ -235,8 +236,8 @@ export default function RegistrationDetailModal({
                   <Phone className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-mono text-white font-medium">{registration.ownerPhone}</span>
                   {registration.isMobileVerified ? (
-                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                      OTP Verified ✓
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                      <Check className="w-3 h-3" /> OTP Verified
                     </span>
                   ) : (
                     <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
@@ -251,8 +252,8 @@ export default function RegistrationDetailModal({
                   <Mail className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-mono text-white font-medium">{registration.ownerEmail}</span>
                   {registration.isEmailVerified ? (
-                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                      Verified ✓
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                      <Check className="w-3 h-3" /> Verified
                     </span>
                   ) : (
                     <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-[#161D2E] text-slate-400">
@@ -372,7 +373,7 @@ export default function RegistrationDetailModal({
                         key={idx}
                         className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-mono uppercase"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                         {sp}
                       </span>
                     ))
@@ -389,9 +390,10 @@ export default function RegistrationDetailModal({
                     {registration.amenities.map((amenity, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#161D2E] text-slate-200 border border-[#28354F]"
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#161D2E] text-slate-200 border border-[#28354F] flex items-center gap-1.5"
                       >
-                        ✓ {amenity}
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{amenity}</span>
                       </span>
                     ))}
                   </div>
