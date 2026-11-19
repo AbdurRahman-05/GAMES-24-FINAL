@@ -1828,77 +1828,120 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 6),
 
-                    // Big 3D Shadowed VS Battle Emblem
+                    // V on Left side of Thunder
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: 32,
+                      height: 32,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF0A0A0A),
+                        color: const Color(0xFF0C1206),
                         border: Border.all(
                           color: const Color(0xFFD4FF00),
-                          width: 2.0,
+                          width: 1.8,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(
                               0xFFD4FF00,
-                            ).withValues(alpha: 0.6),
-                            blurRadius: 18,
-                            spreadRadius: 2,
+                            ).withValues(alpha: 0.55),
+                            blurRadius: 12,
+                            spreadRadius: 1,
                           ),
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.95),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          const Icon(
-                            Icons.bolt_rounded,
-                            size: 36,
-                            color: Color(0x44D4FF00),
-                          ),
-                          Transform.rotate(
-                            angle: -0.06,
-                            child: const Text(
-                              'VS',
-                              style: TextStyle(
-                                fontFamily: 'Delight',
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                                fontStyle: FontStyle.italic,
-                                letterSpacing: 1.8,
-                                color: Color(0xFFD4FF00),
-                                shadows: [
-                                  Shadow(
-                                    color: Color(0xFFD4FF00),
-                                    blurRadius: 14,
-                                  ),
-                                  Shadow(
-                                    color: Colors.black,
-                                    offset: Offset(2.5, 2.5),
-                                    blurRadius: 4,
-                                  ),
-                                  Shadow(
-                                    color: Colors.black,
-                                    offset: Offset(-1.5, -1.5),
-                                    blurRadius: 2,
-                                  ),
-                                ],
-                              ),
+                      child: Center(
+                        child: Transform.rotate(
+                          angle: -0.08,
+                          child: const Text(
+                            'V',
+                            style: TextStyle(
+                              fontFamily: 'Delight',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xFFD4FF00),
+                              shadows: [
+                                Shadow(
+                                  color: Color(0xFFD4FF00),
+                                  blurRadius: 10,
+                                ),
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(1.5, 1.5),
+                                  blurRadius: 2,
+                                ),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
 
-                    const SizedBox(width: 10),
+                    // High-voltage gap where the live thunderbolt visibly separates V and S
+                    const SizedBox(width: 18),
+
+                    // S on Right side of Thunder
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF140A0D),
+                        border: Border.all(
+                          color: const Color(0xFFD4FF00),
+                          width: 1.8,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFD4FF00,
+                            ).withValues(alpha: 0.55),
+                            blurRadius: 12,
+                            spreadRadius: 1,
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.95),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Transform.rotate(
+                          angle: 0.08,
+                          child: const Text(
+                            'S',
+                            style: TextStyle(
+                              fontFamily: 'Delight',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              fontStyle: FontStyle.italic,
+                              color: Color(0xFFD4FF00),
+                              shadows: [
+                                Shadow(
+                                  color: Color(0xFFD4FF00),
+                                  blurRadius: 10,
+                                ),
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(1.5, 1.5),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 6),
 
                     // Opponent or Open Slot Avatar
                     Expanded(
@@ -3994,24 +4037,25 @@ class ThunderBoltSplitPainter extends CustomPainter {
     final h = size.height;
     final midX = w / 2;
 
-    // 1. Dual-zone Battle Atmosphere Shading
+    // 1. Dual-zone Battle Atmosphere Shading (Left vs Right separation)
     // Left Challenger Territory (Neon emerald ambient gradient)
     final leftClip = Path()
       ..moveTo(0, 0)
       ..lineTo(midX + 2, 0)
-      ..lineTo(midX - 9, h * 0.26)
-      ..lineTo(midX + 9, h * 0.42)
-      ..lineTo(midX - 7, h * 0.58)
-      ..lineTo(midX + 8, h * 0.74)
-      ..lineTo(midX - 2, h)
+      ..lineTo(midX - 8, h * 0.22)
+      ..lineTo(midX + 6, h * 0.36)
+      ..lineTo(midX - 2, h * 0.50)
+      ..lineTo(midX + 7, h * 0.64)
+      ..lineTo(midX - 8, h * 0.78)
+      ..lineTo(midX + 2, h)
       ..lineTo(0, h)
       ..close();
     final leftShader = LinearGradient(
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
       colors: [
-        const Color(0xFFD4FF00).withValues(alpha: 0.08),
-        const Color(0xFFD4FF00).withValues(alpha: 0.02),
+        const Color(0xFFD4FF00).withValues(alpha: 0.12),
+        const Color(0xFFD4FF00).withValues(alpha: 0.03),
         Colors.transparent,
       ],
     ).createShader(Rect.fromLTWH(0, 0, midX + 10, h));
@@ -4021,53 +4065,56 @@ class ThunderBoltSplitPainter extends CustomPainter {
     final rightClip = Path()
       ..moveTo(w, 0)
       ..lineTo(midX + 2, 0)
-      ..lineTo(midX - 9, h * 0.26)
-      ..lineTo(midX + 9, h * 0.42)
-      ..lineTo(midX - 7, h * 0.58)
-      ..lineTo(midX + 8, h * 0.74)
-      ..lineTo(midX - 2, h)
+      ..lineTo(midX - 8, h * 0.22)
+      ..lineTo(midX + 6, h * 0.36)
+      ..lineTo(midX - 2, h * 0.50)
+      ..lineTo(midX + 7, h * 0.64)
+      ..lineTo(midX - 8, h * 0.78)
+      ..lineTo(midX + 2, h)
       ..lineTo(w, h)
       ..close();
     final rightShader = LinearGradient(
       begin: Alignment.centerRight,
       end: Alignment.centerLeft,
       colors: [
-        const Color(0xFFFF1744).withValues(alpha: 0.07),
-        const Color(0xFFFF1744).withValues(alpha: 0.01),
+        const Color(0xFFFF1744).withValues(alpha: 0.09),
+        const Color(0xFFFF1744).withValues(alpha: 0.02),
         Colors.transparent,
       ],
     ).createShader(Rect.fromLTWH(midX - 10, 0, w - midX + 10, h));
     canvas.drawPath(rightClip, Paint()..shader = rightShader);
 
     // 2. High-Voltage Jagged Lightning Fracture tearing the card in half
+    // Passes directly between 'V' (on left) and 'S' (on right) at h * 0.50
     final boltPath = Path()
       ..moveTo(midX + 2, 0)
-      ..lineTo(midX - 9, h * 0.26)
-      ..lineTo(midX + 9, h * 0.42)
-      ..lineTo(midX - 7, h * 0.58)
-      ..lineTo(midX + 8, h * 0.74)
-      ..lineTo(midX - 2, h);
+      ..lineTo(midX - 8, h * 0.22)
+      ..lineTo(midX + 6, h * 0.36)
+      ..lineTo(midX - 2, h * 0.50)
+      ..lineTo(midX + 7, h * 0.64)
+      ..lineTo(midX - 8, h * 0.78)
+      ..lineTo(midX + 2, h);
 
     // Outer Neon Glow Aura
     final auraPaint = Paint()
-      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.35)
-      ..strokeWidth = 7.0
+      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.40)
+      ..strokeWidth = 8.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
     // Mid Electric Corona
     final glowPaint = Paint()
-      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.85)
-      ..strokeWidth = 3.0
+      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.90)
+      ..strokeWidth = 3.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.8);
 
     // Core White Hot Lightning Bolt
     final corePaint = Paint()
       ..color = Colors.white
-      ..strokeWidth = 1.4
+      ..strokeWidth = 1.6
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -4077,24 +4124,43 @@ class ThunderBoltSplitPainter extends CustomPainter {
 
     // Lateral electric spark forks
     final branch1 = Path()
-      ..moveTo(midX - 9, h * 0.26)
-      ..lineTo(midX - 22, h * 0.30);
+      ..moveTo(midX - 8, h * 0.22)
+      ..lineTo(midX - 24, h * 0.27);
     final branch2 = Path()
-      ..moveTo(midX + 8, h * 0.74)
-      ..lineTo(midX + 24, h * 0.70);
+      ..moveTo(midX + 7, h * 0.64)
+      ..lineTo(midX + 22, h * 0.60);
+    final branch3 = Path()
+      ..moveTo(midX - 8, h * 0.78)
+      ..lineTo(midX - 22, h * 0.83);
 
-    canvas.drawPath(branch1, glowPaint..strokeWidth = 1.2);
+    canvas.drawPath(branch1, glowPaint..strokeWidth = 1.4);
     canvas.drawPath(branch1, corePaint..strokeWidth = 0.8);
-    canvas.drawPath(branch2, glowPaint..strokeWidth = 1.2);
+    canvas.drawPath(branch2, glowPaint..strokeWidth = 1.4);
     canvas.drawPath(branch2, corePaint..strokeWidth = 0.8);
+    canvas.drawPath(branch3, glowPaint..strokeWidth = 1.4);
+    canvas.drawPath(branch3, corePaint..strokeWidth = 0.8);
+
+    // Center electric sparks between V and S
+    final midSpark1 = Path()
+      ..moveTo(midX - 2, h * 0.50)
+      ..lineTo(midX - 10, h * 0.48);
+    final midSpark2 = Path()
+      ..moveTo(midX - 2, h * 0.50)
+      ..lineTo(midX + 8, h * 0.52);
+    canvas.drawPath(midSpark1, corePaint..strokeWidth = 0.8);
+    canvas.drawPath(midSpark2, corePaint..strokeWidth = 0.8);
 
     // Spark nodes
     final sparkGlow = Paint()..color = const Color(0xFFD4FF00);
     final sparkCore = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(midX - 9, h * 0.26), 2.8, sparkGlow);
-    canvas.drawCircle(Offset(midX - 9, h * 0.26), 1.2, sparkCore);
-    canvas.drawCircle(Offset(midX + 8, h * 0.74), 2.8, sparkGlow);
-    canvas.drawCircle(Offset(midX + 8, h * 0.74), 1.2, sparkCore);
+    canvas.drawCircle(Offset(midX - 8, h * 0.22), 3.0, sparkGlow);
+    canvas.drawCircle(Offset(midX - 8, h * 0.22), 1.2, sparkCore);
+    canvas.drawCircle(Offset(midX - 2, h * 0.50), 3.5, sparkGlow); // Center clash node!
+    canvas.drawCircle(Offset(midX - 2, h * 0.50), 1.5, sparkCore);
+    canvas.drawCircle(Offset(midX + 7, h * 0.64), 3.0, sparkGlow);
+    canvas.drawCircle(Offset(midX + 7, h * 0.64), 1.2, sparkCore);
+    canvas.drawCircle(Offset(midX - 8, h * 0.78), 3.0, sparkGlow);
+    canvas.drawCircle(Offset(midX - 8, h * 0.78), 1.2, sparkCore);
   }
 
   @override
