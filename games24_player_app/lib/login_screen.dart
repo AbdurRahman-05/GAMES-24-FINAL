@@ -9,7 +9,8 @@ import 'main_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final bool showLogo;
+  const LoginScreen({super.key, this.showLogo = true});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -24,6 +25,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _obscurePassword = true;
   bool _rememberMe = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/images/logo.png'), context);
+  }
 
   @override
   void dispose() {
@@ -43,14 +50,17 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Logo with Shared Element Hero Tag
-                Center(
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    height: 80,
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                // Logo
+                if (widget.showLogo)
+                  Center(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 80,
+                      fit: BoxFit.contain,
+                    ),
+                  )
+                else
+                  const SizedBox(height: 80),
                 const SizedBox(height: 16),
 
                 // Header Texts

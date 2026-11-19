@@ -346,11 +346,8 @@ class TournamentManager extends ChangeNotifier {
   List<Tournament> get allTournaments => _tournaments;
   List<Tournament> get ongoingTournaments =>
       _tournaments.where((t) => t.status == TournamentStatus.ongoing).toList();
-  List<Tournament> get upcomingTournaments => _tournaments
-      .where((t) =>
-          t.status == TournamentStatus.upcoming ||
-          t.status == TournamentStatus.cancelled)
-      .toList();
+  List<Tournament> get upcomingTournaments =>
+      _tournaments.where((t) => t.status == TournamentStatus.upcoming).toList();
 
   List<Tournament> get myTournaments {
     final cleanPhone = _currentUserPhone.replaceAll(RegExp(r'[^0-9]'), '');
