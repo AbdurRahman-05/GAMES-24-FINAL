@@ -1828,120 +1828,94 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
 
-                    // V on Left side of Thunder
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF0C1206),
-                        border: Border.all(
+                    // V on Left side of Thunder (3D Battle Shadow Style, no circle border)
+                    Transform.rotate(
+                      angle: -0.06,
+                      child: Text(
+                        'V',
+                        style: TextStyle(
+                          fontFamily: 'Delight',
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 1.0,
                           color: const Color(0xFFD4FF00),
-                          width: 1.8,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFFD4FF00,
-                            ).withValues(alpha: 0.55),
-                            blurRadius: 12,
-                            spreadRadius: 1,
-                          ),
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.95),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Transform.rotate(
-                          angle: -0.08,
-                          child: const Text(
-                            'V',
-                            style: TextStyle(
-                              fontFamily: 'Delight',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              fontStyle: FontStyle.italic,
-                              color: Color(0xFFD4FF00),
-                              shadows: [
-                                Shadow(
-                                  color: Color(0xFFD4FF00),
-                                  blurRadius: 10,
-                                ),
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(1.5, 1.5),
-                                  blurRadius: 2,
-                                ),
-                              ],
+                          shadows: [
+                            Shadow(
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.85),
+                              blurRadius: 16,
                             ),
-                          ),
+                            Shadow(
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.40),
+                              blurRadius: 28,
+                            ),
+                            const Shadow(
+                              color: Colors.black,
+                              offset: Offset(3.0, 3.5),
+                              blurRadius: 4,
+                            ),
+                            const Shadow(
+                              color: Colors.black,
+                              offset: Offset(-1.5, -1.5),
+                              blurRadius: 2,
+                            ),
+                            const Shadow(
+                              color: Colors.black87,
+                              offset: Offset(4.0, 6.0),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
                       ),
                     ),
 
-                    // High-voltage gap where the live thunderbolt visibly separates V and S
-                    const SizedBox(width: 18),
+                    // Gap where the live thunderbolt visibly separates V and S
+                    const SizedBox(width: 16),
 
-                    // S on Right side of Thunder
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF140A0D),
-                        border: Border.all(
+                    // S on Right side of Thunder (3D Battle Shadow Style, no circle border)
+                    Transform.rotate(
+                      angle: 0.06,
+                      child: Text(
+                        'S',
+                        style: TextStyle(
+                          fontFamily: 'Delight',
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          fontStyle: FontStyle.italic,
+                          letterSpacing: 1.0,
                           color: const Color(0xFFD4FF00),
-                          width: 1.8,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(
-                              0xFFD4FF00,
-                            ).withValues(alpha: 0.55),
-                            blurRadius: 12,
-                            spreadRadius: 1,
-                          ),
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.95),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Transform.rotate(
-                          angle: 0.08,
-                          child: const Text(
-                            'S',
-                            style: TextStyle(
-                              fontFamily: 'Delight',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              fontStyle: FontStyle.italic,
-                              color: Color(0xFFD4FF00),
-                              shadows: [
-                                Shadow(
-                                  color: Color(0xFFD4FF00),
-                                  blurRadius: 10,
-                                ),
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(1.5, 1.5),
-                                  blurRadius: 2,
-                                ),
-                              ],
+                          shadows: [
+                            Shadow(
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.85),
+                              blurRadius: 16,
                             ),
-                          ),
+                            Shadow(
+                              color: const Color(0xFFD4FF00).withValues(alpha: 0.40),
+                              blurRadius: 28,
+                            ),
+                            const Shadow(
+                              color: Colors.black,
+                              offset: Offset(3.0, 3.5),
+                              blurRadius: 4,
+                            ),
+                            const Shadow(
+                              color: Colors.black,
+                              offset: Offset(-1.5, -1.5),
+                              blurRadius: 2,
+                            ),
+                            const Shadow(
+                              color: Colors.black87,
+                              offset: Offset(4.0, 6.0),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
                       ),
                     ),
 
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
 
                     // Opponent or Open Slot Avatar
                     Expanded(
