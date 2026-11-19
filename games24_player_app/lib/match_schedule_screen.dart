@@ -1434,14 +1434,21 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFE5F5EB),
+                color: const Color(0xFF141414),
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFBBF7D0), width: 1.5),
+                border: Border.all(color: const Color(0xFF262626), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.15),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              child: Icon(icon, size: 36, color: Color(0xFFD4FF00)),
+              child: Icon(icon, size: 38, color: const Color(0xFFD4FF00)),
             ),
             const SizedBox(height: 18),
             Text(
@@ -1450,7 +1457,8 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1E293B),
+                color: Colors.white,
+                letterSpacing: 0.2,
               ),
             ),
             const SizedBox(height: 8),
@@ -1460,7 +1468,7 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
               style: const TextStyle(
                 fontSize: 13,
                 color: Color(0xFFA1A1AA),
-                height: 1.4,
+                height: 1.5,
               ),
             ),
             const SizedBox(height: 24),
@@ -1473,21 +1481,23 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD4FF00),
-                      foregroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 18,
-                        vertical: 10,
+                        vertical: 11,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    icon: const Icon(Icons.add, size: 16),
+                    icon: const Icon(Icons.add_rounded, size: 18, color: Colors.black),
                     label: const Text(
                       'Book Turf Slot',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12.5,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        color: Colors.black,
                       ),
                     ),
                     onPressed: () => Navigator.maybePop(context),
@@ -1495,21 +1505,22 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFD4FF00),
-                    side: BorderSide(color: Color(0xFFD4FF00)),
+                    side: const BorderSide(color: Color(0xFFD4FF00), width: 1.2),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,
-                      vertical: 10,
+                      vertical: 11,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: const Icon(Icons.groups_outlined, size: 16),
+                  icon: const Icon(Icons.groups_outlined, size: 18, color: Color(0xFFD4FF00)),
                   label: const Text(
                     'Join Open Match',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12.5,
+                      fontSize: 13,
+                      color: Color(0xFFD4FF00),
                     ),
                   ),
                   onPressed: () {
@@ -1523,22 +1534,24 @@ class _MatchScheduleScreenState extends State<MatchScheduleScreen> {
                 ),
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFA1A1AA),
-                    side: const BorderSide(color: Color(0xFFCBD5E1)),
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF141414),
+                    side: const BorderSide(color: Color(0xFF262626), width: 1.2),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,
-                      vertical: 10,
+                      vertical: 11,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  icon: const Icon(Icons.emoji_events_outlined, size: 16),
+                  icon: const Icon(Icons.emoji_events_outlined, size: 18, color: Color(0xFFFBBF24)),
                   label: const Text(
                     'Tournaments',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12.5,
+                      fontSize: 13,
+                      color: Colors.white,
                     ),
                   ),
                   onPressed: () {

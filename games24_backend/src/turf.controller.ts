@@ -45,14 +45,28 @@ export class TurfController {
     return this.turfService.registerTournament(id, body);
   }
 
+  @Post('tournaments/:id/cancel')
+  async cancelTournament(
+    @Param('id') id: string,
+  ) {
+    const numericId = parseInt(id.replace(/\D/g, ''), 10) || parseInt(id, 10);
+    return this.turfService.cancelTournament(numericId);
+  }
+
   @Delete('tournaments/:id')
-  async deleteTournament(@Param('id', ParseIntPipe) id: number) {
-    return this.turfService.deleteTournament(id);
+  async deleteTournament(
+    @Param('id') id: string,
+  ) {
+    const numericId = parseInt(id.replace(/\D/g, ''), 10) || parseInt(id, 10);
+    return this.turfService.deleteTournament(numericId);
   }
 
   @Post('tournaments/:id/delete')
-  async deleteTournamentPost(@Param('id', ParseIntPipe) id: number) {
-    return this.turfService.deleteTournament(id);
+  async deleteTournamentPost(
+    @Param('id') id: string,
+  ) {
+    const numericId = parseInt(id.replace(/\D/g, ''), 10) || parseInt(id, 10);
+    return this.turfService.deleteTournament(numericId);
   }
 
   @Get('user-bookings')

@@ -15,7 +15,7 @@ import { extname, join } from 'path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import type { Request, Response } from 'express';
 import { PrismaService } from './prisma.service.js';
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, type UploadApiResponse, type UploadApiErrorResponse } from 'cloudinary';
 
 const uploadsBaseDir = join(process.cwd(), 'uploads');
 const photosDir = join(uploadsBaseDir, 'photos');
@@ -68,7 +68,7 @@ async function uploadToCloudinary(
         resource_type: resourceType,
         public_id: publicId,
       },
-      (error, result) => {
+      (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
         if (error) return reject(error);
         if (!result?.secure_url) return reject(new Error('Cloudinary upload failed: no secure_url returned'));
         resolve(result.secure_url);
@@ -342,7 +342,7 @@ export class UploadsServeController {
   }
 
   private async serveUploadedFile(folder: string, filename: string, res: Response) {
-    const safeFilename = filename.replace(/(\.\.[\/\\])/g, '');
+    const safeFilename = filename.replace(/(\.\.[/\\])/g, '');
     const localPath = join(uploadsBaseDir, folder, safeFilename);
 
     if (existsSync(localPath)) {
@@ -361,7 +361,7 @@ export class UploadsServeController {
           const targetDir = join(uploadsBaseDir, folder);
           if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true });
           writeFileSync(localPath, record.data);
-        } catch (_) {}
+        } catch {}
 
         const mime = record.mimetype || (folder === 'photos' ? 'image/jpeg' : 'application/pdf');
         res.setHeader('Content-Type', mime);

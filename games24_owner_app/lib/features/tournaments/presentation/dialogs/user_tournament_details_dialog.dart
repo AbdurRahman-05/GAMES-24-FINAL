@@ -139,18 +139,20 @@ class _UserTournamentDetailsDialogState
                         final cleanId = widget.tournament.id.replaceAll(RegExp(r'[^0-9]'), '');
                         final intId = int.tryParse(cleanId);
                         if (intId != null && intId > 0) {
-                          http.post(
-                            Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$intId/register'),
-                            headers: {'Content-Type': 'application/json'},
-                            body: jsonEncode({
-                              'teamName': newReg.teamName,
-                              'captainName': newReg.captainName,
-                              'contact': newReg.captainPhone,
-                              'email': newReg.captainEmail,
-                              'playersCount': newReg.playerCount,
-                              'paymentStatus': newReg.paymentStatus,
-                            }),
-                          ).catchError((_) {});
+                          try {
+                            http.post(
+                              Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$intId/register'),
+                              headers: {'Content-Type': 'application/json'},
+                              body: jsonEncode({
+                                'teamName': newReg.teamName,
+                                'captainName': newReg.captainName,
+                                'contact': newReg.captainPhone,
+                                'email': newReg.captainEmail,
+                                'playersCount': newReg.playerCount,
+                                'paymentStatus': newReg.paymentStatus,
+                              }),
+                            );
+                          } catch (_) {}
                         }
                       } catch (_) {}
 

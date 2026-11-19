@@ -2655,7 +2655,7 @@ export class TurfService {
     ownerOnly?: string,
   ) {
     const where: any = {
-      status: { notIn: ['CANCELLED', 'ON_HOLD', 'DELETED'] },
+      status: { notIn: ['ON_HOLD', 'DELETED'] },
       isHold: false,
     };
     if (sport && sport !== 'All Sports') {
@@ -2679,11 +2679,7 @@ export class TurfService {
         ownerConditions.push({ venueName: { equals: venue.trim(), mode: 'insensitive' } });
       }
       if (ownerConditions.length > 0) {
-        where.AND = [
-          { isOwnerCreated: true },
-          { createdByRole: 'OWNER' },
-          { OR: ownerConditions },
-        ];
+        where.OR = ownerConditions;
       } else if (ownerOnly === 'true') {
         return [];
       }
@@ -2697,123 +2693,65 @@ export class TurfService {
 
     // Exclude tournaments if tournament itself is held, or if the host turf is held or inactive
     const activeTournaments = tournaments.filter((t) => {
-      if (t.isHold || t.status === 'ON_HOLD' || t.status === 'CANCELLED') return false;
-      if (t.verifiedAdmin && !isOwnerFilter) {
-        if (t.verifiedAdmin.isBookingHold || t.verifiedAdmin.status === 'REJECTED' || t.verifiedAdmin.status === 'SUSPENDED') {
+      if (t.isHold || t.status === 'ON_HOLD' || t.status === 'DELETED') return false;
+      if (t.verifiedAdmin) {
+        if (t.verifiedAdmin.isBookingHold || t.verifiedAdmin.status !== 'VERIFIED') {
           return false;
         }
       }
       return true;
     });
 
-    const mockNames = [
-      'super strikers',
-      'royal kings',
-      'madurai panthers',
-      'kk nagar xi',
-      'anna nagar titans',
-      'chola warriors',
-    ];
-
-    return activeTournaments.map((t) => {
-      const rawUsers = Array.isArray(t.registeredUsers) ? (t.registeredUsers as any[]) : [];
-      // Strictly purge any legacy mock squads: only real user registrations from player app allowed
-      const realUsers = rawUsers.filter((u) => {
-        const name = (u?.teamName || '').toLowerCase().trim();
-        return name && !mockNames.includes(name) && !String(u?.id || '').startsWith('reg_');
-      });
-
-      // Asynchronously heal database if mock squads or mismatched count existed
-      if (realUsers.length !== rawUsers.length || t.registeredTeams !== realUsers.length) {
-        this.prisma.tournament
-          .update({
-            where: { id: t.id },
-            data: {
-              registeredTeams: realUsers.length,
-              registeredUsers: realUsers,
-            },
-          })
-          .catch(() => {});
-      }
-
-      return {
-        id: t.id.toString(),
-        title: t.title,
-        subtitle: t.subtitle || t.format || 'Open Championship',
-        sport: t.sport,
-        format: t.format,
-        status: t.status.toLowerCase(),
-        date: t.date,
-        startDate: t.startDate || t.date,
-        endDate: t.endDate || t.date,
-        registrationDeadline: t.registrationDeadline || t.date,
-        time: t.time || '09:00 AM',
-        venue: t.venueName,
-        venueName: t.venueName,
-        courtAllocation: t.courtAllocation || t.venueName,
-        location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
-        entryFee: `₹${t.entryFee.toFixed(0)}`,
-        teamEntryFee: t.entryFee,
-        prizePool: t.prizePool || t.championPrize || '₹15,000',
-        grandPrize: t.championPrize || t.prizePool || '₹15,000',
-        championPrize: t.championPrize || t.prizePool || '₹15,000',
-        runnerUpPrize: t.runnerUpPrize || '',
-        maxTeams: t.maxTeams,
-        registeredTeams: realUsers.length,
-        playersPerTeam: t.playersPerTeam || 8,
-        description: t.description || `Official tournament at ${t.venueName}`,
-        rules: t.rules ? [t.rules] : ['1. Standard tournament rules apply.'],
-        imageUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
-        bannerUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
-        reportingTime: '30 mins before match',
-        matchDay: 'Day 1',
-        tournamentProgress: t.status === 'LIVE' ? 'Ongoing' : 'Upcoming',
-        registeredUsers: realUsers,
-        organizerName: t.organizerName,
-        organizerPhone: t.organizerPhone,
-        verifiedAdminId: t.verifiedAdminId,
-        isOwnerCreated: t.isOwnerCreated ?? (t.createdByRole === 'OWNER' || Boolean(t.verifiedAdminId)),
-        createdByRole: t.createdByRole || (t.verifiedAdminId ? 'OWNER' : 'PLAYER'),
-      };
-    });
+    return activeTournaments.map((t) => ({
+      id: t.id.toString(),
+      title: t.title,
+      sport: t.sport,
+      format: t.format,
+      status: t.status.toLowerCase(),
+      date: t.date,
+      time: t.time || '09:00 AM',
+      venue: t.venueName,
+      venueName: t.venueName,
+      location: t.location || t.verifiedAdmin?.neighborhoodArea || 'Madurai',
+      entryFee: `₹${t.entryFee.toFixed(0)}`,
+      prizePool: t.prizePool || '₹15,000',
+      grandPrize: t.prizePool || '₹15,000',
+      maxTeams: t.maxTeams,
+      registeredTeams: t.registeredTeams,
+      imageUrl: t.bannerUrl || 'https://picsum.photos/seed/tournament/800/400',
+      reportingTime: '30 mins before match',
+      matchDay: 'Day 1',
+      tournamentProgress: t.status === 'LIVE' ? 'Ongoing' : (t.status === 'CANCELLED' ? 'Cancelled' : 'Upcoming'),
+      registeredUsers: Array.isArray(t.registeredUsers) ? t.registeredUsers : [],
+      organizerName: t.organizerName,
+      organizerPhone: t.organizerPhone,
+      verifiedAdminId: t.verifiedAdminId,
+    }));
   }
 
   async createTournament(body: any) {
     const title = (body?.title || '').toString().trim();
     const venueName = (body?.venueName || body?.venue || 'Games24 Arena').toString().trim();
     const todayStr = new Date().toISOString().split('T')[0];
-    const date = (body?.startDate || body?.date || todayStr).toString().trim();
+    const date = (body?.date || todayStr).toString().trim();
 
     if (!title) {
       throw new BadRequestException('Tournament title is required for creating a tournament');
     }
 
-    const subtitle = (body?.subtitle || '').toString().trim() || null;
-    const description = (body?.description || '').toString().trim() || null;
-    const rules = (body?.rules || '').toString().trim() || null;
-    const courtAllocation = (body?.courtAllocation || body?.court || venueName).toString().trim();
-    const startDate = (body?.startDate || date).toString().trim();
-    const endDate = (body?.endDate || body?.startDate || date).toString().trim();
-    const registrationDeadline = (body?.registrationDeadline || body?.regEndDate || date).toString().trim();
     const sport = (body?.sport || body?.sportType || 'Football').toString().trim();
     const format = (body?.format || body?.tournamentType || 'Knockout').toString().trim();
     const time = (body?.time || body?.matchStartTime || '09:00 AM').toString().trim();
     const location = (body?.location || 'Madurai').toString().trim();
     const entryFee = Number(body?.entryFee ?? body?.teamEntryFee ?? 1500) || 0;
-    const championPrize = (body?.championPrize || body?.prizePool || '₹15,000').toString().trim();
-    const runnerUpPrize = (body?.runnerUpPrize || '').toString().trim() || null;
-    const prizePool = championPrize;
+    const prizePool = (body?.prizePool || body?.championPrize || '₹15,000').toString().trim();
     const maxTeams = Number(body?.maxTeams) || 16;
-    const playersPerTeam = Number(body?.playersPerTeam ?? body?.playersPerSquad ?? 8) || 8;
     const organizerName = (body?.organizerName || 'Games24 Community').toString().trim();
     const organizerPhone = (body?.organizerPhone || body?.phone || '9876543210').toString().trim();
     const bannerUrl = (body?.bannerUrl || body?.imageUrl || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80').toString().trim();
 
-    const isOwnerCreated = body?.isOwnerCreated === false || body?.createdByRole === 'PLAYER' ? false : true;
-    const createdByRole = isOwnerCreated ? 'OWNER' : 'PLAYER';
-
-    let verifiedAdminId = isOwnerCreated && body?.verifiedAdminId ? Number(body.verifiedAdminId) : null;
-    if (isOwnerCreated && !verifiedAdminId && venueName && !venueName.toLowerCase().includes('tba')) {
+    let verifiedAdminId = body?.verifiedAdminId ? Number(body.verifiedAdminId) : null;
+    if (!verifiedAdminId && venueName && !venueName.toLowerCase().includes('tba')) {
       const match = await this.prisma.verifiedAdmin.findFirst({
         where: { venueName: { equals: venueName, mode: 'insensitive' } },
       });
@@ -2823,16 +2761,6 @@ export class TurfService {
     const created = await this.prisma.tournament.create({
       data: {
         title,
-        subtitle,
-        description,
-        rules,
-        courtAllocation,
-        startDate,
-        endDate,
-        registrationDeadline,
-        playersPerTeam,
-        championPrize,
-        runnerUpPrize,
         sport,
         format,
         date,
@@ -2850,8 +2778,6 @@ export class TurfService {
         status: 'UPCOMING',
         isHold: false,
         verifiedAdminId,
-        isOwnerCreated,
-        createdByRole,
       },
     });
 
@@ -2859,25 +2785,6 @@ export class TurfService {
       success: true,
       message: 'Tournament created successfully!',
       tournament: created,
-    };
-  }
-
-  async deleteTournament(tournamentId: number) {
-    const tourn = await this.prisma.tournament.findUnique({
-      where: { id: tournamentId },
-    });
-    if (!tourn) {
-      throw new NotFoundException(`Tournament #${tournamentId} not found`);
-    }
-
-    await this.prisma.tournament.delete({
-      where: { id: tournamentId },
-    });
-
-    return {
-      success: true,
-      tournamentId,
-      message: `Tournament "${tourn.title}" has been permanently deleted from database.`,
     };
   }
 
@@ -2892,8 +2799,8 @@ export class TurfService {
     if (tournament.isHold || tournament.status === 'ON_HOLD' || tournament.status === 'CANCELLED') {
       throw new BadRequestException('This tournament is currently placed on hold by platform administrator and cannot accept registrations.');
     }
-    if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status === 'REJECTED' || tournament.verifiedAdmin.status === 'SUSPENDED')) {
-      throw new BadRequestException('The venue for this tournament is currently on hold or inactive.');
+    if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status !== 'VERIFIED')) {
+      throw new BadRequestException('The venue for this tournament is currently on hold by platform administrator.');
     }
     if (tournament.registeredTeams >= tournament.maxTeams) {
       throw new BadRequestException('Tournament registration is full!');
@@ -2925,6 +2832,49 @@ export class TurfService {
       success: true,
       message: `Team "${teamName}" registered successfully for "${tournament.title}"!`,
       tournament: updated,
+    };
+  }
+
+  async cancelTournament(id: number) {
+    if (!id || isNaN(id)) {
+      throw new BadRequestException('Valid tournament ID is required');
+    }
+    const tournament = await this.prisma.tournament.findUnique({
+      where: { id },
+    });
+    if (!tournament) {
+      throw new NotFoundException(`Tournament #${id} not found`);
+    }
+    const updated = await this.prisma.tournament.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+    return {
+      success: true,
+      message: `Tournament "${tournament.title}" has been cancelled.`,
+      tournament: updated,
+    };
+  }
+
+  async deleteTournament(id: number) {
+    if (!id || isNaN(id)) {
+      throw new BadRequestException('Valid tournament ID is required');
+    }
+    const tournament = await this.prisma.tournament.findUnique({
+      where: { id },
+    });
+    if (!tournament) {
+      return {
+        success: true,
+        message: 'Tournament not found or already deleted',
+      };
+    }
+    await this.prisma.tournament.delete({
+      where: { id },
+    });
+    return {
+      success: true,
+      message: `Tournament "${tournament.title}" deleted permanently.`,
     };
   }
 

@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:audioplayers/audioplayers.dart';
 import '../../../admin/presentation/screens/admin_login_screen.dart';
 import '../../../admin/providers/admin_providers.dart';
 
@@ -42,8 +41,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late Animation<double> _symbolTwoSlide;
   late Animation<double> _symbolFourSlide;
   late Animation<double> _symbolElementsOpacity;
-  late Animation<double> _symbolOutlineDraw;
-  late Animation<double> _shockwaveProgress;
   late Animation<double> _lightSweepPosition;
   late Animation<double> _masterSymbolCrossfade;
 
@@ -63,9 +60,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   late SharedPreferences _prefs;
   bool _prefsLoaded = false;
   bool _isLoggedIn = false;
+  Widget _nextScreenWidget = const AdminLoginScreen(showLogo: false);
 
-  // Sound Effects & Haptics
-  AudioPlayer? _audioPlayer;
   final Set<int> _triggeredHaptics = {};
 
   final List<String> _letterFiles = [
@@ -157,13 +153,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
 
-    _symbolOutlineDraw = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.417, 0.550, curve: Curves.easeOutQuad),
-      ),
-    );
-
     _symbolGSlide = Tween<double>(begin: -100.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -182,13 +171,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.470, 0.590, curve: Curves.easeOutBack),
-      ),
-    );
-
-    _shockwaveProgress = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.530, 0.630, curve: Curves.easeOutQuad),
       ),
     );
 
@@ -282,21 +264,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     });
 
-    _initAudio();
     _controller.forward();
     _preloadSessionData();
   }
 
-  Future<void> _initAudio() async {
-    try {
-      final player = AudioPlayer();
-      _audioPlayer = player;
-      await player.setPlayerMode(PlayerMode.lowLatency);
-      await player.setVolume(1.0);
-      await player.play(AssetSource('audio/gamez24_intro.wav'));
-    } catch (e) {
-      debugPrint('SplashScreen audio error: $e');
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/images/logo.png'), context);
   }
 
   Future<void> _preloadSessionData() async {
@@ -308,6 +283,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       if (mounted) {
         setState(() {
           _isLoggedIn = (loggedIn && phone != null && phone.isNotEmpty);
+          if (_isLoggedIn) {
+            _nextScreenWidget = Container(color: const Color(0xFF080808));
+          } else {
+            _nextScreenWidget = const AdminLoginScreen(showLogo: false);
+          }
         });
       }
     } catch (e) {
@@ -349,10 +329,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   void dispose() {
     _controller.dispose();
-    try {
-      _audioPlayer?.stop();
-      _audioPlayer?.dispose();
-    } catch (_) {}
     super.dispose();
   }
 
@@ -379,9 +355,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     // SafeArea + padding 24 + SizedBox 12 + logo height 80
     final targetSymbolTop = topPadding + 24 + 12;
     const targetSymbolHeight = 80.0;
+    final targetSymbolWidth = targetSymbolHeight * (1098.0 / 487.0);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050505),
+      backgroundColor: const Color(0xFF080808),
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
@@ -390,7 +367,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               (targetSymbolTop * _emblemYTransition.value);
           final currentHeight = (initialSymbolHeight * (1.0 - _emblemYTransition.value)) +
               (targetSymbolHeight * _emblemYTransition.value);
-          final currentWidth = currentHeight * 2.113;
+          final currentWidth = (initialSymbolWidth * (1.0 - _emblemYTransition.value)) +
+              (targetSymbolWidth * _emblemYTransition.value);
 
           return Stack(
             fit: StackFit.expand,
@@ -403,69 +381,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   opacity: _nextScreenFadeIn.value,
                   child: IgnorePointer(
                     ignoring: _controller.value < 0.98,
-                    child: _isLoggedIn
-                        ? Container(color: const Color(0xFF0F172A))
-                        : const AdminLoginScreen(showLogo: false),
+                    child: _nextScreenWidget,
                   ),
                 ),
 
               // ===============================================================
-              // LAYER 2: Cinematic Stadium Background (Fades out in Phase 5)
+              // LAYER 2: Cinematic Stadium Background (Clean atmosphere without round circle)
               // ===============================================================
               if (_splashBackgroundFadeOut.value > 0.0)
                 Opacity(
                   opacity: _splashBackgroundFadeOut.value,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Stadium Floodlight Cones & Drifting Pitch Particles
-                      CustomPaint(
-                        painter: _StadiumAtmospherePainter(
-                          lightIntensity: _stadiumLights.value,
-                          glowIntensity: _ambientGlow.value,
-                          particleTick: _controller.value,
-                        ),
-                      ),
-
-                      // Center Neon Lime Radial Glow Bloom
-                      Center(
-                        child: Container(
-                          width: initialSymbolWidth * 1.5,
-                          height: initialSymbolHeight * 1.5,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                const Color(0xFFD4FF00).withValues(
-                                  alpha: 0.16 * _ambientGlow.value,
-                                ),
-                                const Color(0xFF00E676).withValues(
-                                  alpha: 0.08 * _ambientGlow.value,
-                                ),
-                                Colors.transparent,
-                              ],
-                              stops: const [0.0, 0.45, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // ===============================================================
-              // LAYER 3: Shockwave Energy Ring at Component Lock-in
-              // ===============================================================
-              if (_shockwaveProgress.value > 0.0 &&
-                  _shockwaveProgress.value < 1.0 &&
-                  _splashBackgroundFadeOut.value > 0.5)
-                Positioned(
-                  top: centerSymbolTop + (initialSymbolHeight / 2),
-                  left: screenSize.width / 2,
                   child: CustomPaint(
-                    painter: _ShockwavePainter(
-                      progress: _shockwaveProgress.value,
-                      baseRadius: initialSymbolWidth * 0.45,
+                    painter: _StadiumAtmospherePainter(
+                      lightIntensity: _stadiumLights.value,
+                      glowIntensity: _ambientGlow.value,
+                      particleTick: _controller.value,
                     ),
                   ),
                 ),
@@ -523,13 +453,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       children: [
                           // 5a. Disassembled Entering Components (Phase 3)
                           if (_masterSymbolCrossfade.value < 1.0 && _emblemYTransition.value == 0.0) ...[
-                            // Dynamic Circular Football Outline Drawing
-                            CustomPaint(
-                              painter: _CircularOutlineDrawPainter(
-                                progress: _symbolOutlineDraw.value,
-                              ),
-                            ),
-
                             // Football Graphic & Arc
                             Transform(
                               alignment: Alignment.centerLeft,
@@ -591,41 +514,46 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           if (_masterSymbolCrossfade.value > 0.0)
                             Opacity(
                               opacity: _masterSymbolCrossfade.value,
-                              child: ShaderMask(
-                                shaderCallback: (bounds) {
-                                  final sweepX = _lightSweepPosition.value;
-                                  return LinearGradient(
-                                    begin: Alignment(sweepX - 0.5, -1.0),
-                                    end: Alignment(sweepX + 0.5, 1.0),
-                                    colors: [
-                                      Colors.white.withValues(alpha: 0.0),
-                                      Colors.white.withValues(alpha: 0.15),
-                                      Colors.white.withValues(alpha: 0.95),
-                                      const Color(0xFFD4FF00).withValues(alpha: 0.8),
-                                      Colors.white.withValues(alpha: 0.15),
-                                      Colors.white.withValues(alpha: 0.0),
-                                    ],
-                                    stops: const [0.0, 0.35, 0.5, 0.55, 0.7, 1.0],
-                                  ).createShader(bounds);
-                                },
-                                blendMode: BlendMode.srcATop,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(0xFFD4FF00).withValues(
-                                          alpha: 0.22 * _ambientGlow.value * (1.0 - _emblemYTransition.value),
-                                        ),
-                                        blurRadius: 28,
-                                        spreadRadius: 2,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  // Master Symbol with Light Sweep
+                                  Opacity(
+                                    opacity: (1.0 - _emblemYTransition.value).clamp(0.0, 1.0),
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) {
+                                        final sweepX = _lightSweepPosition.value;
+                                        return LinearGradient(
+                                          begin: Alignment(sweepX - 0.5, -1.0),
+                                          end: Alignment(sweepX + 0.5, 1.0),
+                                          colors: [
+                                            Colors.white.withValues(alpha: 0.0),
+                                            Colors.white.withValues(alpha: 0.15),
+                                            Colors.white.withValues(alpha: 0.95),
+                                            const Color(0xFFD4FF00).withValues(alpha: 0.8),
+                                            Colors.white.withValues(alpha: 0.15),
+                                            Colors.white.withValues(alpha: 0.0),
+                                          ],
+                                          stops: const [0.0, 0.35, 0.5, 0.55, 0.7, 1.0],
+                                        ).createShader(bounds);
+                                      },
+                                      blendMode: BlendMode.srcATop,
+                                      child: Image.asset(
+                                        'assets/images/sym_master.png',
+                                        fit: BoxFit.contain,
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                  child: Image.asset(
-                                    'assets/images/sym_master.png',
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
+                                  // Official Destination Brand Logo that seamlessly settles onto Login Page
+                                  if (_emblemYTransition.value > 0.0)
+                                    Opacity(
+                                      opacity: _emblemYTransition.value.clamp(0.0, 1.0),
+                                      child: Image.asset(
+                                        'assets/images/logo.png',
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                         ],
@@ -646,7 +574,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final progress = _letterProgress[index].value;
     if (progress <= 0.0) return const SizedBox.shrink();
 
-    final isGreenNumber = (index >= 5); // '2' and '4'
     final translateY = 24.0 * (1.0 - progress);
     final scale = 0.6 + (0.4 * progress);
 
@@ -656,22 +583,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         scale: scale,
         child: Opacity(
           opacity: progress.clamp(0.0, 1.0),
-          child: Container(
-            decoration: isGreenNumber
-                ? BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFD4FF00).withValues(alpha: 0.35 * progress),
-                        blurRadius: 18,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  )
-                : null,
-            child: Image.asset(
-              _letterFiles[index],
-              fit: BoxFit.contain,
-            ),
+          child: Image.asset(
+            _letterFiles[index],
+            fit: BoxFit.contain,
           ),
         ),
       ),
@@ -779,66 +693,4 @@ class _StadiumAtmospherePainter extends CustomPainter {
       oldDelegate.lightIntensity != lightIntensity ||
       oldDelegate.glowIntensity != glowIntensity ||
       oldDelegate.particleTick != particleTick;
-}
-
-/// Dynamic Circular Outline Drawing Painter for the football crescent
-class _CircularOutlineDrawPainter extends CustomPainter {
-  final double progress;
-
-  _CircularOutlineDrawPainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress <= 0.0) return;
-
-    final paint = Paint()
-      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.65 * progress)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
-      ..strokeCap = StrokeCap.round;
-
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final sweepAngle = (2 * math.pi) * progress;
-
-    canvas.drawArc(rect, -math.pi * 0.5, sweepAngle, false, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _CircularOutlineDrawPainter oldDelegate) =>
-      oldDelegate.progress != progress;
-}
-
-/// Shockwave Ripple Painter for component lock-in
-class _ShockwavePainter extends CustomPainter {
-  final double progress;
-  final double baseRadius;
-
-  _ShockwavePainter({
-    required this.progress,
-    required this.baseRadius,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final currentRadius = baseRadius + (progress * 130.0);
-    final alpha = (1.0 - progress).clamp(0.0, 1.0);
-
-    final wavePaint = Paint()
-      ..color = const Color(0xFFD4FF00).withValues(alpha: alpha * 0.75)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(0.5, (1.0 - progress) * 2.8);
-
-    canvas.drawCircle(Offset.zero, currentRadius, wavePaint);
-
-    final innerPaint = Paint()
-      ..color = Colors.white.withValues(alpha: alpha * 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    canvas.drawCircle(Offset.zero, currentRadius * 0.94, innerPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ShockwavePainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }

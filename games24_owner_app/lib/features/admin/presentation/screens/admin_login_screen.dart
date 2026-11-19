@@ -149,6 +149,12 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    precacheImage(const AssetImage('assets/images/logo.png'), context);
+  }
+
+  @override
   void dispose() {
     _phoneController.dispose();
     _otpController.dispose();

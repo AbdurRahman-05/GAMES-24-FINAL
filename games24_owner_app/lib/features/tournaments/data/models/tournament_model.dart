@@ -335,6 +335,8 @@ class TournamentModel {
       normalizedStatus = 'Live';
     } else if (statusStr.toLowerCase().contains('completed') || statusStr.toLowerCase().contains('finished')) {
       normalizedStatus = 'Completed';
+    } else if (statusStr.toLowerCase().contains('cancel')) {
+      normalizedStatus = 'Cancelled';
     }
 
     final entryFeeNum = (json['entryFee'] is num)
@@ -449,7 +451,7 @@ class TournamentModel {
       championPrize: champPrize,
       runnerUpPrize: runnerPrize,
       status: normalizedStatus,
-      registeredTeamsCount: actualTeamsCount,
+      registeredTeamsCount: actualTeamsCount > 0 ? actualTeamsCount : regTeamsNum,
       totalRevenue: entryFeeNum * actualTeamsCount,
       verifiedAdminId: adminIdNum,
       isOwnerCreated: json['isOwnerCreated'] == true ||

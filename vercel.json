@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "echo 'Deploying Gamez24 Portfolio'",
+  "outputDirectory": "gamez24_portfolio",
+  "cleanUrls": true
+}

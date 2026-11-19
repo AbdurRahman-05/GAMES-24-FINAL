@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../api_config.dart';
 import '../../../../core/utils/toast_utils.dart';
@@ -47,99 +48,7 @@ class _AdminTournamentManagerScreenState
 
   String _selectedSport = 'Cricket';
   String _selectedType = 'Knockout';
-
-  // Dynamic Owner Branch & Court State (Strictly real data, no mocks)
-  int? _selectedBranchId;
-  String _selectedCourt = 'Entire Venue';
-  List<String> _branchCourts = ['Entire Venue'];
-  bool _isLoadingCourts = false;
-
-  List<OwnerTurfBranchItem> _getOwnerBranches(TurfProfileState profile) {
-    final Map<int, OwnerTurfBranchItem> map = {};
-    if (profile.branches.isNotEmpty) {
-      for (final b in profile.branches) {
-        map[b.id] = b;
-      }
-    }
-    final activeId = profile.turfId > 0 ? profile.turfId : 1;
-    if (!map.containsKey(activeId) && profile.venueName.isNotEmpty) {
-      map[activeId] = OwnerTurfBranchItem(
-        id: activeId,
-        venueName: profile.venueName,
-        neighborhoodArea: profile.area.isNotEmpty ? profile.area : 'Main Area',
-        streetAddress: profile.address,
-        ownerPhone: profile.ownerPhone,
-        status: profile.branchStatus,
-        todayBookingsCount: profile.todayBookingsCount,
-        todayRevenue: profile.todayRevenue,
-        monthRevenue: profile.monthRevenue,
-        monthTotalBookings: profile.monthTotalBookings,
-        isActive: true,
-      );
-    }
-    return map.values.toList();
-  }
-
-  Future<void> _fetchCourtsForBranch(OwnerTurfBranchItem branch, TurfProfileState profile) async {
-    setState(() => _isLoadingCourts = true);
-    List<String> courts = [];
-
-    // If active branch and profile already has configured courts
-    if (branch.id == profile.turfId && profile.courts.isNotEmpty) {
-      for (final c in profile.courts) {
-        final name = c.name.trim();
-        if (name.isNotEmpty && !courts.contains(name)) {
-          courts.add(name);
-        }
-      }
-    } else {
-      try {
-        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs/${branch.id}/courts')).timeout(const Duration(seconds: 8));
-        if (res.statusCode == 200) {
-          final decoded = jsonDecode(res.body);
-          if (decoded is List && decoded.isNotEmpty) {
-            for (final c in decoded) {
-              final name = (c['name'] ?? '').toString().trim();
-              if (name.isNotEmpty && !courts.contains(name)) {
-                courts.add(name);
-              }
-            }
-          }
-        }
-      } catch (_) {}
-    }
-
-    if (courts.isEmpty) {
-      courts.add('${branch.venueName} (Main Ground)');
-    }
-
-    if (!courts.contains('Entire Venue')) {
-      courts.add('Entire Venue');
-    }
-
-    if (mounted) {
-      setState(() {
-        _isLoadingCourts = false;
-        _branchCourts = courts;
-        if (!_branchCourts.contains(_selectedCourt)) {
-          _selectedCourt = _branchCourts.first;
-        }
-      });
-    }
-  }
-
-  void _initBranchAndCourts(TurfProfileState profile) {
-    final branches = _getOwnerBranches(profile);
-    if (branches.isEmpty) return;
-
-    final targetBranch = branches.firstWhere(
-      (b) => b.id == (_selectedBranchId ?? profile.turfId),
-      orElse: () => branches.first,
-    );
-
-    _selectedBranchId = targetBranch.id;
-    _fetchCourtsForBranch(targetBranch, profile);
-  }
+  String _selectedCourt = 'Turf A (Football / Cricket)';
 
   DateTime _startDate = DateTime.now().add(const Duration(days: 7));
   DateTime _endDate = DateTime.now().add(const Duration(days: 10));
@@ -199,7 +108,6 @@ class _AdminTournamentManagerScreenState
             phone: profile.ownerPhone,
             venue: profile.venueName,
           );
-      _initBranchAndCourts(profile);
     });
   }
 
@@ -233,40 +141,8 @@ class _AdminTournamentManagerScreenState
         "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}";
 
     final venueProfile = ref.read(turfProfileProvider);
-    final branches = _getOwnerBranches(venueProfile);
-    final selectedBranch = branches.firstWhere(
-      (b) => b.id == _selectedBranchId,
-      orElse: () => branches.isNotEmpty
-          ? branches.first
-          : OwnerTurfBranchItem(
-              id: venueProfile.turfId > 0 ? venueProfile.turfId : 1,
-              venueName: venueProfile.venueName.isNotEmpty ? venueProfile.venueName : 'Champions Arena',
-              neighborhoodArea: venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai',
-              streetAddress: venueProfile.address,
-              ownerPhone: venueProfile.ownerPhone,
-              status: 'Active',
-              todayBookingsCount: 0,
-              todayRevenue: 0,
-              monthRevenue: 0,
-              monthTotalBookings: 0,
-              isActive: true,
-            ),
-    );
-
-    final verifiedAdminId = selectedBranch.id;
-    final venueName = selectedBranch.venueName.isNotEmpty ? selectedBranch.venueName : 'Champions Arena';
-    final location = selectedBranch.neighborhoodArea.isNotEmpty
-        ? selectedBranch.neighborhoodArea
-        : (venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai');
-    final courtAllocation = _selectedCourt.isNotEmpty ? _selectedCourt : '$venueName (Main Ground)';
-
-    final sportBanner = _selectedSport.toLowerCase().contains('cricket')
-        ? 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80'
-        : _selectedSport.toLowerCase().contains('badminton')
-            ? 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=80'
-            : _selectedSport.toLowerCase().contains('futsal')
-                ? 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=800&q=80'
-                : 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80';
+    final verifiedAdminId = venueProfile.turfId;
+    final venueName = venueProfile.venueName.isNotEmpty ? venueProfile.venueName : 'Champions Arena';
 
     final newTournament = TournamentModel(
       id: 'tourn_${DateTime.now().millisecondsSinceEpoch}',
@@ -274,7 +150,8 @@ class _AdminTournamentManagerScreenState
       subtitle: _subtitleCtrl.text.trim().isEmpty
           ? 'Open Championship'
           : _subtitleCtrl.text.trim(),
-      bannerUrl: sportBanner,
+      bannerUrl:
+          'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
       logoUrl:
           'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=150&q=80',
       description: _descCtrl.text.trim().isEmpty
@@ -290,8 +167,7 @@ class _AdminTournamentManagerScreenState
       email: _emailCtrl.text.trim().isNotEmpty ? _emailCtrl.text.trim() : venueProfile.ownerEmail,
       tournamentType: _selectedType,
       sportType: _selectedSport,
-      venueName: venueName,
-      courtAllocation: courtAllocation,
+      courtAllocation: _selectedCourt,
       regStartDate: todayStr,
       regEndDate: _formatDate(_regEndDate),
       startDate: _formatDate(_startDate),
@@ -300,49 +176,50 @@ class _AdminTournamentManagerScreenState
       matchEndTime: '08:00 PM',
       matchDurationMinutes: 40,
       breakMinutes: 10,
-      teamEntryFee: double.tryParse(_entryFeeCtrl.text.trim()) ?? 1500,
-      regularPrice: double.tryParse(_entryFeeCtrl.text.trim()) ?? 1500,
-      maxTeams: int.tryParse(_maxTeamsCtrl.text.trim()) ?? 12,
+      teamEntryFee: double.tryParse(_entryFeeCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 1500,
+      regularPrice: double.tryParse(_entryFeeCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 1500,
+      maxTeams: int.tryParse(_maxTeamsCtrl.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 12,
       minTeams: 6,
       playersPerTeam: int.tryParse(_playersPerTeamCtrl.text.trim()) ?? 8,
       substitutePlayers: 2,
       championPrize: _championPrizeCtrl.text.trim().isNotEmpty ? _championPrizeCtrl.text.trim() : '₹15,000 Cash',
       runnerUpPrize: _runnerUpPrizeCtrl.text.trim(),
       status: 'Upcoming',
-      verifiedAdminId: verifiedAdminId,
-      isOwnerCreated: true,
-      createdByRole: 'OWNER',
     );
+
+    // Compute unified prize pool representation
+    final champRaw = _championPrizeCtrl.text.trim();
+    final runnerRaw = _runnerUpPrizeCtrl.text.trim();
+    final champAmt = double.tryParse(champRaw.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+    final runnerAmt = double.tryParse(runnerRaw.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+    final totalPrizes = champAmt + runnerAmt;
+
+    String computedPrizePool;
+    if (totalPrizes > 0) {
+      computedPrizePool = '₹${NumberFormat('#,##,###').format(totalPrizes.toInt())} Prize Pool';
+    } else if (champRaw.isNotEmpty) {
+      computedPrizePool = champRaw;
+    } else {
+      computedPrizePool = '₹15,000 Cash';
+    }
 
     // 1. Immediately persist tournament to backend database
     try {
       final payload = {
         'title': newTournament.title,
-        'subtitle': newTournament.subtitle,
-        'description': newTournament.description,
-        'rules': newTournament.rules,
-        'courtAllocation': newTournament.courtAllocation,
-        'startDate': newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr,
-        'endDate': newTournament.endDate.isNotEmpty ? newTournament.endDate : (newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr),
-        'registrationDeadline': newTournament.regEndDate.isNotEmpty ? newTournament.regEndDate : (newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr),
         'sport': newTournament.sportType,
         'format': newTournament.tournamentType,
         'date': newTournament.startDate.isNotEmpty ? newTournament.startDate : todayStr,
         'time': newTournament.matchStartTime,
         'venueName': venueName,
-        'location': location,
+        'location': venueProfile.area.isNotEmpty ? venueProfile.area : 'Madurai',
         'entryFee': newTournament.teamEntryFee,
-        'prizePool': newTournament.championPrize,
-        'championPrize': newTournament.championPrize,
-        'runnerUpPrize': newTournament.runnerUpPrize,
+        'prizePool': computedPrizePool,
         'maxTeams': newTournament.maxTeams,
-        'playersPerTeam': newTournament.playersPerTeam,
         'organizerName': newTournament.organizerName,
         'organizerPhone': newTournament.phone,
         'bannerUrl': newTournament.bannerUrl,
         'verifiedAdminId': verifiedAdminId,
-        'isOwnerCreated': true,
-        'createdByRole': 'OWNER',
       };
 
       final response = await http.post(
@@ -394,6 +271,105 @@ class _AdminTournamentManagerScreenState
         'Tournament "${newTournament.title}" created & published across Gamez24 platform!',
       );
     }
+  }
+
+  Future<void> _refreshTournaments() async {
+    final profile = ref.read(turfProfileProvider);
+    await ref.read(adminTournamentProvider.notifier).fetchTournamentsFromBackend(
+          turfId: profile.turfId > 0 ? profile.turfId : null,
+          phone: profile.ownerPhone,
+          venue: profile.venueName,
+        );
+  }
+
+  void _confirmCancelTournament(TournamentModel t) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF181818),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF333333)),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFF59E0B)),
+            SizedBox(width: 8),
+            Text('Cancel Tournament?', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to cancel "${t.title}"?\n\nThis will mark the tournament as CANCELLED. Registered players will see the cancellation status in their app.',
+          style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Back', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD97706),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(adminTournamentProvider.notifier).cancelTournament(t.id);
+              if (mounted) {
+                ToastUtils.showSuccess(context, 'Tournament "${t.title}" marked as Cancelled');
+              }
+            },
+            child: const Text('Confirm Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteTournament(TournamentModel t) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF181818),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFF333333)),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: Color(0xFFEF4444)),
+            SizedBox(width: 8),
+            Text('Delete Tournament?', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to delete "${t.title}" permanently?\n\nThis action cannot be undone.',
+          style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
+              if (mounted) {
+                ToastUtils.showInfo(context, 'Tournament "${t.title}" deleted');
+              }
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showRegisteredTeamsDialog(TournamentModel t) {
@@ -652,22 +628,58 @@ class _AdminTournamentManagerScreenState
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
+                                            // Call Button
+                                            InkWell(
+                                              onTap: () async {
+                                                final rawPhone = team.captainPhone.replaceAll(RegExp(r'[^0-9+]'), '');
+                                                if (rawPhone.isNotEmpty) {
+                                                  final uri = Uri.parse('tel:$rawPhone');
+                                                  if (await canLaunchUrl(uri)) {
+                                                    await launchUrl(uri);
+                                                  } else {
+                                                    if (context.mounted) {
+                                                      ToastUtils.showError(context, 'Could not open dialer for $rawPhone');
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              borderRadius: BorderRadius.circular(6),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF193B14),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(color: const Color(0xFF16A34A)),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(Icons.phone_in_talk_rounded, size: 12, color: Color(0xFF4ADE80)),
+                                                    SizedBox(width: 3),
+                                                    Text('Call', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF4ADE80))),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            // Copy Button
                                             InkWell(
                                               onTap: () {
                                                 Clipboard.setData(ClipboardData(text: team.captainPhone));
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('Phone ${team.captainPhone} copied!'),
-                                                    backgroundColor: const Color(0xFFD4FF00),
-                                                    duration: const Duration(seconds: 2),
-                                                  ),
-                                                );
+                                                ToastUtils.showInfo(context, 'Phone ${team.captainPhone} copied!');
                                               },
-                                              child: const Padding(
-                                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                                child: Row(
+                                              borderRadius: BorderRadius.circular(6),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF262626),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(color: const Color(0xFF3F3F46)),
+                                                ),
+                                                child: const Row(
+                                                  mainAxisSize: MainAxisSize.min,
                                                   children: [
-                                                    Icon(Icons.copy_rounded, size: 13, color: Color(0xFFD4FF00)),
+                                                    Icon(Icons.copy_rounded, size: 12, color: Color(0xFFD4FF00)),
                                                     SizedBox(width: 3),
                                                     Text('Copy', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
                                                   ],
@@ -737,6 +749,7 @@ class _AdminTournamentManagerScreenState
     );
   }
 
+  // ignore: unused_element
   void _showLiveScoreDialog(TournamentModel t) {
     _liveScoreCtrl.text = t.liveScore;
     _liveCommentaryCtrl.text = t.liveCommentary;
@@ -1511,29 +1524,35 @@ class _AdminTournamentManagerScreenState
       if (_activeFilter == 'Live Now') return t.status == 'Live';
       if (_activeFilter == 'Upcoming') return t.status == 'Upcoming';
       if (_activeFilter == 'Completed') return t.status == 'Completed';
+      if (_activeFilter == 'Cancelled') return t.status.toLowerCase().contains('cancel');
       return true; // 'All'
     }).toList();
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Hero Bento Operations Card
-          _buildHeroBentoOperations(tournState),
-          const SizedBox(height: 16),
+    return RefreshIndicator(
+      onRefresh: _refreshTournaments,
+      color: const Color(0xFFD4FF00),
+      backgroundColor: const Color(0xFF1E261A),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Hero Bento Operations Card
+            _buildHeroBentoOperations(tournState),
+            const SizedBox(height: 16),
 
-          // Filter Pills Bar
-          _buildFilterPillsBar(tournState),
-          const SizedBox(height: 14),
+            // Filter Pills Bar
+            _buildFilterPillsBar(tournState),
+            const SizedBox(height: 14),
 
-          // Tournaments List
-          if (filteredList.isEmpty)
-            _buildEmptyTournamentsState()
-          else
-            ...filteredList.map((t) => _buildProTournamentCard(t)),
-        ],
+            // Tournaments List
+            if (filteredList.isEmpty)
+              _buildEmptyTournamentsState()
+            else
+              ...filteredList.map((t) => _buildProTournamentCard(t)),
+          ],
+        ),
       ),
     );
   }
@@ -1740,6 +1759,7 @@ class _AdminTournamentManagerScreenState
       {'label': 'Live Now', 'count': tournState.liveCount, 'color': const Color(0xFFDC2626)},
       {'label': 'Upcoming', 'count': tournState.upcomingCount, 'color': const Color(0xFF2563EB)},
       {'label': 'Completed', 'count': tournState.completedCount, 'color': const Color(0xFF16A34A)},
+      {'label': 'Cancelled', 'count': tournState.cancelledCount, 'color': const Color(0xFFEF4444)},
     ];
 
     return SingleChildScrollView(
@@ -1862,6 +1882,7 @@ class _AdminTournamentManagerScreenState
 
   Widget _buildProTournamentCard(TournamentModel t) {
     final isLive = t.status == 'Live';
+    final isCancelled = t.status.toLowerCase().contains('cancel');
     final progress = t.maxTeams > 0 ? (t.registeredTeamsCount / t.maxTeams).clamp(0.0, 1.0) : 0.0;
 
     return Container(
@@ -1869,7 +1890,12 @@ class _AdminTournamentManagerScreenState
       decoration: BoxDecoration(
         color: const Color(0xFF141414),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isLive ? const Color(0xFFFECDD3) : const Color(0xFF262626), width: isLive ? 1.5 : 1),
+        border: Border.all(
+          color: isCancelled
+              ? const Color(0xFF7F1D1D)
+              : (isLive ? const Color(0xFFFECDD3) : const Color(0xFF262626)),
+          width: (isLive || isCancelled) ? 1.5 : 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -1939,7 +1965,9 @@ class _AdminTournamentManagerScreenState
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00),
+                    color: isCancelled
+                        ? const Color(0xFFEF4444)
+                        : (isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -1949,11 +1977,11 @@ class _AdminTournamentManagerScreenState
                         const SizedBox(width: 4),
                       ],
                       Text(
-                        isLive ? 'LIVE NOW' : t.status.toUpperCase(),
+                        isCancelled ? 'CANCELLED' : (isLive ? 'LIVE NOW' : t.status.toUpperCase()),
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w900,
-                          color: isLive ? Colors.white : Colors.black,
+                          color: (isCancelled || isLive) ? Colors.white : Colors.black,
                         ),
                       ),
                     ],
@@ -1975,9 +2003,7 @@ class _AdminTournamentManagerScreenState
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      t.courtAllocation.isNotEmpty && t.courtAllocation != t.venueName
-                          ? '${t.venueName} (${t.courtAllocation}) • ${t.startDate} to ${t.endDate}'
-                          : '${t.venueName} • ${t.startDate} to ${t.endDate}',
+                      '${t.courtAllocation} • ${t.startDate} to ${t.endDate}',
                       style: TextStyle(fontSize: 10.5, color: Colors.white.withValues(alpha: 0.85), fontWeight: FontWeight.w500),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2099,133 +2125,135 @@ class _AdminTournamentManagerScreenState
                 ),
                 const SizedBox(height: 12),
 
-                // Quick Action Bar - Row 1: Live Scores & Team Squads
+                // ---------------------------------------------------------
+                // HIDDEN ACTION BUTTONS (COMMENTED OUT / PRESERVED AS REQUESTED):
+                /*
+                // Row 1 - Manage Live:
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00),
+                      foregroundColor: isLive ? Colors.white : Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                    icon: Icon(Icons.live_tv_rounded, size: 14, color: isLive ? Colors.white : Colors.black),
+                    label: Text(
+                      isLive ? 'Live Controller' : 'Manage Live',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: isLive ? Colors.white : Colors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onPressed: () => _showLiveScoreDialog(t),
+                  ),
+                ),
+
+                // Row 2 - Match Fixtures & Brackets:
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFD4FF00),
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                      side: const BorderSide(color: Color(0xFF262626)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    icon: const Icon(Icons.account_tree_rounded, size: 14),
+                    label: const Text(
+                      'Match Fixtures & Brackets',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onPressed: () {
+                      _tabController.animateTo(1);
+                    },
+                  ),
+                ),
+                */
+                // ---------------------------------------------------------
+
+                // Clean Aligned Action Bar: Teams + Cancel Tournament + Delete
                 Row(
                   children: [
+                    // Teams Button
                     Expanded(
                       child: ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isLive ? const Color(0xFFDC2626) : const Color(0xFFD4FF00),
-                          foregroundColor: isLive ? Colors.white : Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+                          backgroundColor: const Color(0xFF1E261A),
+                          foregroundColor: const Color(0xFFD4FF00),
+                          side: const BorderSide(color: Color(0xFF3B522E)),
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           elevation: 0,
                         ),
-                        icon: Icon(Icons.live_tv_rounded, size: 14, color: isLive ? Colors.white : Colors.black),
+                        icon: const Icon(Icons.groups_rounded, size: 16, color: Color(0xFFD4FF00)),
                         label: Text(
-                          isLive ? 'Live Controller' : 'Manage Live',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: isLive ? Colors.white : Colors.black,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        onPressed: () => _showLiveScoreDialog(t),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF181818),
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Color(0xFF2E2E2E)),
-                          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.groups_rounded, size: 14, color: Color(0xFFD4FF00)),
-                        label: Text(
-                          'Teams (${t.registeredTeams.length})',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white),
+                          'Registered Teams (${t.registeredTeams.length})',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         onPressed: () => _showRegisteredTeamsDialog(t),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
+                    const SizedBox(width: 8),
 
-                // Quick Action Bar - Row 2: Match Fixtures Engine & Delete Action
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
+                    // Cancel Tournament Button
+                    if (!isCancelled) ...[
+                      OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFD4FF00),
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                          side: const BorderSide(color: Color(0xFF262626)),
+                          foregroundColor: const Color(0xFFFBBF24),
+                          backgroundColor: const Color(0xFF261D0D),
+                          side: const BorderSide(color: Color(0xFFD97706)),
+                          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        icon: const Icon(Icons.account_tree_rounded, size: 14),
+                        icon: const Icon(Icons.block_rounded, size: 14, color: Color(0xFFFBBF24)),
                         label: const Text(
-                          'Match Fixtures & Brackets',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          'Cancel',
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24)),
                         ),
-                        onPressed: () {
-                          _tabController.animateTo(1);
-                        },
+                        onPressed: () => _confirmCancelTournament(t),
                       ),
-                    ),
-                    const SizedBox(width: 8),
+                      const SizedBox(width: 8),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2A1515),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.block_rounded, size: 13, color: Color(0xFFEF4444)),
+                            SizedBox(width: 4),
+                            Text(
+                              'Cancelled',
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFEF4444)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+
+                    // Delete Tournament Action
                     InkWell(
-                      onTap: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            backgroundColor: const Color(0xFF141414),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              side: const BorderSide(color: Color(0xFF262626)),
-                            ),
-                            title: const Row(
-                              children: [
-                                Icon(Icons.delete_forever_rounded, color: Color(0xFFEF4444), size: 22),
-                                SizedBox(width: 8),
-                                Text('Delete Tournament', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                            content: Text(
-                              'Are you sure you want to permanently delete "${t.title}" from the database?',
-                              style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(ctx, false),
-                                child: const Text('Cancel', style: TextStyle(color: Color(0xFFA1A1AA))),
-                              ),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFEF4444),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                onPressed: () => Navigator.pop(ctx, true),
-                                child: const Text('Delete Permanently', style: TextStyle(fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirm == true) {
-                          await ref.read(adminTournamentProvider.notifier).deleteTournament(t.id);
-                          if (context.mounted) {
-                            ToastUtils.showSuccess(context, 'Tournament "${t.title}" permanently deleted from database');
-                          }
-                        }
-                      },
+                      onTap: () => _confirmDeleteTournament(t),
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        padding: const EdgeInsets.all(7.5),
+                        padding: const EdgeInsets.all(9),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF2F2),
+                          color: const Color(0xFF2C1515),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFFECACA)),
+                          border: Border.all(color: const Color(0xFF7F1D1D)),
                         ),
                         child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 18),
                       ),
@@ -2242,17 +2270,6 @@ class _AdminTournamentManagerScreenState
 
   // --- TAB 2: CREATE TOURNAMENT WIZARD ---
   Widget _buildCreateTournamentTab() {
-    final profile = ref.watch(turfProfileProvider);
-    final branches = _getOwnerBranches(profile);
-
-    if (_selectedBranchId == null && branches.isNotEmpty) {
-      final initialBranch = branches.firstWhere(
-        (b) => b.id == profile.turfId,
-        orElse: () => branches.first,
-      );
-      _selectedBranchId = initialBranch.id;
-    }
-
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.only(left: 14, right: 14, top: 14, bottom: 100),
@@ -2279,25 +2296,13 @@ class _AdminTournamentManagerScreenState
                 TextFormField(
                   controller: _descCtrl,
                   maxLines: 2,
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: _inputDecoration(
-                    'Description',
-                    'Provide details about the tournament...',
-                    Icons.description_outlined,
-                    isMultiline: true,
-                  ),
+                  decoration: _inputDecoration('Description', 'Provide details about the tournament...', Icons.description_outlined),
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _rulesCtrl,
                   maxLines: 2,
-                  textAlignVertical: TextAlignVertical.top,
-                  decoration: _inputDecoration(
-                    'Rules & Regulations',
-                    'e.g. 8 overs per side, standard ICC rules...',
-                    Icons.gavel_rounded,
-                    isMultiline: true,
-                  ),
+                  decoration: _inputDecoration('Rules & Regulations', 'e.g. 8 overs per side, standard ICC rules...', Icons.gavel_rounded),
                 ),
               ],
             ),
@@ -2338,39 +2343,10 @@ class _AdminTournamentManagerScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text('Select Turf Branch / Venue:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<int>(
-                  value: branches.any((b) => b.id == _selectedBranchId)
-                      ? _selectedBranchId
-                      : (branches.isNotEmpty ? branches.first.id : null),
-                  isExpanded: true,
-                  decoration: _inputDecoration('Select Branch / Venue', '', Icons.location_city_rounded),
-                  items: branches.map((b) {
-                    return DropdownMenuItem<int>(
-                      value: b.id,
-                      child: Text(
-                        '${b.venueName}${b.neighborhoodArea.isNotEmpty ? ' (${b.neighborhoodArea})' : ''}',
-                        style: const TextStyle(fontSize: 12),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _selectedBranchId = val;
-                      });
-                      final branch = branches.firstWhere((b) => b.id == val, orElse: () => branches.first);
-                      _fetchCourtsForBranch(branch, profile);
-                    }
-                  },
-                ),
-                const SizedBox(height: 14),
                 const Text('Tournament Format:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _selectedType,
+                  initialValue: _selectedType,
                   isExpanded: true,
                   decoration: _inputDecoration('Select Format', '', Icons.alt_route_rounded),
                   items: _formatsList.map((f) {
@@ -2383,45 +2359,18 @@ class _AdminTournamentManagerScreenState
                     if (val != null) setState(() => _selectedType = val);
                   },
                 ),
-                const SizedBox(height: 14),
-                const Text('Court Allocation:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFA1A1AA))),
-                const SizedBox(height: 8),
-                _isLoadingCourts
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF141414),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                        ),
-                        child: Row(
-                          children: const [
-                            SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4FF00)),
-                            ),
-                            SizedBox(width: 10),
-                            Text('Loading branch courts...', style: TextStyle(fontSize: 12, color: Colors.white70)),
-                          ],
-                        ),
-                      )
-                    : DropdownButtonFormField<String>(
-                        value: _branchCourts.contains(_selectedCourt)
-                            ? _selectedCourt
-                            : (_branchCourts.isNotEmpty ? _branchCourts.first : null),
-                        isExpanded: true,
-                        decoration: _inputDecoration('Court Allocation', '', Icons.stadium_outlined),
-                        items: _branchCourts.map((c) {
-                          return DropdownMenuItem<String>(
-                            value: c,
-                            child: Text(c, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedCourt = val);
-                        },
-                      ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedCourt,
+                  isExpanded: true,
+                  decoration: _inputDecoration('Court Allocation', '', Icons.stadium_outlined),
+                  items: ['Turf A (Football / Cricket)', 'Turf B (Box Cricket)', 'Badminton Court 1', 'Entire Venue']
+                      .map((c) => DropdownMenuItem(value: c, child: Text(c, style: const TextStyle(fontSize: 12), overflow: TextOverflow.ellipsis)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) setState(() => _selectedCourt = val);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 14),
@@ -2545,39 +2494,177 @@ class _AdminTournamentManagerScreenState
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _championPrizeCtrl,
-                  decoration: _inputDecoration('Champion Prize', '₹15,000 Cash + Trophy', Icons.emoji_events_outlined),
+                  decoration: _inputDecoration('Champion Prize', '10000 or ₹10,000 + Trophy', Icons.emoji_events_outlined),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
                   controller: _runnerUpPrizeCtrl,
-                  decoration: _inputDecoration('Runner-Up Prize', '₹7,000 Cash', Icons.workspace_premium_outlined),
+                  decoration: _inputDecoration('Runner-Up Prize', '1000 or ₹1,000 Cash', Icons.workspace_premium_outlined),
+                  onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
 
-                // Projected Pool Calculation
-                Builder(
-                  builder: (context) {
-                    final fee = double.tryParse(_entryFeeCtrl.text.trim()) ?? 0;
-                    final teams = int.tryParse(_maxTeamsCtrl.text.trim()) ?? 0;
-                    final gross = fee * teams;
+                // Real-time Financial Breakdown & Live Margin Calculation
+                ListenableBuilder(
+                  listenable: Listenable.merge([
+                    _entryFeeCtrl,
+                    _maxTeamsCtrl,
+                    _championPrizeCtrl,
+                    _runnerUpPrizeCtrl,
+                  ]),
+                  builder: (context, _) {
+                    final fee = double.tryParse(_entryFeeCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+                    final teams = int.tryParse(_maxTeamsCtrl.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+                    final champ = double.tryParse(_championPrizeCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+                    final runner = double.tryParse(_runnerUpPrizeCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0.0;
+
+                    final grossCollection = fee * teams;
+                    final totalPrizePool = champ + runner;
+                    final netMargin = grossCollection - totalPrizePool;
+                    final isProfitable = netMargin >= 0;
+
                     return Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: const Color(0xFF132204),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF262626)),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: grossCollection > 0 || totalPrizePool > 0
+                              ? const Color(0xFF2E4C0D)
+                              : const Color(0xFF262626),
+                          width: 1.2,
+                        ),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.auto_awesome_rounded, color: Color(0xFF16A34A), size: 15),
-                              SizedBox(width: 6),
-                              Text('Projected Gross Pool:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFD4FF00))),
+                              const Row(
+                                children: [
+                                  Icon(Icons.auto_awesome_rounded, color: Color(0xFFD4FF00), size: 15),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Projected Tournament Financials',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFD4FF00),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (grossCollection > 0 || totalPrizePool > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                  decoration: BoxDecoration(
+                                    color: isProfitable
+                                        ? const Color(0x3316A34A)
+                                        : const Color(0x33EF4444),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isProfitable ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    isProfitable ? '● Profitable' : '● Deficit',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: isProfitable ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
-                          Text('₹${NumberFormat('#,##,###').format(gross.toInt())}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFFD4FF00))),
+                          const SizedBox(height: 10),
+
+                          // 1. Gross Entry Collection
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  teams > 0 && fee > 0
+                                      ? 'Total Entry Collection ($teams × ₹${fee.toInt()}):'
+                                      : 'Total Entry Collection (Gross):',
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '₹${NumberFormat('#,##,###').format(grossCollection.toInt())}',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+
+                          // 2. Guaranteed Prize Pool
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  champ > 0 && runner > 0
+                                      ? 'Total Prize Pool (₹${champ.toInt()} + ₹${runner.toInt()}):'
+                                      : 'Total Prize Pool:',
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA)),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '₹${NumberFormat('#,##,###').format(totalPrizePool.toInt())}',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFFFBBF24),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8),
+                            child: Divider(height: 1, color: Color(0xFF263B0A)),
+                          ),
+
+                          // 3. Organizer Net Margin
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Flexible(
+                                child: Text(
+                                  'Estimated Organizer Net Margin:',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isProfitable
+                                    ? '+₹${NumberFormat('#,##,###').format(netMargin.toInt())}'
+                                    : '-₹${NumberFormat('#,##,###').format(netMargin.abs().toInt())}',
+                                style: TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: isProfitable ? const Color(0xFFD4FF00) : const Color(0xFFEF4444),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     );
@@ -2658,37 +2745,16 @@ class _AdminTournamentManagerScreenState
     );
   }
 
-  InputDecoration _inputDecoration(
-    String label,
-    String hint,
-    IconData icon, {
-    bool isMultiline = false,
-  }) {
+  InputDecoration _inputDecoration(String label, String hint, IconData icon) {
     return InputDecoration(
       labelText: label,
       hintText: hint,
-      alignLabelWithHint: isMultiline,
       filled: true,
       fillColor: const Color(0xFF181818),
-      prefixIcon: isMultiline
-          ? Container(
-              padding: const EdgeInsets.only(left: 12, right: 8, top: 12),
-              alignment: Alignment.topLeft,
-              width: 36,
-              child: Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
-            )
-          : Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
-      prefixIconConstraints: isMultiline
-          ? const BoxConstraints(minWidth: 36, maxWidth: 36)
-          : const BoxConstraints(minWidth: 40, minHeight: 40),
+      prefixIcon: Icon(icon, size: 16, color: const Color(0xFFA1A1AA)),
       labelStyle: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
       hintStyle: const TextStyle(fontSize: 11, color: Color(0xFF71717A)),
-      contentPadding: EdgeInsets.only(
-        left: 10,
-        right: 12,
-        top: isMultiline ? 12 : 10,
-        bottom: isMultiline ? 12 : 10,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF262626))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 1.5)),
@@ -2848,10 +2914,6 @@ class _AdminTournamentManagerScreenState
                           avatar: const Icon(Icons.alt_route_rounded, size: 12, color: Color(0xFFD4FF00)),
                           label: const Text('Seeded Knockout', style: TextStyle(fontSize: 10)),
                           onPressed: () {
-                            if (t.registeredTeams.length < 2) {
-                              ToastUtils.showError(context, "Cannot generate fixtures: At least 2 squads must register from Player App first!");
-                              return;
-                            }
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Seeded Knockout');
                             ToastUtils.showSuccess(context, "Generated Top Seed Protection Bracket for ${t.title}");
                           },
@@ -2861,10 +2923,6 @@ class _AdminTournamentManagerScreenState
                           avatar: const Icon(Icons.shield_outlined, size: 12, color: Colors.amber),
                           label: const Text('Double Elimination', style: TextStyle(fontSize: 10)),
                           onPressed: () {
-                            if (t.registeredTeams.length < 2) {
-                              ToastUtils.showError(context, "Cannot generate fixtures: At least 2 squads must register from Player App first!");
-                              return;
-                            }
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Double Elimination');
                             ToastUtils.showSuccess(context, "Generated Double Elimination Bracket for ${t.title}");
                           },
@@ -2874,10 +2932,6 @@ class _AdminTournamentManagerScreenState
                           avatar: const Icon(Icons.groups_rounded, size: 12, color: Colors.purple),
                           label: const Text('Group Stage + Knockout', style: TextStyle(fontSize: 10)),
                           onPressed: () {
-                            if (t.registeredTeams.length < 4) {
-                              ToastUtils.showError(context, "Cannot generate group stage: At least 4 squads must register from Player App first!");
-                              return;
-                            }
                             ref.read(adminTournamentProvider.notifier).generateAdvancedFixtures(t.id, 'Group Stage + Knockout');
                             ToastUtils.showSuccess(context, "Generated Hybrid Group + Knockout for ${t.title}");
                           },
@@ -2899,10 +2953,6 @@ class _AdminTournamentManagerScreenState
                         icon: const Icon(Icons.auto_awesome_rounded, size: 14),
                         label: const Text('Auto-Generate Fixtures & Brackets', style: TextStyle(fontSize: 11.5)),
                         onPressed: () {
-                          if (t.registeredTeams.length < 2) {
-                            ToastUtils.showError(context, "Cannot generate fixtures: At least 2 squads must register from Player App first!");
-                            return;
-                          }
                           ref.read(adminTournamentProvider.notifier).generateFixtures(t.id);
                           ToastUtils.showSuccess(context, "Auto-generated Fixtures for ${t.title}");
                         },

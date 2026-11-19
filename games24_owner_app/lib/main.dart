@@ -1,13 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'api_config.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await ApiConfig.init();
 
   // Guard against harmless Flutter Web Hot Restart engine view disposal race condition
   FlutterError.onError = (FlutterErrorDetails details) {

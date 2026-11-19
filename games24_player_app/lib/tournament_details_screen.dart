@@ -47,6 +47,12 @@ class TournamentDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (tournament.status == TournamentStatus.cancelled) ...[
+                    _buildCancellationNotice(),
+                  ],
+                  if (TournamentManager().isUserRegistered(tournament)) ...[
+                    _buildRegisteredSquadCard(),
+                  ],
                   _buildHeader(),
                   const SizedBox(height: 24),
                   _buildFinancials(),
@@ -128,15 +134,19 @@ class TournamentDetailsScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: tournament.status == TournamentStatus.ongoing
                     ? const Color(0xFFDC2626)
-                    : const Color(0xFF262626),
+                    : (tournament.status == TournamentStatus.cancelled
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFF262626)),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 tournament.status == TournamentStatus.ongoing
                     ? 'Live Now'
-                    : (tournament.status == TournamentStatus.upcoming
-                          ? 'Upcoming'
-                          : 'Completed'),
+                    : (tournament.status == TournamentStatus.cancelled
+                        ? 'CANCELLED'
+                        : (tournament.status == TournamentStatus.upcoming
+                            ? 'Upcoming'
+                            : 'Completed')),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -616,7 +626,372 @@ class TournamentDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCancellationNotice() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2C1515),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEF4444), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.cancel_rounded, color: Color(0xFFEF4444), size: 22),
+              SizedBox(width: 10),
+              Text(
+                'TOURNAMENT CANCELLED',
+                style: TextStyle(
+                  color: Color(0xFFEF4444),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'This tournament was cancelled by the host turf organizer. All fixtures, match times, and registrations have been cancelled. Please contact the host turf directly for entry fee refunds or inquiries.',
+            style: TextStyle(
+              color: Color(0xFFFCA5A5),
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          if (tournament.organizerPhone != null &&
+              tournament.organizerPhone!.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.phone_in_talk_rounded, color: Color(0xFFD4FF00), size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Host Organizer Contact: ${tournament.organizerPhone}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegisteredSquadCard() {
+    final team = TournamentManager().getRegisteredTeam(tournament);
+    final bool isCancelled = tournament.status == TournamentStatus.cancelled;
+
+    final teamName = (team?['teamName'] ?? 'Your Squad').toString();
+    final captain = (team?['captainName'] ?? 'Captain').toString();
+    final contact = (team?['contact'] ?? team?['phone'] ?? '').toString();
+    final email = (team?['email'] ?? '').toString();
+    final regDate = (team?['registeredAt'] ?? tournament.date).toString();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isCancelled
+              ? const Color(0xFFEF4444).withValues(alpha: 0.6)
+              : const Color(0xFF22C55E).withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isCancelled
+                      ? const Color(0xFF2C1515)
+                      : const Color(0xFF142918),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isCancelled
+                        ? const Color(0xFFEF4444)
+                        : const Color(0xFF22C55E),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isCancelled
+                          ? Icons.cancel_outlined
+                          : Icons.check_circle_rounded,
+                      color: isCancelled
+                          ? const Color(0xFFFCA5A5)
+                          : const Color(0xFF86EFAC),
+                      size: 14,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      isCancelled ? 'REGISTRATION CANCELLED' : 'YOUR REGISTERED SQUAD',
+                      style: TextStyle(
+                        color: isCancelled
+                            ? const Color(0xFFFCA5A5)
+                            : const Color(0xFF86EFAC),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isCancelled
+                      ? const Color(0xFF3F1D1D)
+                      : const Color(0xFF1F2937),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isCancelled ? 'Cancelled' : 'Confirmed',
+                  style: TextStyle(
+                    color: isCancelled
+                        ? const Color(0xFFF87171)
+                        : const Color(0xFF34D399),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isCancelled
+                      ? const Color(0xFF2A1515)
+                      : const Color(0xFF141A0A),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isCancelled
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.4)
+                        : const Color(0xFFD4FF00).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Icon(
+                  Icons.shield_rounded,
+                  color: isCancelled
+                      ? const Color(0xFFEF4444)
+                      : const Color(0xFFD4FF00),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      teamName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Captain: $captain',
+                      style: const TextStyle(
+                        color: Color(0xFFA1A1AA),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(color: Color(0xFF262626), height: 1),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              if (contact.isNotEmpty) ...[
+                const Icon(Icons.phone_rounded, size: 14, color: Color(0xFFA1A1AA)),
+                const SizedBox(width: 6),
+                Text(
+                  contact,
+                  style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+                ),
+                const SizedBox(width: 16),
+              ],
+              const Icon(Icons.calendar_today_rounded, size: 13, color: Color(0xFFA1A1AA)),
+              const SizedBox(width: 6),
+              Text(
+                regDate,
+                style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+              ),
+            ],
+          ),
+          if (email.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.email_outlined, size: 14, color: Color(0xFFA1A1AA)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    email,
+                    style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (isCancelled) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2A1515),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, size: 16, color: Color(0xFFEF4444)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Host cancelled this tournament. Contact organizer for entry fee refund.',
+                      style: TextStyle(
+                        color: Color(0xFFFCA5A5),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomBar(BuildContext context) {
+    final bool isCancelled = tournament.status == TournamentStatus.cancelled;
+    final bool isRegistered = TournamentManager().isUserRegistered(tournament);
+
+    if (isCancelled) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F0F0F),
+          border: Border(top: BorderSide(color: Color(0xFF262626), width: 1)),
+        ),
+        child: SafeArea(
+          child: ElevatedButton(
+            onPressed: null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2C1515),
+              disabledBackgroundColor: const Color(0xFF2C1515),
+              side: const BorderSide(color: Color(0xFFEF4444), width: 1.2),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.block_rounded,
+                  color: Color(0xFFFCA5A5),
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  isRegistered
+                      ? 'Registration Cancelled by Host'
+                      : 'Tournament Cancelled by Host',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFFCA5A5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (isRegistered) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F0F0F),
+          border: Border(top: BorderSide(color: Color(0xFF262626), width: 1)),
+        ),
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF142918),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF22C55E), width: 1.2),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF86EFAC),
+                  size: 20,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  '✓ You Are Registered • Squad Confirmed',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF86EFAC),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     if (tournament.status == TournamentStatus.upcoming) {
       bool isFull = tournament.registeredTeams >= tournament.maxTeams;
       return Container(

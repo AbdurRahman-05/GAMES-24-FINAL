@@ -286,11 +286,71 @@ class TournamentManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool isUserRegistered(Tournament t) {
+    if (_myRegisteredTournamentIds.contains(t.id)) return true;
+    final cleanNumericId = t.id.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanNumericId.isNotEmpty) {
+      if (_myRegisteredTournamentIds.contains(cleanNumericId) ||
+          _myRegisteredTournamentIds.contains('tourn_$cleanNumericId')) {
+        return true;
+      }
+    }
+
+    final cleanPhone = _currentUserPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final last10 = cleanPhone.length >= 10
+        ? cleanPhone.substring(cleanPhone.length - 10)
+        : cleanPhone;
+
+    if (last10.isNotEmpty) {
+      for (final u in t.registeredUsers) {
+        final contact = (u['contact'] ?? u['phone'] ?? u['mobileNumber'] ?? '')
+            .toString()
+            .replaceAll(RegExp(r'[^0-9]'), '');
+        final contactLast10 = contact.length >= 10
+            ? contact.substring(contact.length - 10)
+            : contact;
+        if (contactLast10.isNotEmpty && contactLast10 == last10) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  Map<String, dynamic>? getRegisteredTeam(Tournament t) {
+    final cleanPhone = _currentUserPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final last10 = cleanPhone.length >= 10
+        ? cleanPhone.substring(cleanPhone.length - 10)
+        : cleanPhone;
+
+    if (last10.isNotEmpty) {
+      for (final u in t.registeredUsers) {
+        final contact = (u['contact'] ?? u['phone'] ?? u['mobileNumber'] ?? '')
+            .toString()
+            .replaceAll(RegExp(r'[^0-9]'), '');
+        final contactLast10 = contact.length >= 10
+            ? contact.substring(contact.length - 10)
+            : contact;
+        if (contactLast10.isNotEmpty && contactLast10 == last10) {
+          return u;
+        }
+      }
+    }
+
+    if (isUserRegistered(t) && t.registeredUsers.isNotEmpty) {
+      return t.registeredUsers.last;
+    }
+    return null;
+  }
+
   List<Tournament> get allTournaments => _tournaments;
   List<Tournament> get ongoingTournaments =>
       _tournaments.where((t) => t.status == TournamentStatus.ongoing).toList();
-  List<Tournament> get upcomingTournaments =>
-      _tournaments.where((t) => t.status == TournamentStatus.upcoming).toList();
+  List<Tournament> get upcomingTournaments => _tournaments
+      .where((t) =>
+          t.status == TournamentStatus.upcoming ||
+          t.status == TournamentStatus.cancelled)
+      .toList();
 
   List<Tournament> get myTournaments {
     final cleanPhone = _currentUserPhone.replaceAll(RegExp(r'[^0-9]'), '');
@@ -301,7 +361,8 @@ class TournamentManager extends ChangeNotifier {
     return _tournaments.where((t) {
       // 1. Locally recorded created or registered tournament IDs
       if (_myCreatedTournamentIds.contains(t.id) ||
-          _myRegisteredTournamentIds.contains(t.id)) {
+          _myRegisteredTournamentIds.contains(t.id) ||
+          isUserRegistered(t)) {
         return true;
       }
 

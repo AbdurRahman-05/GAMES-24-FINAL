@@ -45,17 +45,25 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
 
     final Widget content = Material(
       color: const Color(0xFF080808),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSegmentedControl(),
-              const SizedBox(height: 24),
-              _buildContent(),
-              const SizedBox(height: 80), // padding for FAB
-            ],
+      child: RefreshIndicator(
+        color: const Color(0xFFD4FF00),
+        backgroundColor: const Color(0xFF141414),
+        onRefresh: () async {
+          await TournamentManager().fetchTournaments();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSegmentedControl(),
+                const SizedBox(height: 24),
+                _buildContent(),
+                const SizedBox(height: 80), // padding for FAB
+              ],
+            ),
           ),
         ),
       ),
@@ -374,6 +382,10 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
   }
 
   Widget _buildTournamentCard(Tournament tournament) {
+    final bool isCancelled = tournament.status == TournamentStatus.cancelled;
+    final bool isRegistered = TournamentManager().isUserRegistered(tournament);
+    final bool isFull = tournament.registeredTeams >= tournament.maxTeams;
+
     String statusText = '';
     Color statusColor = Colors.white;
     Color statusTextColor = Colors.black87;
@@ -382,32 +394,62 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
       statusText = 'Live Now';
       statusColor = const Color(0xFFDC2626);
       statusTextColor = Colors.white;
+    } else if (isCancelled) {
+      statusText = 'CANCELLED';
+      statusColor = const Color(0xFFEF4444);
+      statusTextColor = Colors.white;
     } else if (tournament.status == TournamentStatus.upcoming) {
       statusText = 'Upcoming';
+      statusColor = Colors.white;
+      statusTextColor = Colors.black87;
     } else {
       statusText = 'Completed';
+      statusColor = const Color(0xFF71717A);
+      statusTextColor = Colors.white;
     }
 
     String timeLabel = tournament.matchDay;
-    if (tournament.status == TournamentStatus.upcoming) {
+    if (tournament.status == TournamentStatus.upcoming || isCancelled) {
       timeLabel = tournament.date;
     }
 
     String statsLabel = 'Slots Left';
     String statsValue =
         '${tournament.maxTeams - tournament.registeredTeams} / ${tournament.maxTeams}';
-    if (tournament.status == TournamentStatus.ongoing) {
+    if (isCancelled) {
+      statsLabel = 'Match Status';
+      statsValue = 'Cancelled';
+    } else if (tournament.status == TournamentStatus.ongoing) {
       statsLabel = 'Status';
       statsValue = tournament.tournamentProgress;
     }
 
     String buttonText = 'View Tournament';
-    if (tournament.status == TournamentStatus.ongoing) {
+    Color buttonBgColor = const Color(0xFFD4FF00);
+    Color buttonTextColor = Colors.black;
+    Color buttonBorderColor = Colors.transparent;
+    IconData buttonIcon = Icons.arrow_forward_ios;
+
+    if (isCancelled) {
+      buttonBgColor = const Color(0xFF2C1515);
+      buttonBorderColor = const Color(0xFFEF4444);
+      buttonTextColor = const Color(0xFFFCA5A5);
+      buttonIcon = Icons.block_rounded;
+      buttonText = isRegistered
+          ? 'Registered • Cancelled (View)'
+          : 'Tournament Cancelled';
+    } else if (isRegistered) {
+      buttonBgColor = const Color(0xFF142918);
+      buttonBorderColor = const Color(0xFF22C55E);
+      buttonTextColor = const Color(0xFF86EFAC);
+      buttonIcon = Icons.check_circle_rounded;
+      buttonText = 'Registered • View Details';
+    } else if (tournament.status == TournamentStatus.ongoing) {
       buttonText = 'View Live Standings';
+      buttonIcon = Icons.play_circle_fill_rounded;
     } else if (tournament.status == TournamentStatus.upcoming) {
-      buttonText = 'Register / Join Tournament';
-    }
-    if (_selectedTabIndex == 2) {
+      buttonText = isFull ? 'Tournament Full (View)' : 'Register / Join Tournament';
+    } else if (_selectedTabIndex == 2) {
       buttonText = 'View Details';
     }
 
@@ -511,7 +553,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                           ),
                         ),
                       ),
-                      if (_selectedTabIndex == 2) ...[
+                      if (isRegistered) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -519,22 +561,38 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFD97706),
+                            color: isCancelled
+                                ? const Color(0xFF7F1D1D)
+                                : const Color(0xFF166534),
                             borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isCancelled
+                                  ? const Color(0xFFEF4444).withValues(alpha: 0.8)
+                                  : const Color(0xFF22C55E).withValues(alpha: 0.8),
+                              width: 1,
+                            ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.how_to_reg_rounded,
-                                color: Colors.white,
+                                isCancelled
+                                    ? Icons.cancel_outlined
+                                    : Icons.check_circle_rounded,
+                                color: isCancelled
+                                    ? const Color(0xFFFCA5A5)
+                                    : const Color(0xFF86EFAC),
                                 size: 12,
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'Registered Team',
+                                isCancelled
+                                    ? 'Registration Cancelled'
+                                    : 'Registered Team',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: isCancelled
+                                      ? const Color(0xFFFCA5A5)
+                                      : const Color(0xFF86EFAC),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -752,6 +810,43 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       ],
                     ),
                   ),
+                  if (isCancelled) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2C1515),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.6),
+                        ),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: Color(0xFFEF4444),
+                            size: 18,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Tournament cancelled by host turf. Tap to view status & organizer contact for refund.',
+                              style: TextStyle(
+                                color: Color(0xFFFCA5A5),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
@@ -767,9 +862,12 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD4FF00),
-                        foregroundColor: Colors.black,
+                        backgroundColor: buttonBgColor,
+                        foregroundColor: buttonTextColor,
                         elevation: 0,
+                        side: buttonBorderColor != Colors.transparent
+                            ? BorderSide(color: buttonBorderColor, width: 1.2)
+                            : BorderSide.none,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -777,18 +875,18 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.arrow_forward_ios,
+                          Icon(
+                            buttonIcon,
                             size: 16,
-                            color: Colors.black,
+                            color: buttonTextColor,
                           ),
                           const SizedBox(width: 8),
                           Text(
                             buttonText,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black,
+                              color: buttonTextColor,
                             ),
                           ),
                         ],
