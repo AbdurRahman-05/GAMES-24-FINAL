@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class ApiConfig {
@@ -21,22 +20,15 @@ class ApiConfig {
   }
 
   /// Base URL of the backend API.
-  /// Defaults to local development (http://localhost:3000), read from .env / --dart-define=API_URL=...
+  /// Defaults to live cloud backend on Render (https://games-24-final.onrender.com).
+  /// Can be overridden via .env file or --dart-define=API_URL=...
   static String get baseUrl {
-    String url = _envUrl.isNotEmpty
-        ? _envUrl
-        : const String.fromEnvironment(
-            'API_URL',
-            defaultValue: 'http://localhost:3000',
-          );
+    if (_envUrl.isNotEmpty) return _envUrl;
 
-    // On Android Emulator (non-web), route localhost to 10.0.2.2 so it can reach host machine
-    if (!kIsWeb &&
-        defaultTargetPlatform == TargetPlatform.android &&
-        url.contains('localhost')) {
-      return url.replaceFirst('localhost', '10.0.2.2');
-    }
-    return url;
+    const envValue = String.fromEnvironment('API_URL');
+    if (envValue.isNotEmpty) return envValue;
+
+    return 'https://games-24-final.onrender.com';
   }
 
   /// Resolves any relative or localhost URL into the active backend URL

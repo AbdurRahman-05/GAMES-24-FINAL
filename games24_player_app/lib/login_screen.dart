@@ -426,7 +426,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ToastUtils.showError(context, 'Error: ');
+      ToastUtils.showError(
+        context,
+        'Unable to connect to server. Please check your internet connection.',
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
