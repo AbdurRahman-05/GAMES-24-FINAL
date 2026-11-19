@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import {
   AdminRegistration,
-  BACKEND_URL,
   resolveFileUrl,
   verifyRegistration,
   cancelRegistration,
@@ -24,6 +23,8 @@ import {
   AlertTriangle,
   Sparkles,
   Check,
+  Building2,
+  Clock,
 } from 'lucide-react';
 
 interface Props {
@@ -93,48 +94,48 @@ export default function RegistrationDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="relative bg-[#0D121F] rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#222B3F] text-slate-100 animate-in fade-in zoom-in-95 duration-150">
-        {/* Render-style Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E2638] bg-[#111727]/80 rounded-t-2xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="relative bg-[#0A0E17] rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#1E273A] text-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        {/* Command Center Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E273A] bg-[#0E131F] rounded-t-2xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shadow-lg shadow-indigo-600/10">
-              <Building className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-[#161D2E] text-[#D4FF00] border border-[#28354F] flex items-center justify-center shrink-0">
+              <Building2 className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg font-bold text-white tracking-tight">{registration.venueName}</h2>
-                <span className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-[#182033] text-indigo-300 font-semibold border border-[#28354F]">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-[#161D2E] text-slate-300 font-semibold border border-[#28354F]">
                   {registration.trackingCode || `#REG-${registration.id}`}
                 </span>
                 {registration.status === 'PENDING_APPROVAL' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
-                    Pending Review
+                    PENDING KYC REVIEW
                   </span>
                 )}
                 {registration.status === 'VERIFIED' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    Verified Partner
+                    VERIFIED PARTNER
                   </span>
                 )}
                 {registration.status === 'CANCELLED' && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
                     <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                    Cancelled
+                    DECLINED
                   </span>
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5 font-mono">
-                Submitted on {new Date(registration.createdAt).toLocaleString()} • KYC Audit Console
+                Submitted on {new Date(registration.createdAt).toLocaleString()} • KYC Audit Dossier
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#1E273A] transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#161D2E] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -162,20 +163,20 @@ export default function RegistrationDetailModal({
         )}
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-6 space-y-6">
+        <div className="overflow-y-auto p-6 space-y-5">
           {/* Branch Application Details Banner */}
           {registration.isBranch && (
-            <div className="bg-gradient-to-r from-cyan-950/60 to-[#121827] rounded-xl p-5 border border-cyan-500/40 shadow-lg">
+            <div className="bg-sky-950/30 rounded-xl p-5 border border-sky-500/40 shadow-lg">
               <div className="flex items-center gap-2 mb-3">
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5" /> NEW BRANCH LOCATION APPLICATION
+                <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40 flex items-center gap-1.5 font-mono">
+                  <Building2 className="w-3.5 h-3.5" /> NEW BRANCH LOCATION APPLICATION
                 </span>
-                <span className="text-xs text-cyan-400 font-mono">
+                <span className="text-xs text-sky-400 font-mono">
                   Linked to Existing Turf ID #{registration.parentTurfId}
                 </span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+                <div className="p-3 bg-[#0A0E17] rounded-lg border border-[#1E273A]">
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
                     Original / Parent Turf Name:
                   </span>
@@ -183,7 +184,7 @@ export default function RegistrationDetailModal({
                     {registration.parentTurfName || registration.parentTurf?.venueName || 'Primary Turf Arena'}
                   </p>
                 </div>
-                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                <div className="p-3 bg-[#0A0E17] rounded-lg border border-[#1E273A]">
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
                     Owner Primary Login Phone:
                   </span>
@@ -191,15 +192,15 @@ export default function RegistrationDetailModal({
                     {registration.parentTurfPhone || registration.ownerPhone}
                   </p>
                 </div>
-                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                <div className="p-3 bg-[#0A0E17] rounded-lg border border-[#1E273A]">
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
                     Branch Manager Alternative Mobile:
                   </span>
-                  <p className="font-mono font-bold text-cyan-300 text-sm mt-0.5">
+                  <p className="font-mono font-bold text-sky-300 text-sm mt-0.5">
                     {registration.alternativePhone || '—'}
                   </p>
                 </div>
-                <div className="p-3 bg-[#0D121F] rounded-lg border border-[#1E2638]">
+                <div className="p-3 bg-[#0A0E17] rounded-lg border border-[#1E273A]">
                   <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
                     New Branch Neighborhood & Address:
                   </span>
@@ -212,9 +213,9 @@ export default function RegistrationDetailModal({
           )}
 
           {/* Owner & Identity */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4" /> Owner Identity & Venue Location
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
+              <ShieldCheck className="w-4 h-4" /> Owner Identity & Venue Coordinates
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
@@ -223,8 +224,8 @@ export default function RegistrationDetailModal({
               </div>
               <div>
                 <span className="text-xs text-slate-400">Neighborhood / Area</span>
-                <p className="font-semibold text-white mt-0.5 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                <p className="font-semibold text-white mt-0.5 flex items-center gap-1.5 font-mono">
+                  <MapPin className="w-3.5 h-3.5 text-[#D4FF00]" />
                   {registration.neighborhoodArea}
                 </p>
               </div>
@@ -234,11 +235,11 @@ export default function RegistrationDetailModal({
                   <Phone className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-mono text-white font-medium">{registration.ownerPhone}</span>
                   {registration.isMobileVerified ? (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                      Verified OTP ✓
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                      OTP Verified ✓
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
                       Unverified
                     </span>
                   )}
@@ -250,11 +251,11 @@ export default function RegistrationDetailModal({
                   <Mail className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-mono text-white font-medium">{registration.ownerEmail}</span>
                   {registration.isEmailVerified ? (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                       Verified ✓
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-slate-800 text-slate-400">
+                    <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-[#161D2E] text-slate-400">
                       Unverified
                     </span>
                   )}
@@ -268,13 +269,13 @@ export default function RegistrationDetailModal({
           </div>
 
           {/* KYC Documents & Tax Compliance */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
               <FileText className="w-4 h-4" /> Tax & Identity KYC Compliance
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Aadhaar */}
-              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+              <div className="p-3.5 rounded-lg bg-[#05080E] border border-[#1E273A]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-slate-400">Aadhaar Card</span>
                   {registration.aadhaarDocUrl && (
@@ -282,7 +283,7 @@ export default function RegistrationDetailModal({
                       href={getFullFileUrl(registration.aadhaarDocUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono"
+                      className="text-xs text-[#D4FF00] hover:underline inline-flex items-center gap-1 font-mono"
                     >
                       View <ExternalLink className="w-3 h-3" />
                     </a>
@@ -294,7 +295,7 @@ export default function RegistrationDetailModal({
               </div>
 
               {/* PAN */}
-              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+              <div className="p-3.5 rounded-lg bg-[#05080E] border border-[#1E273A]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-slate-400">PAN Card</span>
                   {registration.panDocUrl && (
@@ -302,7 +303,7 @@ export default function RegistrationDetailModal({
                       href={getFullFileUrl(registration.panDocUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono"
+                      className="text-xs text-[#D4FF00] hover:underline inline-flex items-center gap-1 font-mono"
                     >
                       View <ExternalLink className="w-3 h-3" />
                     </a>
@@ -314,7 +315,7 @@ export default function RegistrationDetailModal({
               </div>
 
               {/* GSTIN */}
-              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+              <div className="p-3.5 rounded-lg bg-[#05080E] border border-[#1E273A]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-slate-400">GST Registration</span>
                   {registration.gstDocUrl && (
@@ -322,7 +323,7 @@ export default function RegistrationDetailModal({
                       href={getFullFileUrl(registration.gstDocUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono"
+                      className="text-xs text-[#D4FF00] hover:underline inline-flex items-center gap-1 font-mono"
                     >
                       View <ExternalLink className="w-3 h-3" />
                     </a>
@@ -336,59 +337,59 @@ export default function RegistrationDetailModal({
           </div>
 
           {/* Banking & Settlement Payout Info */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
               <CreditCard className="w-4 h-4" /> Settlement & Payout Details
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-mono">
               <div>
                 <span className="text-xs text-slate-400">Bank Account</span>
-                <p className="font-mono text-white mt-0.5">{registration.bankAccount || 'Not provided'}</p>
+                <p className="text-white mt-0.5">{registration.bankAccount || 'Not provided'}</p>
               </div>
               <div>
                 <span className="text-xs text-slate-400">IFSC Code</span>
-                <p className="font-mono text-white mt-0.5">{registration.ifscCode || 'Not provided'}</p>
+                <p className="text-white mt-0.5">{registration.ifscCode || 'Not provided'}</p>
               </div>
               <div>
-                <span className="text-xs text-slate-400">UPI ID for Direct Payouts</span>
-                <p className="font-mono text-indigo-300 font-semibold mt-0.5">{registration.upiId || 'Not provided'}</p>
+                <span className="text-xs text-slate-400">UPI ID for Payouts</span>
+                <p className="text-[#D4FF00] font-semibold mt-0.5">{registration.upiId || 'Not provided'}</p>
               </div>
             </div>
           </div>
 
           {/* Sports & Amenities */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" /> Sports Available & Facilities
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-3 flex items-center gap-2 font-mono">
+              <Sparkles className="w-4 h-4" /> Sports Available & Amenities
             </h3>
             <div className="space-y-3">
               <div>
-                <span className="text-xs text-slate-400">Configured Sports</span>
+                <span className="text-xs text-slate-400 font-mono">Configured Sports:</span>
                 <div className="flex flex-wrap gap-2 mt-1.5">
                   {registration.sports && registration.sports.length > 0 ? (
                     registration.sports.map((sp, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5"
+                        className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-mono uppercase"
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         {sp}
                       </span>
                     ))
                   ) : (
-                    <span className="text-xs text-slate-500">Cricket, Football (Default Turf Ground)</span>
+                    <span className="text-xs text-slate-500 font-mono">Cricket, Football (Default Turf Ground)</span>
                   )}
                 </div>
               </div>
 
               {registration.amenities && registration.amenities.length > 0 && (
                 <div>
-                  <span className="text-xs text-slate-400">Amenities & Facilities</span>
+                  <span className="text-xs text-slate-400 font-mono">Amenities & Facilities:</span>
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {registration.amenities.map((amenity, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#182033] text-indigo-300 border border-[#28354F]"
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-[#161D2E] text-slate-200 border border-[#28354F]"
                       >
                         ✓ {amenity}
                       </span>
@@ -401,8 +402,8 @@ export default function RegistrationDetailModal({
 
           {/* Venue Photos Gallery */}
           {registration.photoUrls && registration.photoUrls.length > 0 && (
-            <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+            <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
                 <ImageIcon className="w-4 h-4" /> Uploaded Turf Photos ({registration.photoUrls.length})
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -410,7 +411,7 @@ export default function RegistrationDetailModal({
                   <div
                     key={i}
                     onClick={() => setPreviewImage(getFullFileUrl(url))}
-                    className="relative aspect-video rounded-lg overflow-hidden border border-[#232C42] bg-[#161D2F] cursor-pointer group"
+                    className="relative aspect-video rounded-lg overflow-hidden border border-[#1E273A] bg-[#05080E] cursor-pointer group"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -428,14 +429,14 @@ export default function RegistrationDetailModal({
           )}
         </div>
 
-        {/* Render-style Footer Actions */}
-        <div className="px-6 py-4 border-t border-[#1E2638] bg-[#111727]/90 rounded-b-2xl flex items-center justify-between gap-4">
+        {/* Footer Actions */}
+        <div className="px-6 py-4 border-t border-[#1E273A] bg-[#0E131F] rounded-b-2xl flex items-center justify-between gap-4">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#182033] hover:bg-[#202A42] border border-[#28354F] transition-all"
+            className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2E] hover:bg-[#20293F] border border-[#28354F] transition-all font-mono"
           >
-            Close
+            Close Dossier
           </button>
 
           {registration.status === 'PENDING_APPROVAL' && (
@@ -445,7 +446,7 @@ export default function RegistrationDetailModal({
                   <button
                     type="button"
                     onClick={() => setShowCancelReasonInput(true)}
-                    className="px-4 py-2 rounded-lg text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all"
+                    className="px-4 py-2 rounded-lg text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all font-mono"
                   >
                     Reject Application
                   </button>
@@ -453,10 +454,10 @@ export default function RegistrationDetailModal({
                     type="button"
                     disabled={isVerifying || !isRegistrationComplete}
                     onClick={handleVerify}
-                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-bold text-black bg-[#D4FF00] hover:bg-[#b8dd00] shadow-lg shadow-[#D4FF00]/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] font-mono"
                     title={!isRegistrationComplete ? 'Application is incomplete - cannot verify' : 'Approve & Activate Venue'}
                   >
-                    <Check className="w-4 h-4" />
+                    <Check className="w-4 h-4 stroke-[2.5]" />
                     {isVerifying ? 'Verifying & Deploying...' : 'Approve & Activate Venue'}
                   </button>
                 </>
@@ -467,20 +468,20 @@ export default function RegistrationDetailModal({
                     placeholder="Reason for rejection..."
                     value={cancelReason}
                     onChange={(e) => setCancelReason(e.target.value)}
-                    className="px-3 py-1.5 text-xs bg-[#161D2F] border border-[#28354F] rounded-lg text-white placeholder-slate-500 focus:outline-hidden focus:border-rose-500"
+                    className="px-3 py-1.5 text-xs bg-[#05080E] border border-[#1E273A] rounded-lg text-white placeholder-slate-500 focus:outline-hidden focus:border-rose-500"
                   />
                   <button
                     type="button"
                     disabled={isCancelling}
                     onClick={handleCancel}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition-all disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 transition-all disabled:opacity-50 font-mono active:scale-[0.98]"
                   >
                     {isCancelling ? 'Rejecting...' : 'Confirm Reject'}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowCancelReasonInput(false)}
-                    className="px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white"
+                    className="px-2.5 py-1.5 rounded-lg text-xs text-slate-400 hover:text-white font-mono"
                   >
                     Cancel
                   </button>

@@ -11,6 +11,10 @@ import {
   LayoutDashboard,
   Building2,
   Terminal,
+  Server,
+  ArrowRightLeft,
+  CircleDot,
+  Radio,
 } from 'lucide-react';
 import { getEffectiveBackendUrl, setEffectiveBackendUrl, DEFAULT_LIVE_BACKEND_URL, DEFAULT_LOCAL_BACKEND_URL } from '@/lib/api';
 
@@ -34,6 +38,17 @@ export default function Navbar({
     }
     return DEFAULT_LOCAL_BACKEND_URL;
   });
+  const [currentTime, setCurrentTime] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const current = getEffectiveBackendUrl();
@@ -57,53 +72,69 @@ export default function Navbar({
   };
 
   const navItems = [
-    { key: 'OVERVIEW', label: 'Overview', icon: LayoutDashboard },
-    { key: 'REGISTRATIONS', label: 'Approvals', icon: FileCheck2, badge: waitingCount },
-    { key: 'BOOKINGS', label: 'Bookings & Holds', icon: CalendarDays },
-    { key: 'TOURNAMENTS', label: 'Tournaments', icon: Trophy },
-    { key: 'TURFS', label: 'Turf Revenues', icon: Building2 },
+    { key: 'OVERVIEW', label: 'Command Hub', icon: LayoutDashboard },
+    { key: 'REGISTRATIONS', label: 'Venue Approvals', icon: FileCheck2, badge: waitingCount },
+    { key: 'BOOKINGS', label: 'Slots & Holds', icon: CalendarDays },
+    { key: 'TOURNAMENTS', label: 'Championships', icon: Trophy },
+    { key: 'TURFS', label: 'Turf Performance', icon: Building2 },
   ];
 
+  const isLive = backendUrl.includes('onrender');
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#1E2638] bg-[#0B0F19]/90 backdrop-blur-md">
-      {/* Top micro-bar: Environment & Systems Health */}
-      <div className="border-b border-[#171E2E] bg-[#080B13] px-4 sm:px-6 lg:px-8 py-1.5 text-[11px] text-slate-400">
+    <header className="sticky top-0 z-40 w-full border-b border-[#1E273A] bg-[#080B11]/95 backdrop-blur-md">
+      {/* Top telemetry bar */}
+      <div className="border-b border-[#151D2E] bg-[#05070B] px-4 sm:px-6 lg:px-8 py-1.5 text-[11px] text-slate-400">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded font-mono text-[10px] font-semibold uppercase tracking-wider ${
-              backendUrl.includes('onrender')
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+          {/* Left: Backend Environment Selector */}
+          <div className="flex items-center gap-2.5">
+            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-mono text-[10px] font-bold tracking-wider uppercase border ${
+              isLive
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]/30'
             }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${backendUrl.includes('onrender') ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
-              {backendUrl.includes('onrender') ? 'LIVE CLOUD' : 'LOCAL'}
-            </span>
-            <span className="text-slate-600">/</span>
+              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isLive ? 'bg-emerald-400' : 'bg-[#D4FF00]'}`}></span>
+              {isLive ? 'RENDER CLOUD' : 'LOCAL ENGINE'}
+            </div>
+
             <button
               onClick={handleToggleBackend}
               title="Click to toggle between Live Render Cloud and Localhost backend"
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#161D2F] hover:bg-[#1E273E] text-slate-300 hover:text-white border border-[#28354F] transition-all cursor-pointer font-mono text-[11px]"
+              className="group inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[#0E131F] hover:bg-[#161D2E] text-slate-300 hover:text-white border border-[#1E273A] hover:border-slate-600 transition-all cursor-pointer font-mono text-[11px]"
             >
+              <Server className="w-3 h-3 text-slate-400 group-hover:text-slate-200" />
               <span>{backendUrl.replace(/^https?:\/\//, '')}</span>
-              <span className="text-[9px] text-indigo-400 bg-indigo-500/15 px-1 py-0.5 rounded ml-0.5">switch</span>
-            </button>
-            <span className="hidden sm:inline-block text-slate-600">•</span>
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-emerald-400 font-medium">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="text-[9px] font-semibold text-[#D4FF00] bg-[#D4FF00]/10 border border-[#D4FF00]/20 px-1 py-0.2 rounded ml-1 flex items-center gap-1">
+                <ArrowRightLeft className="w-2.5 h-2.5" />
+                switch
               </span>
-              Connected
-            </span>
+            </button>
+
+            <div className="hidden sm:flex items-center gap-1.5 text-slate-500 font-mono text-[11px]">
+              <span>•</span>
+              <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                <Radio className="w-3 h-3 animate-pulse text-emerald-400" />
+                API Active
+              </span>
+            </div>
           </div>
 
+          {/* Right: Architecture & Time */}
           <div className="flex items-center gap-3">
-            <span className="hidden md:inline-flex items-center gap-1 font-mono text-[11px] text-slate-400">
+            <span className="hidden md:inline-flex items-center gap-1.5 font-mono text-[11px] text-slate-400">
               <Terminal className="w-3 h-3 text-slate-500" />
-              Node.js v20 • PostgreSQL Prisma
+              PostgreSQL • Prisma ORM
             </span>
             <div className="h-3 w-px bg-slate-800 hidden sm:block"></div>
-            <span className="text-slate-400 font-mono text-[10px]">SuperAdmin v2.4</span>
+            {currentTime && (
+              <span className="font-mono text-[11px] text-slate-300 font-medium">
+                {currentTime} UTC+5:30
+              </span>
+            )}
+            <div className="h-3 w-px bg-slate-800 hidden sm:block"></div>
+            <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+              EXEC V2.6
+            </span>
           </div>
         </div>
       </div>
@@ -111,29 +142,29 @@ export default function Navbar({
       {/* Main Navbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo & Workspace Selector */}
+          {/* Logo & Platform ID */}
           <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/25 group-hover:scale-105 transition-all">
-                <ShieldCheck className="w-5 h-5" />
+              <div className="w-9 h-9 rounded-lg bg-[#D4FF00] flex items-center justify-center text-black font-black shadow-md shadow-[#D4FF00]/15 group-hover:scale-105 transition-transform duration-150">
+                <span className="font-mono text-base font-black tracking-tighter">G24</span>
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-base text-white tracking-tight">
-                    Games<span className="text-indigo-400">24</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-base text-white tracking-tight">
+                    GAMES<span className="text-[#D4FF00]">24</span>
                   </span>
                   <span className="text-slate-600 text-xs">/</span>
-                  <span className="text-xs font-semibold text-slate-200">Control Center</span>
+                  <span className="text-xs font-bold text-slate-200 tracking-wide uppercase">Control Center</span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-medium -mt-0.5">
-                  Render Operations & Turf Audit
+                <span className="text-[10px] text-slate-400 font-medium tracking-wide">
+                  Venue Approvals & Platform Oversight
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="flex items-center gap-1 overflow-x-auto py-1 scrollbar-none">
+          {/* Navigation Items */}
+          <nav className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
             {isMainPage && (
               <>
                 {navItems.map((item) => {
@@ -144,21 +175,21 @@ export default function Navbar({
                       key={item.key}
                       type="button"
                       onClick={() => handleNavClick(item.key)}
-                      className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                      className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
                         isActive
-                          ? 'bg-[#182033] text-indigo-300 border border-indigo-500/30 shadow-xs'
-                          : 'text-slate-400 hover:text-slate-200 hover:bg-[#141A29]'
+                          ? 'bg-[#151D2E] text-white border border-[#2A374F] shadow-sm'
+                          : 'text-slate-400 hover:text-slate-100 hover:bg-[#0E131F] border border-transparent'
                       }`}
                     >
-                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
+                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#D4FF00]' : 'text-slate-400'}`} />
                       <span>{item.label}</span>
                       {Boolean(item.badge && item.badge > 0) && (
-                        <span className="ml-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                        <span className="ml-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono animate-pulse">
                           {item.badge}
                         </span>
                       )}
                       {isActive && (
-                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+                        <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-[#D4FF00] rounded-full"></span>
                       )}
                     </button>
                   );
@@ -170,13 +201,13 @@ export default function Navbar({
 
             <Link
               href="/admins"
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
                 pathname === '/admins'
-                  ? 'bg-[#182033] text-indigo-300 border border-indigo-500/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-[#141A29]'
+                  ? 'bg-[#151D2E] text-white border border-[#2A374F]'
+                  : 'text-slate-400 hover:text-slate-100 hover:bg-[#0E131F] border border-transparent'
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#D4FF00]" />
               <span>Verified Directory</span>
             </Link>
           </nav>

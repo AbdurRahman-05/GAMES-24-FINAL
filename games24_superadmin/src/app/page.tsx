@@ -21,7 +21,6 @@ import {
   deleteVerifiedAdmin,
   deleteTournament,
   deploySuperAdminTournament,
-  BACKEND_URL,
   resolveFileUrl,
 } from '@/lib/api';
 import {
@@ -46,6 +45,13 @@ import {
   ChevronRight,
   Building2,
   Terminal,
+  Clock,
+  ArrowUpRight,
+  CreditCard,
+  ShieldAlert,
+  Flame,
+  LayoutDashboard,
+  Filter,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -286,7 +292,7 @@ export default function SuperAdminDashboard() {
   // ACTION: Quick Verify Registration
   const handleQuickVerify = async (reg: AdminRegistration) => {
     if (!isRegComplete(reg)) {
-      showToast('Cannot verify incomplete registration. Owner has not submitted all details.', 'error');
+      showToast('Cannot verify incomplete registration. Owner has not submitted all required KYC.', 'error');
       return;
     }
     setQuickVerifyingId(reg.id);
@@ -371,7 +377,7 @@ export default function SuperAdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090D16] text-slate-100 font-sans">
+    <div className="min-h-screen flex flex-col bg-[#080B11] text-slate-100 font-sans selection:bg-[#D4FF00] selection:text-black">
       <Navbar
         waitingCount={regStats.waiting || kpis.pendingOwners}
         activeSection={activeSection}
@@ -382,10 +388,10 @@ export default function SuperAdminDashboard() {
       {toastMessage && (
         <div className="fixed top-20 right-6 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
           <div
-            className={`flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl border text-xs font-semibold backdrop-blur-md ${
+            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg shadow-2xl border text-xs font-semibold backdrop-blur-md ${
               toastMessage.type === 'success'
-                ? 'bg-[#0E1D19] text-emerald-300 border-emerald-500/40 shadow-emerald-500/10'
-                : 'bg-[#220E14] text-rose-300 border-rose-500/40 shadow-rose-500/10'
+                ? 'bg-[#0E1D19]/95 text-emerald-300 border-emerald-500/40 shadow-emerald-500/10'
+                : 'bg-[#220E14]/95 text-rose-300 border-rose-500/40 shadow-rose-500/10'
             }`}
           >
             {toastMessage.type === 'success' ? (
@@ -398,33 +404,35 @@ export default function SuperAdminDashboard() {
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Render-style Project Header Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#1E2638]">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
+        {/* Top Command Strip & Action Dispatcher */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 pb-6 border-b border-[#1E273A]">
           <div>
-            <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mb-1.5">
-              <span>Games24 Platform</span>
+            <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400 mb-2">
+              <span className="text-[#D4FF00] font-bold">GAMES24</span>
               <span className="text-slate-600">/</span>
-              <span className="text-indigo-400 font-semibold">Production Console</span>
+              <span>PLATFORM OS</span>
               <span className="text-slate-600">/</span>
-              <span className="text-slate-200">{activeSection}</span>
+              <span className="text-slate-200 uppercase">{activeSection}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-              <span>Control Center</span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <div className="flex items-center gap-3.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Control Center
+              </h1>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                Live Oversight
+                LIVE PRODUCTION
               </span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-              Render-grade live audit console for managing turf approvals, active slot holds, real-time match oversight, and tournament coordination.
+            </div>
+            <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              Unified governance console for venue authorizations, booking hold switches, championship deployments, and platform revenue audits.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => {
                 loadOverview();
@@ -433,137 +441,162 @@ export default function SuperAdminDashboard() {
                 if (activeSection === 'REGISTRATIONS') loadRegistrations();
               }}
               disabled={overviewLoading}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#161D2F] hover:bg-[#1E273E] text-slate-300 hover:text-white border border-[#28354F] transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#111726] hover:bg-[#182033] text-slate-200 border border-[#1E273A] transition-all disabled:opacity-50 active:scale-[0.98]"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${overviewLoading ? 'animate-spin text-indigo-400' : 'text-slate-400'}`} />
-              <span>Sync Metrics</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${overviewLoading ? 'animate-spin text-[#D4FF00]' : 'text-slate-400'}`} />
+              <span className="font-mono">Sync Metrics</span>
             </button>
 
             <button
               onClick={() => setShowCreateTournModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-[#D4FF00] hover:bg-[#b8dd00] text-black shadow-md shadow-[#D4FF00]/15 transition-all active:scale-[0.98]"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Deploy Tournament</span>
             </button>
           </div>
         </div>
 
-        {/* Render-style KPI Metrics Grid (6 Cards) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {/* Card 1: Total Revenue / GMV */}
-          <div className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 transition-all duration-200">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-medium">Total GMV</span>
-              <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-400">
-                <DollarSign className="w-3.5 h-3.5" />
-              </span>
+        {/* Action-Required Banner if Pending KYC */}
+        {kpis.pendingOwners > 0 && activeSection !== 'REGISTRATIONS' && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-amber-200">
+                  {kpis.pendingOwners} Venue Registration{kpis.pendingOwners > 1 ? 's' : ''} Awaiting Super Admin KYC Approval
+                </h4>
+                <p className="text-[11px] text-amber-300/80 mt-0.5">
+                  Owners cannot list courts or receive player bookings until business credentials and turf photos are verified.
+                </p>
+              </div>
             </div>
-            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            <button
+              onClick={() => setActiveSection('REGISTRATIONS')}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-black hover:bg-amber-400 transition-all shrink-0 self-start sm:self-auto flex items-center gap-1.5 font-mono"
+            >
+              <span>Review Dossiers ({kpis.pendingOwners})</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* High-Precision Bento KPI Metric Cards (6 Cards) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {/* Card 1: Total Platform GMV */}
+          <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+              <span className="font-medium text-slate-400">Total GMV</span>
+              <div className="w-6 h-6 rounded-md bg-[#161D2E] text-[#D4FF00] flex items-center justify-center">
+                <DollarSign className="w-3.5 h-3.5" />
+              </div>
+            </div>
+            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
               ₹{kpis.totalRevenue.toLocaleString()}
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-              <span>All-Time Volume</span>
-              <span className="text-emerald-400">Live</span>
+              <span className="text-slate-500">Volume</span>
+              <span className="text-emerald-400 font-semibold">Live Audit</span>
             </div>
           </div>
 
-          {/* Card 2: Today's Bookings */}
-          <div className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 transition-all duration-200">
+          {/* Card 2: Today's Slots */}
+          <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-medium">Today&apos;s Slots</span>
-              <span className="p-1 rounded-md bg-emerald-500/10 text-emerald-400">
+              <span className="font-medium text-slate-400">Today&apos;s Slots</span>
+              <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                 <CalendarDays className="w-3.5 h-3.5" />
-              </span>
+              </div>
             </div>
-            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5">
+            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5 tabular-nums">
               <span>{kpis.todayBookingsCount}</span>
-              <span className="text-xs text-emerald-400 font-normal">confirmed</span>
+              <span className="text-xs text-emerald-400 font-normal">booked</span>
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-              <span>₹{kpis.todayRevenue.toLocaleString()} GMV</span>
-              {kpis.todayCancelledCount > 0 && (
+              <span className="text-slate-300">₹{kpis.todayRevenue.toLocaleString()}</span>
+              {kpis.todayCancelledCount > 0 ? (
                 <span className="text-rose-400 font-semibold">{kpis.todayCancelledCount} cnl</span>
+              ) : (
+                <span className="text-slate-500">0 cnl</span>
               )}
             </div>
           </div>
 
           {/* Card 3: Partner Turfs */}
-          <div className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 transition-all duration-200">
+          <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-medium">Turf Venues</span>
-              <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-400">
+              <span className="font-medium text-slate-400">Partner Turfs</span>
+              <div className="w-6 h-6 rounded-md bg-[#161D2E] text-slate-300 flex items-center justify-center">
                 <Building2 className="w-3.5 h-3.5" />
-              </span>
+              </div>
             </div>
-            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
               {kpis.verifiedOwners}
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-              <span className="text-emerald-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                Active Live
-              </span>
-              <span>{kpis.totalOwners} total</span>
+              <span className="text-emerald-400 font-medium">Active</span>
+              <span className="text-slate-500">{kpis.totalOwners} total</span>
             </div>
           </div>
 
-          {/* Card 4: Registered Customers */}
-          <div className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 transition-all duration-200">
+          {/* Card 4: Registered Players */}
+          <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-medium">Players</span>
-              <span className="p-1 rounded-md bg-indigo-500/10 text-indigo-400">
+              <span className="font-medium text-slate-400">Athletes</span>
+              <div className="w-6 h-6 rounded-md bg-[#161D2E] text-sky-400 flex items-center justify-center">
                 <Users className="w-3.5 h-3.5" />
-              </span>
+              </div>
             </div>
-            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
               {kpis.totalUsers}
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-              <span>OTP Verified</span>
-              <span className="text-indigo-400">100%</span>
+              <span className="text-slate-500">OTP Verified</span>
+              <span className="text-sky-400 font-semibold">100%</span>
             </div>
           </div>
 
           {/* Card 5: Tournaments */}
-          <div className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 transition-all duration-200">
+          <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-medium">Tournaments</span>
-              <span className="p-1 rounded-md bg-purple-500/10 text-purple-400">
+              <span className="font-medium text-slate-400">Tournaments</span>
+              <div className="w-6 h-6 rounded-md bg-[#D4FF00]/10 text-[#D4FF00] flex items-center justify-center">
                 <Trophy className="w-3.5 h-3.5" />
-              </span>
+              </div>
             </div>
-            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5">
+            <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5 tabular-nums">
               <span>{tournSummary.live}</span>
-              <span className="text-xs text-purple-400 font-normal">live now</span>
+              <span className="text-xs text-[#D4FF00] font-normal">live now</span>
             </div>
             <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-              <span>{tournSummary.upcoming} upcoming</span>
-              <span>{tournSummary.total} total</span>
+              <span className="text-slate-400">{tournSummary.upcoming} upc</span>
+              <span className="text-slate-500">{tournSummary.total} total</span>
             </div>
           </div>
 
           {/* Card 6: Pending KYC Approvals */}
           <div
             onClick={() => setActiveSection('REGISTRATIONS')}
-            className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer ${
+            className={`p-4 rounded-xl border transition-all cursor-pointer ${
               kpis.pendingOwners > 0
-                ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/60'
-                : 'bg-[#111625] border-[#1F293D] hover:border-indigo-500/40'
+                ? 'bg-amber-500/10 border-amber-500/40 hover:border-amber-400'
+                : 'bg-[#0E131F] border-[#1E273A] hover:border-slate-600'
             }`}
           >
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-medium">Pending KYC</span>
-              <span
-                className={`p-1 rounded-md ${
-                  kpis.pendingOwners > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-800 text-slate-400'
+              <span className="font-medium text-slate-400">Pending KYC</span>
+              <div
+                className={`w-6 h-6 rounded-md flex items-center justify-center ${
+                  kpis.pendingOwners > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-[#161D2E] text-slate-400'
                 }`}
               >
                 <FileCheck2 className="w-3.5 h-3.5" />
-              </span>
+              </div>
             </div>
             <div
-              className={`font-mono text-xl sm:text-2xl font-extrabold tracking-tight ${
+              className={`font-mono text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums ${
                 kpis.pendingOwners > 0 ? 'text-amber-300' : 'text-white'
               }`}
             >
@@ -571,7 +604,10 @@ export default function SuperAdminDashboard() {
             </div>
             <div className="mt-2 text-[11px] flex items-center justify-between font-mono">
               {kpis.pendingOwners > 0 ? (
-                <span className="text-amber-400 font-semibold animate-pulse">Needs Review →</span>
+                <span className="text-amber-400 font-semibold flex items-center gap-1">
+                  <span>Audit Now</span>
+                  <ChevronRight className="w-3 h-3" />
+                </span>
               ) : (
                 <span className="text-slate-500">Up to date ✓</span>
               )}
@@ -579,37 +615,105 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
+        {/* Section Navigation Tabs (Segmented Control) */}
+        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#0E131F] border border-[#1E273A] overflow-x-auto">
+          <button
+            onClick={() => setActiveSection('OVERVIEW')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              activeSection === 'OVERVIEW'
+                ? 'bg-[#182033] text-white shadow-sm border border-[#28354F]'
+                : 'text-slate-400 hover:text-white hover:bg-[#121827]'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span>Overview & Activity</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('REGISTRATIONS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap relative ${
+              activeSection === 'REGISTRATIONS'
+                ? 'bg-[#182033] text-white shadow-sm border border-[#28354F]'
+                : 'text-slate-400 hover:text-white hover:bg-[#121827]'
+            }`}
+          >
+            <FileCheck2 className="w-3.5 h-3.5" />
+            <span>KYC Authorizations</span>
+            {(regStats.waiting || kpis.pendingOwners) > 0 && (
+              <span className="px-1.5 py-0.5 text-[10px] font-mono font-bold rounded-full bg-amber-500 text-black">
+                {regStats.waiting || kpis.pendingOwners}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveSection('BOOKINGS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              activeSection === 'BOOKINGS'
+                ? 'bg-[#182033] text-white shadow-sm border border-[#28354F]'
+                : 'text-slate-400 hover:text-white hover:bg-[#121827]'
+            }`}
+          >
+            <CalendarDays className="w-3.5 h-3.5" />
+            <span>Bookings & Holds</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('TOURNAMENTS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              activeSection === 'TOURNAMENTS'
+                ? 'bg-[#182033] text-white shadow-sm border border-[#28354F]'
+                : 'text-slate-400 hover:text-white hover:bg-[#121827]'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            <span>Tournaments</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSection('TURFS')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              activeSection === 'TURFS'
+                ? 'bg-[#182033] text-white shadow-sm border border-[#28354F]'
+                : 'text-slate-400 hover:text-white hover:bg-[#121827]'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Turf Venues Directory</span>
+          </button>
+        </div>
+
         {/* ========================================================================= */}
         {/* SECTION 1: LIVE OVERVIEW & PLATFORM INSIGHTS */}
         {/* ========================================================================= */}
         {activeSection === 'OVERVIEW' && (
-          <div className="space-y-8 animate-in fade-in duration-200">
+          <div className="space-y-7 animate-in fade-in duration-200">
             {/* Split row: Connected Turfs & Real-time Live Actions Stream */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Left Column (7 cols): Connected Turfs as Render Service Cards */}
-              <div className="lg:col-span-7 space-y-4">
+              {/* Left Column (7 cols): Connected Turfs as Service Cards */}
+              <div className="lg:col-span-7 space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-indigo-400" />
-                    <h2 className="text-base font-bold text-white tracking-tight">
+                    <Building2 className="w-4 h-4 text-[#D4FF00]" />
+                    <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
                       Active Turf Services & Booking Controls
                     </h2>
                   </div>
                   <button
                     onClick={() => setActiveSection('TURFS')}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                    className="text-xs text-[#D4FF00] hover:underline font-semibold flex items-center gap-1 font-mono"
                   >
                     <span>View All Venues</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {overview?.turfRevenueBreakdown && overview.turfRevenueBreakdown.length > 0 ? (
                     overview.turfRevenueBreakdown.map((turf) => (
                       <div
                         key={turf.turfId}
-                        className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-[#2E3C58] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                        className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-[#2E3C58] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                       >
                         <div className="flex items-start gap-3">
                           <div className="mt-1">
@@ -625,21 +729,21 @@ export default function SuperAdminDashboard() {
                             )}
                           </div>
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="text-sm font-bold text-white">{turf.venueName}</h3>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#182033] text-indigo-300 border border-[#28354F]">
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#161D2E] text-slate-300 border border-[#28354F]">
                                 #{turf.turfId}
                               </span>
                               {turf.isBookingHold && (
-                                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold">
-                                  Hold Active
+                                <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-semibold font-mono">
+                                  HOLD ACTIVE
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2">
-                              <span>{turf.neighborhoodArea || 'Chennai'}</span>
+                            <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-2 font-mono">
+                              <span>{turf.neighborhoodArea || 'Tamil Nadu'}</span>
                               <span className="text-slate-600">•</span>
-                              <span className="font-mono text-slate-400">{turf.ownerPhone}</span>
+                              <span className="text-slate-400">{turf.ownerPhone}</span>
                             </p>
                             <div className="flex items-center gap-3 mt-2 text-xs font-mono">
                               <span className="text-slate-400">
@@ -647,7 +751,7 @@ export default function SuperAdminDashboard() {
                               </span>
                               <span className="text-slate-600">•</span>
                               <span className="text-slate-400">
-                                All-Time: <strong className="text-indigo-300">₹{turf.totalRevenue.toLocaleString()}</strong>
+                                Total: <strong className="text-[#D4FF00]">₹{turf.totalRevenue.toLocaleString()}</strong>
                               </span>
                             </div>
                           </div>
@@ -659,21 +763,21 @@ export default function SuperAdminDashboard() {
                             type="button"
                             disabled={actionLoadingId === `turf_${turf.turfId}`}
                             onClick={() => handleToggleTurfHold(turf.turfId, turf.isBookingHold)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 active:scale-[0.98] ${
                               turf.isBookingHold
                                 ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20'
-                                : 'bg-[#182033] hover:bg-amber-600/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-[#161D2E] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
                             }`}
                           >
                             {turf.isBookingHold ? (
                               <>
                                 <PlayCircle className="w-3.5 h-3.5" />
-                                <span>Resume Bookings</span>
+                                <span>Resume</span>
                               </>
                             ) : (
                               <>
                                 <PauseCircle className="w-3.5 h-3.5" />
-                                <span>Hold Bookings</span>
+                                <span>Hold Slots</span>
                               </>
                             )}
                           </button>
@@ -681,62 +785,62 @@ export default function SuperAdminDashboard() {
                       </div>
                     ))
                   ) : (
-                    <div className="p-8 rounded-xl bg-[#111625] border border-[#1F293D] text-center text-xs text-slate-400 font-mono">
+                    <div className="p-8 rounded-xl bg-[#0E131F] border border-[#1E273A] text-center text-xs text-slate-400 font-mono">
                       No active turf venues registered yet.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Right Column (5 cols): Render-style Live Event Stream & Match Log */}
-              <div className="lg:col-span-5 space-y-4">
+              {/* Right Column (5 cols): Live Telemetry Stream */}
+              <div className="lg:col-span-5 space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Terminal className="w-4 h-4 text-emerald-400" />
-                    <h2 className="text-base font-bold text-white tracking-tight">
+                    <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
                       Live Operations Stream
                     </h2>
                   </div>
                   <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    Realtime Sync
+                    SYNCED
                   </span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#0B0F19] border border-[#1E2638] font-mono text-xs space-y-3 max-h-[390px] overflow-y-auto">
+                <div className="p-3.5 rounded-xl bg-[#05080E] border border-[#1E273A] font-mono text-xs space-y-2.5 max-h-[410px] overflow-y-auto">
                   {overview?.recentLiveActions && overview.recentLiveActions.length > 0 ? (
                     overview.recentLiveActions.map((action, i) => (
                       <div
                         key={action.id || i}
-                        className="p-3 rounded-lg bg-[#111727] border border-[#1A2338] hover:border-[#2C3B5C] transition-colors"
+                        className="p-3 rounded-lg bg-[#0E131F] border border-[#1A2234] hover:border-[#2C3B5C] transition-colors"
                       >
                         <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
                           <span className="text-slate-400 font-semibold">{action.timestamp}</span>
                           <span
-                            className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ${
+                            className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
                               action.type === 'BOOKING'
                                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                                 : action.type === 'CANCELLATION'
                                 ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                                 : action.type === 'HOLD'
                                 ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                                : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                                : 'bg-[#D4FF00]/15 text-[#D4FF00] border border-[#D4FF00]/30'
                             }`}
                           >
                             {action.type}
                           </span>
                         </div>
                         <p className="text-xs font-semibold text-slate-200">{action.title}</p>
-                        <p className="text-[11px] text-slate-400 mt-0.5">{action.description}</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{action.description}</p>
                         {Boolean(action.amount) && (
-                          <div className="mt-1 text-[11px] text-indigo-400 font-bold">
+                          <div className="mt-1 text-[11px] text-[#D4FF00] font-bold">
                             Amount: ₹{action.amount}
                           </div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="py-12 text-center text-slate-500">
+                    <div className="py-12 text-center text-slate-500 font-mono text-xs">
                       Waiting for platform activity...
                     </div>
                   )}
@@ -745,40 +849,40 @@ export default function SuperAdminDashboard() {
             </div>
 
             {/* Top Frequent Players Leaderboard */}
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-400" />
-                  <h2 className="text-base font-bold text-white tracking-tight">
-                    Active Customers & Player Statistics
+                  <Users className="w-4 h-4 text-sky-400" />
+                  <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
+                    Athlete Activity & Booking Leaderboard
                   </h2>
                 </div>
                 <span className="text-xs font-mono text-slate-400">
-                  {overview?.playerStats?.length || 0} Registered active users
+                  {overview?.playerStats?.length || 0} Registered athletes
                 </span>
               </div>
 
-              <div className="rounded-xl bg-[#111625] border border-[#1F293D] overflow-hidden">
+              <div className="rounded-xl bg-[#0E131F] border border-[#1E273A] overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="border-b border-[#1E2638] bg-[#0E1321] text-slate-400 font-mono">
-                        <th className="py-3 px-4 font-semibold">Player Name</th>
+                      <tr className="border-b border-[#1E273A] bg-[#0A0E18] text-slate-400 font-mono">
+                        <th className="py-3 px-4 font-semibold">Player</th>
                         <th className="py-3 px-4 font-semibold">Contact</th>
                         <th className="py-3 px-4 font-semibold">Total Bookings</th>
                         <th className="py-3 px-4 font-semibold">Total Spent</th>
-                        <th className="py-3 px-4 font-semibold">Fav Sport</th>
+                        <th className="py-3 px-4 font-semibold">Favorite Sport</th>
                         <th className="py-3 px-4 font-semibold">Last Active</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#1C2538] font-mono">
+                    <tbody className="divide-y divide-[#1A2234] font-mono">
                       {overview?.playerStats && overview.playerStats.length > 0 ? (
                         overview.playerStats.map((p, idx) => (
-                          <tr key={idx} className="hover:bg-[#151C2F] transition-colors">
+                          <tr key={idx} className="hover:bg-[#141B2B] transition-colors">
                             <td className="py-3 px-4 font-semibold text-white">{p.customerName}</td>
                             <td className="py-3 px-4 text-slate-400">{p.customerPhone}</td>
                             <td className="py-3 px-4 text-slate-200">
-                              <span className="px-2 py-0.5 rounded bg-[#182033] text-indigo-300 font-bold border border-[#28354F]">
+                              <span className="px-2 py-0.5 rounded bg-[#161D2E] text-slate-200 font-bold border border-[#28354F]">
                                 {p.totalBookings} slots
                               </span>
                             </td>
@@ -786,8 +890,8 @@ export default function SuperAdminDashboard() {
                               ₹{p.totalSpent.toLocaleString()}
                             </td>
                             <td className="py-3 px-4">
-                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
-                                {p.favoriteSport || 'Cricket'}
+                              <span className="px-2 py-0.5 rounded text-[10px] bg-[#D4FF00]/10 text-[#D4FF00] border border-[#D4FF00]/20 font-bold uppercase">
+                                {p.favoriteSport || 'Football'}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-slate-400">{p.lastBookingDate || 'Recent'}</td>
@@ -809,45 +913,54 @@ export default function SuperAdminDashboard() {
         )}
 
         {/* ========================================================================= */}
-        {/* SECTION 2: APPROVALS & OWNER REGISTRATIONS */}
+        {/* SECTION 2: APPROVALS & OWNER REGISTRATIONS (KYC) */}
         {/* ========================================================================= */}
         {activeSection === 'REGISTRATIONS' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Filter Tabs & Search */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#111625] border border-[#1F293D]">
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Filter Tabs & Search Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#0E131F] border border-[#1E273A]">
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveRegTab('WAITING')}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all flex items-center gap-1.5 ${
                     activeRegTab === 'WAITING'
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
-                      : 'text-slate-400 hover:text-white hover:bg-[#182033]'
+                      ? 'bg-amber-500 text-black font-bold shadow-md shadow-amber-500/20'
+                      : 'text-slate-400 hover:text-white hover:bg-[#161D2E]'
                   }`}
                 >
-                  Pending Review ({regStats.waiting})
+                  <span>Pending Review</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeRegTab === 'WAITING' ? 'bg-black text-amber-300' : 'bg-[#161D2E] text-slate-300'}`}>
+                    {regStats.waiting}
+                  </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveRegTab('VERIFIED')}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all flex items-center gap-1.5 ${
                     activeRegTab === 'VERIFIED'
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
-                      : 'text-slate-400 hover:text-white hover:bg-[#182033]'
+                      ? 'bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/20'
+                      : 'text-slate-400 hover:text-white hover:bg-[#161D2E]'
                   }`}
                 >
-                  Verified Venues ({regStats.verified})
+                  <span>Verified Venues</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeRegTab === 'VERIFIED' ? 'bg-black/30 text-emerald-200' : 'bg-[#161D2E] text-slate-300'}`}>
+                    {regStats.verified}
+                  </span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveRegTab('CANCEL')}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all flex items-center gap-1.5 ${
                     activeRegTab === 'CANCEL'
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
-                      : 'text-slate-400 hover:text-white hover:bg-[#182033]'
+                      ? 'bg-rose-600 text-white font-bold shadow-md shadow-rose-600/20'
+                      : 'text-slate-400 hover:text-white hover:bg-[#161D2E]'
                   }`}
                 >
-                  Cancelled ({regStats.cancelled})
+                  <span>Declined</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${activeRegTab === 'CANCEL' ? 'bg-black/30 text-rose-200' : 'bg-[#161D2E] text-slate-300'}`}>
+                    {regStats.cancelled}
+                  </span>
                 </button>
               </div>
 
@@ -855,10 +968,10 @@ export default function SuperAdminDashboard() {
                 <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Filter by venue or owner..."
+                  placeholder="Filter by venue or manager..."
                   value={regSearch}
                   onChange={(e) => setRegSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-1.5 bg-[#161D2F] border border-[#28354F] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-indigo-500"
+                  className="w-full pl-9 pr-3 py-1.5 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00]"
                 />
               </div>
             </div>
@@ -866,11 +979,11 @@ export default function SuperAdminDashboard() {
             {/* Registrations List */}
             {regLoading ? (
               <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                <RefreshCw className="w-8 h-8 animate-spin text-indigo-400 mb-3" />
-                <span className="text-xs font-mono">Loading venue applications...</span>
+                <RefreshCw className="w-8 h-8 animate-spin text-[#D4FF00] mb-3" />
+                <span className="text-xs font-mono">Fetching partner applications...</span>
               </div>
             ) : regItems.length === 0 ? (
-              <div className="py-16 text-center rounded-xl bg-[#111625] border border-[#1F293D] p-8">
+              <div className="py-16 text-center rounded-xl bg-[#0E131F] border border-[#1E273A] p-8">
                 <FileCheck2 className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                 <h3 className="text-sm font-bold text-slate-300">No applications in this category</h3>
                 <p className="text-xs text-slate-500 mt-1">All venue registrations are up to date.</p>
@@ -880,52 +993,52 @@ export default function SuperAdminDashboard() {
                 {regItems.map((reg) => (
                   <div
                     key={reg.id}
-                    className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-[#2C3B5C] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="p-5 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-[#2C3B5C] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#182033] text-indigo-300 border border-[#28354F]">
+                        <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#161D2E] text-slate-300 border border-[#28354F]">
                           {reg.trackingCode || `#REG-${reg.id}`}
                         </span>
-                        <h3 className="text-sm font-bold text-white">{reg.venueName}</h3>
+                        <h3 className="text-base font-bold text-white">{reg.venueName}</h3>
                         {reg.isBranch && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
-                            <Building2 className="w-3 h-3 text-cyan-400" /> New Branch Request
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 font-mono">
+                            <Building2 className="w-3 h-3 text-sky-400" /> NEW BRANCH REQUEST
                           </span>
                         )}
                         {reg.status === 'PENDING_APPROVAL' && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
-                            Review Needed
+                            REVIEW NEEDED
                           </span>
                         )}
                         {reg.status === 'VERIFIED' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                            Verified Active
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
+                            VERIFIED ACTIVE
                           </span>
                         )}
                       </div>
 
                       {reg.isBranch && (
-                        <div className="mt-2.5 p-2.5 rounded-lg bg-cyan-950/40 border border-cyan-800/60 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
+                        <div className="mt-2.5 p-2.5 rounded-lg bg-sky-950/30 border border-sky-800/50 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-cyan-400 font-bold flex items-center gap-1 text-[11px]">
-                              <Building2 className="w-3.5 h-3.5 text-cyan-400" /> Linked Old Turf:
+                            <span className="text-sky-400 font-bold flex items-center gap-1 text-[11px] font-mono">
+                              <Building2 className="w-3.5 h-3.5 text-sky-400" /> Parent Turf:
                             </span>
-                            <span className="font-bold text-white bg-cyan-900/40 px-2 py-0.5 rounded border border-cyan-700/50">
-                              {reg.parentTurfName || reg.parentTurf?.venueName || 'Primary Turf Venue'}
+                            <span className="font-bold text-white bg-sky-900/40 px-2 py-0.5 rounded border border-sky-700/50">
+                              {reg.parentTurfName || reg.parentTurf?.venueName || 'Primary Turf'}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-slate-400 text-[11px]">Owner Login Phone:</span>
+                            <span className="text-slate-400 text-[11px] font-mono">Owner Mobile:</span>
                             <span className="font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">
                               {reg.parentTurfPhone || reg.ownerPhone}
                             </span>
                           </div>
                           {reg.alternativePhone && (
                             <div className="flex items-center gap-1.5">
-                              <span className="text-slate-400 text-[11px]">Branch Manager Phone:</span>
-                              <span className="font-mono text-cyan-300 bg-[#161D2F] px-2 py-0.5 rounded border border-[#28354F]">
+                              <span className="text-slate-400 text-[11px] font-mono">Branch Phone:</span>
+                              <span className="font-mono text-sky-300 bg-[#161D2E] px-2 py-0.5 rounded border border-[#28354F]">
                                 {reg.alternativePhone}
                               </span>
                             </div>
@@ -934,31 +1047,37 @@ export default function SuperAdminDashboard() {
                       )}
 
                       <p className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
-                        <span>Owner: <strong className="text-slate-300">{reg.ownerName}</strong></span>
+                        <span>Owner: <strong className="text-slate-200">{reg.ownerName}</strong></span>
                         <span className="text-slate-600">•</span>
                         <span className="font-mono">{reg.ownerPhone}</span>
                         {reg.alternativePhone && (
                           <>
                             <span className="text-slate-600">•</span>
-                            <span className="font-mono text-cyan-400">Alt: {reg.alternativePhone}</span>
+                            <span className="font-mono text-sky-400">Alt: {reg.alternativePhone}</span>
                           </>
                         )}
                         <span className="text-slate-600">•</span>
                         <span>{reg.neighborhoodArea}</span>
                       </p>
 
-                      <div className="flex items-center gap-2 mt-2 text-[11px] font-mono text-slate-400">
-                        <span>Aadhaar: {reg.aadhaarNumber ? '✓ Provided' : '—'}</span>
+                      <div className="flex items-center gap-2.5 mt-2.5 text-[11px] font-mono text-slate-400 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          Aadhaar: {reg.aadhaarNumber ? <strong className="text-emerald-400">✓ On File</strong> : <span className="text-slate-500">—</span>}
+                        </span>
                         <span className="text-slate-600">•</span>
-                        <span>PAN: {reg.panNumber ? '✓ Provided' : '—'}</span>
+                        <span className="flex items-center gap-1">
+                          PAN: {reg.panNumber ? <strong className="text-emerald-400">✓ On File</strong> : <span className="text-slate-500">—</span>}
+                        </span>
                         <span className="text-slate-600">•</span>
-                        <span>UPI: {reg.upiId || '—'}</span>
+                        <span className="flex items-center gap-1">
+                          UPI: {reg.upiId ? <span className="text-slate-300">{reg.upiId}</span> : <span className="text-slate-500">—</span>}
+                        </span>
                       </div>
 
                       {/* Venue Photos Preview Strip */}
                       {reg.photoUrls && reg.photoUrls.length > 0 && (
                         <div className="flex items-center gap-2 mt-3 overflow-x-auto py-1">
-                          <span className="text-[10px] text-indigo-400 font-mono font-medium flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] text-[#D4FF00] font-mono font-medium flex items-center gap-1 shrink-0">
                             <ImageIcon className="w-3 h-3" /> {reg.photoUrls.length} Photos:
                           </span>
                           <div className="flex items-center gap-1.5">
@@ -967,7 +1086,7 @@ export default function SuperAdminDashboard() {
                                 key={pIdx}
                                 type="button"
                                 onClick={() => setSelectedReg(reg)}
-                                className="w-14 h-10 rounded-md overflow-hidden border border-[#232C42] bg-[#161D2F] shrink-0 hover:border-indigo-500/60 transition-all group relative focus:outline-hidden"
+                                className="w-14 h-10 rounded-md overflow-hidden border border-[#232C42] bg-[#161D2E] shrink-0 hover:border-[#D4FF00] transition-all group relative focus:outline-hidden"
                                 title={`View Photo ${pIdx + 1}`}
                               >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -992,9 +1111,9 @@ export default function SuperAdminDashboard() {
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => setSelectedReg(reg)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#182033] hover:bg-[#222D47] text-slate-300 hover:text-white border border-[#28354F] transition-all"
+                        className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#161D2E] hover:bg-[#20293F] text-slate-200 hover:text-white border border-[#28354F] transition-all"
                       >
-                        Inspect KYC
+                        Inspect Dossier
                       </button>
 
                       {reg.status === 'PENDING_APPROVAL' && (
@@ -1002,11 +1121,11 @@ export default function SuperAdminDashboard() {
                           <button
                             disabled={quickVerifyingId === reg.id || !isRegComplete(reg)}
                             onClick={() => handleQuickVerify(reg)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#D4FF00] hover:bg-[#b8dd00] text-black shadow-md shadow-[#D4FF00]/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                             title={!isRegComplete(reg) ? 'Incomplete application - cannot verify' : 'Approve and activate'}
                           >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>{quickVerifyingId === reg.id ? 'Approving...' : 'Approve'}</span>
+                            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                            <span>{quickVerifyingId === reg.id ? 'Approving...' : 'Approve & Activate'}</span>
                           </button>
                           <button
                             onClick={() => {
@@ -1031,17 +1150,17 @@ export default function SuperAdminDashboard() {
         {/* SECTION 3: BOOKINGS & HOLDS */}
         {/* ========================================================================= */}
         {activeSection === 'BOOKINGS' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-5 animate-in fade-in duration-200">
             {/* Filter Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#111625] border border-[#1F293D]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#0E131F] border border-[#1E273A]">
               <div className="relative flex-1 max-w-md">
                 <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search by customer phone, booking code, or turf..."
+                  placeholder="Search by player phone, booking code, or turf..."
                   value={bookingSearch}
                   onChange={(e) => setBookingSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-indigo-500"
+                  className="w-full pl-9 pr-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00]"
                 />
               </div>
 
@@ -1049,7 +1168,7 @@ export default function SuperAdminDashboard() {
                 <select
                   value={bookingStatusFilter}
                   onChange={(e) => setBookingStatusFilter(e.target.value)}
-                  className="px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-xs text-slate-200 focus:outline-hidden focus:border-indigo-500 font-mono"
+                  className="px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-slate-200 focus:outline-hidden focus:border-[#D4FF00] font-mono"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="CONFIRMED">Confirmed Slots</option>
@@ -1062,11 +1181,11 @@ export default function SuperAdminDashboard() {
             {/* Bookings List */}
             {bookingsLoading ? (
               <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                <RefreshCw className="w-8 h-8 animate-spin text-indigo-400 mb-3" />
-                <span className="text-xs font-mono">Fetching booking records...</span>
+                <RefreshCw className="w-8 h-8 animate-spin text-[#D4FF00] mb-3" />
+                <span className="text-xs font-mono">Fetching reservation logs...</span>
               </div>
             ) : bookings.length === 0 ? (
-              <div className="py-16 text-center rounded-xl bg-[#111625] border border-[#1F293D] p-8">
+              <div className="py-16 text-center rounded-xl bg-[#0E131F] border border-[#1E273A] p-8">
                 <CalendarDays className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                 <h3 className="text-sm font-bold text-slate-300">No bookings match the filter</h3>
                 <p className="text-xs text-slate-500 mt-1">Try modifying your search or status query.</p>
@@ -1076,35 +1195,35 @@ export default function SuperAdminDashboard() {
                 {bookings.map((booking) => (
                   <div
                     key={booking.id}
-                    className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-[#2C3B5C] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    className="p-5 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-[#2C3B5C] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
                   >
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#182033] text-indigo-300 font-bold border border-[#28354F]">
+                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-[#161D2E] text-slate-200 font-bold border border-[#28354F]">
                           {booking.bookingCode || `#BK-${booking.id}`}
                         </span>
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#D4FF00]/10 text-[#D4FF00] border border-[#D4FF00]/20 font-mono uppercase">
                           {booking.sport}
                         </span>
                         {booking.status === 'CONFIRMED' && (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            Confirmed
+                            CONFIRMED
                           </span>
                         )}
                         {booking.isHold && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            Slot Hold Active
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
+                            SLOT HOLD ACTIVE
                           </span>
                         )}
                         {booking.status === 'CANCELLED' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                            Cancelled
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-300 border border-rose-500/30 font-mono">
+                            CANCELLED
                           </span>
                         )}
                         {booking.isOpenMatch && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-300 border border-rose-800/40">
-                            ⚔️ Open Challenge
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950/60 text-rose-300 border border-rose-800/40 font-mono">
+                            ⚔️ OPEN CHALLENGE
                           </span>
                         )}
                       </div>
@@ -1118,14 +1237,14 @@ export default function SuperAdminDashboard() {
                           <span className="text-slate-600">•</span>
                           <span>⏰ {booking.timeSlot}</span>
                           <span className="text-slate-600">•</span>
-                          <span>Player: <strong className="text-slate-200">{booking.customerName}</strong> ({booking.customerPhone})</span>
+                          <span>Athlete: <strong className="text-slate-200">{booking.customerName}</strong> ({booking.customerPhone})</span>
                         </p>
                       </div>
 
                       <div className="mt-2 text-xs font-mono text-slate-400 flex items-center gap-3">
                         <span className="text-white font-bold">Total: ₹{booking.amount}</span>
                         <span className="text-slate-600">•</span>
-                        <span>Pay Mode: {booking.paymentMethod}</span>
+                        <span>Mode: {booking.paymentMethod}</span>
                       </div>
                     </div>
 
@@ -1136,10 +1255,10 @@ export default function SuperAdminDashboard() {
                             type="button"
                             disabled={actionLoadingId === `book_${booking.id}`}
                             onClick={() => handleToggleBookingHold(booking.id, booking.isHold)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 active:scale-[0.98] ${
                               booking.isHold
                                 ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                                : 'bg-[#182033] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-[#161D2E] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
                             }`}
                           >
                             {booking.isHold ? 'Release Hold' : 'Hold Slot'}
@@ -1166,14 +1285,14 @@ export default function SuperAdminDashboard() {
         {/* SECTION 4: TOURNAMENTS OVERSIGHT */}
         {/* ========================================================================= */}
         {activeSection === 'TOURNAMENTS' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#111625] border border-[#1F293D]">
+          <div className="space-y-5 animate-in fade-in duration-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#0E131F] border border-[#1E273A]">
               <div>
-                <h2 className="text-base font-bold text-white tracking-tight">
+                <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
                   Tournaments & Championship Management
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Real-time team registrations, hold toggles, and cash prize pool audits.
+                  Squad registrations, cash prize pool audits, and active participation controls.
                 </p>
               </div>
 
@@ -1181,7 +1300,7 @@ export default function SuperAdminDashboard() {
                 <select
                   value={tournStatusFilter}
                   onChange={(e) => setTournStatusFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-[#161D2F] border border-[#28354F] rounded-lg text-xs text-slate-200 font-mono"
+                  className="px-3 py-1.5 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-slate-200 font-mono"
                 >
                   <option value="ALL">All Tournaments</option>
                   <option value="LIVE">Live Now</option>
@@ -1191,9 +1310,9 @@ export default function SuperAdminDashboard() {
 
                 <button
                   onClick={() => setShowCreateTournModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#D4FF00] hover:bg-[#b8dd00] text-black shadow-md shadow-[#D4FF00]/15 transition-all"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Deploy New</span>
                 </button>
               </div>
@@ -1201,76 +1320,86 @@ export default function SuperAdminDashboard() {
 
             {tournLoading ? (
               <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                <RefreshCw className="w-8 h-8 animate-spin text-indigo-400 mb-3" />
+                <RefreshCw className="w-8 h-8 animate-spin text-[#D4FF00] mb-3" />
                 <span className="text-xs font-mono">Loading tournaments...</span>
               </div>
             ) : tournaments.length === 0 ? (
-              <div className="py-16 text-center rounded-xl bg-[#111625] border border-[#1F293D] p-8">
+              <div className="py-16 text-center rounded-xl bg-[#0E131F] border border-[#1E273A] p-8">
                 <Trophy className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                 <h3 className="text-sm font-bold text-slate-300">No tournaments registered</h3>
-                <p className="text-xs text-slate-500 mt-1">Deploy your first tournament to attract squads.</p>
+                <p className="text-xs text-slate-500 mt-1">Deploy an official tournament to attract athletic squads.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tournaments.map((tourn) => (
                   <div
                     key={tourn.id}
-                    className="p-5 rounded-xl bg-[#111625] border border-[#1F293D] hover:border-indigo-500/40 transition-all flex flex-col justify-between"
+                    className="p-5 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-[#D4FF00]/40 transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#D4FF00]/10 text-[#D4FF00] border border-[#D4FF00]/20 font-mono uppercase">
                           {tourn.sport}
                         </span>
                         {tourn.status === 'LIVE' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                            Live Championship
+                            LIVE CHAMPIONSHIP
                           </span>
                         ) : tourn.isHold ? (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            On Hold
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono">
+                            ON HOLD
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
-                            Upcoming
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#161D2E] text-slate-300 font-mono">
+                            UPCOMING
                           </span>
                         )}
                       </div>
 
                       <h3 className="text-base font-bold text-white">{tourn.title}</h3>
-                      <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5 font-mono">
+                        <MapPin className="w-3.5 h-3.5 text-[#D4FF00] shrink-0" />
                         <span>{tourn.venueName}</span>
                       </p>
 
-                      <div className="mt-3 pt-3 border-t border-[#1C2538] space-y-1.5 text-xs font-mono">
+                      <div className="mt-4 pt-3 border-t border-[#1E273A] space-y-2 text-xs font-mono">
                         <div className="flex items-center justify-between text-slate-400">
                           <span>Prize Pool:</span>
-                          <span className="text-amber-300 font-bold">{tourn.prizePool}</span>
+                          <span className="text-[#D4FF00] font-bold text-sm">{tourn.prizePool}</span>
                         </div>
                         <div className="flex items-center justify-between text-slate-400">
                           <span>Entry Fee:</span>
                           <span className="text-white font-semibold">₹{tourn.entryFee} / squad</span>
                         </div>
-                        <div className="flex items-center justify-between text-slate-400">
-                          <span>Teams Registered:</span>
-                          <span className="text-indigo-300 font-bold">{tourn.registeredTeams || 0} / {tourn.maxTeams || 16}</span>
+                        <div>
+                          <div className="flex items-center justify-between text-slate-400 mb-1">
+                            <span>Squads:</span>
+                            <span className="text-slate-200 font-bold">{tourn.registeredTeams || 0} / {tourn.maxTeams || 16}</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-[#161D2E] overflow-hidden">
+                            <div
+                              className="h-full bg-[#D4FF00] rounded-full transition-all"
+                              style={{
+                                width: `${Math.min(100, Math.round(((tourn.registeredTeams || 0) / (tourn.maxTeams || 16)) * 100))}%`,
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-5 pt-3 border-t border-[#1C2538] flex items-center justify-between gap-2">
+                    <div className="mt-5 pt-3 border-t border-[#1E273A] flex items-center justify-between gap-2">
                       <span className="text-[11px] font-mono text-slate-400">📅 {tourn.date}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           disabled={actionLoadingId === `tourn_${tourn.id}`}
                           onClick={() => handleToggleTournHold(tourn.id, tourn.isHold)}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all disabled:opacity-50 active:scale-[0.98] ${
                             tourn.isHold
                               ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                              : 'bg-[#182033] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
+                              : 'bg-[#161D2E] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
                           }`}
                         >
                           {tourn.isHold ? 'Resume' : 'Hold'}
@@ -1279,7 +1408,7 @@ export default function SuperAdminDashboard() {
                           type="button"
                           disabled={actionLoadingId === `del_tourn_${tourn.id}`}
                           onClick={() => setDeleteConfirmTourn(tourn)}
-                          className="p-1 rounded-lg text-rose-400 hover:text-white hover:bg-rose-600/30 border border-rose-500/30 transition-all disabled:opacity-50"
+                          className="p-1.5 rounded-lg text-rose-400 hover:text-white hover:bg-rose-600/30 border border-rose-500/30 transition-all disabled:opacity-50"
                           title="Delete Tournament Permanently"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -1297,10 +1426,10 @@ export default function SuperAdminDashboard() {
         {/* SECTION 5: TURF REVENUES & RECONCILIATION */}
         {/* ========================================================================= */}
         {activeSection === 'TURFS' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div className="p-4 rounded-xl bg-[#111625] border border-[#1F293D] flex items-center justify-between">
+          <div className="space-y-5 animate-in fade-in duration-200">
+            <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-bold text-white tracking-tight">
+                <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
                   Venue Financials & Commission Auditing
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
@@ -1309,17 +1438,18 @@ export default function SuperAdminDashboard() {
               </div>
               <Link
                 href="/admins"
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-all"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#161D2E] hover:bg-[#20293F] text-slate-200 hover:text-white border border-[#28354F] transition-all font-mono self-start sm:self-auto flex items-center gap-1.5"
               >
-                Inspect Directory
+                <span>Full Directory</span>
+                <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            <div className="rounded-xl bg-[#111625] border border-[#1F293D] overflow-hidden">
+            <div className="rounded-xl bg-[#0E131F] border border-[#1E273A] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-[#1E2638] bg-[#0E1321] text-slate-400 font-mono">
+                    <tr className="border-b border-[#1E273A] bg-[#0A0E18] text-slate-400 font-mono">
                       <th className="py-3.5 px-4 font-semibold">Turf Venue</th>
                       <th className="py-3.5 px-4 font-semibold">Location</th>
                       <th className="py-3.5 px-4 font-semibold">Today&apos;s Revenue</th>
@@ -1329,10 +1459,10 @@ export default function SuperAdminDashboard() {
                       <th className="py-3.5 px-4 font-semibold">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1C2538] font-mono">
+                  <tbody className="divide-y divide-[#1A2234] font-mono">
                     {overview?.turfRevenueBreakdown && overview.turfRevenueBreakdown.length > 0 ? (
                       overview.turfRevenueBreakdown.map((t) => (
-                        <tr key={t.turfId} className="hover:bg-[#151C2F] transition-colors">
+                        <tr key={t.turfId} className="hover:bg-[#141B2B] transition-colors">
                           <td className="py-3.5 px-4 font-semibold text-white">
                             {t.venueName}
                             <span className="block text-[10px] text-slate-500 font-normal">
@@ -1351,17 +1481,17 @@ export default function SuperAdminDashboard() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-indigo-300 font-bold">
+                          <td className="py-3.5 px-4 text-[#D4FF00] font-bold">
                             ₹{t.totalRevenue.toLocaleString()}
                           </td>
                           <td className="py-3.5 px-4">
                             {t.isBookingHold ? (
                               <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
-                                Hold Active
+                                HOLD ACTIVE
                               </span>
                             ) : (
                               <span className="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">
-                                Live & Open
+                                LIVE & OPEN
                               </span>
                             )}
                           </td>
@@ -1371,10 +1501,10 @@ export default function SuperAdminDashboard() {
                                 type="button"
                                 disabled={actionLoadingId === `turf_${t.turfId}`}
                                 onClick={() => handleToggleTurfHold(t.turfId, t.isBookingHold)}
-                                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all disabled:opacity-50 ${
+                                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all disabled:opacity-50 active:scale-[0.98] ${
                                   t.isBookingHold
                                     ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                                    : 'bg-[#182033] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
+                                    : 'bg-[#161D2E] text-amber-300 border border-amber-500/30 hover:bg-amber-500/20'
                                 }`}
                               >
                                 {t.isBookingHold ? 'Resume' : 'Hold'}
@@ -1425,10 +1555,10 @@ export default function SuperAdminDashboard() {
 
       {/* Cancel Reason Modal */}
       {cancelModalItem && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D121F] border border-[#232B3E] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0E131F] border border-[#232B3E] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <h3 className="text-base font-bold text-white">
-              Reject Registration Application
+              Decline Registration Application
             </h3>
             <p className="text-xs text-slate-400">
               Provide a clear reason for declining the venue application for{' '}
@@ -1438,21 +1568,21 @@ export default function SuperAdminDashboard() {
               rows={3}
               value={cancelReasonText}
               onChange={(e) => setCancelReasonText(e.target.value)}
-              placeholder="e.g. Document photo illegible, GST certificate mismatch..."
-              className="w-full p-3 bg-[#161D2F] border border-[#28354F] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-rose-500"
+              placeholder="e.g. Document photograph illegible, GST certificate mismatch, turf photos missing..."
+              className="w-full p-3 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-rose-500"
             />
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setCancelModalItem(null)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleQuickCancelConfirm}
-                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all"
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-[0.98]"
               >
                 Confirm Rejection
               </button>
@@ -1463,11 +1593,11 @@ export default function SuperAdminDashboard() {
 
       {/* Create Tournament Modal */}
       {showCreateTournModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D121F] border border-[#232B3E] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#1E2638]">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#0E131F] border border-[#1E273A] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#1E273A]">
               <div className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-indigo-400" />
+                <Trophy className="w-5 h-5 text-[#D4FF00]" />
                 <h3 className="text-base font-bold text-white">Deploy Tournament</h3>
               </div>
               <button
@@ -1480,14 +1610,14 @@ export default function SuperAdminDashboard() {
 
             <form onSubmit={handleCreateTournament} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-400 font-medium mb-1">Tournament Title</label>
+                <label className="block text-slate-400 font-medium mb-1">Tournament Title *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Chennai Super Sixes 2026"
+                  placeholder="e.g. Chennai Super League 2026"
                   value={newTournTitle}
                   onChange={(e) => setNewTournTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-white placeholder-slate-500 focus:outline-hidden focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00]"
                 />
               </div>
 
@@ -1497,7 +1627,7 @@ export default function SuperAdminDashboard() {
                   <select
                     value={newTournSport}
                     onChange={(e) => setNewTournSport(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-white focus:outline-hidden focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-white focus:outline-hidden focus:border-[#D4FF00]"
                   >
                     <option value="Football">Football</option>
                     <option value="Cricket">Cricket</option>
@@ -1506,26 +1636,26 @@ export default function SuperAdminDashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-400 font-medium mb-1">Date</label>
+                  <label className="block text-slate-400 font-medium mb-1">Date *</label>
                   <input
                     type="date"
                     required
                     value={newTournDate}
                     onChange={(e) => setNewTournDate(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-white focus:outline-hidden focus:border-indigo-500 font-mono"
+                    className="w-full px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-white focus:outline-hidden focus:border-[#D4FF00] font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-400 font-medium mb-1">Venue Name / Location</label>
+                <label className="block text-slate-400 font-medium mb-1">Venue Name / Location *</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Gullies Arena, Anna Nagar"
+                  placeholder="e.g. Kickoff Arena, Anna Nagar"
                   value={newTournVenue}
                   onChange={(e) => setNewTournVenue(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-white placeholder-slate-500 focus:outline-hidden focus:border-indigo-500"
+                  className="w-full px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00]"
                 />
               </div>
 
@@ -1536,7 +1666,7 @@ export default function SuperAdminDashboard() {
                     type="number"
                     value={newTournEntryFee}
                     onChange={(e) => setNewTournEntryFee(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-white font-mono focus:outline-hidden focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-white font-mono focus:outline-hidden focus:border-[#D4FF00]"
                   />
                 </div>
                 <div>
@@ -1545,12 +1675,12 @@ export default function SuperAdminDashboard() {
                     type="text"
                     value={newTournPrize}
                     onChange={(e) => setNewTournPrize(e.target.value)}
-                    className="w-full px-3 py-2 bg-[#161D2F] border border-[#28354F] rounded-lg text-white font-mono focus:outline-hidden focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-white font-mono focus:outline-hidden focus:border-[#D4FF00]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1E2638]">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#1E273A]">
                 <button
                   type="button"
                   onClick={() => setShowCreateTournModal(false)}
@@ -1560,7 +1690,7 @@ export default function SuperAdminDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition-all"
+                  className="px-4 py-2 rounded-lg text-xs font-bold bg-[#D4FF00] hover:bg-[#b8dd00] text-black shadow-lg shadow-[#D4FF00]/15 transition-all active:scale-[0.98]"
                 >
                   Deploy Tournament
                 </button>
@@ -1569,17 +1699,18 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
       )}
+
       {/* Delete Tournament Confirmation Modal */}
       {deleteConfirmTourn && (
         <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D121F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-[#0E131F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-rose-400" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-white">Permanently Delete Tournament?</h3>
-                <p className="text-xs text-slate-400">Irreversible super admin removal</p>
+                <p className="text-xs text-slate-400 font-mono">Irreversible super admin removal</p>
               </div>
             </div>
 
@@ -1598,7 +1729,7 @@ export default function SuperAdminDashboard() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmTourn(null)}
-                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2F] border border-[#28354F]"
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2E] border border-[#28354F]"
               >
                 Cancel
               </button>
@@ -1606,7 +1737,7 @@ export default function SuperAdminDashboard() {
                 type="button"
                 disabled={actionLoadingId === `del_tourn_${deleteConfirmTourn.id}`}
                 onClick={() => handleDeleteTournament(deleteConfirmTourn.id)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50 active:scale-[0.98]"
               >
                 {actionLoadingId === `del_tourn_${deleteConfirmTourn.id}` ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -1623,14 +1754,14 @@ export default function SuperAdminDashboard() {
       {/* Delete Turf Owner Confirmation Modal */}
       {deleteConfirmTurf && (
         <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0D121F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-[#0E131F] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3 text-rose-400">
               <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-rose-400" />
               </div>
               <div>
                 <h3 className="text-base font-bold text-white">Permanently Delete Turf Owner?</h3>
-                <p className="text-xs text-slate-400">Irreversible super admin removal</p>
+                <p className="text-xs text-slate-400 font-mono">Irreversible super admin removal</p>
               </div>
             </div>
 
@@ -1650,7 +1781,7 @@ export default function SuperAdminDashboard() {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmTurf(null)}
-                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2F] border border-[#28354F]"
+                className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2E] border border-[#28354F]"
               >
                 Cancel
               </button>
@@ -1658,7 +1789,7 @@ export default function SuperAdminDashboard() {
                 type="button"
                 disabled={actionLoadingId === `del_turf_${deleteConfirmTurf.turfId}`}
                 onClick={() => handleDeleteTurf(deleteConfirmTurf.turfId)}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-50 active:scale-[0.98]"
               >
                 {actionLoadingId === `del_turf_${deleteConfirmTurf.turfId}` ? (
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />

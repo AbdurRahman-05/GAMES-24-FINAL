@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Games24 Control Center | Super Admin & Live Oversight",
-  description: "Render-inspired developer and operations portal for Games24 venue approvals, real-time match tracking, and financial reconciliation.",
+  description: "Executive operations portal for Games24 venue approvals, real-time match tracking, and financial reconciliation.",
 };
 
 export default function RootLayout({
@@ -25,13 +14,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark h-full bg-[#090D16] antialiased ${geistSans.variable} ${geistMono.variable}`}
-      style={{ backgroundColor: '#090D16', color: '#F1F5F9' }}
+      className="dark h-full bg-[#080B11] antialiased"
     >
-      <body
-        className="min-h-full flex flex-col bg-[#090D16] text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200"
-        style={{ backgroundColor: '#090D16', color: '#F1F5F9' }}
-      >
+      <body className="min-h-full flex flex-col bg-[#080B11] text-slate-100 font-sans selection:bg-[#CCFF00]/20 selection:text-[#CCFF00]">
         {children}
       </body>
     </html>

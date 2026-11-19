@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { VerifiedAdmin, BACKEND_URL, resolveFileUrl, verifyRegistration, cancelRegistration } from '@/lib/api';
+import { VerifiedAdmin, resolveFileUrl, verifyRegistration, cancelRegistration } from '@/lib/api';
 import {
   X,
   ShieldCheck,
@@ -20,6 +20,9 @@ import {
   Loader2,
   FileText,
   ExternalLink,
+  Building2,
+  PlayCircle,
+  PauseCircle,
 } from 'lucide-react';
 
 interface Props {
@@ -75,27 +78,27 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="relative bg-[#0D121F] rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#222B3F] text-slate-100 animate-in fade-in zoom-in-95 duration-150">
-        {/* Render-style Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E2638] bg-[#111727]/80 rounded-t-2xl">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="relative bg-[#0A0E17] rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-[#1E273A] text-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E273A] bg-[#0E131F] rounded-t-2xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10 shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg font-bold text-white tracking-tight">{admin.venueName}</h2>
-                <span className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-[#182033] text-indigo-300 font-semibold border border-[#28354F]">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-[#161D2E] text-slate-300 font-semibold border border-[#28354F]">
                   {admin.trackingCode || `#ADM-${admin.id}`}
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  Verified Partner
+                  VERIFIED PARTNER
                 </span>
                 {admin.isBookingHold && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                    Booking Hold Active
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                    HOLD ACTIVE
                   </span>
                 )}
               </div>
@@ -108,18 +111,18 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#1E273A] transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-[#161D2E] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-6 space-y-6">
+        <div className="overflow-y-auto p-6 space-y-5">
           {/* Owner & Venue Location */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
-              <Building className="w-4 h-4" /> Owner Identity & Location
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
+              <Building2 className="w-4 h-4" /> Owner Identity & Coordinates
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div>
@@ -128,8 +131,8 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
               </div>
               <div>
                 <span className="text-xs text-slate-400">Venue Area</span>
-                <p className="font-semibold text-white mt-0.5 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                <p className="font-semibold text-white mt-0.5 flex items-center gap-1.5 font-mono">
+                  <MapPin className="w-3.5 h-3.5 text-[#D4FF00]" />
                   {admin.neighborhoodArea}
                 </p>
               </div>
@@ -138,7 +141,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                 <div className="flex items-center gap-2 mt-0.5">
                   <Phone className="w-3.5 h-3.5 text-slate-400" />
                   <span className="font-mono text-white font-medium">{admin.ownerPhone}</span>
-                  <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                     Verified ✓
                   </span>
                 </div>
@@ -158,38 +161,38 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
           </div>
 
           {/* Pricing & Rate Cards */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
-              <Tag className="w-4 h-4" /> Active Rate Configuration
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
+              <Tag className="w-4 h-4" /> Active Hourly Rate Matrix
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-lg bg-[#161D2F] border border-[#232C42]">
-                <span className="text-[11px] text-slate-400">Weekday Hourly</span>
+              <div className="p-3 rounded-lg bg-[#05080E] border border-[#1E273A]">
+                <span className="text-[11px] text-slate-400 font-mono">Weekday Hourly</span>
                 <p className="font-mono text-sm font-bold text-white mt-1">₹{admin.weekdayRate || 1200}/hr</p>
               </div>
-              <div className="p-3 rounded-lg bg-[#161D2F] border border-[#232C42]">
-                <span className="text-[11px] text-slate-400">Weekend Hourly</span>
-                <p className="font-mono text-sm font-bold text-indigo-300 mt-1">₹{admin.weekendRate || 1600}/hr</p>
+              <div className="p-3 rounded-lg bg-[#05080E] border border-[#1E273A]">
+                <span className="text-[11px] text-slate-400 font-mono">Weekend Hourly</span>
+                <p className="font-mono text-sm font-bold text-[#D4FF00] mt-1">₹{admin.weekendRate || 1600}/hr</p>
               </div>
-              <div className="p-3 rounded-lg bg-[#161D2F] border border-[#232C42]">
-                <span className="text-[11px] text-slate-400">Day Slot</span>
+              <div className="p-3 rounded-lg bg-[#05080E] border border-[#1E273A]">
+                <span className="text-[11px] text-slate-400 font-mono">Day Slot</span>
                 <p className="font-mono text-sm font-bold text-white mt-1">₹{admin.dayRate || 1000}/hr</p>
               </div>
-              <div className="p-3 rounded-lg bg-[#161D2F] border border-[#232C42]">
-                <span className="text-[11px] text-slate-400">Night Slot (Floodlights)</span>
+              <div className="p-3 rounded-lg bg-[#05080E] border border-[#1E273A]">
+                <span className="text-[11px] text-slate-400 font-mono">Night Slot (Floodlights)</span>
                 <p className="font-mono text-sm font-bold text-amber-300 mt-1">₹{admin.nightRate || 1800}/hr</p>
               </div>
             </div>
           </div>
 
           {/* Tax & Identity KYC Compliance */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
               <FileText className="w-4 h-4" /> Tax & Identity KYC Compliance
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Aadhaar */}
-              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+              <div className="p-3.5 rounded-lg bg-[#05080E] border border-[#1E273A]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-slate-400">Aadhaar Card</span>
                   {admin.aadhaarDocUrl ? (
@@ -197,7 +200,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                       href={getFullFileUrl(admin.aadhaarDocUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono font-semibold"
+                      className="text-xs text-[#D4FF00] hover:underline inline-flex items-center gap-1 font-mono font-semibold"
                     >
                       View PDF <ExternalLink className="w-3 h-3" />
                     </a>
@@ -211,7 +214,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
               </div>
 
               {/* PAN */}
-              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+              <div className="p-3.5 rounded-lg bg-[#05080E] border border-[#1E273A]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-slate-400">PAN Card</span>
                   {admin.panDocUrl ? (
@@ -219,7 +222,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                       href={getFullFileUrl(admin.panDocUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono font-semibold"
+                      className="text-xs text-[#D4FF00] hover:underline inline-flex items-center gap-1 font-mono font-semibold"
                     >
                       View PDF <ExternalLink className="w-3 h-3" />
                     </a>
@@ -233,7 +236,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
               </div>
 
               {/* GSTIN */}
-              <div className="p-3.5 rounded-lg bg-[#161D2F] border border-[#232C42]">
+              <div className="p-3.5 rounded-lg bg-[#05080E] border border-[#1E273A]">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-xs text-slate-400">GST Registration</span>
                   {admin.gstDocUrl ? (
@@ -241,7 +244,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                       href={getFullFileUrl(admin.gstDocUrl)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 font-mono font-semibold"
+                      className="text-xs text-[#D4FF00] hover:underline inline-flex items-center gap-1 font-mono font-semibold"
                     >
                       View PDF <ExternalLink className="w-3 h-3" />
                     </a>
@@ -257,30 +260,30 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
           </div>
 
           {/* Payout & KYC Info */}
-          <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
-              <CreditCard className="w-4 h-4" /> Payout & Tax Settlement
+          <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
+              <CreditCard className="w-4 h-4" /> Payout & Settlement Gateway
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-mono">
               <div>
                 <span className="text-xs text-slate-400">Bank Account</span>
-                <p className="font-mono text-white mt-0.5">{admin.bankAccount || 'Not provided'}</p>
+                <p className="text-white mt-0.5">{admin.bankAccount || 'Not provided'}</p>
               </div>
               <div>
                 <span className="text-xs text-slate-400">IFSC Code</span>
-                <p className="font-mono text-white mt-0.5">{admin.ifscCode || 'Not provided'}</p>
+                <p className="text-white mt-0.5">{admin.ifscCode || 'Not provided'}</p>
               </div>
               <div>
-                <span className="text-xs text-slate-400">UPI ID</span>
-                <p className="font-mono text-indigo-300 font-semibold mt-0.5">{admin.upiId || 'Not provided'}</p>
+                <span className="text-xs text-slate-400">UPI ID for Payouts</span>
+                <p className="text-[#D4FF00] font-semibold mt-0.5">{admin.upiId || 'Not provided'}</p>
               </div>
             </div>
           </div>
 
           {/* Venue Photos */}
           {admin.photoUrls && admin.photoUrls.length > 0 && (
-            <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-4 flex items-center gap-2">
+            <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#D4FF00] mb-4 flex items-center gap-2 font-mono">
                 <ImageIcon className="w-4 h-4" /> Venue Photos ({admin.photoUrls.length})
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -288,7 +291,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                   <div
                     key={i}
                     onClick={() => setPreviewImage(getFullFileUrl(url))}
-                    className="relative aspect-video rounded-lg overflow-hidden border border-[#232C42] bg-[#161D2F] cursor-pointer group"
+                    className="relative aspect-video rounded-lg overflow-hidden border border-[#1E273A] bg-[#05080E] cursor-pointer group"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -325,7 +328,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
               <button
                 type="button"
                 onClick={() => setActionMsg(null)}
-                className="text-xs opacity-75 hover:opacity-100"
+                className="text-xs opacity-75 hover:opacity-100 font-mono"
               >
                 Dismiss
               </button>
@@ -334,12 +337,12 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
 
           {/* Pending Branch Applications */}
           {admin.pendingBranchApplications && admin.pendingBranchApplications.length > 0 && (
-            <div className="bg-[#121827] rounded-xl p-5 border border-amber-500/40 shadow-lg shadow-amber-500/5">
+            <div className="bg-[#0E131F] rounded-xl p-5 border border-amber-500/40 shadow-lg shadow-amber-500/5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                  <GitBranch className="w-4 h-4 text-amber-400" /> Pending Branch Applications ({admin.pendingBranchApplications.length})
+                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2 font-mono">
+                  <GitBranch className="w-4 h-4 text-amber-400" /> Pending Branch Requests ({admin.pendingBranchApplications.length})
                 </h3>
-                <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   Verification Required
                 </span>
               </div>
@@ -348,25 +351,25 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                 {admin.pendingBranchApplications.map((branch) => (
                   <div
                     key={branch.id}
-                    className="p-4 rounded-xl bg-[#161D2F] border border-[#232C42] space-y-3"
+                    className="p-4 rounded-xl bg-[#05080E] border border-[#1E273A] space-y-3"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#232C42] pb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#1E273A] pb-3">
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-bold text-white">{branch.venueName}</h4>
-                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#1F293D] text-indigo-300 border border-[#2D3A54]">
+                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#161D2E] text-slate-300 border border-[#28354F]">
                             {branch.trackingCode || `#BR-${branch.id}`}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5 font-mono">
+                          <MapPin className="w-3.5 h-3.5 text-[#D4FF00]" />
                           <span>{branch.neighborhoodArea}</span>
                           <span className="text-slate-600">•</span>
                           <span>{branch.streetAddress}</span>
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end sm:self-auto">
+                      <div className="flex items-center gap-2 self-end sm:self-auto font-mono">
                         <button
                           type="button"
                           disabled={actionLoadingId !== null}
@@ -379,7 +382,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                           type="button"
                           disabled={actionLoadingId !== null}
                           onClick={() => handleApproveBranch(branch.id)}
-                          className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                          className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#D4FF00] hover:bg-[#b8dd00] text-black shadow-lg shadow-[#D4FF00]/15 transition-all flex items-center gap-1.5 disabled:opacity-50 active:scale-[0.98]"
                         >
                           {actionLoadingId === `approve_${branch.id}` ? (
                             <>
@@ -388,8 +391,8 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                             </>
                           ) : (
                             <>
-                              <Check className="w-3.5 h-3.5" />
-                              <span>Approve & Activate Branch</span>
+                              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <span>Approve & Activate</span>
                             </>
                           )}
                         </button>
@@ -397,15 +400,15 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                     </div>
 
                     {/* Branch Contacts */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-slate-300">
                       <div>
                         <span className="text-slate-500">Owner Contact:</span>{' '}
-                        <span className="font-mono text-white">{branch.ownerPhone}</span>
+                        <span className="text-white">{branch.ownerPhone}</span>
                       </div>
                       {branch.alternativePhone && (
                         <div>
-                          <span className="text-slate-500">Alt Phone:</span>{' '}
-                          <span className="font-mono text-indigo-300">{branch.alternativePhone}</span>
+                          <span className="text-slate-500">Branch Phone:</span>{' '}
+                          <span className="text-[#D4FF00]">{branch.alternativePhone}</span>
                         </div>
                       )}
                     </div>
@@ -413,7 +416,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                     {/* Branch Photos Gallery */}
                     {branch.photoUrls && branch.photoUrls.length > 0 ? (
                       <div>
-                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                        <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2 font-mono">
                           Uploaded Branch Photos ({branch.photoUrls.length})
                         </span>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -421,7 +424,7 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
                             <div
                               key={pIdx}
                               onClick={() => setPreviewImage(getFullFileUrl(pUrl))}
-                              className="relative aspect-video rounded-lg overflow-hidden border border-[#232C42] bg-[#111727] cursor-pointer group"
+                              className="relative aspect-video rounded-lg overflow-hidden border border-[#1E273A] bg-[#0A0E17] cursor-pointer group"
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
@@ -449,29 +452,29 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
 
           {/* Approved Branches */}
           {admin.approvedBranches && admin.approvedBranches.length > 0 && (
-            <div className="bg-[#121827] rounded-xl p-5 border border-[#1E2638]">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2">
+            <div className="bg-[#0E131F] rounded-xl p-5 border border-[#1E273A]">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2 font-mono">
                 <GitBranch className="w-4 h-4 text-emerald-400" /> Active Verified Branches ({admin.approvedBranches.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {admin.approvedBranches.map((br) => (
                   <div
                     key={br.id}
-                    className="p-3.5 rounded-xl bg-[#161D2F] border border-[#232C42] space-y-2"
+                    className="p-3.5 rounded-xl bg-[#05080E] border border-[#1E273A] space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-white text-sm">{br.venueName}</span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                        Active
+                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        ACTIVE
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5 font-mono">
+                      <MapPin className="w-3.5 h-3.5 text-[#D4FF00]" />
                       <span>{br.neighborhoodArea}</span>
                     </p>
-                    <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-[#232C42]">
-                      <span className="font-mono">Photos: {br.photosCount || br.photoUrls?.length || 0}</span>
-                      <span className="font-mono text-indigo-300 font-semibold">₹{br.weekdayRate || 1200}/hr</span>
+                    <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-[#1E273A] font-mono">
+                      <span>Photos: {br.photosCount || br.photoUrls?.length || 0}</span>
+                      <span className="text-[#D4FF00] font-semibold">₹{br.weekdayRate || 1200}/hr</span>
                     </div>
                   </div>
                 ))}
@@ -481,26 +484,26 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#1E2638] bg-[#111727]/90 rounded-b-2xl flex items-center justify-between">
+        <div className="px-6 py-4 border-t border-[#1E273A] bg-[#0E131F] rounded-b-2xl flex items-center justify-between font-mono">
           <div className="flex items-center gap-2">
             {onToggleHold && (
               <button
                 type="button"
                 onClick={() => onToggleHold(admin)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-[0.98] ${
                   admin.isBookingHold || admin.status === 'HOLD'
                     ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                    : 'bg-[#182033] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'bg-[#161D2E] hover:bg-amber-500/20 text-amber-300 border border-amber-500/30'
                 }`}
               >
-                {admin.isBookingHold || admin.status === 'HOLD' ? 'Resume Account & Bookings' : 'Place Account On Hold'}
+                {admin.isBookingHold || admin.status === 'HOLD' ? 'Resume Account & Bookings' : 'Hold Account'}
               </button>
             )}
             {onDelete && (
               <button
                 type="button"
                 onClick={() => onDelete(admin)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600/20 hover:bg-rose-600 hover:text-white text-rose-300 border border-rose-500/30 transition-all flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600/15 hover:bg-rose-600 hover:text-white text-rose-300 border border-rose-500/30 transition-all flex items-center gap-1.5 active:scale-[0.98]"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete Account</span>
@@ -511,9 +514,9 @@ export default function AdminDetailModal({ admin, onClose, onToggleHold, onDelet
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#182033] hover:bg-[#202A42] border border-[#28354F] transition-all"
+            className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white bg-[#161D2E] hover:bg-[#20293F] border border-[#28354F] transition-all"
           >
-            Close
+            Close Dossier
           </button>
         </div>
 
