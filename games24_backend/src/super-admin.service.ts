@@ -1124,70 +1124,24 @@ export class SuperAdminService {
       return Math.round(R * c * 10) / 10;
     };
 
-    // Realistic player seed cluster around the turf coordinates if few or no DB users have lat/lng
-    const samplePlayers = [
-      { name: 'Karthik Raja', phone: '+91 98401 23456', sport: 'Football', rank: 'Striker (Pro)', matches: 28, offsetLat: 0.008, offsetLng: 0.006 },
-      { name: 'Sanjay Kumar', phone: '+91 97890 54321', sport: 'Cricket', rank: 'All-Rounder (Gold)', matches: 42, offsetLat: -0.012, offsetLng: 0.014 },
-      { name: 'Vignesh Mahaan', phone: '+91 99440 11223', sport: 'Football', rank: 'Playmaker (Elite)', matches: 65, offsetLat: 0.018, offsetLng: -0.011 },
-      { name: 'Praveen Balaji', phone: '+91 94433 99887', sport: 'Badminton', rank: 'Singles Ace (Gold)', matches: 31, offsetLat: -0.009, offsetLng: -0.018 },
-      { name: 'Mohamed Arif', phone: '+91 90877 66554', sport: 'Football', rank: 'Goalkeeper (Semi-Pro)', matches: 19, offsetLat: 0.025, offsetLng: 0.022 },
-      { name: 'Dinesh Pandian', phone: '+91 91234 56789', sport: 'Cricket', rank: 'Fast Bowler (Silver)', matches: 14, offsetLat: -0.031, offsetLng: 0.005 },
-      { name: 'Rahul Sundar', phone: '+91 98765 12340', sport: 'Football', rank: 'Wing Forward (Pro)', matches: 39, offsetLat: 0.038, offsetLng: -0.029 },
-      { name: 'Anand Natarajan', phone: '+91 96555 44332', sport: 'Football', rank: 'Midfield Engine (Gold)', matches: 52, offsetLat: -0.019, offsetLng: 0.035 },
-      { name: 'Saravanan M', phone: '+91 93444 88771', sport: 'Cricket', rank: 'Top Order Bat (Pro)', matches: 47, offsetLat: 0.045, offsetLng: 0.018 },
-      { name: 'Ashwin Sethu', phone: '+91 94888 77665', sport: 'Badminton', rank: 'Doubles Specialist', matches: 23, offsetLat: -0.042, offsetLng: -0.033 },
-      { name: 'Deepak Varma', phone: '+91 97911 22334', sport: 'Football', rank: 'Defender (Semi-Pro)', matches: 17, offsetLat: 0.015, offsetLng: 0.048 },
-      { name: 'Gokul Krishna', phone: '+91 90033 11229', sport: 'Football', rank: 'Rookie Forward', matches: 8, offsetLat: -0.055, offsetLng: 0.021 },
-    ];
-
     const playersList: any[] = [];
 
-    // 1. Process DB users
+    // 1. Process ONLY real registered players from our player app (no mock/fake players)
     for (const u of dbUsers) {
-      let pLat = u.latitude;
-      let pLng = u.longitude;
-      // If user has no coordinates yet, assign near the turf
-      if (pLat == null || pLng == null) {
-        const hash = (u.id * 9301 + 49297) % 233280;
-        const norm = (hash / 233280.0) - 0.5; // -0.5 to 0.5
-        pLat = turfLat + norm * 0.07;
-        pLng = turfLng + (Math.sin(u.id) * 0.07);
-      }
-      const dist = calculateDistance(turfLat, turfLng, pLat, pLng);
+      if (u.latitude == null || u.longitude == null) continue;
+      const dist = calculateDistance(turfLat, turfLng, u.latitude, u.longitude);
       playersList.push({
         id: u.id,
         fullName: u.fullName,
         mobileNumber: u.mobileNumber,
         preferredSport: u.preferredSport || 'Football',
         rank: u.rank || 'Striker',
-        matchesPlayed: u.matchesPlayed || 12,
+        matchesPlayed: u.matchesPlayed || 0,
         city: u.city || turfInfo.neighborhoodArea || 'Madurai',
-        latitude: Math.round(pLat * 10000) / 10000,
-        longitude: Math.round(pLng * 10000) / 10000,
+        latitude: Math.round(u.latitude * 10000) / 10000,
+        longitude: Math.round(u.longitude * 10000) / 10000,
         distanceKm: dist,
         isRegisteredUser: true,
-      });
-    }
-
-    // 2. Also populate sample players if DB player count is under 12
-    if (playersList.length < 12) {
-      samplePlayers.forEach((sp, idx) => {
-        const pLat = turfLat + sp.offsetLat;
-        const pLng = turfLng + sp.offsetLng;
-        const dist = calculateDistance(turfLat, turfLng, pLat, pLng);
-        playersList.push({
-          id: 1000 + idx,
-          fullName: sp.name,
-          mobileNumber: sp.phone,
-          preferredSport: sp.sport,
-          rank: sp.rank,
-          matchesPlayed: sp.matches,
-          city: turfInfo.neighborhoodArea || 'Madurai',
-          latitude: Math.round(pLat * 10000) / 10000,
-          longitude: Math.round(pLng * 10000) / 10000,
-          distanceKm: dist,
-          isRegisteredUser: true,
-        });
       });
     }
 
@@ -1196,11 +1150,133 @@ export class SuperAdminService {
       .filter((p) => p.distanceKm <= radius)
       .sort((a, b) => a.distanceKm - b.distanceKm);
 
+    // 2. Query Real Open Challenges & Matches for this Turf
+    const challenges = await this.prisma.openChallenge.findMany({
+      where: {
+        OR: [
+          ...(turfInfo.id ? [{ turfId: turfInfo.id }] : []),
+          { turfName: { contains: turfInfo.venueName, mode: 'insensitive' as const } },
+        ],
+        status: { not: 'CANCELLED' },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 30,
+    });
+
+    const formattedOpenMatches = challenges.map((c) => {
+      const isOpponentFound = c.status === 'ACCEPTED' || !!c.opponentName;
+      return {
+        id: c.id,
+        turfId: c.turfId,
+        turfName: c.turfName,
+        date: c.date,
+        time: c.time,
+        sport: c.sport,
+        challengerName: c.challengerName,
+        challengerTeamInitials:
+          c.challengerTeamInitials ||
+          (c.challengerName ? c.challengerName.substring(0, 2).toUpperCase() : 'TC'),
+        challengerColor: c.challengerColor || '4280148788',
+        creatorPhone: c.creatorPhone,
+        teamSize: c.teamSize || '7v7',
+        status: isOpponentFound ? 'OPPONENT_FOUND' : 'WAITING_FOR_OPPONENT',
+        statusLabel: isOpponentFound ? 'Opponent Got' : 'Waiting for Opponent',
+        opponentName: c.opponentName || 'Open Slot',
+        opponentTeamSize: c.opponentTeamSize || c.teamSize || '7v7',
+        opponentContact: c.opponentContact || null,
+      };
+    });
+
+    // 3. Query Real Bookings for this Turf
+    const bookings = turfInfo.id
+      ? await this.prisma.turfBooking.findMany({
+          where: {
+            verifiedAdminId: turfInfo.id,
+            status: { not: 'Cancelled' },
+          },
+          orderBy: { date: 'desc' },
+          take: 30,
+        })
+      : [];
+
+    // Standard hourly operating schedule
+    const standardSlotTimes = [
+      '06:00 AM - 07:00 AM',
+      '07:00 AM - 08:00 AM',
+      '08:00 AM - 09:00 AM',
+      '09:00 AM - 10:00 AM',
+      '10:00 AM - 11:00 AM',
+      '11:00 AM - 12:00 PM',
+      '12:00 PM - 01:00 PM',
+      '01:00 PM - 02:00 PM',
+      '02:00 PM - 03:00 PM',
+      '03:00 PM - 04:00 PM',
+      '04:00 PM - 05:00 PM',
+      '05:00 PM - 06:00 PM',
+      '06:00 PM - 07:00 PM',
+      '07:00 PM - 08:00 PM',
+      '08:00 PM - 09:00 PM',
+      '09:00 PM - 10:00 PM',
+    ];
+
+    const slotsList = standardSlotTimes.map((slotTime) => {
+      // Check if this slot has an open challenge
+      const match = formattedOpenMatches.find((m) =>
+        m.time.toLowerCase().includes(slotTime.toLowerCase()) ||
+        slotTime.toLowerCase().includes(m.time.split(' - ')[0]?.trim().toLowerCase() || '')
+      );
+      if (match) {
+        return {
+          timeSlot: slotTime,
+          status: 'OPEN_MATCH',
+          sport: match.sport,
+          rate: 1200,
+          challenge: match,
+        };
+      }
+
+      // Check if slot has a regular booking
+      const booking = bookings.find((b) => b.timeSlot === slotTime);
+      if (booking) {
+        return {
+          timeSlot: slotTime,
+          status: 'BOOKED',
+          sport: booking.sport,
+          rate: booking.amount,
+          customerName: booking.customerName,
+          customerPhone: booking.customerPhone,
+        };
+      }
+
+      return {
+        timeSlot: slotTime,
+        status: 'AVAILABLE',
+        sport: 'Football',
+        rate: 1200,
+      };
+    });
+
+    const availableCount = slotsList.filter((s) => s.status === 'AVAILABLE').length;
+    const bookedCount = slotsList.filter((s) => s.status === 'BOOKED').length;
+    const openMatchesCount = slotsList.filter((s) => s.status === 'OPEN_MATCH').length;
+    const waitingOpponentCount = formattedOpenMatches.filter((m) => m.status === 'WAITING_FOR_OPPONENT').length;
+    const opponentGotCount = formattedOpenMatches.filter((m) => m.status === 'OPPONENT_FOUND').length;
+
     return {
       turf: turfInfo,
       radiusKm: radius,
       totalPlayersFound: filteredPlayers.length,
       players: filteredPlayers,
+      slotsOverview: {
+        totalSlots: standardSlotTimes.length,
+        availableCount,
+        bookedCount,
+        openMatchesCount,
+        waitingOpponentCount,
+        opponentGotCount,
+        slots: slotsList,
+      },
+      openMatches: formattedOpenMatches,
     };
   }
 

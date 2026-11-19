@@ -630,6 +630,45 @@ export interface NearbyPlayer {
   isRegisteredUser?: boolean;
 }
 
+export interface TurfOpenMatch {
+  id: string;
+  turfId?: number;
+  turfName: string;
+  date: string;
+  time: string;
+  sport: string;
+  challengerName: string;
+  challengerTeamInitials: string;
+  challengerColor: string;
+  creatorPhone: string;
+  teamSize: string;
+  status: 'WAITING_FOR_OPPONENT' | 'OPPONENT_FOUND' | string;
+  statusLabel: string;
+  opponentName: string;
+  opponentTeamSize?: string;
+  opponentContact?: string | null;
+}
+
+export interface TurfSlotItem {
+  timeSlot: string;
+  status: 'AVAILABLE' | 'BOOKED' | 'OPEN_MATCH';
+  sport: string;
+  rate: number;
+  customerName?: string;
+  customerPhone?: string;
+  challenge?: TurfOpenMatch;
+}
+
+export interface TurfSlotsOverview {
+  totalSlots: number;
+  availableCount: number;
+  bookedCount: number;
+  openMatchesCount: number;
+  waitingOpponentCount: number;
+  opponentGotCount: number;
+  slots: TurfSlotItem[];
+}
+
 export interface NearbyPlayersResponse {
   turf: {
     id: number;
@@ -646,6 +685,8 @@ export interface NearbyPlayersResponse {
   radiusKm: number;
   totalPlayersFound: number;
   players: NearbyPlayer[];
+  slotsOverview?: TurfSlotsOverview;
+  openMatches?: TurfOpenMatch[];
 }
 
 export async function getNearbyPlayers(params: {

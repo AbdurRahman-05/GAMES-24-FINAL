@@ -2759,6 +2759,10 @@ export class AuthService {
     state?: string;
     preferredSport?: string;
     role?: string;
+    latitude?: number;
+    longitude?: number;
+    googleMapsUrl?: string;
+    rank?: string;
   }) {
     const allProfiles = this.readPlayerProfiles();
     const clean = this.normalizePhone(body.phone);
@@ -2770,21 +2774,38 @@ export class AuthService {
         (clean && this.normalizePhone(p.phone) === clean)
     );
 
-    if (index === -1) {
-      throw new BadRequestException('Profile not found');
+    if (index !== -1) {
+      if (body.city) allProfiles[index].city = body.city;
+      if (body.state) allProfiles[index].state = body.state;
+      if (body.preferredSport) allProfiles[index].sport = body.preferredSport;
+      if (body.role) allProfiles[index].role = body.role;
+      if (body.latitude !== undefined) (allProfiles[index] as any).latitude = Number(body.latitude);
+      if (body.longitude !== undefined) (allProfiles[index] as any).longitude = Number(body.longitude);
+      if (body.googleMapsUrl) (allProfiles[index] as any).googleMapsUrl = body.googleMapsUrl;
+      this.writePlayerProfiles(allProfiles);
     }
 
-    if (body.city) allProfiles[index].city = body.city;
-    if (body.state) allProfiles[index].state = body.state;
-    if (body.preferredSport) allProfiles[index].sport = body.preferredSport;
-    if (body.role) allProfiles[index].role = body.role;
-
-    this.writePlayerProfiles(allProfiles);
+    // Also update PostgreSQL User table
+    if (clean) {
+      const last10 = clean.slice(-10);
+      await this.prisma.user.updateMany({
+        where: {
+          mobileNumber: { contains: last10 },
+        },
+        data: {
+          ...(body.latitude !== undefined ? { latitude: Number(body.latitude) } : {}),
+          ...(body.longitude !== undefined ? { longitude: Number(body.longitude) } : {}),
+          ...(body.city ? { city: body.city } : {}),
+          ...(body.rank ? { rank: body.rank } : {}),
+          ...(body.preferredSport ? { preferredSport: body.preferredSport } : {}),
+        },
+      });
+    }
 
     return {
       success: true,
-      message: 'Profile updated successfully',
-      profile: allProfiles[index],
+      message: 'Player profile and Google Map location updated successfully',
+      profile: index !== -1 ? allProfiles[index] : null,
     };
   }
 
@@ -2912,6 +2933,9 @@ export class AuthService {
     if (profileData.ownerEmail !== undefined) dataToUpdate.ownerEmail = String(profileData.ownerEmail);
     if (profileData.streetAddress !== undefined) dataToUpdate.streetAddress = String(profileData.streetAddress);
     if (profileData.neighborhoodArea !== undefined) dataToUpdate.neighborhoodArea = String(profileData.neighborhoodArea);
+    if (profileData.latitude !== undefined) dataToUpdate.latitude = Number(profileData.latitude);
+    if (profileData.longitude !== undefined) dataToUpdate.longitude = Number(profileData.longitude);
+    if (profileData.googleMapsUrl !== undefined) dataToUpdate.googleMapsUrl = String(profileData.googleMapsUrl);
     if (profileData.dayRate !== undefined) dataToUpdate.dayRate = Number(profileData.dayRate);
     if (profileData.nightRate !== undefined) dataToUpdate.nightRate = Number(profileData.nightRate);
     if (profileData.weekdayRate !== undefined) dataToUpdate.weekdayRate = Number(profileData.weekdayRate);

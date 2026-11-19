@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import '../../../../api_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/toast_utils.dart';
 import '../../../../core/utils/phone_dialer.dart';
@@ -124,6 +127,14 @@ class _TurfOwnerSettingsScreenState
                   bgColor: const Color(0xFF1D2808),
                   title: 'Edit Venue & Owner Profile',
                   onTap: () => _showEditProfileDialog(profile),
+                ),
+                const Divider(height: 1, indent: 56, color: Color(0xFF1C1C1C)),
+                _buildActionTile(
+                  icon: Icons.location_on_rounded,
+                  accentColor: const Color(0xFFD4FF00),
+                  bgColor: const Color(0xFF1D2808),
+                  title: 'Turf Google Maps & Radar Pin',
+                  onTap: () => _showEditLocationDialog(profile),
                 ),
                 const Divider(height: 1, indent: 56, color: Color(0xFF1C1C1C)),
                 _buildActionTile(
@@ -802,6 +813,347 @@ class _TurfOwnerSettingsScreenState
             child: const Text('Save Changes'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showEditLocationDialog(TurfProfileState profile) async {
+    final prefs = await SharedPreferences.getInstance();
+    double tempLat = prefs.getDouble('admin_turf_lat') ?? 9.9252;
+    double tempLng = prefs.getDouble('admin_turf_lng') ?? 78.1198;
+    String tempArea = profile.area.isNotEmpty ? profile.area : 'Madurai';
+    final mapUrlCtrl = TextEditingController(
+      text: prefs.getString('admin_turf_maps_url') ??
+          'https://www.google.com/maps?q=$tempLat,$tempLng',
+    );
+    bool isSaving = false;
+
+    final presetAreas = [
+      {'name': 'Anna Nagar', 'lat': 9.9210, 'lng': 78.1380},
+      {'name': 'KK Nagar', 'lat': 9.9315, 'lng': 78.1470},
+      {'name': 'Villapuram', 'lat': 9.9080, 'lng': 78.1220},
+      {'name': 'Simmakkal', 'lat': 9.9260, 'lng': 78.1180},
+      {'name': 'Mattuthavani', 'lat': 9.9450, 'lng': 78.1560},
+      {'name': 'Kalavasal', 'lat': 9.9280, 'lng': 78.0950},
+      {'name': 'Koodal Nagar', 'lat': 9.9540, 'lng': 78.1120},
+      {'name': 'Teppakulam', 'lat': 9.9140, 'lng': 78.1510},
+    ];
+
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF141414),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF333333),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F2916),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.stadium_rounded,
+                        color: Color(0xFFD4FF00),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Turf Google Maps & Radar Pin',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${profile.venueName.isNotEmpty ? profile.venueName : "Venue"} • Geospatial Location',
+                            style: const TextStyle(
+                              color: Color(0xFFA1A1AA),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Active Coordinates Display Card
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1C1C),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.my_location_rounded,
+                        color: Color(0xFFD4FF00),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              tempArea,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              '${tempLat.toStringAsFixed(4)}° N, ${tempLng.toStringAsFixed(4)}° E',
+                              style: const TextStyle(
+                                color: Color(0xFFD4FF00),
+                                fontSize: 11,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Quick Zone Chips
+                const Text(
+                  'QUICK ZONE SELECTOR',
+                  style: TextStyle(
+                    color: Color(0xFFA1A1AA),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: presetAreas.map((area) {
+                    final isSelected = tempArea.contains(area['name'] as String);
+                    return InkWell(
+                      onTap: () {
+                        setModalState(() {
+                          tempArea = '${area['name']}, Madurai';
+                          tempLat = area['lat'] as double;
+                          tempLng = area['lng'] as double;
+                          mapUrlCtrl.text =
+                              'https://www.google.com/maps?q=$tempLat,$tempLng';
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF1F2916)
+                              : const Color(0xFF1A1A1A),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFFD4FF00)
+                                : const Color(0xFF2A2A2A),
+                          ),
+                        ),
+                        child: Text(
+                          area['name'] as String,
+                          style: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFFD4FF00)
+                                : Colors.white,
+                            fontSize: 11,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+
+                // Google Maps URL Input
+                const Text(
+                  'OR PASTE GOOGLE MAPS LINK / COORDINATES',
+                  style: TextStyle(
+                    color: Color(0xFFA1A1AA),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: mapUrlCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  onChanged: (val) {
+                    final trimmed = val.trim();
+                    final coordRegex = RegExp(
+                      r'([-+]?\d{1,2}\.\d+)\s*,\s*([-+]?\d{1,3}\.\d+)',
+                    );
+                    final match = coordRegex.firstMatch(trimmed);
+                    if (match != null) {
+                      final lat = double.tryParse(match.group(1)!);
+                      final lng = double.tryParse(match.group(2)!);
+                      if (lat != null && lng != null) {
+                        setModalState(() {
+                          tempLat = lat;
+                          tempLng = lng;
+                        });
+                      }
+                    }
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'https://maps.google.com/?q=9.9252,78.1198',
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF555555),
+                      fontSize: 11,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFF0D0D0D),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFF2E2E2E)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: Color(0xFFD4FF00)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Save Location Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4FF00),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: isSaving
+                        ? null
+                        : () async {
+                            setModalState(() => isSaving = true);
+                            try {
+                              final p = await SharedPreferences.getInstance();
+                              await p.setDouble('admin_turf_lat', tempLat);
+                              await p.setDouble('admin_turf_lng', tempLng);
+                              await p.setString(
+                                'admin_turf_maps_url',
+                                mapUrlCtrl.text.trim(),
+                              );
+
+                              final turfId = profile.turfId;
+                              try {
+                                await http.patch(
+                                  Uri.parse(
+                                    '${ApiConfig.baseUrl}/auth/verified-admin/$turfId/profile',
+                                  ),
+                                  headers: {'Content-Type': 'application/json'},
+                                  body: jsonEncode({
+                                    'latitude': tempLat,
+                                    'longitude': tempLng,
+                                    'googleMapsUrl': mapUrlCtrl.text.trim(),
+                                    'adminPhone': profile.ownerPhone,
+                                  }),
+                                );
+                              } catch (_) {}
+
+                              if (ctx.mounted) Navigator.pop(ctx);
+                              if (mounted) {
+                                ToastUtils.showSuccess(
+                                  context,
+                                  'Turf Google Map location updated successfully! Pin updated on Super Admin Radar.',
+                                );
+                              }
+                            } catch (_) {
+                            } finally {
+                              setModalState(() => isSaving = false);
+                            }
+                          },
+                    child: isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        : const Text(
+                            'Save & Update Turf Location',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
