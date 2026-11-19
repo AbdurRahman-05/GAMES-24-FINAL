@@ -5,6 +5,7 @@ import Sidebar, { DashboardTab } from '@/components/Sidebar';
 import Header from '@/components/Header';
 import AnalyticsCharts from '@/components/AnalyticsCharts';
 import RegistrationDetailModal from '@/components/RegistrationDetailModal';
+import TurfRadarMap from '@/components/TurfRadarMap';
 import {
   AdminRegistration,
   BookingItem,
@@ -57,6 +58,7 @@ import {
   Phone,
   User,
   Filter,
+  Crosshair,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -78,6 +80,7 @@ export default function SuperAdminDashboard() {
   const [quickVerifyingId, setQuickVerifyingId] = useState<number | null>(null);
   const [cancelModalItem, setCancelModalItem] = useState<AdminRegistration | null>(null);
   const [cancelReasonText, setCancelReasonText] = useState('');
+  const [radarSelectedRegId, setRadarSelectedRegId] = useState<number | null>(null);
 
   // Bookings Central state
   const [bookings, setBookings] = useState<BookingItem[]>([]);
@@ -191,7 +194,7 @@ export default function SuperAdminDashboard() {
   }, [loadOverview]);
 
   useEffect(() => {
-    if (activeTab === 'REGISTRATIONS') loadRegistrations();
+    if (activeTab === 'REGISTRATIONS' || activeTab === 'MAP_RADAR') loadRegistrations();
     if (activeTab === 'BOOKINGS') loadBookings();
     if (activeTab === 'TOURNAMENTS') loadTournaments();
   }, [activeTab, loadRegistrations, loadBookings, loadTournaments]);
@@ -392,6 +395,7 @@ export default function SuperAdminDashboard() {
     BOOKINGS: 'RESERVATIONS & HOLDS',
     TOURNAMENTS: 'CHAMPIONSHIPS OVERSIGHT',
     TURFS: 'VENUE FLEET DIRECTORY',
+    MAP_RADAR: 'TURF & PLAYER RADAR',
   };
 
   return (
@@ -1499,6 +1503,84 @@ export default function SuperAdminDashboard() {
               </div>
             </div>
           )}
+
+          {/* ========================================================================= */}
+          {/* TAB 7: TURF & PLAYER RADAR */}
+          {/* ========================================================================= */}
+          {activeTab === 'MAP_RADAR' && (() => {
+            const currentRadarTurf =
+              regItems.find((r) => r.id === radarSelectedRegId) || regItems[0] || null;
+
+            return (
+              <div className="space-y-4 animate-in fade-in duration-200">
+                {/* Radar Top Toolbar */}
+                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#1F2916] border border-[#D4FF00]/40 flex items-center justify-center text-[#D4FF00] shadow-md shadow-[#D4FF00]/10">
+                      <Crosshair className="w-5 h-5 animate-spin-slow" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
+                          Turf & Player Geospatial Radar
+                        </h2>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D4FF00]/15 text-[#D4FF00] border border-[#D4FF00]/30 font-mono">
+                          LIVE MAP
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-0.5 font-mono">
+                        Visualize registered venues on Google Maps and scan surrounding active players within customizable radius ranges.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Turf Selector Dropdown */}
+                  <div className="flex flex-wrap items-center gap-2 font-mono self-start md:self-auto">
+                    <span className="text-xs text-slate-400 font-medium">Turf Venue:</span>
+                    <select
+                      value={currentRadarTurf?.id || ''}
+                      onChange={(e) => setRadarSelectedRegId(Number(e.target.value))}
+                      className="px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-white focus:outline-hidden focus:border-[#D4FF00] max-w-[280px]"
+                    >
+                      {regItems.length > 0 ? (
+                        regItems.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.venueName} — {r.neighborhoodArea || 'Area'}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">Madurai Default Arena</option>
+                      )}
+                    </select>
+
+                    {currentRadarTurf && (
+                      <button
+                        onClick={() => setSelectedReg(currentRadarTurf)}
+                        className="px-3 py-2 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] text-slate-200 border border-[#28354F] text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                      >
+                        <FileCheck2 className="w-3.5 h-3.5 text-[#D4FF00]" />
+                        <span>KYC Details</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Radar Interactive Map Component */}
+                <div className="rounded-xl overflow-hidden border border-[#1E273A] shadow-2xl">
+                  <TurfRadarMap
+                    turfId={currentRadarTurf?.id}
+                    initialLat={currentRadarTurf?.latitude || 9.9252}
+                    initialLng={currentRadarTurf?.longitude || 78.1198}
+                    venueName={currentRadarTurf?.venueName || 'Games24 Turf Stadium'}
+                    streetAddress={currentRadarTurf?.streetAddress || 'Madurai, Tamil Nadu'}
+                    neighborhoodArea={currentRadarTurf?.neighborhoodArea || 'Madurai'}
+                    googleMapsUrl={currentRadarTurf?.googleMapsUrl || undefined}
+                    isEmbedded={true}
+                  />
+                </div>
+              </div>
+            );
+          })()}
         </main>
       </div>
 

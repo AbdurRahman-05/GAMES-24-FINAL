@@ -26,7 +26,9 @@ import {
   Building2,
   Clock,
   CheckCheck,
+  Crosshair,
 } from 'lucide-react';
+import TurfRadarMap from '@/components/TurfRadarMap';
 
 interface Props {
   registration: AdminRegistration | null;
@@ -44,6 +46,7 @@ export default function RegistrationDetailModal({
   const [showCancelReasonInput, setShowCancelReasonInput] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showRadarModal, setShowRadarModal] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   if (!registration) return null;
@@ -265,6 +268,47 @@ export default function RegistrationDetailModal({
               <div className="md:col-span-2">
                 <span className="text-xs text-slate-400">Street Address</span>
                 <p className="text-slate-300 mt-0.5">{registration.streetAddress}</p>
+              </div>
+
+              {/* Turf Google Map & Radar Bar */}
+              <div className="md:col-span-2 p-3.5 rounded-xl bg-[#070A10] border border-[#1E273A] flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-[#1F2916] border border-[#D4FF00]/40 flex items-center justify-center text-[#D4FF00]">
+                    <Crosshair className="w-4 h-4 animate-spin-slow" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-white block">
+                      Google Maps & Surrounding Players Radar
+                    </span>
+                    <span className="text-[10px] text-zinc-400">
+                      {registration.latitude && registration.longitude
+                        ? `${registration.latitude.toFixed(4)}° N, ${registration.longitude.toFixed(4)}° E`
+                        : 'Coordinates ready for radar scanning'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {registration.googleMapsUrl && (
+                    <a
+                      href={registration.googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1.5 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] text-slate-300 text-xs font-semibold flex items-center gap-1 border border-[#28354F]"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-[#D4FF00]" />
+                      <span>Google Maps</span>
+                      <ExternalLink className="w-3 h-3 text-slate-400" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setShowRadarModal(true)}
+                    className="px-3 py-1.5 rounded-lg bg-[#D4FF00] hover:bg-[#bce400] text-black text-xs font-black flex items-center gap-1.5 shadow-md shadow-[#D4FF00]/20 transition-all"
+                  >
+                    <Crosshair className="w-3.5 h-3.5" />
+                    <span>Launch Player Radar Map</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -492,6 +536,24 @@ export default function RegistrationDetailModal({
             </div>
           )}
         </div>
+
+        {/* Turf Radar Map Modal */}
+        {showRadarModal && (
+          <div className="fixed inset-0 z-70 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl">
+              <TurfRadarMap
+                turfId={registration.id}
+                initialLat={registration.latitude || 9.9252}
+                initialLng={registration.longitude || 78.1198}
+                venueName={registration.venueName}
+                streetAddress={registration.streetAddress}
+                neighborhoodArea={registration.neighborhoodArea}
+                googleMapsUrl={registration.googleMapsUrl || undefined}
+                onClose={() => setShowRadarModal(false)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Image Zoom Lightbox */}
         {previewImage && (

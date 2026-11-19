@@ -14,6 +14,11 @@ model User {
   password       String
   preferredSport String
   teamsJson      Json?    @default("[]")
+  latitude       Float?
+  longitude      Float?
+  city           String?
+  rank           String?  @default("Rookie")
+  matchesPlayed  Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -35,6 +40,9 @@ model AdminUser {
   ownerEmail         String
   streetAddress      String
   neighborhoodArea   String
+  latitude           Float?
+  longitude          Float?
+  googleMapsUrl      String?
   isMobileVerified   Boolean  @default(false)
   isEmailVerified    Boolean  @default(false)
   photosCount        Int      @default(0)
@@ -68,6 +76,9 @@ model VerifiedAdmin {
   ownerEmail         String
   streetAddress      String
   neighborhoodArea   String
+  latitude           Float?
+  longitude          Float?
+  googleMapsUrl      String?
   isMobileVerified   Boolean         @default(true)
   isEmailVerified    Boolean         @default(true)
   photosCount        Int             @default(0)

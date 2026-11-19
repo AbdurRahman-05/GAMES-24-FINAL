@@ -117,6 +117,9 @@ export interface AdminRegistration {
   ownerEmail: string;
   streetAddress: string;
   neighborhoodArea: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
   isMobileVerified: boolean;
   isEmailVerified: boolean;
   photosCount: number;
@@ -164,6 +167,9 @@ export interface VerifiedAdmin {
   ownerEmail: string;
   streetAddress: string;
   neighborhoodArea: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
   isMobileVerified: boolean;
   isEmailVerified: boolean;
   photosCount: number;
@@ -606,6 +612,72 @@ export async function deploySuperAdminTournament(body: {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message || 'Failed to deploy tournament');
+  }
+  return res.json();
+}
+
+export interface NearbyPlayer {
+  id: number;
+  fullName: string;
+  mobileNumber: string;
+  preferredSport: string;
+  rank: string;
+  matchesPlayed: number;
+  city: string;
+  latitude: number;
+  longitude: number;
+  distanceKm: number;
+  isRegisteredUser?: boolean;
+}
+
+export interface NearbyPlayersResponse {
+  turf: {
+    id: number;
+    venueName: string;
+    ownerName: string;
+    ownerPhone?: string;
+    streetAddress: string;
+    neighborhoodArea: string;
+    latitude: number;
+    longitude: number;
+    googleMapsUrl?: string;
+    isVerified?: boolean;
+  };
+  radiusKm: number;
+  totalPlayersFound: number;
+  players: NearbyPlayer[];
+}
+
+export async function getNearbyPlayers(params: {
+  turfId?: number;
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
+}): Promise<NearbyPlayersResponse> {
+  const query = new URLSearchParams();
+  if (params.turfId) query.set('turfId', String(params.turfId));
+  if (params.lat != null) query.set('lat', String(params.lat));
+  if (params.lng != null) query.set('lng', String(params.lng));
+  if (params.radiusKm != null) query.set('radius', String(params.radiusKm));
+
+  const res = await safeAdminFetch(`/super-admin/nearby-players?${query.toString()}`);
+  if (!res.ok) {
+    throw new Error('Failed to fetch nearby players');
+  }
+  return res.json();
+}
+
+export async function updateTurfLocation(
+  turfId: number,
+  body: { latitude: number; longitude: number; googleMapsUrl?: string },
+): Promise<{ success: boolean; message: string }> {
+  const res = await safeAdminFetch(`/super-admin/turfs/${turfId}/location`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error('Failed to update turf location');
   }
   return res.json();
 }

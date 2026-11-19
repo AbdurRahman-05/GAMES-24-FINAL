@@ -19,6 +19,8 @@ import {
   ChevronRight,
   ExternalLink,
   ChevronDown,
+  Crosshair,
+  MapPin,
 } from 'lucide-react';
 import {
   DEFAULT_LOCAL_BACKEND_URL,
@@ -33,7 +35,8 @@ export type DashboardTab =
   | 'REGISTRATIONS'
   | 'BOOKINGS'
   | 'TOURNAMENTS'
-  | 'TURFS';
+  | 'TURFS'
+  | 'MAP_RADAR';
 
 interface Props {
   activeTab: DashboardTab;
@@ -118,6 +121,12 @@ export default function Sidebar({
           label: 'Partner Turfs',
           icon: Building2,
           badge: null,
+        },
+        {
+          id: 'MAP_RADAR' as DashboardTab,
+          label: 'Turf & Player Radar',
+          icon: Crosshair,
+          badge: 'RADAR',
         },
       ],
     },

@@ -218,7 +218,7 @@ export class AuthService {
   }
 
   async register(body: any) {
-    const { fullName, mobileNumber, password, preferredSport } = body;
+    const { fullName, mobileNumber, password, preferredSport, latitude, longitude, city, rank } = body;
 
     if (!fullName || !mobileNumber || !password || !preferredSport) {
       throw new BadRequestException('Missing required fields');
@@ -239,6 +239,10 @@ export class AuthService {
         mobileNumber,
         password: hashedPassword,
         preferredSport,
+        latitude: latitude != null && latitude !== '' ? Number(latitude) : undefined,
+        longitude: longitude != null && longitude !== '' ? Number(longitude) : undefined,
+        city: city ? String(city).trim() : 'Madurai',
+        rank: rank ? String(rank).trim() : 'Striker',
       },
     });
 
@@ -248,6 +252,10 @@ export class AuthService {
       fullName: newUser.fullName,
       mobileNumber: newUser.mobileNumber,
       preferredSport: newUser.preferredSport,
+      latitude: newUser.latitude,
+      longitude: newUser.longitude,
+      city: newUser.city,
+      rank: newUser.rank,
     };
   }
 
@@ -297,7 +305,18 @@ export class AuthService {
   }
 
   async registerAdmin(body: any) {
-    const { adminId, venueName, ownerName, ownerPhone, ownerEmail, streetAddress, neighborhoodArea } = body;
+    const { 
+      adminId, 
+      venueName, 
+      ownerName, 
+      ownerPhone, 
+      ownerEmail, 
+      streetAddress, 
+      neighborhoodArea,
+      latitude,
+      longitude,
+      googleMapsUrl,
+    } = body;
 
     if (!venueName || !ownerName || !ownerPhone || !ownerEmail || !streetAddress || !neighborhoodArea) {
       throw new BadRequestException('Missing required fields');
@@ -305,6 +324,9 @@ export class AuthService {
 
     const cleanPhone = String(ownerPhone).trim();
     const cleanEmail = String(ownerEmail).trim().toLowerCase();
+    const parsedLat = latitude != null && latitude !== '' ? Number(latitude) : undefined;
+    const parsedLng = longitude != null && longitude !== '' ? Number(longitude) : undefined;
+    const cleanMapUrl = googleMapsUrl ? String(googleMapsUrl).trim() : undefined;
 
     // If an explicit adminId is provided and is a draft, update it
     if (adminId) {
@@ -321,6 +343,9 @@ export class AuthService {
             ownerEmail: cleanEmail,
             streetAddress: streetAddress.trim(),
             neighborhoodArea: neighborhoodArea.trim(),
+            ...(parsedLat != null ? { latitude: parsedLat } : {}),
+            ...(parsedLng != null ? { longitude: parsedLng } : {}),
+            ...(cleanMapUrl ? { googleMapsUrl: cleanMapUrl } : {}),
             status: 'DRAFT',
           },
         });
@@ -331,6 +356,9 @@ export class AuthService {
           trackingCode,
           venueName: updatedDraft.venueName,
           ownerName: updatedDraft.ownerName,
+          latitude: updatedDraft.latitude,
+          longitude: updatedDraft.longitude,
+          googleMapsUrl: updatedDraft.googleMapsUrl,
         };
       }
     }
@@ -349,6 +377,9 @@ export class AuthService {
             ownerEmail: cleanEmail,
             streetAddress: streetAddress.trim(),
             neighborhoodArea: neighborhoodArea.trim(),
+            ...(parsedLat != null ? { latitude: parsedLat } : {}),
+            ...(parsedLng != null ? { longitude: parsedLng } : {}),
+            ...(cleanMapUrl ? { googleMapsUrl: cleanMapUrl } : {}),
             status: 'DRAFT',
           },
         });
@@ -359,6 +390,9 @@ export class AuthService {
           trackingCode,
           venueName: updatedDraft.venueName,
           ownerName: updatedDraft.ownerName,
+          latitude: updatedDraft.latitude,
+          longitude: updatedDraft.longitude,
+          googleMapsUrl: updatedDraft.googleMapsUrl,
         };
       }
       throw new BadRequestException('This mobile number is already registered. Please use another mobile number.');
@@ -383,6 +417,9 @@ export class AuthService {
         ownerEmail: cleanEmail,
         streetAddress: streetAddress.trim(),
         neighborhoodArea: neighborhoodArea.trim(),
+        latitude: parsedLat,
+        longitude: parsedLng,
+        googleMapsUrl: cleanMapUrl,
         status: 'DRAFT', // Always starts as DRAFT; only submitted to Super Admin after full completion
       },
     });
@@ -399,6 +436,9 @@ export class AuthService {
       trackingCode,
       venueName: newAdmin.venueName,
       ownerName: newAdmin.ownerName,
+      latitude: newAdmin.latitude,
+      longitude: newAdmin.longitude,
+      googleMapsUrl: newAdmin.googleMapsUrl,
     };
   }
 
@@ -420,7 +460,10 @@ export class AuthService {
       gstDocUrl,
       bankAccount, 
       ifscCode, 
-      upiId 
+      upiId,
+      latitude,
+      longitude,
+      googleMapsUrl,
     } = body;
 
     if (!adminId) {
@@ -434,6 +477,10 @@ export class AuthService {
     if (!admin) {
       throw new NotFoundException(`AdminUser #${adminId} not found`);
     }
+
+    const parsedLat = latitude != null && latitude !== '' ? Number(latitude) : undefined;
+    const parsedLng = longitude != null && longitude !== '' ? Number(longitude) : undefined;
+    const cleanMapUrl = googleMapsUrl ? String(googleMapsUrl).trim() : undefined;
 
     const parsedPhotosCount = photosCount != null 
       ? Number(photosCount) 
@@ -468,6 +515,9 @@ export class AuthService {
           bankAccount: bankAccount || undefined,
           ifscCode: ifscCode || undefined,
           upiId: upiId || undefined,
+          ...(parsedLat != null ? { latitude: parsedLat } : {}),
+          ...(parsedLng != null ? { longitude: parsedLng } : {}),
+          ...(cleanMapUrl ? { googleMapsUrl: cleanMapUrl } : {}),
         },
       });
       throw new BadRequestException('Incomplete registration. Please complete all steps (Mobile & Email OTP verification, venue photos, KYC documents, and bank details) before submitting for verification.');
@@ -494,6 +544,9 @@ export class AuthService {
         bankAccount: bankAccount || undefined,
         ifscCode: ifscCode || undefined,
         upiId: upiId || undefined,
+        ...(parsedLat != null ? { latitude: parsedLat } : {}),
+        ...(parsedLng != null ? { longitude: parsedLng } : {}),
+        ...(cleanMapUrl ? { googleMapsUrl: cleanMapUrl } : {}),
         status: 'PENDING_APPROVAL', // Fully completed & ready for Super Admin verification
       },
     });

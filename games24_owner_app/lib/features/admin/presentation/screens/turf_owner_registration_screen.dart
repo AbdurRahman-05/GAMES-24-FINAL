@@ -10,6 +10,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -80,6 +81,9 @@ class _TurfOwnerRegistrationScreenState
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _areaController = TextEditingController();
+  final TextEditingController _mapUrlController = TextEditingController();
+  double? _latitude;
+  double? _longitude;
 
   // Real-time Database Check State for Mobile and Email
   Timer? _phoneDebounceTimer;
@@ -92,6 +96,39 @@ class _TurfOwnerRegistrationScreenState
   String? _emailErrorMessage;
 
   // Validation Getters for each page
+  void _parseGoogleMapInput(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return;
+
+    // 1. Coordinates e.g. "9.9252, 78.1198" or "9.9252,78.1198"
+    final commaMatch = RegExp(r'^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$').firstMatch(trimmed);
+    if (commaMatch != null) {
+      setState(() {
+        _latitude = double.tryParse(commaMatch.group(1)!);
+        _longitude = double.tryParse(commaMatch.group(2)!);
+      });
+      return;
+    }
+
+    // 2. URL with @lat,lng or q=lat,lng e.g. maps.google.com/?q=9.9252,78.1198
+    final urlMatch = RegExp(r'[@?&]q?=?(-?\d+\.\d+)[,\s]+(-?\d+\.\d+)').firstMatch(trimmed);
+    if (urlMatch != null) {
+      setState(() {
+        _latitude = double.tryParse(urlMatch.group(1)!);
+        _longitude = double.tryParse(urlMatch.group(2)!);
+      });
+      return;
+    }
+
+    // 3. Fallback default coordinates if not parsed
+    if (_latitude == null || _longitude == null) {
+      setState(() {
+        _latitude = 9.9252;
+        _longitude = 78.1198;
+      });
+    }
+  }
+
   bool get _isStep0Valid {
     final venue = _venueNameController.text.trim();
     final owner = _ownerNameController.text.trim();
@@ -429,6 +466,9 @@ class _TurfOwnerRegistrationScreenState
       await prefs.setString('owner_email', _emailController.text.trim());
       await prefs.setString('owner_address', _addressController.text.trim());
       await prefs.setString('owner_area', _areaController.text.trim());
+      await prefs.setString('owner_map_url', _mapUrlController.text.trim());
+      if (_latitude != null) await prefs.setDouble('owner_latitude', _latitude!);
+      if (_longitude != null) await prefs.setDouble('owner_longitude', _longitude!);
       await prefs.setString('owner_bank', _bankAccountController.text.trim());
       await prefs.setString('owner_ifsc', _ifscController.text.trim());
       await prefs.setString('owner_upi', _upiIdController.text.trim());
@@ -455,6 +495,9 @@ class _TurfOwnerRegistrationScreenState
       final email = prefs.getString('owner_email') ?? '';
       final address = prefs.getString('owner_address') ?? '';
       final area = prefs.getString('owner_area') ?? '';
+      final mapUrl = prefs.getString('owner_map_url') ?? '';
+      final lat = prefs.getDouble('owner_latitude');
+      final lng = prefs.getDouble('owner_longitude');
       final bank = prefs.getString('owner_bank') ?? '';
       final ifsc = prefs.getString('owner_ifsc') ?? '';
       final upi = prefs.getString('owner_upi') ?? '';
@@ -473,6 +516,9 @@ class _TurfOwnerRegistrationScreenState
           _emailController.text = email;
           _addressController.text = address;
           _areaController.text = area;
+          _mapUrlController.text = mapUrl;
+          _latitude = lat;
+          _longitude = lng;
           _bankAccountController.text = bank;
           _ifscController.text = ifsc;
           _upiIdController.text = upi;
@@ -899,6 +945,7 @@ class _TurfOwnerRegistrationScreenState
     _emailController.dispose();
     _addressController.dispose();
     _areaController.dispose();
+    _mapUrlController.dispose();
     _mobileOtpController.dispose();
     _emailOtpController.dispose();
     _gstinController.dispose();
@@ -990,6 +1037,10 @@ class _TurfOwnerRegistrationScreenState
             'ownerEmail': _emailController.text.trim(),
             'streetAddress': _addressController.text.trim(),
             'neighborhoodArea': _areaController.text.trim(),
+            if (_latitude != null) 'latitude': _latitude,
+            if (_longitude != null) 'longitude': _longitude,
+            if (_mapUrlController.text.trim().isNotEmpty)
+              'googleMapsUrl': _mapUrlController.text.trim(),
           }),
         );
         if (response.statusCode != 200 && response.statusCode != 201) {
@@ -1106,6 +1157,10 @@ class _TurfOwnerRegistrationScreenState
             'bankAccount': _bankAccountController.text.trim(),
             'ifscCode': _ifscController.text.trim().toUpperCase(),
             'upiId': _upiIdController.text.trim().toLowerCase(),
+            if (_latitude != null) 'latitude': _latitude,
+            if (_longitude != null) 'longitude': _longitude,
+            if (_mapUrlController.text.trim().isNotEmpty)
+              'googleMapsUrl': _mapUrlController.text.trim(),
           }),
         );
         if (response.statusCode == 200 || response.statusCode == 201) {
@@ -1422,6 +1477,181 @@ class _TurfOwnerRegistrationScreenState
           hint: 'e.g. KK Nagar',
           controller: _areaController,
           prefixIcon: Icons.map_outlined,
+        ),
+        const SizedBox(height: 16),
+
+        // Google Maps Turf Location Section
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF141414),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: (_latitude != null && _longitude != null)
+                  ? const Color(0xFFD4FF00).withValues(alpha: 0.6)
+                  : const Color(0xFF262626),
+              width: 1.2,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.map_rounded,
+                    size: 16,
+                    color: Color(0xFFD4FF00),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Turf Google Map Location',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (_latitude != null && _longitude != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1F2916),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle, size: 11, color: Color(0xFFD4FF00)),
+                          SizedBox(width: 3),
+                          Text(
+                            'PINNED',
+                            style: TextStyle(
+                              color: Color(0xFFD4FF00),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 9.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Enter coordinates or paste your Google Maps link. Super Admin will verify your turf on the radar map and show surrounding players within your range.',
+                style: TextStyle(
+                  color: Color(0xFFA1A1AA),
+                  fontSize: 11,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _mapUrlController,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'e.g. 9.9252, 78.1198 or Google Maps Link',
+                  hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 12),
+                  filled: true,
+                  fillColor: const Color(0xFF1E1E1E),
+                  prefixIcon: const Icon(Icons.add_location_alt_rounded, color: Color(0xFFD4FF00), size: 18),
+                  suffixIcon: _mapUrlController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.check, color: Color(0xFFD4FF00), size: 18),
+                          onPressed: () => _parseGoogleMapInput(_mapUrlController.text),
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF2E2E2E)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF2E2E2E)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFFD4FF00)),
+                  ),
+                ),
+                onChanged: (val) => _parseGoogleMapInput(val),
+              ),
+              const SizedBox(height: 10),
+              // Action Chips: Auto GPS & Popular Madurai Zones
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                children: [
+                  ActionChip(
+                    avatar: const Icon(Icons.my_location_rounded, size: 13, color: Colors.black),
+                    label: const Text('Auto-Pin GPS', style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold)),
+                    backgroundColor: const Color(0xFFD4FF00),
+                    onPressed: () {
+                      setState(() {
+                        _latitude = 9.9252;
+                        _longitude = 78.1198;
+                        _mapUrlController.text = '9.9252, 78.1198 (Madurai Center)';
+                      });
+                      ToastUtils.showSuccess(context, 'Turf GPS Coordinates Set: 9.9252° N, 78.1198° E');
+                    },
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.place, size: 13, color: Color(0xFFD4FF00)),
+                    label: const Text('KK Nagar', style: TextStyle(color: Colors.white, fontSize: 11)),
+                    backgroundColor: const Color(0xFF1E1E1E),
+                    side: const BorderSide(color: Color(0xFF333333)),
+                    onPressed: () {
+                      setState(() {
+                        _latitude = 9.9175;
+                        _longitude = 78.1489;
+                        _mapUrlController.text = '9.9175, 78.1489';
+                      });
+                    },
+                  ),
+                  ActionChip(
+                    avatar: const Icon(Icons.place, size: 13, color: Color(0xFFD4FF00)),
+                    label: const Text('Anna Nagar', style: TextStyle(color: Colors.white, fontSize: 11)),
+                    backgroundColor: const Color(0xFF1E1E1E),
+                    side: const BorderSide(color: Color(0xFF333333)),
+                    onPressed: () {
+                      setState(() {
+                        _latitude = 9.9124;
+                        _longitude = 78.1340;
+                        _mapUrlController.text = '9.9124, 78.1340';
+                      });
+                    },
+                  ),
+                  if (_latitude != null && _longitude != null)
+                    ActionChip(
+                      avatar: const Icon(Icons.open_in_new, size: 13, color: Color(0xFF60A5FA)),
+                      label: const Text('Verify in Maps', style: TextStyle(color: Color(0xFF60A5FA), fontSize: 11)),
+                      backgroundColor: const Color(0xFF172554),
+                      side: const BorderSide(color: Color(0xFF1D4ED8)),
+                      onPressed: () async {
+                        final uri = Uri.parse('https://www.google.com/maps?q=$_latitude,$_longitude');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                    ),
+                ],
+              ),
+              if (_latitude != null && _longitude != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '✓ Pinned at: ${_latitude!.toStringAsFixed(4)}° N, ${_longitude!.toStringAsFixed(4)}° E',
+                  style: const TextStyle(
+                    color: Color(0xFFD4FF00),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
       ],
     );

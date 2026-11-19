@@ -157,4 +157,29 @@ export class SuperAdminController {
   async createTournament(@Body() body: any) {
     return this.superAdminService.createTournament(body);
   }
+
+  // RADAR: SURROUNDING PLAYERS WITHIN RADIUS (KM) FOR A TURF
+  @Get('nearby-players')
+  async getNearbyPlayers(
+    @Query('turfId') turfId?: string,
+    @Query('lat') lat?: string,
+    @Query('lng') lng?: string,
+    @Query('radius') radius?: string,
+  ) {
+    return this.superAdminService.getNearbyPlayers({
+      turfId: turfId ? Number(turfId) : undefined,
+      lat: lat ? Number(lat) : undefined,
+      lng: lng ? Number(lng) : undefined,
+      radiusKm: radius ? Number(radius) : 10,
+    });
+  }
+
+  // UPDATE TURF LOCATION COORDINATES ON MAP
+  @Post('turfs/:id/location')
+  async updateTurfLocation(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { latitude: number; longitude: number; googleMapsUrl?: string },
+  ) {
+    return this.superAdminService.updateTurfLocation(id, body);
+  }
 }
