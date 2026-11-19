@@ -1689,8 +1689,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _formatChallengeDateTime(String dateStr, String timeSlot) {
-    String cleanDate = dateStr.replaceAll('â€¢', '').trim();
-    final cleanSlot = timeSlot.replaceAll('â€¢', '').trim();
+    String cleanDate = dateStr.replaceAll('•', '').replaceAll('â€¢', '').trim();
+    String cleanSlot = timeSlot.replaceAll('•', '').replaceAll('â€¢', '').trim();
     try {
       final parts = cleanDate.split('-');
       if (parts.length == 3) {
@@ -1717,6 +1717,22 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     } catch (_) {}
     if (cleanSlot.isEmpty) return cleanDate;
+
+    // Format compact start time e.g. "07:00 AM - 08:00 AM" -> "07:00 AM"
+    // to strictly preserve the card's right territory and prevent overlapping the center thunder
+    if (cleanSlot.contains('-')) {
+      final slotParts = cleanSlot.split('-');
+      String startTime = slotParts[0].trim();
+      final endTime = slotParts[1].trim();
+      final isPm = endTime.toUpperCase().contains('PM');
+      final isAm = endTime.toUpperCase().contains('AM');
+      if (!startTime.toUpperCase().contains('AM') &&
+          !startTime.toUpperCase().contains('PM')) {
+        if (isPm) startTime += ' PM';
+        if (isAm) startTime += ' AM';
+      }
+      cleanSlot = startTime;
+    }
     return '$cleanDate \u2022 $cleanSlot';
   }
 
@@ -1751,70 +1767,93 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Top row: Sport badge & Date/Time
+                // Top row: Sport badge (left) & Date/Time (right), strictly separated by central thunder channel
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3.5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F2916),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(
-                            0xFFD4FF00,
-                          ).withValues(alpha: 0.35),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.bolt_rounded,
-                            size: 12,
-                            color: Color(0xFFD4FF00),
+                    // Left territory: Sport badge
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3.5,
                           ),
-                          const SizedBox(width: 3),
-                          Text(
-                            _cleanSportName(challenge.sport),
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFFD4FF00),
-                              letterSpacing: 0.3,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1F2916),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.35),
+                              width: 1,
                             ),
                           ),
-                        ],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.bolt_rounded,
+                                size: 12,
+                                color: Color(0xFFD4FF00),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                _cleanSportName(challenge.sport),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFD4FF00),
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+
+                    // Clear central channel so the thunderbolt is NEVER hidden at the top
+                    const SizedBox(width: 24),
+
+                    // Right territory: Date & Time strictly right-aligned
                     Expanded(
-                      child: Text(
-                        _formatChallengeDateTime(
-                          challenge.date,
-                          challenge.time,
-                        ),
-                        textAlign: TextAlign.end,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFA1A1AA),
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.schedule_rounded,
+                              size: 11,
+                              color: Color(0xFFA1A1AA),
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                _formatChallengeDateTime(
+                                  challenge.date,
+                                  challenge.time,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFA1A1AA),
+                                  letterSpacing: 0.1,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
 
-                // Center Battle Zone with Big 3D Shadowed VS & Lightning Strike
+                // Center Battle Zone with 3D Shadowed V & S cleanly separated by the live central lightning strike
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Challenger Team Avatar
                     Expanded(
@@ -1830,85 +1869,71 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     const SizedBox(width: 8),
 
-                    // V on Left side of Thunder (3D Battle Shadow Style, no circle border)
+                    // V on Left side of Thunder (3D Battle Shadow Style)
                     Transform.rotate(
                       angle: -0.06,
                       child: Text(
                         'V',
                         style: TextStyle(
                           fontFamily: 'Delight',
-                          fontSize: 26,
+                          fontSize: 25,
                           fontWeight: FontWeight.w900,
                           fontStyle: FontStyle.italic,
-                          letterSpacing: 1.0,
+                          letterSpacing: 0.5,
                           color: const Color(0xFFD4FF00),
                           shadows: [
                             Shadow(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.85),
-                              blurRadius: 16,
-                            ),
-                            Shadow(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.40),
-                              blurRadius: 28,
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.8),
+                              blurRadius: 10,
                             ),
                             const Shadow(
                               color: Colors.black,
-                              offset: Offset(3.0, 3.5),
-                              blurRadius: 4,
-                            ),
-                            const Shadow(
-                              color: Colors.black,
-                              offset: Offset(-1.5, -1.5),
-                              blurRadius: 2,
+                              offset: Offset(2.5, 3.0),
+                              blurRadius: 3,
                             ),
                             const Shadow(
                               color: Colors.black87,
-                              offset: Offset(4.0, 6.0),
-                              blurRadius: 8,
+                              offset: Offset(3.5, 5.0),
+                              blurRadius: 6,
                             ),
                           ],
                         ),
                       ),
                     ),
 
-                    // Gap where the live thunderbolt visibly separates V and S
-                    const SizedBox(width: 16),
+                    // Clear gap where the live thunderbolt visibly separates V and S
+                    const SizedBox(width: 22),
 
-                    // S on Right side of Thunder (3D Battle Shadow Style, no circle border)
+                    // S on Right side of Thunder (3D Battle Shadow Style)
                     Transform.rotate(
                       angle: 0.06,
                       child: Text(
                         'S',
                         style: TextStyle(
                           fontFamily: 'Delight',
-                          fontSize: 26,
+                          fontSize: 25,
                           fontWeight: FontWeight.w900,
                           fontStyle: FontStyle.italic,
-                          letterSpacing: 1.0,
+                          letterSpacing: 0.5,
                           color: const Color(0xFFD4FF00),
                           shadows: [
                             Shadow(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.85),
-                              blurRadius: 16,
-                            ),
-                            Shadow(
-                              color: const Color(0xFFD4FF00).withValues(alpha: 0.40),
-                              blurRadius: 28,
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.8),
+                              blurRadius: 10,
                             ),
                             const Shadow(
                               color: Colors.black,
-                              offset: Offset(3.0, 3.5),
-                              blurRadius: 4,
-                            ),
-                            const Shadow(
-                              color: Colors.black,
-                              offset: Offset(-1.5, -1.5),
-                              blurRadius: 2,
+                              offset: Offset(2.5, 3.0),
+                              blurRadius: 3,
                             ),
                             const Shadow(
                               color: Colors.black87,
-                              offset: Offset(4.0, 6.0),
-                              blurRadius: 8,
+                              offset: Offset(3.5, 5.0),
+                              blurRadius: 6,
                             ),
                           ],
                         ),
@@ -4015,13 +4040,15 @@ class ThunderBoltSplitPainter extends CustomPainter {
     // Left Challenger Territory (Neon emerald ambient gradient)
     final leftClip = Path()
       ..moveTo(0, 0)
-      ..lineTo(midX + 2, 0)
-      ..lineTo(midX - 8, h * 0.22)
-      ..lineTo(midX + 6, h * 0.36)
-      ..lineTo(midX - 2, h * 0.50)
-      ..lineTo(midX + 7, h * 0.64)
-      ..lineTo(midX - 8, h * 0.78)
-      ..lineTo(midX + 2, h)
+      ..lineTo(midX, 0)
+      ..lineTo(midX - 3, h * 0.18)
+      ..lineTo(midX + 5, h * 0.32)
+      ..lineTo(midX - 2, h * 0.45)
+      ..lineTo(midX + 1, h * 0.50)
+      ..lineTo(midX - 2, h * 0.55)
+      ..lineTo(midX + 6, h * 0.68)
+      ..lineTo(midX - 4, h * 0.82)
+      ..lineTo(midX, h)
       ..lineTo(0, h)
       ..close();
     final leftShader = LinearGradient(
@@ -4038,13 +4065,15 @@ class ThunderBoltSplitPainter extends CustomPainter {
     // Right Opponent Territory (Subtle crimson battle aura)
     final rightClip = Path()
       ..moveTo(w, 0)
-      ..lineTo(midX + 2, 0)
-      ..lineTo(midX - 8, h * 0.22)
-      ..lineTo(midX + 6, h * 0.36)
-      ..lineTo(midX - 2, h * 0.50)
-      ..lineTo(midX + 7, h * 0.64)
-      ..lineTo(midX - 8, h * 0.78)
-      ..lineTo(midX + 2, h)
+      ..lineTo(midX, 0)
+      ..lineTo(midX - 3, h * 0.18)
+      ..lineTo(midX + 5, h * 0.32)
+      ..lineTo(midX - 2, h * 0.45)
+      ..lineTo(midX + 1, h * 0.50)
+      ..lineTo(midX - 2, h * 0.55)
+      ..lineTo(midX + 6, h * 0.68)
+      ..lineTo(midX - 4, h * 0.82)
+      ..lineTo(midX, h)
       ..lineTo(w, h)
       ..close();
     final rightShader = LinearGradient(
@@ -4059,19 +4088,21 @@ class ThunderBoltSplitPainter extends CustomPainter {
     canvas.drawPath(rightClip, Paint()..shader = rightShader);
 
     // 2. High-Voltage Jagged Lightning Fracture tearing the card in half
-    // Passes directly between 'V' (on left) and 'S' (on right) at h * 0.50
+    // Passes cleanly through the top clear corridor and right between 'V' (on left) and 'S' (on right)
     final boltPath = Path()
-      ..moveTo(midX + 2, 0)
-      ..lineTo(midX - 8, h * 0.22)
-      ..lineTo(midX + 6, h * 0.36)
-      ..lineTo(midX - 2, h * 0.50)
-      ..lineTo(midX + 7, h * 0.64)
-      ..lineTo(midX - 8, h * 0.78)
-      ..lineTo(midX + 2, h);
+      ..moveTo(midX, 0)
+      ..lineTo(midX - 3, h * 0.18)
+      ..lineTo(midX + 5, h * 0.32)
+      ..lineTo(midX - 2, h * 0.45)
+      ..lineTo(midX + 1, h * 0.50)
+      ..lineTo(midX - 2, h * 0.55)
+      ..lineTo(midX + 6, h * 0.68)
+      ..lineTo(midX - 4, h * 0.82)
+      ..lineTo(midX, h);
 
     // Outer Neon Glow Aura
     final auraPaint = Paint()
-      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.40)
+      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.45)
       ..strokeWidth = 8.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -4079,7 +4110,7 @@ class ThunderBoltSplitPainter extends CustomPainter {
 
     // Mid Electric Corona
     final glowPaint = Paint()
-      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.90)
+      ..color = const Color(0xFFD4FF00).withValues(alpha: 0.92)
       ..strokeWidth = 3.2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -4098,14 +4129,14 @@ class ThunderBoltSplitPainter extends CustomPainter {
 
     // Lateral electric spark forks
     final branch1 = Path()
-      ..moveTo(midX - 8, h * 0.22)
-      ..lineTo(midX - 24, h * 0.27);
+      ..moveTo(midX - 3, h * 0.18)
+      ..lineTo(midX - 16, h * 0.23);
     final branch2 = Path()
-      ..moveTo(midX + 7, h * 0.64)
-      ..lineTo(midX + 22, h * 0.60);
+      ..moveTo(midX + 6, h * 0.68)
+      ..lineTo(midX + 18, h * 0.64);
     final branch3 = Path()
-      ..moveTo(midX - 8, h * 0.78)
-      ..lineTo(midX - 22, h * 0.83);
+      ..moveTo(midX - 4, h * 0.82)
+      ..lineTo(midX - 16, h * 0.87);
 
     canvas.drawPath(branch1, glowPaint..strokeWidth = 1.4);
     canvas.drawPath(branch1, corePaint..strokeWidth = 0.8);
@@ -4114,27 +4145,27 @@ class ThunderBoltSplitPainter extends CustomPainter {
     canvas.drawPath(branch3, glowPaint..strokeWidth = 1.4);
     canvas.drawPath(branch3, corePaint..strokeWidth = 0.8);
 
-    // Center electric sparks between V and S
+    // Center electric sparks between V and S (stays within the central clear channel)
     final midSpark1 = Path()
-      ..moveTo(midX - 2, h * 0.50)
-      ..lineTo(midX - 10, h * 0.48);
+      ..moveTo(midX + 1, h * 0.50)
+      ..lineTo(midX - 5, h * 0.48);
     final midSpark2 = Path()
-      ..moveTo(midX - 2, h * 0.50)
-      ..lineTo(midX + 8, h * 0.52);
+      ..moveTo(midX + 1, h * 0.50)
+      ..lineTo(midX + 6, h * 0.52);
     canvas.drawPath(midSpark1, corePaint..strokeWidth = 0.8);
     canvas.drawPath(midSpark2, corePaint..strokeWidth = 0.8);
 
     // Spark nodes
     final sparkGlow = Paint()..color = const Color(0xFFD4FF00);
     final sparkCore = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(midX - 8, h * 0.22), 3.0, sparkGlow);
-    canvas.drawCircle(Offset(midX - 8, h * 0.22), 1.2, sparkCore);
-    canvas.drawCircle(Offset(midX - 2, h * 0.50), 3.5, sparkGlow); // Center clash node!
-    canvas.drawCircle(Offset(midX - 2, h * 0.50), 1.5, sparkCore);
-    canvas.drawCircle(Offset(midX + 7, h * 0.64), 3.0, sparkGlow);
-    canvas.drawCircle(Offset(midX + 7, h * 0.64), 1.2, sparkCore);
-    canvas.drawCircle(Offset(midX - 8, h * 0.78), 3.0, sparkGlow);
-    canvas.drawCircle(Offset(midX - 8, h * 0.78), 1.2, sparkCore);
+    canvas.drawCircle(Offset(midX - 3, h * 0.18), 2.5, sparkGlow);
+    canvas.drawCircle(Offset(midX - 3, h * 0.18), 1.0, sparkCore);
+    canvas.drawCircle(Offset(midX + 1, h * 0.50), 3.2, sparkGlow); // Center clash node!
+    canvas.drawCircle(Offset(midX + 1, h * 0.50), 1.4, sparkCore);
+    canvas.drawCircle(Offset(midX + 6, h * 0.68), 2.5, sparkGlow);
+    canvas.drawCircle(Offset(midX + 6, h * 0.68), 1.0, sparkCore);
+    canvas.drawCircle(Offset(midX - 4, h * 0.82), 2.5, sparkGlow);
+    canvas.drawCircle(Offset(midX - 4, h * 0.82), 1.0, sparkCore);
   }
 
   @override
