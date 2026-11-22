@@ -81,6 +81,18 @@ export default function SuperAdminDashboard() {
   const [cancelModalItem, setCancelModalItem] = useState<AdminRegistration | null>(null);
   const [cancelReasonText, setCancelReasonText] = useState('');
   const [radarSelectedRegId, setRadarSelectedRegId] = useState<number | null>(null);
+  const [isRadarFullscreen, setIsRadarFullscreen] = useState<boolean>(false);
+
+  // Sync browser fullscreen exit with state
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsRadarFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Bookings Central state
   const [bookings, setBookings] = useState<BookingItem[]>([]);
@@ -400,38 +412,48 @@ export default function SuperAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-[#080B11] text-slate-100 font-sans selection:bg-[#D4FF00] selection:text-black">
-      {/* Enterprise Sidebar */}
-      <Sidebar
-        activeTab={activeTab}
-        onSelectTab={(tab) => setActiveTab(tab)}
-        waitingKycCount={regStats.waiting || kpis.pendingOwners}
-        isOpenMobile={isMobileSidebarOpen}
-        onCloseMobile={() => setIsMobileSidebarOpen(false)}
-      />
+      {/* Enterprise Sidebar - Hidden in Fullscreen Radar */}
+      {(!isRadarFullscreen || activeTab !== 'MAP_RADAR') && (
+        <Sidebar
+          activeTab={activeTab}
+          onSelectTab={(tab) => setActiveTab(tab)}
+          waitingKycCount={regStats.waiting || kpis.pendingOwners}
+          isOpenMobile={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content Area */}
-      <div className="lg:pl-72 flex flex-col min-h-screen">
-        {/* Top Header Bar */}
-        <Header
-          onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          onSyncMetrics={() => {
-            loadOverview();
-            if (activeTab === 'BOOKINGS') loadBookings();
-            if (activeTab === 'TOURNAMENTS') loadTournaments();
-            if (activeTab === 'REGISTRATIONS') loadRegistrations();
-          }}
-          isSyncing={overviewLoading}
-          onDeployTournament={() => setShowCreateTournModal(true)}
-          pendingKycCount={regStats.waiting || kpis.pendingOwners}
-          onOpenKyc={() => setActiveTab('REGISTRATIONS')}
-          searchQuery={globalSearch}
-          onSearchChange={(val) => {
-            setGlobalSearch(val);
-            if (activeTab === 'BOOKINGS') setBookingSearch(val);
-            if (activeTab === 'REGISTRATIONS') setRegSearch(val);
-          }}
-          activeTabTitle={activeTabTitles[activeTab]}
-        />
+      <div
+        className={
+          isRadarFullscreen && activeTab === 'MAP_RADAR'
+            ? 'flex flex-col h-screen w-screen overflow-hidden'
+            : 'lg:pl-72 flex flex-col min-h-screen'
+        }
+      >
+        {/* Top Header Bar - Hidden in Fullscreen Radar */}
+        {(!isRadarFullscreen || activeTab !== 'MAP_RADAR') && (
+          <Header
+            onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            onSyncMetrics={() => {
+              loadOverview();
+              if (activeTab === 'BOOKINGS') loadBookings();
+              if (activeTab === 'TOURNAMENTS') loadTournaments();
+              if (activeTab === 'REGISTRATIONS') loadRegistrations();
+            }}
+            isSyncing={overviewLoading}
+            onDeployTournament={() => setShowCreateTournModal(true)}
+            pendingKycCount={regStats.waiting || kpis.pendingOwners}
+            onOpenKyc={() => setActiveTab('REGISTRATIONS')}
+            searchQuery={globalSearch}
+            onSearchChange={(val) => {
+              setGlobalSearch(val);
+              if (activeTab === 'BOOKINGS') setBookingSearch(val);
+              if (activeTab === 'REGISTRATIONS') setRegSearch(val);
+            }}
+            activeTabTitle={activeTabTitles[activeTab]}
+          />
+        )}
 
         {/* Floating Toast Notification */}
         {toastMessage && (
@@ -455,177 +477,178 @@ export default function SuperAdminDashboard() {
 
         <main
           className={
-            activeTab === 'MAP_RADAR'
+            isRadarFullscreen && activeTab === 'MAP_RADAR'
+              ? 'w-screen h-screen p-0 m-0 overflow-hidden flex flex-col fixed inset-0 z-50 bg-[#0A0A0A]'
+              : activeTab === 'MAP_RADAR'
               ? 'flex-1 w-full h-[calc(100vh-4.25rem)] p-2 sm:p-3 overflow-hidden flex flex-col min-h-0'
               : 'flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7'
           }
         >
-          {/* Action-Required Banner if Pending KYC */}
-          {kpis.pendingOwners > 0 && activeTab !== 'REGISTRATIONS' && activeTab !== 'MAP_RADAR' && (
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                  <ShieldAlert className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-amber-200 font-mono">
-                    {kpis.pendingOwners} Venue Registration{kpis.pendingOwners > 1 ? 's' : ''} Awaiting Super Admin KYC Approval
-                  </h4>
-                  <p className="text-[11px] text-amber-300/80 mt-0.5 font-mono">
-                    Venues cannot receive player bookings until business credentials, PAN, and turf photos are approved.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveTab('REGISTRATIONS')}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-black hover:bg-amber-400 transition-all shrink-0 self-start sm:self-auto flex items-center gap-1.5 font-mono"
-              >
-                <span>Audit Dossiers ({kpis.pendingOwners})</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-
-          {/* High-Precision Bento KPI Metric Cards (6 Cards) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {/* Card 1: Total Platform GMV */}
-            <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-medium text-slate-400 font-mono">Total GMV</span>
-                <div className="w-6 h-6 rounded-md bg-[#161D2E] text-[#D4FF00] flex items-center justify-center">
-                  <DollarSign className="w-3.5 h-3.5" />
-                </div>
-              </div>
-              <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
-                ₹{kpis.totalRevenue.toLocaleString()}
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-                <span className="text-slate-500">Volume</span>
-                <span className="text-emerald-400 font-semibold">Live Audit</span>
-              </div>
-            </div>
-
-            {/* Card 2: Today's Slots */}
-            <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-medium text-slate-400 font-mono">Today&apos;s Slots</span>
-                <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                  <CalendarDays className="w-3.5 h-3.5" />
-                </div>
-              </div>
-              <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5 tabular-nums">
-                <span>{kpis.todayBookingsCount}</span>
-                <span className="text-xs text-emerald-400 font-normal">booked</span>
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-                <span className="text-slate-300">₹{kpis.todayRevenue.toLocaleString()}</span>
-                {kpis.todayCancelledCount > 0 ? (
-                  <span className="text-rose-400 font-semibold">{kpis.todayCancelledCount} cnl</span>
-                ) : (
-                  <span className="text-slate-500">0 cnl</span>
-                )}
-              </div>
-            </div>
-
-            {/* Card 3: Partner Turfs */}
-            <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-medium text-slate-400 font-mono">Partner Turfs</span>
-                <div className="w-6 h-6 rounded-md bg-[#161D2E] text-slate-300 flex items-center justify-center">
-                  <Building2 className="w-3.5 h-3.5" />
-                </div>
-              </div>
-              <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
-                {kpis.verifiedOwners}
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-                <span className="text-emerald-400 font-medium">Active</span>
-                <span className="text-slate-500">{kpis.totalOwners} total</span>
-              </div>
-            </div>
-
-            {/* Card 4: Registered Athletes */}
-            <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-medium text-slate-400 font-mono">Athletes</span>
-                <div className="w-6 h-6 rounded-md bg-[#161D2E] text-sky-400 flex items-center justify-center">
-                  <Users className="w-3.5 h-3.5" />
-                </div>
-              </div>
-              <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
-                {kpis.totalUsers}
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-                <span className="text-slate-500">OTP Verified</span>
-                <span className="text-sky-400 font-semibold">100%</span>
-              </div>
-            </div>
-
-            {/* Card 5: Tournaments */}
-            <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-medium text-slate-400 font-mono">Championships</span>
-                <div className="w-6 h-6 rounded-md bg-[#D4FF00]/10 text-[#D4FF00] flex items-center justify-center">
-                  <Trophy className="w-3.5 h-3.5" />
-                </div>
-              </div>
-              <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5 tabular-nums">
-                <span>{tournSummary.live}</span>
-                <span className="text-xs text-[#D4FF00] font-normal">live now</span>
-              </div>
-              <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-                <span className="text-slate-400">{tournSummary.upcoming} upc</span>
-                <span className="text-slate-500">{tournSummary.total} total</span>
-              </div>
-            </div>
-
-            {/* Card 6: Pending KYC Approvals */}
-            <div
-              onClick={() => setActiveTab('REGISTRATIONS')}
-              className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                kpis.pendingOwners > 0
-                  ? 'bg-amber-500/10 border-amber-500/40 hover:border-amber-400'
-                  : 'bg-[#0E131F] border-[#1E273A] hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                <span className="font-medium text-slate-400 font-mono">Pending KYC</span>
-                <div
-                  className={`w-6 h-6 rounded-md flex items-center justify-center ${
-                    kpis.pendingOwners > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-[#161D2E] text-slate-400'
-                  }`}
-                >
-                  <FileCheck2 className="w-3.5 h-3.5" />
-                </div>
-              </div>
-              <div
-                className={`font-mono text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums ${
-                  kpis.pendingOwners > 0 ? 'text-amber-300' : 'text-white'
-                }`}
-              >
-                {kpis.pendingOwners}
-              </div>
-              <div className="mt-2 text-[11px] flex items-center justify-between font-mono">
-                {kpis.pendingOwners > 0 ? (
-                  <span className="text-amber-400 font-semibold flex items-center gap-1">
-                    <span>Audit Now</span>
-                    <ChevronRight className="w-3 h-3" />
-                  </span>
-                ) : (
-                  <span className="text-slate-500 flex items-center gap-1">
-                    <Check className="w-3 h-3 text-emerald-400" />
-                    Up to date
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* ========================================================================= */}
           {/* TAB 1: OVERVIEW */}
           {/* ========================================================================= */}
           {activeTab === 'OVERVIEW' && (
             <div className="space-y-7 animate-in fade-in duration-200">
+              {/* Action-Required Banner if Pending KYC */}
+              {kpis.pendingOwners > 0 && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                      <ShieldAlert className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-amber-200 font-mono">
+                        {kpis.pendingOwners} Venue Registration{kpis.pendingOwners > 1 ? 's' : ''} Awaiting Super Admin KYC Approval
+                      </h4>
+                      <p className="text-[11px] text-amber-300/80 mt-0.5 font-mono">
+                        Venues cannot receive player bookings until business credentials, PAN, and turf photos are approved.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('REGISTRATIONS')}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-black hover:bg-amber-400 transition-all shrink-0 self-start sm:self-auto flex items-center gap-1.5 font-mono"
+                  >
+                    <span>Audit Dossiers ({kpis.pendingOwners})</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* High-Precision Bento KPI Metric Cards (6 Cards) */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                {/* Card 1: Total Platform GMV */}
+                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span className="font-medium text-slate-400 font-mono">Total GMV</span>
+                    <div className="w-6 h-6 rounded-md bg-[#161D2E] text-[#D4FF00] flex items-center justify-center">
+                      <DollarSign className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
+                    ₹{kpis.totalRevenue.toLocaleString()}
+                  </div>
+                  <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                    <span className="text-slate-500">Volume</span>
+                    <span className="text-emerald-400 font-semibold">Live Audit</span>
+                  </div>
+                </div>
+
+                {/* Card 2: Today's Slots */}
+                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span className="font-medium text-slate-400 font-mono">Today&apos;s Slots</span>
+                    <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5 tabular-nums">
+                    <span>{kpis.todayBookingsCount}</span>
+                    <span className="text-xs text-emerald-400 font-normal">booked</span>
+                  </div>
+                  <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                    <span className="text-slate-300">₹{kpis.todayRevenue.toLocaleString()}</span>
+                    {kpis.todayCancelledCount > 0 ? (
+                      <span className="text-rose-400 font-semibold">{kpis.todayCancelledCount} cnl</span>
+                    ) : (
+                      <span className="text-slate-500">0 cnl</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card 3: Partner Turfs */}
+                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span className="font-medium text-slate-400 font-mono">Partner Turfs</span>
+                    <div className="w-6 h-6 rounded-md bg-[#161D2E] text-slate-300 flex items-center justify-center">
+                      <Building2 className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
+                    {kpis.verifiedOwners}
+                  </div>
+                  <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                    <span className="text-emerald-400 font-medium">Active</span>
+                    <span className="text-slate-500">{kpis.totalOwners} total</span>
+                  </div>
+                </div>
+
+                {/* Card 4: Registered Athletes */}
+                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span className="font-medium text-slate-400 font-mono">Athletes</span>
+                    <div className="w-6 h-6 rounded-md bg-[#161D2E] text-sky-400 flex items-center justify-center">
+                      <Users className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums">
+                    {kpis.totalUsers}
+                  </div>
+                  <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                    <span className="text-slate-500">OTP Verified</span>
+                    <span className="text-sky-400 font-semibold">100%</span>
+                  </div>
+                </div>
+
+                {/* Card 5: Tournaments */}
+                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] hover:border-slate-600 transition-all">
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span className="font-medium text-slate-400 font-mono">Championships</span>
+                    <div className="w-6 h-6 rounded-md bg-[#D4FF00]/10 text-[#D4FF00] flex items-center justify-center">
+                      <Trophy className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div className="font-mono text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-baseline gap-1.5 tabular-nums">
+                    <span>{tournSummary.live}</span>
+                    <span className="text-xs text-[#D4FF00] font-normal">live now</span>
+                  </div>
+                  <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                    <span className="text-slate-400">{tournSummary.upcoming} upc</span>
+                    <span className="text-slate-500">{tournSummary.total} total</span>
+                  </div>
+                </div>
+
+                {/* Card 6: Pending KYC Approvals */}
+                <div
+                  onClick={() => setActiveTab('REGISTRATIONS')}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                    kpis.pendingOwners > 0
+                      ? 'bg-amber-500/10 border-amber-500/40 hover:border-amber-400'
+                      : 'bg-[#0E131F] border-[#1E273A] hover:border-slate-600'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span className="font-medium text-slate-400 font-mono">Pending KYC</span>
+                    <div
+                      className={`w-6 h-6 rounded-md flex items-center justify-center ${
+                        kpis.pendingOwners > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-[#161D2E] text-slate-400'
+                      }`}
+                    >
+                      <FileCheck2 className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                  <div
+                    className={`font-mono text-xl sm:text-2xl font-extrabold tracking-tight tabular-nums ${
+                      kpis.pendingOwners > 0 ? 'text-amber-300' : 'text-white'
+                    }`}
+                  >
+                    {kpis.pendingOwners}
+                  </div>
+                  <div className="mt-2 text-[11px] flex items-center justify-between font-mono">
+                    {kpis.pendingOwners > 0 ? (
+                      <span className="text-amber-400 font-semibold flex items-center gap-1">
+                        <span>Audit Now</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </span>
+                    ) : (
+                      <span className="text-slate-500 flex items-center gap-1">
+                        <Check className="w-3 h-3 text-emerald-400" />
+                        Up to date
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
               {/* Interactive Analytics Charts */}
               <AnalyticsCharts overview={overview} />
 
@@ -1518,7 +1541,7 @@ export default function SuperAdminDashboard() {
               regItems.find((r) => r.id === radarSelectedRegId) || regItems[0] || null;
 
             return (
-              <div className="flex-1 w-full h-full min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-200">
+              <div className="flex-1 w-full h-full min-h-0 flex flex-col overflow-hidden">
                 <TurfRadarMap
                   turfId={radarSelectedRegId || currentRadarTurf?.id}
                   initialLat={currentRadarTurf?.latitude || 9.9252}
@@ -1528,6 +1551,18 @@ export default function SuperAdminDashboard() {
                   neighborhoodArea={currentRadarTurf?.neighborhoodArea || 'Madurai'}
                   googleMapsUrl={currentRadarTurf?.googleMapsUrl || undefined}
                   isEmbedded={true}
+                  isFullscreen={isRadarFullscreen}
+                  onToggleFullscreen={() => {
+                    const next = !isRadarFullscreen;
+                    setIsRadarFullscreen(next);
+                    if (next) {
+                      document.documentElement.requestFullscreen?.().catch(() => {});
+                    } else {
+                      if (document.fullscreenElement) {
+                        document.exitFullscreen?.().catch(() => {});
+                      }
+                    }
+                  }}
                   onSelectTurfId={(id) => setRadarSelectedRegId(id)}
                   onOpenKycDetails={(tId) => {
                     const item = regItems.find((r) => r.id === tId);
