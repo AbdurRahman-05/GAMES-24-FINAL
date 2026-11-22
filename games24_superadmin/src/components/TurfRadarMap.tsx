@@ -29,8 +29,6 @@ import {
   Share2,
   PhoneCall,
   Search,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import {
   NearbyPlayer,
@@ -115,7 +113,6 @@ export default function TurfRadarMap({
   const [selectedSportFilter, setSelectedSportFilter] = useState<string>('ALL');
   const [outreachTarget, setOutreachTarget] = useState<OutreachTarget | null>(null);
   const [copiedPlayerId, setCopiedPlayerId] = useState<number | null>(null);
-  const [showSlotsBreakdown, setShowSlotsBreakdown] = useState<boolean>(false);
 
   const isFull = isFullscreen || localFullscreen;
 
@@ -410,7 +407,7 @@ export default function TurfRadarMap({
           `<div style="font-family: monospace; font-size: 11px; font-weight: bold; color: ${
             isSelected ? '#D4FF00' : '#E2E8F0'
           };">
-            ${t.venueName} ${isSelected ? '(SELECTED RADAR TARGET)' : '• Click to search players around'}
+            ${t.venueName} ${isSelected ? '(SELECTED TARGET)' : '• Click to inspect slots & players'}
           </div>`,
           { direction: 'top', offset: [0, -18], className: 'custom-tooltip' }
         );
@@ -655,7 +652,7 @@ export default function TurfRadarMap({
       </div>
 
       {/* ========================================================================= */}
-      {/* MAIN ADAPTIVE BODY (Left: Leaflet Radar Map, Right: Turf & Player Details) */}
+      {/* MAIN ADAPTIVE BODY (Left: Leaflet Radar Map, Right: Turf Details, Slots & Players) */}
       {/* ========================================================================= */}
       <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden min-h-0">
         {/* LEFT: LEAFLET RADAR MAP CANVAS */}
@@ -745,10 +742,10 @@ export default function TurfRadarMap({
         </div>
 
         {/* ========================================================================= */}
-        {/* RIGHT: TURF DETAILS & SEARCH PLAYERS PANEL */}
+        {/* RIGHT: TURF DETAILS, SLOTS & SURROUNDING PLAYERS (EXACTLY AS REQUESTED) */}
         {/* ========================================================================= */}
-        <div className="w-full lg:w-[440px] xl:w-[480px] bg-[#0A0E17] border-t lg:border-t-0 lg:border-l border-[#1E273A] flex flex-col z-10 min-h-0">
-          {/* 1. Selected Turf Summary Banner */}
+        <div className="w-full lg:w-[450px] xl:w-[480px] bg-[#0A0E17] border-t lg:border-t-0 lg:border-l border-[#1E273A] flex flex-col z-10 min-h-0">
+          {/* 1. TURF DETAILS */}
           <div className="p-3 bg-[#0E131F] border-b border-[#1E273A] shrink-0">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -757,79 +754,162 @@ export default function TurfRadarMap({
                   <h3 className="text-sm font-black text-white font-mono truncate">
                     {activeVenueName}
                   </h3>
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/30 font-mono">
+                    ACTIVE TURF
+                  </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono mt-0.5 truncate">
                   {data?.turf?.streetAddress || streetAddress}
                 </p>
                 {data?.turf?.ownerPhone && (
-                  <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                    Owner: <strong className="text-slate-200">{data.turf.ownerName}</strong> (
-                    <a href={`tel:${data.turf.ownerPhone}`} className="text-[#D4FF00] hover:underline">
-                      {data.turf.ownerPhone}
+                  <div className="flex items-center gap-2 mt-1 font-mono text-[11px]">
+                    <span className="text-slate-400">Owner: <strong className="text-slate-200">{data.turf.ownerName}</strong></span>
+                    <a
+                      href={`tel:${data.turf.ownerPhone}`}
+                      className="flex items-center gap-1 text-[#D4FF00] hover:underline font-bold"
+                    >
+                      <Phone className="w-3 h-3" />
+                      <span>{data.turf.ownerPhone}</span>
                     </a>
-                    )
-                  </p>
+                  </div>
                 )}
               </div>
 
               {/* Slot Counts Pill */}
-              <div className="text-right shrink-0 font-mono">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 block mb-1">
+              <div className="text-right shrink-0 font-mono text-[10px]">
+                <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 block mb-1">
                   {data?.slotsOverview?.availableCount ?? 16} Available
                 </span>
-                {data?.slotsOverview?.waitingOpponentCount ? (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 block">
-                    ⚡ {data.slotsOverview.waitingOpponentCount} Challenges
-                  </span>
-                ) : null}
+                <span className="px-2 py-0.5 rounded font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 block">
+                  {data?.slotsOverview?.bookedCount ?? 0} Booked
+                </span>
               </div>
             </div>
           </div>
 
-          {/* 2. PROMINENT SEARCH ACTION: "Click the turf and search the players around them" */}
-          <div className="p-3 bg-[#0B0F19] border-b border-[#1E273A] space-y-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                loadTurfData(selectedTurfId, radiusKm);
-              }}
-              className="w-full py-3 px-4 rounded-xl bg-[#D4FF00] hover:bg-[#bce400] text-black font-black font-mono text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#D4FF00]/25 transition-all active:scale-[0.98]"
-            >
-              <Search className="w-4 h-4 text-black stroke-[3]" />
-              <span>Search Players Around This Turf ({radiusKm} km)</span>
-            </button>
+          {/* 2. COURT SLOTS & OPEN MATCHES OF THIS TURF */}
+          <div className="p-2.5 bg-[#0A0E17] border-b border-[#1E273A] shrink-0 space-y-2">
+            <div className="flex items-center justify-between font-mono text-xs">
+              <span className="font-bold text-white flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
+                <span>Today&apos;s Court Slots</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                {data?.slotsOverview?.availableCount ?? 16} Available • 16 Standard Hours
+              </span>
+            </div>
 
-            <p className="text-[11px] text-slate-400 font-mono text-center flex items-center justify-center gap-1.5">
-              <span className="text-[#D4FF00]">👉</span>
-              <span>Click any turf pin on the map to search surrounding players</span>
-            </p>
+            {/* Open Matches Banner if any */}
+            {data?.openMatches && data.openMatches.length > 0 && (
+              <div className="space-y-1.5">
+                {data.openMatches.map((m) => {
+                  const isWaiting = m.status === 'WAITING_FOR_OPPONENT';
+                  return (
+                    <div
+                      key={m.id}
+                      className={`p-2 rounded-lg border text-xs font-mono flex items-center justify-between gap-2 ${
+                        isWaiting ? 'bg-amber-500/10 border-amber-500/40 text-amber-200' : 'bg-[#0E131F] border-[#1E273A]'
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-[#D4FF00]">⚡ {m.sport} ({m.teamSize})</span>
+                          <span className="text-[10px] text-slate-400">{m.date} • {m.time}</span>
+                        </div>
+                        <p className="text-[11px] text-white font-bold truncate">
+                          {m.challengerName} vs{' '}
+                          <span className={isWaiting ? 'text-amber-400 italic' : 'text-emerald-400'}>
+                            {isWaiting ? 'Waiting Opponent' : m.opponentName}
+                          </span>
+                        </p>
+                      </div>
+
+                      {isWaiting && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOutreachTarget({
+                              type: 'CHALLENGE',
+                              title: `Challenge: ${m.sport}`,
+                              detail: `${m.date} (${m.time}) vs ${m.challengerName}`,
+                              sport: m.sport,
+                              time: m.time,
+                              date: m.date,
+                              challengerName: m.challengerName,
+                            });
+                          }}
+                          className="px-2 py-1 rounded bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40 text-[10px] font-bold shrink-0 hover:bg-[#2b3a1e]"
+                        >
+                          Target Players Below
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Hourly Operating Slots Grid (4 columns) */}
+            <div className="grid grid-cols-4 gap-1 font-mono text-[9.5px]">
+              {data?.slotsOverview?.slots?.map((slot, idx) => {
+                const isBooked = slot.status === 'BOOKED';
+                const isOpenMatch = slot.status === 'OPEN_MATCH';
+                const isSelected = outreachTarget?.type === 'SLOT' && outreachTarget.time === slot.timeSlot;
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (!isBooked) {
+                        setOutreachTarget({
+                          type: 'SLOT',
+                          title: `Slot: ${slot.timeSlot.split(' - ')[0]}`,
+                          detail: `₹${slot.rate} • ${slot.sport || 'Court'}`,
+                          sport: slot.sport || 'Football',
+                          time: slot.timeSlot,
+                          rate: slot.rate,
+                        });
+                      }
+                    }}
+                    className={`p-1.5 rounded border text-center transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#D4FF00] text-black border-[#D4FF00] font-black shadow-sm'
+                        : isOpenMatch
+                        ? 'bg-[#1C2014] border-[#D4FF00]/50 text-[#D4FF00]'
+                        : isBooked
+                        ? 'bg-[#1F1214] border-rose-500/30 text-rose-400'
+                        : 'bg-[#0E131F] border-[#1E273A] text-emerald-400 hover:border-emerald-400'
+                    }`}
+                    title={`${slot.timeSlot}: ${slot.status} (Click to target players below)`}
+                  >
+                    <span className={`block text-[8.5px] truncate ${isSelected ? 'text-black font-bold' : 'text-slate-400'}`}>
+                      {slot.timeSlot.split(' - ')[0]}
+                    </span>
+                    <span className="font-bold block truncate">
+                      {isOpenMatch ? '⚡Match' : isBooked ? 'Booked' : '₹' + slot.rate}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Active Outreach Context Banner (If Admin selected an Open Match or Court Slot to fill) */}
           {outreachTarget && (
-            <div className="p-2.5 bg-[#1F2916] border-b border-[#D4FF00]/40 flex items-start justify-between gap-2 shrink-0 animate-in fade-in duration-150">
-              <div className="flex items-start gap-2">
-                <Zap className="w-4 h-4 text-[#D4FF00] shrink-0 mt-0.5" />
-                <div className="font-mono text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-[#D4FF00]">{outreachTarget.title}</span>
-                    <span className="px-1.5 py-0.2 rounded bg-black/40 text-[10px] text-emerald-400">
-                      {outreachTarget.sport}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 mt-0.5">
-                    {outreachTarget.detail} • Click <strong>&quot;Call&quot;</strong> or <strong>&quot;WhatsApp Invite&quot;</strong> on athletes below to fill!
-                  </p>
-                </div>
+            <div className="p-2 bg-[#1F2916] border-b border-[#D4FF00]/40 flex items-center justify-between gap-2 shrink-0 animate-in fade-in duration-150">
+              <div className="flex items-center gap-2 min-w-0 font-mono text-xs">
+                <Zap className="w-3.5 h-3.5 text-[#D4FF00] shrink-0" />
+                <span className="text-white truncate">
+                  Targeting: <strong className="text-[#D4FF00]">{outreachTarget.title}</strong> ({outreachTarget.detail})
+                </span>
               </div>
-
               <button
                 type="button"
                 onClick={() => setOutreachTarget(null)}
                 className="text-slate-400 hover:text-white shrink-0 p-1"
-                title="Dismiss targeting"
+                title="Clear target"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
           )}
@@ -922,43 +1002,46 @@ export default function TurfRadarMap({
               </div>
             )}
 
-            {/* Search & Sport Filter Subheader */}
+            {/* Header with Athlete Count & Filter */}
             <div className="p-2.5 border-b border-[#1E273A] bg-[#0A0E17] flex flex-col gap-2 shrink-0">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="font-bold text-white flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-[#D4FF00]" />
-                  <span>Surrounding Athletes ({filteredPlayers.length})</span>
+                  <span>Surrounding Players Around Turf ({filteredPlayers.length})</span>
                 </span>
-                <span className="text-[10px] text-slate-400">Within {radiusKm} km</span>
+                <span className="text-[10px] text-slate-400 font-mono">Within {radiusKm} km</span>
               </div>
 
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Filter athlete name, phone, or rank..."
-                  value={searchQuery}
-                  onFocus={(e) => e.stopPropagation()}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-[#0E131F] border border-[#1E273A] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00] font-mono"
-                />
-              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search player name, phone, or rank..."
+                    value={searchQuery}
+                    onFocus={(e) => e.stopPropagation()}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 bg-[#0E131F] border border-[#1E273A] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00] font-mono"
+                  />
+                </div>
 
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 font-mono">
-                {['ALL', 'Football', 'Cricket', 'Badminton'].map((sp) => (
-                  <button
-                    key={sp}
-                    type="button"
-                    onClick={() => setSelectedSportFilter(sp)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap transition-colors ${
-                      selectedSportFilter === sp
-                        ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40'
-                        : 'bg-[#0E131F] text-slate-400 hover:text-white border border-[#1E273A]'
-                    }`}
-                  >
-                    {sp}
-                  </button>
-                ))}
+                {/* Sport Filter Chips */}
+                <div className="flex items-center gap-1 font-mono shrink-0">
+                  {['ALL', 'Football', 'Cricket'].map((sp) => (
+                    <button
+                      key={sp}
+                      type="button"
+                      onClick={() => setSelectedSportFilter(sp)}
+                      className={`px-2 py-1 rounded text-[10px] font-bold whitespace-nowrap transition-colors ${
+                        selectedSportFilter === sp
+                          ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40'
+                          : 'bg-[#0E131F] text-slate-400 hover:text-white border border-[#1E273A]'
+                      }`}
+                    >
+                      {sp}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -976,7 +1059,7 @@ export default function TurfRadarMap({
                     No athletes found within {radiusKm} km radius of {activeVenueName}.
                   </p>
                   <p className="text-[11px] text-slate-500">
-                    Click another turf on the map or expand the radar range slider.
+                    Click another turf pin on the map or expand the radar range slider.
                   </p>
                   <button
                     type="button"
@@ -1076,105 +1159,6 @@ export default function TurfRadarMap({
                     </div>
                   );
                 })
-              )}
-            </div>
-
-            {/* 4. OPTIONAL COLLAPSIBLE: Turf Court Slots & Open Challenges */}
-            <div className="border-t border-[#1E273A] bg-[#0E131F] shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowSlotsBreakdown(!showSlotsBreakdown)}
-                className="w-full flex items-center justify-between p-2.5 text-xs font-mono text-slate-300 hover:text-white transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <Swords className="w-3.5 h-3.5 text-[#D4FF00]" />
-                  <span className="font-bold">
-                    Court Slots & Open Challenges ({data?.slotsOverview?.availableCount ?? 16} Available)
-                  </span>
-                </div>
-                {showSlotsBreakdown ? (
-                  <ChevronUp className="w-4 h-4 text-slate-400" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 text-slate-400" />
-                )}
-              </button>
-
-              {showSlotsBreakdown && (
-                <div className="p-3 border-t border-[#1E273A] space-y-3 max-h-64 overflow-y-auto">
-                  {/* Open Matches */}
-                  {data?.openMatches && data.openMatches.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-[10px] text-slate-400 font-mono font-bold block uppercase">
-                        Active Open Challenges ({data.openMatches.length})
-                      </span>
-                      {data.openMatches.map((m) => {
-                        const isWaiting = m.status === 'WAITING_FOR_OPPONENT';
-                        return (
-                          <div
-                            key={m.id}
-                            className="p-2 rounded-lg bg-[#0A0E17] border border-[#1E273A] text-xs font-mono space-y-1"
-                          >
-                            <div className="flex items-center justify-between text-[10px]">
-                              <span className="text-[#D4FF00] font-bold">⚡ {m.sport}</span>
-                              <span className="text-slate-400">{m.date} • {m.time}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-[11px]">
-                              <span>{m.challengerName} ({m.teamSize})</span>
-                              <span className="text-amber-400 italic font-bold">
-                                {isWaiting ? 'Waiting Opponent' : m.opponentName}
-                              </span>
-                            </div>
-                            {isWaiting && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setOutreachTarget({
-                                    type: 'CHALLENGE',
-                                    title: `Open Challenge: ${m.sport}`,
-                                    detail: `${m.date} (${m.time}) vs ${m.challengerName}`,
-                                    sport: m.sport,
-                                    time: m.time,
-                                    date: m.date,
-                                    challengerName: m.challengerName,
-                                  });
-                                }}
-                                className="w-full mt-1 py-1 rounded bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/30 text-[10px] font-bold text-center block"
-                              >
-                                + Target Players Above for this Match
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Standard Court Slots */}
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-mono font-bold block uppercase mb-1.5">
-                      Hourly Court Slots
-                    </span>
-                    <div className="grid grid-cols-2 gap-1.5 text-xs font-mono">
-                      {data?.slotsOverview?.slots?.map((slot, idx) => {
-                        const isBooked = slot.status === 'BOOKED';
-                        const isAvailable = slot.status === 'AVAILABLE';
-                        return (
-                          <div
-                            key={idx}
-                            className={`p-2 rounded-lg border text-[10px] flex items-center justify-between ${
-                              isBooked ? 'bg-[#1F1214] border-rose-500/30' : 'bg-[#0A0E17] border-[#1E273A]'
-                            }`}
-                          >
-                            <span className="text-slate-300">{slot.timeSlot.split(' - ')[0]}</span>
-                            <span className={isBooked ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
-                              {isBooked ? 'Booked' : '₹' + slot.rate}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
           </div>
