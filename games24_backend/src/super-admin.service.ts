@@ -1031,66 +1031,172 @@ export class SuperAdminService {
     lng?: number;
     radiusKm?: number;
   }) {
-    let turfLat: number = 9.9252; // Default Madurai center
-    let turfLng: number = 78.1198;
-    let turfInfo: any = {
-      id: params.turfId || 0,
-      venueName: 'Selected Venue',
-      ownerName: 'Turf Owner',
-      streetAddress: 'Madurai, Tamil Nadu',
-      neighborhoodArea: 'Madurai',
-      latitude: turfLat,
-      longitude: turfLng,
-      googleMapsUrl: `https://www.google.com/maps?q=${turfLat},${turfLng}`,
-    };
+    // 0. Fetch all turfs for plotting across the map
+    const [allVerifiedTurfs, allAdminTurfs, allChallenges] = await Promise.all([
+      this.prisma.verifiedAdmin.findMany({
+        where: {
+          latitude: { not: null },
+          longitude: { not: null },
+        },
+        select: {
+          id: true,
+          venueName: true,
+          ownerName: true,
+          ownerPhone: true,
+          streetAddress: true,
+          neighborhoodArea: true,
+          latitude: true,
+          longitude: true,
+          googleMapsUrl: true,
+          status: true,
+        },
+        orderBy: { id: 'asc' },
+      }),
+      this.prisma.adminUser.findMany({
+        where: {
+          latitude: { not: null },
+          longitude: { not: null },
+          status: 'PENDING_APPROVAL',
+        },
+        select: {
+          id: true,
+          venueName: true,
+          ownerName: true,
+          ownerPhone: true,
+          streetAddress: true,
+          neighborhoodArea: true,
+          latitude: true,
+          longitude: true,
+          googleMapsUrl: true,
+          status: true,
+        },
+        orderBy: { id: 'asc' },
+      }),
+      this.prisma.openChallenge.findMany({
+        where: { status: { not: 'CANCELLED' } },
+        select: {
+          id: true,
+          turfId: true,
+          turfName: true,
+          status: true,
+          opponentName: true,
+        },
+      }),
+    ]);
 
-    if (params.turfId) {
-      const verified = await this.prisma.verifiedAdmin.findUnique({
-        where: { id: params.turfId },
+    const turfListSummary: Array<{
+      id: number;
+      venueName: string;
+      ownerName: string;
+      ownerPhone?: string;
+      streetAddress: string;
+      neighborhoodArea: string;
+      latitude: number;
+      longitude: number;
+      googleMapsUrl: string;
+      openMatchesCount: number;
+      waitingChallengesCount: number;
+      isVerified: boolean;
+    }> = [];
+
+    for (const t of allVerifiedTurfs) {
+      if (t.latitude == null || t.longitude == null) continue;
+      const turfChallenges = allChallenges.filter(
+        (c) =>
+          c.turfId === t.id ||
+          (c.turfName && t.venueName && c.turfName.toLowerCase().includes(t.venueName.toLowerCase()))
+      );
+      const waitingCount = turfChallenges.filter(
+        (c) => c.status !== 'ACCEPTED' && !c.opponentName
+      ).length;
+
+      turfListSummary.push({
+        id: t.id,
+        venueName: t.venueName,
+        ownerName: t.ownerName,
+        ownerPhone: t.ownerPhone || undefined,
+        streetAddress: t.streetAddress || 'Madurai, Tamil Nadu',
+        neighborhoodArea: t.neighborhoodArea || 'Madurai',
+        latitude: t.latitude,
+        longitude: t.longitude,
+        googleMapsUrl: t.googleMapsUrl || `https://www.google.com/maps?q=${t.latitude},${t.longitude}`,
+        openMatchesCount: turfChallenges.length,
+        waitingChallengesCount: waitingCount,
+        isVerified: true,
       });
-      if (verified) {
-        turfLat = verified.latitude || turfLat;
-        turfLng = verified.longitude || turfLng;
-        turfInfo = {
-          id: verified.id,
-          venueName: verified.venueName,
-          ownerName: verified.ownerName,
-          ownerPhone: verified.ownerPhone,
-          streetAddress: verified.streetAddress,
-          neighborhoodArea: verified.neighborhoodArea,
-          latitude: turfLat,
-          longitude: turfLng,
-          googleMapsUrl: verified.googleMapsUrl || `https://www.google.com/maps?q=${turfLat},${turfLng}`,
+    }
+
+    for (const a of allAdminTurfs) {
+      if (a.latitude == null || a.longitude == null) continue;
+      if (!turfListSummary.some((t) => t.id === a.id)) {
+        const turfChallenges = allChallenges.filter(
+          (c) =>
+            c.turfId === a.id ||
+            (c.turfName && a.venueName && c.turfName.toLowerCase().includes(a.venueName.toLowerCase()))
+        );
+        const waitingCount = turfChallenges.filter(
+          (c) => c.status !== 'ACCEPTED' && !c.opponentName
+        ).length;
+
+        turfListSummary.push({
+          id: a.id,
+          venueName: a.venueName,
+          ownerName: a.ownerName,
+          ownerPhone: a.ownerPhone || undefined,
+          streetAddress: a.streetAddress || 'Madurai, Tamil Nadu',
+          neighborhoodArea: a.neighborhoodArea || 'Madurai',
+          latitude: a.latitude,
+          longitude: a.longitude,
+          googleMapsUrl: a.googleMapsUrl || `https://www.google.com/maps?q=${a.latitude},${a.longitude}`,
+          openMatchesCount: turfChallenges.length,
+          waitingChallengesCount: waitingCount,
+          isVerified: false,
+        });
+      }
+    }
+
+    // Determine the targeted/selected turf
+    let targetTurf = params.turfId
+      ? turfListSummary.find((t) => t.id === params.turfId)
+      : turfListSummary[0];
+
+    // If still not found by id, try direct DB lookup
+    if (!targetTurf && params.turfId) {
+      const v = await this.prisma.verifiedAdmin.findUnique({ where: { id: params.turfId } });
+      if (v && v.latitude != null && v.longitude != null) {
+        targetTurf = {
+          id: v.id,
+          venueName: v.venueName,
+          ownerName: v.ownerName,
+          ownerPhone: v.ownerPhone || undefined,
+          streetAddress: v.streetAddress || 'Madurai, Tamil Nadu',
+          neighborhoodArea: v.neighborhoodArea || 'Madurai',
+          latitude: v.latitude,
+          longitude: v.longitude,
+          googleMapsUrl: v.googleMapsUrl || `https://www.google.com/maps?q=${v.latitude},${v.longitude}`,
+          openMatchesCount: 0,
+          waitingChallengesCount: 0,
           isVerified: true,
         };
-      } else {
-        const adminUser = await this.prisma.adminUser.findUnique({
-          where: { id: params.turfId },
-        });
-        if (adminUser) {
-          turfLat = adminUser.latitude || turfLat;
-          turfLng = adminUser.longitude || turfLng;
-          turfInfo = {
-            id: adminUser.id,
-            venueName: adminUser.venueName,
-            ownerName: adminUser.ownerName,
-            ownerPhone: adminUser.ownerPhone,
-            streetAddress: adminUser.streetAddress,
-            neighborhoodArea: adminUser.neighborhoodArea,
-            latitude: turfLat,
-            longitude: turfLng,
-            googleMapsUrl: adminUser.googleMapsUrl || `https://www.google.com/maps?q=${turfLat},${turfLng}`,
-            isVerified: false,
-          };
-        }
       }
-    } else if (params.lat != null && params.lng != null) {
-      turfLat = params.lat;
-      turfLng = params.lng;
-      turfInfo.latitude = turfLat;
-      turfInfo.longitude = turfLng;
-      turfInfo.googleMapsUrl = `https://www.google.com/maps?q=${turfLat},${turfLng}`;
     }
+
+    let turfLat: number = targetTurf?.latitude ?? (params.lat ?? 9.9252);
+    let turfLng: number = targetTurf?.longitude ?? (params.lng ?? 78.1198);
+
+    let turfInfo: any = targetTurf
+      ? { ...targetTurf }
+      : {
+          id: params.turfId || 0,
+          venueName: 'Madurai Arena',
+          ownerName: 'Turf Owner',
+          streetAddress: 'Madurai, Tamil Nadu',
+          neighborhoodArea: 'Madurai',
+          latitude: turfLat,
+          longitude: turfLng,
+          googleMapsUrl: `https://www.google.com/maps?q=${turfLat},${turfLng}`,
+          isVerified: true,
+        };
 
     const radius = Math.max(1, params.radiusKm || 10);
 
@@ -1264,6 +1370,7 @@ export class SuperAdminService {
 
     return {
       turf: turfInfo,
+      allTurfs: turfListSummary,
       radiusKm: radius,
       totalPlayersFound: filteredPlayers.length,
       players: filteredPlayers,

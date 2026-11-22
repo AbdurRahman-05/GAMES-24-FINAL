@@ -453,9 +453,15 @@ export default function SuperAdminDashboard() {
           </div>
         )}
 
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
+        <main
+          className={
+            activeTab === 'MAP_RADAR'
+              ? 'flex-1 w-full h-[calc(100vh-4.25rem)] p-2 sm:p-3 overflow-hidden flex flex-col min-h-0'
+              : 'flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7'
+          }
+        >
           {/* Action-Required Banner if Pending KYC */}
-          {kpis.pendingOwners > 0 && activeTab !== 'REGISTRATIONS' && (
+          {kpis.pendingOwners > 0 && activeTab !== 'REGISTRATIONS' && activeTab !== 'MAP_RADAR' && (
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -1512,72 +1518,22 @@ export default function SuperAdminDashboard() {
               regItems.find((r) => r.id === radarSelectedRegId) || regItems[0] || null;
 
             return (
-              <div className="space-y-4 animate-in fade-in duration-200">
-                {/* Radar Top Toolbar */}
-                <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#1F2916] border border-[#D4FF00]/40 flex items-center justify-center text-[#D4FF00] shadow-md shadow-[#D4FF00]/10">
-                      <Crosshair className="w-5 h-5 animate-spin-slow" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-bold text-white tracking-tight uppercase font-mono">
-                          Turf & Player Geospatial Radar
-                        </h2>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#D4FF00]/15 text-[#D4FF00] border border-[#D4FF00]/30 font-mono">
-                          LIVE MAP
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5 font-mono">
-                        Visualize registered venues on Google Maps and scan surrounding active players within customizable radius ranges.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Turf Selector Dropdown */}
-                  <div className="flex flex-wrap items-center gap-2 font-mono self-start md:self-auto">
-                    <span className="text-xs text-slate-400 font-medium">Turf Venue:</span>
-                    <select
-                      value={currentRadarTurf?.id || ''}
-                      onChange={(e) => setRadarSelectedRegId(Number(e.target.value))}
-                      className="px-3 py-2 bg-[#05080E] border border-[#1E273A] rounded-lg text-xs text-white focus:outline-hidden focus:border-[#D4FF00] max-w-[280px]"
-                    >
-                      {regItems.length > 0 ? (
-                        regItems.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.venueName} — {r.neighborhoodArea || 'Area'}
-                          </option>
-                        ))
-                      ) : (
-                        <option value="">Madurai Default Arena</option>
-                      )}
-                    </select>
-
-                    {currentRadarTurf && (
-                      <button
-                        onClick={() => setSelectedReg(currentRadarTurf)}
-                        className="px-3 py-2 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] text-slate-200 border border-[#28354F] text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                      >
-                        <FileCheck2 className="w-3.5 h-3.5 text-[#D4FF00]" />
-                        <span>KYC Details</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* Radar Interactive Map Component */}
-                <div className="rounded-xl overflow-hidden border border-[#1E273A] shadow-2xl">
-                  <TurfRadarMap
-                    turfId={currentRadarTurf?.id}
-                    initialLat={currentRadarTurf?.latitude || 9.9252}
-                    initialLng={currentRadarTurf?.longitude || 78.1198}
-                    venueName={currentRadarTurf?.venueName || 'Games24 Turf Stadium'}
-                    streetAddress={currentRadarTurf?.streetAddress || 'Madurai, Tamil Nadu'}
-                    neighborhoodArea={currentRadarTurf?.neighborhoodArea || 'Madurai'}
-                    googleMapsUrl={currentRadarTurf?.googleMapsUrl || undefined}
-                    isEmbedded={true}
-                  />
-                </div>
+              <div className="flex-1 w-full h-full min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-200">
+                <TurfRadarMap
+                  turfId={radarSelectedRegId || currentRadarTurf?.id}
+                  initialLat={currentRadarTurf?.latitude || 9.9252}
+                  initialLng={currentRadarTurf?.longitude || 78.1198}
+                  venueName={currentRadarTurf?.venueName || 'Games24 Turf Stadium'}
+                  streetAddress={currentRadarTurf?.streetAddress || 'Madurai, Tamil Nadu'}
+                  neighborhoodArea={currentRadarTurf?.neighborhoodArea || 'Madurai'}
+                  googleMapsUrl={currentRadarTurf?.googleMapsUrl || undefined}
+                  isEmbedded={true}
+                  onSelectTurfId={(id) => setRadarSelectedRegId(id)}
+                  onOpenKycDetails={(tId) => {
+                    const item = regItems.find((r) => r.id === tId);
+                    if (item) setSelectedReg(item);
+                  }}
+                />
               </div>
             );
           })()}

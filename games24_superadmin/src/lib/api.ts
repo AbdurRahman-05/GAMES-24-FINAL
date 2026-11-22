@@ -669,6 +669,21 @@ export interface TurfSlotsOverview {
   slots: TurfSlotItem[];
 }
 
+export interface NearbyTurfSummary {
+  id: number;
+  venueName: string;
+  ownerName: string;
+  ownerPhone?: string;
+  streetAddress: string;
+  neighborhoodArea: string;
+  latitude: number;
+  longitude: number;
+  googleMapsUrl?: string;
+  openMatchesCount: number;
+  waitingChallengesCount: number;
+  isVerified?: boolean;
+}
+
 export interface NearbyPlayersResponse {
   turf: {
     id: number;
@@ -682,6 +697,7 @@ export interface NearbyPlayersResponse {
     googleMapsUrl?: string;
     isVerified?: boolean;
   };
+  allTurfs?: NearbyTurfSummary[];
   radiusKm: number;
   totalPlayersFound: number;
   players: NearbyPlayer[];

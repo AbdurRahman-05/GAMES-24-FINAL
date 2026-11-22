@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   MapPin,
   Crosshair,
@@ -23,10 +23,17 @@ import {
   CheckCircle2,
   AlertCircle,
   Eye,
+  Copy,
+  Check,
+  Building2,
+  Share2,
+  PhoneCall,
+  Search,
 } from 'lucide-react';
 import {
   NearbyPlayer,
   NearbyPlayersResponse,
+  NearbyTurfSummary,
   TurfOpenMatch,
   TurfSlotItem,
   getNearbyPlayers,
@@ -52,6 +59,17 @@ const TILE_CONFIGS: Record<MapTileStyle, { url: string; attribution: string; max
   },
 };
 
+export interface OutreachTarget {
+  type: 'CHALLENGE' | 'SLOT';
+  title: string;
+  detail: string;
+  sport: string;
+  time: string;
+  date?: string;
+  rate?: number;
+  challengerName?: string;
+}
+
 interface Props {
   turfId?: number;
   initialLat?: number;
@@ -62,6 +80,8 @@ interface Props {
   googleMapsUrl?: string;
   onClose?: () => void;
   isEmbedded?: boolean;
+  onSelectTurfId?: (turfId: number) => void;
+  onOpenKycDetails?: (turfId: number) => void;
 }
 
 export default function TurfRadarMap({
@@ -74,24 +94,35 @@ export default function TurfRadarMap({
   googleMapsUrl,
   onClose,
   isEmbedded = false,
+  onSelectTurfId,
+  onOpenKycDetails,
 }: Props) {
+  const [selectedTurfId, setSelectedTurfId] = useState<number | undefined>(turfId);
   const [radiusKm, setRadiusKm] = useState<number>(10);
   const [tileStyle, setTileStyle] = useState<MapTileStyle>('dark');
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [activeSideTab, setActiveSideTab] = useState<'PLAYERS' | 'SLOTS_MATCHES'>('PLAYERS');
+  const [activeSideTab, setActiveSideTab] = useState<'PLAYERS' | 'SLOTS_MATCHES'>('SLOTS_MATCHES');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<NearbyPlayersResponse | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<NearbyPlayer | null>(null);
-  const [selectedMatch, setSelectedMatch] = useState<TurfOpenMatch | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedSportFilter, setSelectedSportFilter] = useState<string>('ALL');
+  const [outreachTarget, setOutreachTarget] = useState<OutreachTarget | null>(null);
+  const [copiedPlayerId, setCopiedPlayerId] = useState<number | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const tileLayerRef = useRef<any>(null);
   const circleLayerRef = useRef<any>(null);
   const markersLayerRef = useRef<any>(null);
+
+  // Sync prop changes
+  useEffect(() => {
+    if (turfId && turfId !== selectedTurfId) {
+      setSelectedTurfId(turfId);
+    }
+  }, [turfId]);
 
   // Keyboard shortcut: ESC to exit fullscreen
   useEffect(() => {
@@ -104,29 +135,49 @@ export default function TurfRadarMap({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen]);
 
-  // Recalculate Leaflet map dimensions on fullscreen toggle
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      mapInstanceRef.current?.invalidateSize();
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [isFullscreen]);
+  // Recalculate Leaflet map dimensions on resize or fullscreen
+  const invalidateMapSize = useCallback(() => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.invalidateSize();
+    }
+  }, []);
 
-  // Load nearby real players & live turf operations from API
   useEffect(() => {
+    const timer = setTimeout(invalidateMapSize, 150);
+    return () => clearTimeout(timer);
+  }, [isFullscreen, invalidateMapSize]);
+
+  // ResizeObserver for dynamic display-size fitting
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+    const observer = new ResizeObserver(() => {
+      invalidateMapSize();
+    });
+    observer.observe(mapContainerRef.current);
+    window.addEventListener('resize', invalidateMapSize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', invalidateMapSize);
+    };
+  }, [invalidateMapSize]);
+
+  // Load nearby real players & live turf operations for the selected turf
+  const loadTurfData = useCallback((tId?: number, rKm: number = radiusKm) => {
     let isMounted = true;
     setLoading(true);
     setError(null);
 
     getNearbyPlayers({
-      turfId,
-      lat: initialLat,
-      lng: initialLng,
-      radiusKm,
+      turfId: tId,
+      radiusKm: rKm,
     })
       .then((res) => {
         if (!isMounted) return;
         setData(res);
+        if (res.turf?.id && (!selectedTurfId || selectedTurfId !== res.turf.id)) {
+          setSelectedTurfId(res.turf.id);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -138,7 +189,29 @@ export default function TurfRadarMap({
     return () => {
       isMounted = false;
     };
-  }, [turfId, initialLat, initialLng, radiusKm]);
+  }, [radiusKm, selectedTurfId]);
+
+  useEffect(() => {
+    const cleanup = loadTurfData(selectedTurfId, radiusKm);
+    return cleanup;
+  }, [selectedTurfId, radiusKm]);
+
+  // Handle switching selected turf (e.g. clicking turf pin or dropdown)
+  const handleSelectTurf = useCallback(
+    (t: { id: number; latitude: number; longitude: number; venueName: string }) => {
+      setSelectedTurfId(t.id);
+      onSelectTurfId?.(t.id);
+      setSelectedPlayer(null);
+
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setView([t.latitude, t.longitude], radiusKm <= 5 ? 14 : radiusKm <= 15 ? 13 : 12, {
+          animate: true,
+          duration: 0.8,
+        });
+      }
+    },
+    [onSelectTurfId, radiusKm]
+  );
 
   // Initialize and update Leaflet Map
   useEffect(() => {
@@ -158,26 +231,24 @@ export default function TurfRadarMap({
         document.head.appendChild(link);
       }
 
-      const turfLat = data?.turf?.latitude || initialLat;
-      const turfLng = data?.turf?.longitude || initialLng;
+      const activeLat = data?.turf?.latitude || initialLat;
+      const activeLng = data?.turf?.longitude || initialLng;
 
       // Initialize map instance if not already created
       if (!mapInstanceRef.current) {
         const map = L.map(mapContainerRef.current, {
-          center: [turfLat, turfLng],
-          zoom: radiusKm <= 5 ? 14 : radiusKm <= 15 ? 12 : 11,
+          center: [activeLat, activeLng],
+          zoom: radiusKm <= 5 ? 14 : radiusKm <= 15 ? 13 : 12,
           zoomControl: false,
         });
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
-
         mapInstanceRef.current = map;
       }
 
       const map = mapInstanceRef.current;
-      map.setView([turfLat, turfLng]);
 
-      // Add/Swap clean keyless tile layer (Zero API key / zero watermark)
+      // Add/Swap clean keyless tile layer (Esri Dark, Satellite, OSM)
       if (tileLayerRef.current) {
         map.removeLayer(tileLayerRef.current);
       }
@@ -195,14 +266,14 @@ export default function TurfRadarMap({
         map.removeLayer(markersLayerRef.current);
       }
 
-      // Draw Radius Circle
-      const circle = L.circle([turfLat, turfLng], {
+      // Draw Radar Radius Circle on Active Selected Turf
+      const circle = L.circle([activeLat, activeLng], {
         radius: radiusKm * 1000,
         color: '#D4FF00',
-        weight: 1.8,
+        weight: 2,
         dashArray: '6, 6',
         fillColor: '#D4FF00',
-        fillOpacity: 0.08,
+        fillOpacity: 0.07,
       }).addTo(map);
       circleLayerRef.current = circle;
 
@@ -210,68 +281,152 @@ export default function TurfRadarMap({
       const markersGroup = L.layerGroup().addTo(map);
       markersLayerRef.current = markersGroup;
 
-      // 1. Turf Stadium Pin
-      const turfIconHtml = `
-        <div style="
-          position: relative;
-          width: 44px;
-          height: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        ">
-          <div style="
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            background: rgba(212, 255, 0, 0.25);
-            border-radius: 50%;
-            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-          "></div>
-          <div style="
-            position: relative;
-            width: 36px;
-            height: 36px;
-            background: #000;
-            border: 2px solid #D4FF00;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 15px rgba(212, 255, 0, 0.8);
-          ">
-            <span style="font-size: 16px;">🏟️</span>
-          </div>
-        </div>
-      `;
+      // =======================================================================
+      // 1. PLOT ALL TURFS ON MAP (Selected has glowing neon pulse, others clickable)
+      // =======================================================================
+      const turfsToPlot = data?.allTurfs && data.allTurfs.length > 0
+        ? data.allTurfs
+        : data?.turf
+        ? [
+            {
+              id: data.turf.id,
+              venueName: data.turf.venueName,
+              ownerName: data.turf.ownerName,
+              ownerPhone: data.turf.ownerPhone,
+              streetAddress: data.turf.streetAddress,
+              neighborhoodArea: data.turf.neighborhoodArea,
+              latitude: data.turf.latitude,
+              longitude: data.turf.longitude,
+              googleMapsUrl: data.turf.googleMapsUrl,
+              openMatchesCount: data.openMatches?.length || 0,
+              waitingChallengesCount: data.slotsOverview?.waitingOpponentCount || 0,
+              isVerified: data.turf.isVerified ?? true,
+            },
+          ]
+        : [];
 
-      const turfCustomIcon = L.divIcon({
-        html: turfIconHtml,
-        className: 'turf-marker-pin',
-        iconSize: [44, 44],
-        iconAnchor: [22, 22],
-      });
+      turfsToPlot.forEach((t) => {
+        const isSelected = t.id === (data?.turf?.id || selectedTurfId);
+        const waitingBadge =
+          t.waitingChallengesCount > 0
+            ? `<div style="
+                position: absolute;
+                top: -6px;
+                right: -6px;
+                background: #F59E0B;
+                color: #000;
+                font-size: 10px;
+                font-weight: 900;
+                border-radius: 9999px;
+                padding: 1px 5px;
+                box-shadow: 0 0 8px rgba(245, 158, 11, 0.9);
+                border: 1px solid #000;
+                display: flex;
+                align-items: center;
+                gap: 2px;
+              ">⚡${t.waitingChallengesCount}</div>`
+            : '';
 
-      const turfMarker = L.marker([turfLat, turfLng], { icon: turfCustomIcon })
-        .addTo(markersGroup)
-        .bindPopup(
-          `<div style="font-family: sans-serif; padding: 6px; color: #fff; background: #141414; min-width: 170px;">
-            <b style="color: #D4FF00; font-size: 13px;">${venueName}</b><br/>
-            <span style="color: #A1A1AA; font-size: 11px;">${neighborhoodArea}</span><br/>
-            <span style="color: #71717A; font-size: 10px;">${turfLat.toFixed(4)}° N, ${turfLng.toFixed(4)}° E</span><br/>
-            <div style="margin-top: 6px; padding: 4px; background: #1F2916; border: 1px solid rgba(212,255,0,0.3); border-radius: 4px; font-size: 10px; color: #D4FF00; font-weight: bold; text-align: center;">
-              ⚡ Click to View Live Matches & Slots
+        let turfIconHtml = '';
+
+        if (isSelected) {
+          turfIconHtml = `
+            <div style="
+              position: relative;
+              width: 50px;
+              height: 50px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            ">
+              <div style="
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                background: rgba(212, 255, 0, 0.3);
+                border-radius: 50%;
+                animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+              "></div>
+              <div style="
+                position: relative;
+                width: 38px;
+                height: 38px;
+                background: #000000;
+                border: 2.5px solid #D4FF00;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 20px rgba(212, 255, 0, 0.9);
+              ">
+                <span style="font-size: 18px;">🏟️</span>
+              </div>
+              ${waitingBadge}
             </div>
+          `;
+        } else {
+          turfIconHtml = `
+            <div style="
+              position: relative;
+              width: 36px;
+              height: 36px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: transform 0.2s;
+            ">
+              <div style="
+                position: relative;
+                width: 32px;
+                height: 32px;
+                background: #0F172A;
+                border: 1.8px solid #38BDF8;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+              ">
+                <span style="font-size: 14px;">🏟️</span>
+              </div>
+              ${waitingBadge}
+            </div>
+          `;
+        }
+
+        const customIcon = L.divIcon({
+          html: turfIconHtml,
+          className: isSelected ? 'turf-marker-active' : 'turf-marker-idle',
+          iconSize: isSelected ? [50, 50] : [36, 36],
+          iconAnchor: isSelected ? [25, 25] : [18, 18],
+        });
+
+        const tMarker = L.marker([t.latitude, t.longitude], {
+          icon: customIcon,
+          zIndexOffset: isSelected ? 1000 : 500,
+        }).addTo(markersGroup);
+
+        // Tooltip showing venue name & neighborhood
+        tMarker.bindTooltip(
+          `<div style="font-family: monospace; font-size: 11px; font-weight: bold; color: ${
+            isSelected ? '#D4FF00' : '#E2E8F0'
+          };">
+            ${t.venueName} ${isSelected ? '(SELECTED RADAR TARGET)' : '• Click to inspect'}
           </div>`,
-          { className: 'custom-dark-popup' }
+          { direction: 'top', offset: [0, -18], className: 'custom-tooltip' }
         );
 
-      turfMarker.on('click', () => {
-        setActiveSideTab('SLOTS_MATCHES');
+        tMarker.on('click', () => {
+          handleSelectTurf(t);
+          setActiveSideTab('SLOTS_MATCHES');
+        });
       });
 
-      // 2. Real Player Pins (from Player App only)
+      // =======================================================================
+      // 2. PLOT SURROUNDING PLAYERS (Only real registered players from Player App)
+      // =======================================================================
       if (data?.players) {
         data.players.forEach((player) => {
           const isSelected = selectedPlayer?.id === player.id;
@@ -284,32 +439,41 @@ export default function TurfRadarMap({
 
           const playerIconHtml = `
             <div style="
-              width: ${isSelected ? '32px' : '26px'};
-              height: ${isSelected ? '32px' : '26px'};
+              width: ${isSelected ? '34px' : '28px'};
+              height: ${isSelected ? '34px' : '28px'};
               background: ${isSelected ? '#D4FF00' : '#18181B'};
-              border: 1.8px solid ${isSelected ? '#000' : '#3F3F46'};
+              border: ${isSelected ? '2.5px solid #000' : '1.8px solid #52525B'};
               border-radius: 50%;
               display: flex;
               align-items: center;
               justify-content: center;
               cursor: pointer;
               transition: transform 0.2s;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+              box-shadow: ${isSelected ? '0 0 12px rgba(212, 255, 0, 0.8)' : '0 2px 8px rgba(0,0,0,0.6)'};
             ">
-              <span style="font-size: ${isSelected ? '14px' : '11px'};">${sportEmoji}</span>
+              <span style="font-size: ${isSelected ? '15px' : '12px'};">${sportEmoji}</span>
             </div>
           `;
 
           const playerCustomIcon = L.divIcon({
             html: playerIconHtml,
             className: 'player-marker-pin',
-            iconSize: isSelected ? [32, 32] : [26, 26],
-            iconAnchor: isSelected ? [16, 16] : [13, 13],
+            iconSize: isSelected ? [34, 34] : [28, 28],
+            iconAnchor: isSelected ? [17, 17] : [14, 14],
           });
 
           const pMarker = L.marker([player.latitude, player.longitude], {
             icon: playerCustomIcon,
+            zIndexOffset: isSelected ? 800 : 200,
           }).addTo(markersGroup);
+
+          pMarker.bindTooltip(
+            `<div style="font-family: monospace; font-size: 11px;">
+              <b>${player.fullName}</b> • ${player.distanceKm} km away<br/>
+              <span style="color: #A1A1AA;">${player.preferredSport} • ${player.rank}</span>
+            </div>`,
+            { direction: 'top', offset: [0, -12] }
+          );
 
           pMarker.on('click', () => {
             setSelectedPlayer(player);
@@ -322,7 +486,7 @@ export default function TurfRadarMap({
     return () => {
       isCancelled = true;
     };
-  }, [data, radiusKm, tileStyle, selectedPlayer, initialLat, initialLng, venueName, neighborhoodArea]);
+  }, [data, radiusKm, tileStyle, selectedPlayer, initialLat, initialLng, selectedTurfId, handleSelectTurf]);
 
   // Filter players for directory list
   const filteredPlayers = (data?.players || []).filter((p) => {
@@ -338,88 +502,143 @@ export default function TurfRadarMap({
 
   const activeLat = data?.turf?.latitude || initialLat;
   const activeLng = data?.turf?.longitude || initialLng;
+  const activeVenueName = data?.turf?.venueName || venueName;
+  const activeArea = data?.turf?.neighborhoodArea || neighborhoodArea;
   const finalMapUrl =
     googleMapsUrl ||
     data?.turf?.googleMapsUrl ||
     `https://www.google.com/maps?q=${activeLat},${activeLng}`;
 
+  // Message builder for WhatsApp outreach based on active context
+  const getOutreachMessage = (player: NearbyPlayer): string => {
+    if (outreachTarget?.type === 'CHALLENGE') {
+      return `Hello ${player.fullName}! We have an open match challenge at ${activeVenueName} (${activeArea}) for ${outreachTarget.sport} on ${outreachTarget.date || 'Today'} at ${outreachTarget.time}. Team '${outreachTarget.challengerName || 'Host'}' is looking for an opponent! Are you and your team available to play? Let us know to lock your spot!`;
+    }
+    if (outreachTarget?.type === 'SLOT') {
+      return `Hello ${player.fullName}! We have a court slot available at ${activeVenueName} (${activeArea}) today from ${outreachTarget.time} for ${outreachTarget.sport} at ₹${outreachTarget.rate || 1200}. Would you like us to book this slot for you?`;
+    }
+    return `Hello ${player.fullName}! We noticed you're active around ${activeVenueName}. We have prime slots and open challenges available today for ${player.preferredSport}. Would you like to reserve a court or join a match?`;
+  };
+
+  const handleCopyPitch = (player: NearbyPlayer) => {
+    const msg = getOutreachMessage(player);
+    navigator.clipboard.writeText(msg);
+    setCopiedPlayerId(player.id);
+    setTimeout(() => setCopiedPlayerId(null), 2000);
+  };
+
   return (
     <div
-      className={`relative flex flex-col bg-[#0A0A0A] text-white border border-[#262626] transition-all duration-300 ${
+      className={`relative flex flex-col bg-[#0A0A0A] text-white border border-[#222B38] transition-all duration-300 ${
         isFullscreen
           ? 'fixed inset-0 z-[9999] w-screen h-screen rounded-none m-0 p-0 shadow-none'
-          : isEmbedded
-          ? 'w-full h-[720px] rounded-2xl overflow-hidden shadow-2xl'
-          : 'w-full max-w-6xl mx-auto h-[840px] rounded-2xl overflow-hidden shadow-2xl'
+          : 'w-full h-full flex-1 rounded-xl overflow-hidden shadow-2xl min-h-0'
       }`}
     >
-      {/* Top Header Bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-[#121212] border-b border-[#262626] z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#1F2916] border border-[#D4FF00]/40 flex items-center justify-center">
-            <Crosshair className="w-5 h-5 text-[#D4FF00] animate-spin-slow" />
+      {/* ========================================================================= */}
+      {/* TOP COMPACT CONTROL BAR (Fits cleanly on any screen size) */}
+      {/* ========================================================================= */}
+      <div className="flex flex-wrap items-center justify-between px-3 sm:px-4 py-2 bg-[#0E131F] border-b border-[#1E273A] z-20 gap-2">
+        {/* Left: Venue Switcher & Radar Indicator */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-[#1F2916] border border-[#D4FF00]/40 flex items-center justify-center text-[#D4FF00] shrink-0">
+            <Crosshair className="w-4 h-4 animate-spin-slow" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-black tracking-tight text-white">
-                {data?.turf?.venueName || venueName}
-              </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/30 font-mono">
-                TURF RADAR & MATCHES
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Turf Selector Dropdown */}
+              {data?.allTurfs && data.allTurfs.length > 0 ? (
+                <select
+                  value={data?.turf?.id || selectedTurfId || ''}
+                  onChange={(e) => {
+                    const id = Number(e.target.value);
+                    const found = data.allTurfs?.find((t) => t.id === id);
+                    if (found) handleSelectTurf(found);
+                  }}
+                  className="px-2.5 py-1 bg-[#05080E] border border-[#28354F] rounded-lg text-xs font-bold text-white focus:outline-hidden focus:border-[#D4FF00] max-w-[220px] sm:max-w-[280px] font-mono cursor-pointer"
+                >
+                  {data.allTurfs.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.venueName} ({t.neighborhoodArea || 'Madurai'}) {t.waitingChallengesCount > 0 ? `⚡ ${t.waitingChallengesCount} challenges` : ''}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-xs sm:text-sm font-black text-white font-mono truncate">
+                  {activeVenueName}
+                </span>
+              )}
+
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/30 font-mono shrink-0">
+                RADAR LIVE
               </span>
+
               {isFullscreen && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono">
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono shrink-0">
                   FULLSCREEN
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-400">
-              {data?.turf?.streetAddress || streetAddress} •{' '}
-              <span className="text-[#D4FF00]">
-                {activeLat.toFixed(4)}° N, {activeLng.toFixed(4)}° E
-              </span>
+
+            <p className="text-[11px] text-slate-400 truncate font-mono mt-0.5">
+              {activeArea} • <span className="text-[#D4FF00]">{activeLat.toFixed(4)}° N, {activeLng.toFixed(4)}° E</span>
+              {data?.turf?.ownerPhone && (
+                <span className="text-slate-400"> • Owner: {data.turf.ownerPhone}</span>
+              )}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Fullscreen Toggle Button */}
-          <button
-            type="button"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] border border-[#28354F] text-xs font-semibold text-slate-200 hover:text-white transition-all shadow-sm"
-            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Expand to Fullscreen'}
-          >
-            {isFullscreen ? (
-              <>
-                <Minimize2 className="w-3.5 h-3.5 text-[#D4FF00]" />
-                <span className="hidden sm:inline">Exit Fullscreen</span>
-              </>
-            ) : (
-              <>
-                <Maximize2 className="w-3.5 h-3.5 text-[#D4FF00]" />
-                <span className="hidden sm:inline">Fullscreen Map</span>
-              </>
-            )}
-          </button>
+        {/* Right: Quick Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {onOpenKycDetails && data?.turf?.id && (
+            <button
+              type="button"
+              onClick={() => onOpenKycDetails(data.turf.id)}
+              className="px-2.5 py-1.5 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] border border-[#28354F] text-[11px] font-bold text-slate-200 flex items-center gap-1 font-mono transition-colors"
+              title="View KYC Verification Details"
+            >
+              <Shield className="w-3.5 h-3.5 text-[#D4FF00]" />
+              <span className="hidden sm:inline">KYC</span>
+            </button>
+          )}
 
-          {/* External Google Maps Button */}
           <a
             href={finalMapUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1E1E1E] hover:bg-[#2A2A2A] border border-[#333333] text-xs font-semibold text-zinc-200 transition-colors"
+            className="px-2.5 py-1.5 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] border border-[#28354F] text-[11px] font-bold text-slate-200 flex items-center gap-1 font-mono transition-colors"
+            title="Open in Google Maps"
           >
             <MapPin className="w-3.5 h-3.5 text-[#D4FF00]" />
-            <span>Google Maps</span>
-            <ExternalLink className="w-3 h-3 text-zinc-400" />
+            <span className="hidden md:inline">Google Maps</span>
+            <ExternalLink className="w-3 h-3 text-slate-400" />
           </a>
+
+          <button
+            type="button"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="px-2.5 py-1.5 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] border border-[#28354F] text-[11px] font-bold text-slate-200 flex items-center gap-1 font-mono transition-colors"
+            title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Expand Fullscreen'}
+          >
+            {isFullscreen ? (
+              <>
+                <Minimize2 className="w-3.5 h-3.5 text-[#D4FF00]" />
+                <span className="hidden sm:inline">Exit Full</span>
+              </>
+            ) : (
+              <>
+                <Maximize2 className="w-3.5 h-3.5 text-[#D4FF00]" />
+                <span className="hidden sm:inline">Fullscreen</span>
+              </>
+            )}
+          </button>
 
           {onClose && (
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-[#1E1E1E] hover:bg-zinc-800 border border-[#333] flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
-              title="Close Modal"
+              className="w-7 h-7 rounded-lg bg-[#161D2E] hover:bg-slate-800 border border-[#28354F] flex items-center justify-center text-slate-400 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -427,394 +646,199 @@ export default function TurfRadarMap({
         </div>
       </div>
 
-      {/* Main Content: Map (Left/Center) + Operations Inspector (Right) */}
-      <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden">
-        {/* Left: Map & Radar Controls */}
-        <div className="flex-1 relative flex flex-col">
-          {/* Floating Range & Filter Controls */}
-          <div className="absolute top-4 left-4 z-[500] flex flex-wrap items-center gap-2 bg-[#121212]/90 backdrop-blur-md p-2 rounded-xl border border-[#2E2E2E] shadow-xl">
-            <div className="flex items-center gap-1.5 px-2 text-xs font-bold text-zinc-300">
-              <Sliders className="w-3.5 h-3.5 text-[#D4FF00]" />
+      {/* ========================================================================= */}
+      {/* MAIN ADAPTIVE BODY (Left: Leaflet Radar Map, Right: Operations Inspector) */}
+      {/* ========================================================================= */}
+      <div className="flex-1 flex flex-col lg:flex-row relative overflow-hidden min-h-0">
+        {/* LEFT: LEAFLET RADAR MAP CANVAS */}
+        <div className="flex-1 relative flex flex-col min-h-0 min-w-0">
+          {/* Floating Radar Range & Basemap Controls */}
+          <div className="absolute top-3 left-3 z-[500] flex flex-wrap items-center gap-1.5 bg-[#0A0E17]/90 backdrop-blur-md p-1.5 rounded-xl border border-[#1E273A] shadow-2xl">
+            <div className="flex items-center gap-1 px-1.5 text-[11px] font-mono font-bold text-slate-300">
+              <Sliders className="w-3 h-3 text-[#D4FF00]" />
               <span>Range:</span>
             </div>
             {[2, 5, 10, 15, 25, 50].map((km) => (
               <button
                 key={km}
+                type="button"
                 onClick={() => setRadiusKm(km)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`px-2 py-0.5 rounded-md text-[11px] font-mono font-bold transition-all ${
                   radiusKm === km
-                    ? 'bg-[#D4FF00] text-black shadow-lg shadow-[#D4FF00]/20'
-                    : 'bg-[#1E1E1E] text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    ? 'bg-[#D4FF00] text-black shadow-md shadow-[#D4FF00]/30'
+                    : 'bg-[#141A28] text-slate-400 hover:text-white hover:bg-[#1E273A]'
                 }`}
               >
                 {km} km
               </button>
             ))}
 
-            <div className="h-4 w-[1px] bg-zinc-800 mx-1 hidden sm:block" />
+            <div className="h-4 w-[1px] bg-[#1E273A] mx-1 hidden sm:block" />
 
-            {/* Map Tile Style Switcher (100% Free & Keyless) */}
-            <div className="flex items-center gap-1 bg-[#1A1A1A] p-0.5 rounded-lg border border-[#333]">
+            {/* Tile Style Switcher */}
+            <div className="flex items-center gap-0.5 bg-[#141A28] p-0.5 rounded-lg border border-[#1E273A]">
               <button
                 type="button"
                 onClick={() => setTileStyle('dark')}
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
-                  tileStyle === 'dark'
-                    ? 'bg-[#D4FF00] text-black font-bold shadow-xs'
-                    : 'text-zinc-400 hover:text-white'
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-all ${
+                  tileStyle === 'dark' ? 'bg-[#D4FF00] text-black font-bold' : 'text-slate-400 hover:text-white'
                 }`}
-                title="Esri Clean Dark Gray Basemap (No API key needed)"
               >
                 🌙 Dark
               </button>
               <button
                 type="button"
                 onClick={() => setTileStyle('satellite')}
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
-                  tileStyle === 'satellite'
-                    ? 'bg-[#D4FF00] text-black font-bold shadow-xs'
-                    : 'text-zinc-400 hover:text-white'
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-all ${
+                  tileStyle === 'satellite' ? 'bg-[#D4FF00] text-black font-bold' : 'text-slate-400 hover:text-white'
                 }`}
-                title="Real Satellite Aerial View"
               >
-                🛰️ Satellite
+                🛰️ Sat
               </button>
               <button
                 type="button"
                 onClick={() => setTileStyle('street')}
-                className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
-                  tileStyle === 'street'
-                    ? 'bg-[#D4FF00] text-black font-bold shadow-xs'
-                    : 'text-zinc-400 hover:text-white'
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold transition-all ${
+                  tileStyle === 'street' ? 'bg-[#D4FF00] text-black font-bold' : 'text-slate-400 hover:text-white'
                 }`}
-                title="OpenStreetMap Street View"
               >
                 🗺️ Streets
               </button>
             </div>
 
-            <div className="h-4 w-[1px] bg-zinc-800 mx-1 hidden sm:block" />
+            <div className="h-4 w-[1px] bg-[#1E273A] mx-1 hidden sm:block" />
 
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#1F2916] border border-[#D4FF00]/30 text-[#D4FF00] text-xs font-bold">
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1F2916] border border-[#D4FF00]/30 text-[#D4FF00] text-[10px] font-mono font-bold">
               <Zap className="w-3 h-3" />
               <span>
-                {loading
-                  ? 'Scanning...'
-                  : `${data?.totalPlayersFound || 0} Registered Players`}
+                {loading ? 'Scanning...' : `${data?.totalPlayersFound || 0} Surrounding Athletes`}
               </span>
             </div>
           </div>
 
           {/* Leaflet Map Div */}
-          <div ref={mapContainerRef} className="w-full h-full min-h-[420px] bg-[#0A0A0A]" />
+          <div ref={mapContainerRef} className="w-full h-full flex-1 min-h-[350px] bg-[#0A0A0A]" />
 
-          {/* Map Legend */}
-          <div className="absolute bottom-4 left-4 z-[500] bg-[#121212]/90 backdrop-blur-md px-3 py-2 rounded-lg border border-[#2E2E2E] flex items-center gap-4 text-[11px] text-zinc-300">
-            <button
-              onClick={() => setActiveSideTab('SLOTS_MATCHES')}
-              className="flex items-center gap-1.5 hover:text-[#D4FF00] transition-colors"
-            >
-              <span className="text-base">🏟️</span>
-              <span className="font-semibold text-white">Turf Pin (Matches & Slots)</span>
-            </button>
+          {/* Map Legend Overlay */}
+          <div className="absolute bottom-3 left-3 z-[500] bg-[#0A0E17]/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1E273A] flex items-center gap-3 text-[10px] font-mono text-slate-300">
             <div className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-full bg-[#D4FF00] border border-black inline-block" />
-              <span>Radius ({radiusKm} km)</span>
+              <span className="text-sm">🏟️</span>
+              <span className="text-white font-bold">Turf Venues ({data?.allTurfs?.length || 1})</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#D4FF00] border border-black inline-block" />
+              <span>Radar Radius ({radiusKm} km)</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span>⚽ 🏏 🏸</span>
-              <span>Player App Users ({data?.players?.length || 0})</span>
+              <span>Athletes ({data?.players?.length || 0})</span>
             </div>
           </div>
         </div>
 
-        {/* Right: Dual-Mode Inspector (Players Directory OR Turf Matches & Slots) */}
-        <div className="w-full lg:w-[420px] bg-[#0D0D0D] border-t lg:border-t-0 lg:border-l border-[#262626] flex flex-col z-10">
+        {/* RIGHT: DUAL-MODE OPERATIONS INSPECTOR (Surrounding Players Directory OR Court Slots & Matches) */}
+        <div className="w-full lg:w-[440px] xl:w-[480px] bg-[#0A0E17] border-t lg:border-t-0 lg:border-l border-[#1E273A] flex flex-col z-10 min-h-0">
           {/* Side Tabs Selector */}
-          <div className="grid grid-cols-2 p-2 bg-[#121212] border-b border-[#262626] gap-1.5 font-mono">
-            <button
-              type="button"
-              onClick={() => setActiveSideTab('PLAYERS')}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
-                activeSideTab === 'PLAYERS'
-                  ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40 shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span>Players ({data?.players?.length || 0})</span>
-            </button>
-
+          <div className="grid grid-cols-2 p-1.5 bg-[#0E131F] border-b border-[#1E273A] gap-1 font-mono shrink-0">
             <button
               type="button"
               onClick={() => setActiveSideTab('SLOTS_MATCHES')}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
                 activeSideTab === 'SLOTS_MATCHES'
                   ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40 shadow-sm'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                  : 'text-slate-400 hover:text-white hover:bg-[#161D2E]'
               }`}
             >
               <Swords className="w-3.5 h-3.5" />
-              <span>Matches & Slots</span>
+              <span>Turf Slots & Matches</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSideTab('PLAYERS')}
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
+                activeSideTab === 'PLAYERS'
+                  ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40 shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-[#161D2E]'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>Surrounding Players ({data?.players?.length || 0})</span>
             </button>
           </div>
 
-          {/* ========================================================================= */}
-          {/* VIEW A: REAL PLAYERS FROM PLAYER APP */}
-          {/* ========================================================================= */}
-          {activeSideTab === 'PLAYERS' && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Selected Player Profile Popup Card (If clicked) */}
-              {selectedPlayer ? (
-                <div className="p-4 bg-[#141414] border-b border-[#2A2A2A] relative">
-                  <button
-                    onClick={() => setSelectedPlayer(null)}
-                    className="absolute top-3 right-3 text-zinc-500 hover:text-white"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-full bg-[#1F2916] border-2 border-[#D4FF00] flex items-center justify-center font-black text-base text-[#D4FF00]">
-                      {selectedPlayer.fullName.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-white flex items-center gap-1.5">
-                        {selectedPlayer.fullName}
-                        <span className="text-xs">
-                          {selectedPlayer.preferredSport === 'Cricket'
-                            ? '🏏'
-                            : selectedPlayer.preferredSport === 'Badminton'
-                            ? '🏸'
-                            : '⚽'}
-                        </span>
-                      </h3>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="px-1.5 py-0.5 rounded bg-zinc-800 text-[10px] font-bold text-zinc-300">
-                          {selectedPlayer.rank}
-                        </span>
-                        <span className="text-[11px] text-[#D4FF00] font-bold">
-                          {selectedPlayer.distanceKm} km from turf
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Player Details Grid */}
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-[#1A1A1A] p-2.5 rounded-lg mb-3 border border-[#2E2E2E]">
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider block">
-                        Contact Phone
-                      </span>
-                      <span className="font-semibold text-zinc-200">
-                        {selectedPlayer.mobileNumber}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider block">
-                        Matches Played
-                      </span>
-                      <span className="font-semibold text-[#D4FF00]">
-                        {selectedPlayer.matchesPlayed} Matches
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider block">
-                        Preferred Sport
-                      </span>
-                      <span className="font-semibold text-zinc-200">
-                        {selectedPlayer.preferredSport}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-zinc-500 uppercase tracking-wider block">
-                        Coordinates
-                      </span>
-                      <span className="font-semibold text-zinc-400 text-[10px]">
-                        {selectedPlayer.latitude.toFixed(4)}, {selectedPlayer.longitude.toFixed(4)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons for Player */}
-                  <div className="flex items-center gap-2">
-                    <a
-                      href={`tel:${selectedPlayer.mobileNumber}`}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#D4FF00] hover:bg-[#bce400] text-black font-black text-xs transition-colors"
-                    >
-                      <Phone className="w-3.5 h-3.5" />
-                      <span>Call Player</span>
-                    </a>
-                    <a
-                      href={`https://wa.me/${selectedPlayer.mobileNumber.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#1E1E1E] hover:bg-zinc-800 border border-[#333] text-emerald-400 text-xs font-bold transition-colors"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-3 bg-[#141414] border-b border-[#2A2A2A]">
-                  <div className="flex items-center gap-2 text-xs text-zinc-400">
-                    <Shield className="w-4 h-4 text-[#D4FF00]" />
-                    <span>
-                      Registered players present in the Player App within {radiusKm} km.
+          {/* Active Outreach Context Banner (If Admin selected an Open Match or Court Slot to fill) */}
+          {outreachTarget && (
+            <div className="p-2.5 bg-[#1F2916] border-b border-[#D4FF00]/40 flex items-start justify-between gap-2 shrink-0 animate-in fade-in duration-150">
+              <div className="flex items-start gap-2">
+                <Zap className="w-4 h-4 text-[#D4FF00] shrink-0 mt-0.5" />
+                <div className="font-mono text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-[#D4FF00]">{outreachTarget.title}</span>
+                    <span className="px-1.5 py-0.2 rounded bg-black/40 text-[10px] text-emerald-400">
+                      {outreachTarget.sport}
                     </span>
                   </div>
-                </div>
-              )}
-
-              {/* Search & Filter Header */}
-              <div className="p-3 border-b border-[#262626] bg-[#0E0E0E] flex flex-col gap-2">
-                <input
-                  type="text"
-                  placeholder="Search player name, phone, or rank..."
-                  value={searchQuery}
-                  onFocus={(e) => e.stopPropagation()}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-[#181818] border border-[#2E2E2E] rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4FF00]"
-                />
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                  {['ALL', 'Football', 'Cricket', 'Badminton'].map((sp) => (
-                    <button
-                      key={sp}
-                      onClick={() => setSelectedSportFilter(sp)}
-                      className={`px-2.5 py-1 rounded text-[11px] font-semibold whitespace-nowrap transition-colors ${
-                        selectedSportFilter === sp
-                          ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40'
-                          : 'bg-[#181818] text-zinc-400 hover:text-white'
-                      }`}
-                    >
-                      {sp}
-                    </button>
-                  ))}
+                  <p className="text-[11px] text-slate-300 mt-0.5">
+                    {outreachTarget.detail} • Click <strong>&quot;Call&quot;</strong> or <strong>&quot;WhatsApp Invite&quot;</strong> on athletes below to fill!
+                  </p>
                 </div>
               </div>
 
-              {/* Scrollable Player List */}
-              <div className="flex-1 overflow-y-auto p-2 space-y-1.5 divide-y divide-[#1A1A1A]">
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-zinc-500 text-xs gap-2">
-                    <Activity className="w-5 h-5 animate-spin text-[#D4FF00]" />
-                    <span>Scanning registered players from database...</span>
-                  </div>
-                ) : filteredPlayers.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-zinc-500 text-xs gap-2 p-4 text-center">
-                    <Users className="w-8 h-8 opacity-40 text-zinc-400" />
-                    <p className="font-semibold text-zinc-300">No registered players in {radiusKm} km radius.</p>
-                    <p className="text-[11px] text-zinc-500">
-                      Players who set their location in the Player App Settings will automatically populate here.
-                    </p>
-                    <button
-                      onClick={() => setRadiusKm((prev) => Math.min(50, prev + 15))}
-                      className="mt-1 px-3 py-1 bg-[#1A1A1A] hover:bg-zinc-800 border border-[#333] rounded-lg text-[#D4FF00] font-bold text-xs"
-                    >
-                      Expand range to {Math.min(50, radiusKm + 15)} km
-                    </button>
-                  </div>
-                ) : (
-                  filteredPlayers.map((player) => {
-                    const isSelected = selectedPlayer?.id === player.id;
-                    return (
-                      <div
-                        key={player.id}
-                        onClick={() => {
-                          setSelectedPlayer(player);
-                          if (mapInstanceRef.current) {
-                            mapInstanceRef.current.panTo([
-                              player.latitude,
-                              player.longitude,
-                            ]);
-                          }
-                        }}
-                        className={`pt-2 p-2.5 rounded-lg cursor-pointer transition-all flex items-center justify-between ${
-                          isSelected
-                            ? 'bg-[#1F2916] border border-[#D4FF00]/50'
-                            : 'hover:bg-[#181818]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-[#182014] border border-[#D4FF00]/40 flex items-center justify-center font-bold text-xs text-[#D4FF00] shrink-0">
-                            {player.fullName.substring(0, 2).toUpperCase()}
-                          </div>
-                          <div className="truncate">
-                            <p className="text-xs font-bold text-white truncate flex items-center gap-1">
-                              {player.fullName}
-                              <span className="text-[10px]">
-                                {player.preferredSport === 'Cricket'
-                                  ? '🏏'
-                                  : player.preferredSport === 'Badminton'
-                                  ? '🏸'
-                                  : '⚽'}
-                              </span>
-                            </p>
-                            <p className="text-[10px] text-zinc-400 truncate">
-                              {player.mobileNumber} • {player.rank}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <span className="text-xs font-black text-[#D4FF00] block">
-                            {player.distanceKm} km
-                          </span>
-                          <span className="text-[9.5px] text-zinc-500">
-                            {player.city}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+              <button
+                type="button"
+                onClick={() => setOutreachTarget(null)}
+                className="text-slate-400 hover:text-white shrink-0 p-1"
+                title="Dismiss targeting"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
 
           {/* ========================================================================= */}
-          {/* VIEW B: TURF LIVE SLOTS & OPEN MATCHES (WAITING / OPPONENT GOT) */}
+          {/* TAB 1: TURF SLOTS & OPEN MATCHES (WAITING / OPPONENT GOT) */}
           {/* ========================================================================= */}
           {activeSideTab === 'SLOTS_MATCHES' && (
-            <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Operations Stats Overview Grid */}
-              <div className="p-3 bg-[#11161F] border-b border-[#1E273A] grid grid-cols-4 gap-1.5 text-center font-mono">
+            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+              {/* Operations KPI Counter Grid */}
+              <div className="p-2.5 bg-[#0B0F19] border-b border-[#1E273A] grid grid-cols-4 gap-1.5 text-center font-mono shrink-0">
                 <div className="p-2 rounded-lg bg-[#0E131F] border border-[#1E273A]">
                   <span className="text-[9px] text-emerald-400 font-bold block">AVAILABLE</span>
-                  <span className="text-base font-black text-white">
+                  <span className="text-sm sm:text-base font-black text-white">
                     {data?.slotsOverview?.availableCount ?? 12}
                   </span>
                 </div>
                 <div className="p-2 rounded-lg bg-[#0E131F] border border-[#1E273A]">
                   <span className="text-[9px] text-rose-400 font-bold block">BOOKED</span>
-                  <span className="text-base font-black text-white">
+                  <span className="text-sm sm:text-base font-black text-white">
                     {data?.slotsOverview?.bookedCount ?? 0}
                   </span>
                 </div>
-                <div className="p-2 rounded-lg bg-[#0E131F] border border-[#1E273A]">
-                  <span className="text-[9px] text-amber-400 font-bold block">WAITING</span>
-                  <span className="text-base font-black text-amber-300">
+                <div className="p-2 rounded-lg bg-[#0E131F] border border-amber-500/30 bg-amber-500/10">
+                  <span className="text-[9px] text-amber-300 font-bold block">WAITING OPPONENT</span>
+                  <span className="text-sm sm:text-base font-black text-amber-300">
                     {data?.slotsOverview?.waitingOpponentCount ?? 0}
                   </span>
                 </div>
                 <div className="p-2 rounded-lg bg-[#0E131F] border border-[#1E273A]">
                   <span className="text-[9px] text-[#D4FF00] font-bold block">OPPONENT GOT</span>
-                  <span className="text-base font-black text-[#D4FF00]">
+                  <span className="text-sm sm:text-base font-black text-[#D4FF00]">
                     {data?.slotsOverview?.opponentGotCount ?? 0}
                   </span>
                 </div>
               </div>
 
-              {/* Scrollable Matches & Slots Breakdown */}
+              {/* Scrollable Slots & Matches List */}
               <div className="flex-1 overflow-y-auto p-3 space-y-4">
-                {/* 1. Live Open Matches (VS Style Cards) */}
+                {/* 1. Open Matches & Challenges Section */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
                       <Swords className="w-3.5 h-3.5 text-[#D4FF00]" />
                       <span>OPEN MATCH CHALLENGES</span>
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
+                    <span className="text-[10px] text-slate-400 font-mono">
                       {data?.openMatches?.length || 0} Total
                     </span>
                   </div>
@@ -826,21 +850,25 @@ export default function TurfRadarMap({
                         return (
                           <div
                             key={m.id}
-                            className="p-3 rounded-xl bg-[#12161A] border border-[#222B38] space-y-2 hover:border-[#D4FF00]/40 transition-all shadow-md"
+                            className={`p-3 rounded-xl border transition-all shadow-md ${
+                              isWaiting
+                                ? 'bg-[#121720] border-amber-500/40 hover:border-amber-400'
+                                : 'bg-[#0E131F] border-[#1E273A] hover:border-[#D4FF00]/40'
+                            }`}
                           >
                             {/* Sport Tag & Time Slot Header */}
-                            <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-[#1E2633]">
-                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#1F2916] text-[#D4FF00] font-bold text-[10px]">
+                            <div className="flex items-center justify-between text-[11px] pb-1.5 border-b border-[#1E273A]">
+                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#1F2916] text-[#D4FF00] font-bold text-[10px] font-mono">
                                 ⚡ {m.sport}
                               </span>
-                              <span className="text-zinc-300 font-mono text-[10px] flex items-center gap-1">
-                                <Clock className="w-3 h-3 text-zinc-400" />
+                              <span className="text-slate-300 font-mono text-[10px] flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-slate-400" />
                                 {m.date} • {m.time}
                               </span>
                             </div>
 
                             {/* Head-to-Head VS Match Row */}
-                            <div className="flex items-center justify-between gap-2 py-1">
+                            <div className="flex items-center justify-between gap-2 py-1.5">
                               {/* Challenger / Host Team */}
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-black text-xs text-white shrink-0">
@@ -850,7 +878,7 @@ export default function TurfRadarMap({
                                   <span className="text-xs font-bold text-white block truncate">
                                     {m.challengerName}
                                   </span>
-                                  <span className="text-[10px] text-zinc-400">
+                                  <span className="text-[10px] text-slate-400 font-mono">
                                     Host Team ({m.teamSize})
                                   </span>
                                 </div>
@@ -858,7 +886,7 @@ export default function TurfRadarMap({
 
                               {/* Neon VS Badge */}
                               <div className="flex flex-col items-center shrink-0 px-2">
-                                <div className="w-7 h-7 rounded-full bg-[#1C2415] border border-[#D4FF00] flex items-center justify-center font-black text-[10px] text-[#D4FF00] shadow-sm shadow-[#D4FF00]/20 italic">
+                                <div className="w-7 h-7 rounded-full bg-[#1C2415] border border-[#D4FF00] flex items-center justify-center font-black text-[10px] text-[#D4FF00] shadow-sm shadow-[#D4FF00]/20 italic font-mono">
                                   VS
                                 </div>
                               </div>
@@ -873,14 +901,14 @@ export default function TurfRadarMap({
                                   >
                                     {isWaiting ? 'Open Slot' : m.opponentName}
                                   </span>
-                                  <span className="text-[10px] text-zinc-400">
+                                  <span className="text-[10px] text-slate-400 font-mono">
                                     {isWaiting ? 'Waiting Opponent' : 'Confirmed'}
                                   </span>
                                 </div>
                                 <div
                                   className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 ${
                                     isWaiting
-                                      ? 'bg-zinc-800 border border-dashed border-zinc-600 text-zinc-500'
+                                      ? 'bg-slate-800 border border-dashed border-slate-600 text-slate-400'
                                       : 'bg-indigo-600 text-white'
                                   }`}
                                 >
@@ -889,8 +917,8 @@ export default function TurfRadarMap({
                               </div>
                             </div>
 
-                            {/* Status Chip & Host Contact */}
-                            <div className="flex items-center justify-between pt-1 border-t border-[#1E2633] text-[10px] font-mono">
+                            {/* Status Chip & Creator Phone */}
+                            <div className="flex items-center justify-between pt-1.5 border-t border-[#1E273A] text-[10px] font-mono">
                               <span
                                 className={`px-2 py-0.5 rounded-md font-bold flex items-center gap-1 ${
                                   isWaiting
@@ -906,39 +934,64 @@ export default function TurfRadarMap({
                                 ) : (
                                   <>
                                     <CheckCircle2 className="w-2.5 h-2.5" />
-                                    <span>Opponent Got / Locked</span>
+                                    <span>Opponent Got</span>
                                   </>
                                 )}
                               </span>
 
-                              <a
-                                href={`tel:${m.creatorPhone}`}
-                                className="text-zinc-400 hover:text-white flex items-center gap-1"
-                              >
-                                <Phone className="w-3 h-3 text-[#D4FF00]" />
-                                <span>{m.creatorPhone}</span>
-                              </a>
+                              {m.creatorPhone && (
+                                <a
+                                  href={`tel:${m.creatorPhone}`}
+                                  className="text-slate-300 hover:text-white flex items-center gap-1 font-mono"
+                                >
+                                  <Phone className="w-3 h-3 text-[#D4FF00]" />
+                                  <span>{m.creatorPhone}</span>
+                                </a>
+                              )}
                             </div>
+
+                            {/* OUTREACH ACTION BUTTON: Invite Surrounding Players to this Match */}
+                            {isWaiting && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setOutreachTarget({
+                                    type: 'CHALLENGE',
+                                    title: `Open Challenge: ${m.sport}`,
+                                    detail: `${m.date} (${m.time}) vs ${m.challengerName}`,
+                                    sport: m.sport,
+                                    time: m.time,
+                                    date: m.date,
+                                    challengerName: m.challengerName,
+                                  });
+                                  setActiveSideTab('PLAYERS');
+                                }}
+                                className="w-full mt-2 py-1.5 rounded-lg bg-[#1F2916] hover:bg-[#2b3a1e] border border-[#D4FF00]/40 text-[#D4FF00] font-mono font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                              >
+                                <Users className="w-3.5 h-3.5" />
+                                <span>Invite Surrounding Players to this Match</span>
+                              </button>
+                            )}
                           </div>
                         );
                       })
                     ) : (
-                      <div className="p-4 rounded-xl bg-[#12161A] border border-[#222B38] text-center text-xs text-zinc-400 space-y-1">
-                        <Swords className="w-5 h-5 mx-auto text-zinc-500 opacity-60" />
-                        <p>No active open challenges right now.</p>
+                      <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1E273A] text-center text-xs text-slate-400 font-mono space-y-1">
+                        <Swords className="w-5 h-5 mx-auto text-slate-500 opacity-60" />
+                        <p>No active open challenges right now at this venue.</p>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* 2. Today's Hourly Slot Status Grid */}
+                {/* 2. Court Slots Overview (16 Standard Hours) */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-bold text-white flex items-center gap-1.5 font-mono">
                       <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
                       <span>TODAY&apos;S COURT SLOTS</span>
                     </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
+                    <span className="text-[10px] text-slate-400 font-mono">
                       16 Standard Hours
                     </span>
                   </div>
@@ -947,39 +1000,59 @@ export default function TurfRadarMap({
                     {data?.slotsOverview?.slots?.map((slot, idx) => {
                       const isBooked = slot.status === 'BOOKED';
                       const isOpenMatch = slot.status === 'OPEN_MATCH';
+                      const isAvailable = slot.status === 'AVAILABLE';
+
                       return (
                         <div
                           key={idx}
-                          className={`p-2.5 rounded-lg border flex flex-col justify-between ${
+                          className={`p-2.5 rounded-lg border flex flex-col justify-between transition-all ${
                             isOpenMatch
                               ? 'bg-[#1C2014] border-[#D4FF00]/40'
                               : isBooked
                               ? 'bg-[#1F1214] border-rose-500/30'
-                              : 'bg-[#0E131F] border-[#1E273A]'
+                              : 'bg-[#0E131F] border-[#1E273A] hover:border-emerald-500/40'
                           }`}
                         >
-                          <span className="text-[10px] text-zinc-400 font-medium">
-                            {slot.timeSlot.split(' - ')[0]}
-                          </span>
-
-                          <div className="flex items-center justify-between mt-1">
-                            <span
-                              className={`text-[10px] font-bold ${
-                                isOpenMatch
-                                  ? 'text-[#D4FF00]'
-                                  : isBooked
-                                  ? 'text-rose-400'
-                                  : 'text-emerald-400'
-                              }`}
-                            >
-                              {isOpenMatch
-                                ? '⚡ Challenge'
-                                : isBooked
-                                ? 'Booked'
-                                : 'Available'}
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-medium block">
+                              {slot.timeSlot.split(' - ')[0]}
                             </span>
-                            <span className="text-[10px] text-zinc-500">₹{slot.rate}</span>
+                            <div className="flex items-center justify-between mt-1">
+                              <span
+                                className={`text-[10px] font-bold ${
+                                  isOpenMatch
+                                    ? 'text-[#D4FF00]'
+                                    : isBooked
+                                    ? 'text-rose-400'
+                                    : 'text-emerald-400'
+                                }`}
+                              >
+                                {isOpenMatch ? '⚡ Challenge' : isBooked ? 'Booked' : 'Available'}
+                              </span>
+                              <span className="text-[10px] text-slate-400">₹{slot.rate}</span>
+                            </div>
                           </div>
+
+                          {/* Quick invite action for empty slot */}
+                          {isAvailable && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOutreachTarget({
+                                  type: 'SLOT',
+                                  title: `Court Slot: ${slot.timeSlot}`,
+                                  detail: `₹${slot.rate} • ${slot.sport || 'Court'}`,
+                                  sport: slot.sport || 'Football',
+                                  time: slot.timeSlot,
+                                  rate: slot.rate,
+                                });
+                                setActiveSideTab('PLAYERS');
+                              }}
+                              className="mt-2 py-1 px-1.5 rounded bg-[#161D2E] hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9.5px] font-bold text-center block"
+                            >
+                              + Invite to Book
+                            </button>
+                          )}
                         </div>
                       );
                     })}
@@ -989,16 +1062,255 @@ export default function TurfRadarMap({
             </div>
           )}
 
-          {/* Footer Stats Summary */}
-          <div className="p-3 bg-[#111111] border-t border-[#262626] flex items-center justify-between text-xs text-zinc-400 font-mono">
+          {/* ========================================================================= */}
+          {/* TAB 2: SURROUNDING REAL ATHLETES (CALL & WHATSAPP BOOKING IDEOLOGY) */}
+          {/* ========================================================================= */}
+          {activeSideTab === 'PLAYERS' && (
+            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+              {/* Selected Player Profile Popup Card (If clicked) */}
+              {selectedPlayer && (
+                <div className="p-3 bg-[#121622] border-b border-[#28354F] relative shrink-0">
+                  <button
+                    onClick={() => setSelectedPlayer(null)}
+                    className="absolute top-2.5 right-2.5 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex items-center gap-3 mb-2.5">
+                    <div className="w-10 h-10 rounded-full bg-[#1F2916] border-2 border-[#D4FF00] flex items-center justify-center font-black text-sm text-[#D4FF00] shrink-0">
+                      {selectedPlayer.fullName.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-xs font-black text-white flex items-center gap-1.5 truncate">
+                        <span>{selectedPlayer.fullName}</span>
+                        <span className="text-xs">
+                          {selectedPlayer.preferredSport === 'Cricket'
+                            ? '🏏'
+                            : selectedPlayer.preferredSport === 'Badminton'
+                            ? '🏸'
+                            : '⚽'}
+                        </span>
+                      </h3>
+                      <div className="flex items-center gap-2 mt-0.5 font-mono text-[10px]">
+                        <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-bold">
+                          {selectedPlayer.rank}
+                        </span>
+                        <span className="text-[#D4FF00] font-bold">
+                          {selectedPlayer.distanceKm} km from turf
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Player Details Grid */}
+                  <div className="grid grid-cols-2 gap-2 text-xs bg-[#0A0E17] p-2 rounded-lg mb-2.5 border border-[#1E273A] font-mono text-[10px]">
+                    <div>
+                      <span className="text-slate-500 uppercase block">Contact Phone</span>
+                      <span className="font-bold text-white">{selectedPlayer.mobileNumber}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 uppercase block">Matches Played</span>
+                      <span className="font-bold text-[#D4FF00]">{selectedPlayer.matchesPlayed} Matches</span>
+                    </div>
+                  </div>
+
+                  {/* DIRECT ACTIONS: CALL & WHATSAPP INVITE */}
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={`tel:${selectedPlayer.mobileNumber}`}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#D4FF00] hover:bg-[#bce400] text-black font-black text-xs font-mono transition-colors shadow-md shadow-[#D4FF00]/20"
+                    >
+                      <PhoneCall className="w-3.5 h-3.5" />
+                      <span>Call Athlete Now</span>
+                    </a>
+
+                    <a
+                      href={`https://wa.me/${selectedPlayer.mobileNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
+                        getOutreachMessage(selectedPlayer)
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] border border-emerald-500/40 text-emerald-400 font-bold text-xs font-mono transition-colors"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>WhatsApp Invite</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCopyPitch(selectedPlayer)}
+                      className="px-2.5 py-2 rounded-lg bg-[#161D2E] hover:bg-[#1E273A] border border-[#28354F] text-slate-300 hover:text-white"
+                      title="Copy outreach text"
+                    >
+                      {copiedPlayerId === selectedPlayer.id ? (
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Search & Sport Filter Header */}
+              <div className="p-2.5 border-b border-[#1E273A] bg-[#0A0E17] flex flex-col gap-2 shrink-0">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search athlete name, phone, or rank..."
+                    value={searchQuery}
+                    onFocus={(e) => e.stopPropagation()}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 bg-[#0E131F] border border-[#1E273A] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-[#D4FF00] font-mono"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 font-mono">
+                  {['ALL', 'Football', 'Cricket', 'Badminton'].map((sp) => (
+                    <button
+                      key={sp}
+                      type="button"
+                      onClick={() => setSelectedSportFilter(sp)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap transition-colors ${
+                        selectedSportFilter === sp
+                          ? 'bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40'
+                          : 'bg-[#0E131F] text-slate-400 hover:text-white border border-[#1E273A]'
+                      }`}
+                    >
+                      {sp}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Scrollable Player List */}
+              <div className="flex-1 overflow-y-auto p-2 space-y-2">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center h-48 text-slate-400 text-xs gap-2 font-mono">
+                    <Activity className="w-5 h-5 animate-spin text-[#D4FF00]" />
+                    <span>Scanning registered athletes within {radiusKm} km...</span>
+                  </div>
+                ) : filteredPlayers.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-48 text-slate-400 text-xs gap-2 p-4 text-center font-mono">
+                    <Users className="w-8 h-8 opacity-40 text-slate-500" />
+                    <p className="font-semibold text-slate-300">
+                      No athletes found within {radiusKm} km radius of {activeVenueName}.
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Expand the radar range slider above or invite players to register.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setRadiusKm((prev) => Math.min(50, prev + 15))}
+                      className="mt-1 px-3 py-1 bg-[#141A28] hover:bg-[#1E273A] border border-[#28354F] rounded-lg text-[#D4FF00] font-bold text-xs"
+                    >
+                      Expand range to {Math.min(50, radiusKm + 15)} km
+                    </button>
+                  </div>
+                ) : (
+                  filteredPlayers.map((player) => {
+                    const isSelected = selectedPlayer?.id === player.id;
+                    return (
+                      <div
+                        key={player.id}
+                        className={`p-2.5 rounded-xl border transition-all ${
+                          isSelected
+                            ? 'bg-[#1F2916] border-[#D4FF00]/60 shadow-md shadow-[#D4FF00]/10'
+                            : 'bg-[#0E131F] border-[#1E273A] hover:border-[#2C3B5C]'
+                        }`}
+                      >
+                        <div
+                          onClick={() => {
+                            setSelectedPlayer(player);
+                            if (mapInstanceRef.current) {
+                              mapInstanceRef.current.panTo([player.latitude, player.longitude]);
+                            }
+                          }}
+                          className="flex items-center justify-between cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-[#182014] border border-[#D4FF00]/40 flex items-center justify-center font-bold text-xs text-[#D4FF00] shrink-0 font-mono">
+                              {player.fullName.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div className="truncate">
+                              <p className="text-xs font-bold text-white truncate flex items-center gap-1">
+                                {player.fullName}
+                                <span className="text-[10px]">
+                                  {player.preferredSport === 'Cricket'
+                                    ? '🏏'
+                                    : player.preferredSport === 'Badminton'
+                                    ? '🏸'
+                                    : '⚽'}
+                                </span>
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate font-mono">
+                                {player.mobileNumber} • {player.rank}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0 font-mono">
+                            <span className="text-xs font-black text-[#D4FF00] block">
+                              {player.distanceKm} km
+                            </span>
+                            <span className="text-[9.5px] text-slate-500">
+                              {player.city}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Direct Action Quick Buttons */}
+                        <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-[#161D2E] font-mono">
+                          <a
+                            href={`tel:${player.mobileNumber}`}
+                            className="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-[#161D2E] hover:bg-[#1E273A] text-white border border-[#28354F] text-[10px] font-bold transition-colors"
+                          >
+                            <Phone className="w-3 h-3 text-[#D4FF00]" />
+                            <span>Call</span>
+                          </a>
+
+                          <a
+                            href={`https://wa.me/${player.mobileNumber.replace(/\D/g, '')}?text=${encodeURIComponent(
+                              getOutreachMessage(player)
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-[#161D2E] hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold transition-colors"
+                          >
+                            <MessageSquare className="w-3 h-3 text-emerald-400" />
+                            <span>WhatsApp</span>
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() => handleCopyPitch(player)}
+                            className="px-2 py-1 rounded bg-[#161D2E] hover:bg-[#1E273A] border border-[#28354F] text-slate-300 text-[10px]"
+                            title="Copy invitation pitch"
+                          >
+                            {copiedPlayerId === player.id ? (
+                              <Check className="w-3 h-3 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Footer Stats Bar */}
+          <div className="p-2.5 bg-[#080B11] border-t border-[#1E273A] flex items-center justify-between text-[11px] text-slate-400 font-mono shrink-0">
             <span>
-              Turf Radar:{' '}
-              <strong className="text-white">
-                {data?.totalPlayersFound || 0} Real Players
-              </strong>
+              Target: <strong className="text-white">{activeVenueName}</strong>
             </span>
             <span className="text-[#D4FF00] font-bold">
-              Radius: {radiusKm} km
+              {data?.totalPlayersFound || 0} Athletes in {radiusKm} km
             </span>
           </div>
         </div>
