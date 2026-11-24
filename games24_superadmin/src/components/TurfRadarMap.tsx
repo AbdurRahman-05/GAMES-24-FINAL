@@ -787,21 +787,27 @@ export default function TurfRadarMap({
             </div>
           </div>
 
-          {/* 2. COURT SLOTS & OPEN MATCHES OF THIS TURF */}
-          <div className="p-2.5 bg-[#0A0E17] border-b border-[#1E273A] shrink-0 space-y-2">
+          {/* 2. UPCOMING OPEN CHALLENGES & TODAY'S COURT SLOTS */}
+          <div className="p-2.5 bg-[#0A0E17] border-b border-[#1E273A] shrink-0 space-y-2.5">
+            {/* Upcoming Challenges Header */}
             <div className="flex items-center justify-between font-mono text-xs">
               <span className="font-bold text-white flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
-                <span>Today&apos;s Court Slots</span>
+                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <span>Upcoming Open Challenges</span>
+                {data?.openMatches && data.openMatches.length > 0 && (
+                  <span className="px-1.5 py-0.2 rounded text-[9.5px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
+                    {data.openMatches.length}
+                  </span>
+                )}
               </span>
               <span className="text-[10px] text-slate-400 font-mono">
-                {data?.slotsOverview?.availableCount ?? 16} Available • 16 Standard Hours
+                {data?.openMatches && data.openMatches.length > 0 ? 'Recruit opponents below' : 'None active'}
               </span>
             </div>
 
-            {/* Open Matches Banner if any */}
-            {data?.openMatches && data.openMatches.length > 0 && (
-              <div className="space-y-1.5">
+            {/* Open Matches Cards (Only upcoming matches) */}
+            {data?.openMatches && data.openMatches.length > 0 ? (
+              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-0.5 custom-scrollbar">
                 {data.openMatches.map((m) => {
                   const isWaiting = m.status === 'WAITING_FOR_OPPONENT';
                   return (
@@ -812,11 +818,14 @@ export default function TurfRadarMap({
                       }`}
                     >
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[10px] font-bold text-[#D4FF00]">⚡ {m.sport} ({m.teamSize})</span>
-                          <span className="text-[10px] text-slate-400">{m.date} • {m.time}</span>
+                          <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-[#1A2333] text-sky-300 font-bold font-mono">
+                            {m.date}
+                          </span>
+                          <span className="text-[10px] text-slate-400">{m.time}</span>
                         </div>
-                        <p className="text-[11px] text-white font-bold truncate">
+                        <p className="text-[11px] text-white font-bold truncate mt-0.5">
                           {m.challengerName} vs{' '}
                           <span className={isWaiting ? 'text-amber-400 italic' : 'text-emerald-400'}>
                             {isWaiting ? 'Waiting Opponent' : m.opponentName}
@@ -838,7 +847,7 @@ export default function TurfRadarMap({
                               challengerName: m.challengerName,
                             });
                           }}
-                          className="px-2 py-1 rounded bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40 text-[10px] font-bold shrink-0 hover:bg-[#2b3a1e]"
+                          className="px-2 py-1 rounded bg-[#1F2916] text-[#D4FF00] border border-[#D4FF00]/40 text-[10px] font-bold shrink-0 hover:bg-[#2b3a1e] transition-colors"
                         >
                           Target Players Below
                         </button>
@@ -847,7 +856,22 @@ export default function TurfRadarMap({
                   );
                 })}
               </div>
+            ) : (
+              <div className="py-2 px-3 rounded-lg border border-dashed border-[#1E273A] bg-[#0E131F]/50 text-center font-mono text-[10.5px] text-slate-400">
+                No upcoming open challenges for this venue.
+              </div>
             )}
+
+            {/* Today's Court Slots Header */}
+            <div className="flex items-center justify-between font-mono text-xs pt-1 border-t border-[#1E273A]/60">
+              <span className="font-bold text-white flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
+                <span>Today&apos;s Court Slots</span>
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                {data?.slotsOverview?.availableCount ?? 16} Available • 16 Standard Hours
+              </span>
+            </div>
 
             {/* Hourly Operating Slots Grid (4 columns) */}
             <div className="grid grid-cols-4 gap-1 font-mono text-[9.5px]">

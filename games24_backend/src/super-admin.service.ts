@@ -1024,6 +1024,65 @@ export class SuperAdminService {
     };
   }
 
+  // --- IST Date & Match Validity Helpers ---
+  private getIstNow(): { todayStr: string; currentHour: number; currentMinute: number } {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istNow = new Date(Date.now() + istOffsetMs);
+    const todayStr = istNow.toISOString().slice(0, 10);
+    const currentHour = istNow.getUTCHours();
+    const currentMinute = istNow.getUTCMinutes();
+    return { todayStr, currentHour, currentMinute };
+  }
+
+  private isMatchUpcoming(matchDate?: string | null, timeSlot?: string | null): boolean {
+    if (!matchDate) return false;
+    const d = matchDate.trim().toLowerCase();
+    const { todayStr, currentHour, currentMinute } = this.getIstNow();
+
+    if (d === 'tomorrow') return true;
+    if (d === 'today') {
+      return this.isSlotUpcomingToday(timeSlot, currentHour, currentMinute);
+    }
+
+    const dateOnly = d.slice(0, 10);
+    if (dateOnly > todayStr) return true;
+    if (dateOnly < todayStr) return false;
+
+    // Date is today - check if slot end time has passed
+    return this.isSlotUpcomingToday(timeSlot, currentHour, currentMinute);
+  }
+
+  private isSlotUpcomingToday(timeSlot?: string | null, currentHour?: number, currentMinute?: number): boolean {
+    if (!timeSlot) return true;
+    try {
+      const parts = timeSlot.split('-').map((s) => s.trim());
+      const endPart = parts[parts.length - 1] || parts[0];
+      const match = endPart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      if (match) {
+        let h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const ampm = (match[3] || '').toUpperCase();
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        if (
+          currentHour != null &&
+          currentMinute != null &&
+          (h < currentHour || (h === currentHour && m <= currentMinute))
+        ) {
+          return false;
+        }
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  private isMatchForToday(matchDate?: string | null): boolean {
+    if (!matchDate) return false;
+    const d = matchDate.trim().toLowerCase();
+    const { todayStr } = this.getIstNow();
+    return d === 'today' || d.slice(0, 10) === todayStr;
+  }
+
   // RADAR: SURROUNDING PLAYERS BY RADIUS (KM) FOR A TURF OR GIVEN COORDINATES
   async getNearbyPlayers(params: {
     turfId?: number;
@@ -1073,13 +1132,19 @@ export class SuperAdminService {
         orderBy: { id: 'asc' },
       }),
       this.prisma.openChallenge.findMany({
-        where: { status: { not: 'CANCELLED' } },
+        where: {
+          status: { notIn: ['CANCELLED', 'COMPLETED'] },
+        },
         select: {
           id: true,
           turfId: true,
           turfName: true,
           status: true,
           opponentName: true,
+          date: true,
+          time: true,
+          challengerName: true,
+          sport: true,
         },
       }),
     ]);
@@ -1101,11 +1166,24 @@ export class SuperAdminService {
 
     for (const t of allVerifiedTurfs) {
       if (t.latitude == null || t.longitude == null) continue;
-      const turfChallenges = allChallenges.filter(
+      const upcomingChallenges = allChallenges.filter(
         (c) =>
-          c.turfId === t.id ||
-          (c.turfName && t.venueName && c.turfName.toLowerCase().includes(t.venueName.toLowerCase()))
+          (c.turfId === t.id ||
+            (c.turfName && t.venueName && c.turfName.toLowerCase().includes(t.venueName.toLowerCase()))) &&
+          this.isMatchUpcoming(c.date, c.time)
       );
+
+      // Deduplicate challenges by challengerName + date + time + sport
+      const seen = new Set<string>();
+      const turfChallenges = [];
+      for (const c of upcomingChallenges) {
+        const key = `${c.challengerName}_${c.date}_${c.time}_${c.sport}`.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          turfChallenges.push(c);
+        }
+      }
+
       const waitingCount = turfChallenges.filter(
         (c) => c.status !== 'ACCEPTED' && !c.opponentName
       ).length;
@@ -1129,11 +1207,24 @@ export class SuperAdminService {
     for (const a of allAdminTurfs) {
       if (a.latitude == null || a.longitude == null) continue;
       if (!turfListSummary.some((t) => t.id === a.id)) {
-        const turfChallenges = allChallenges.filter(
+        const upcomingChallenges = allChallenges.filter(
           (c) =>
-            c.turfId === a.id ||
-            (c.turfName && a.venueName && c.turfName.toLowerCase().includes(a.venueName.toLowerCase()))
+            (c.turfId === a.id ||
+              (c.turfName && a.venueName && c.turfName.toLowerCase().includes(a.venueName.toLowerCase()))) &&
+            this.isMatchUpcoming(c.date, c.time)
         );
+
+        // Deduplicate challenges
+        const seen = new Set<string>();
+        const turfChallenges = [];
+        for (const c of upcomingChallenges) {
+          const key = `${c.challengerName}_${c.date}_${c.time}_${c.sport}`.toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            turfChallenges.push(c);
+          }
+        }
+
         const waitingCount = turfChallenges.filter(
           (c) => c.status !== 'ACCEPTED' && !c.opponentName
         ).length;
@@ -1257,20 +1348,40 @@ export class SuperAdminService {
       .sort((a, b) => a.distanceKm - b.distanceKm);
 
     // 2. Query Real Open Challenges & Matches for this Turf
-    const challenges = await this.prisma.openChallenge.findMany({
+    const rawChallenges = await this.prisma.openChallenge.findMany({
       where: {
         OR: [
           ...(turfInfo.id ? [{ turfId: turfInfo.id }] : []),
           { turfName: { contains: turfInfo.venueName, mode: 'insensitive' as const } },
         ],
-        status: { not: 'CANCELLED' },
+        status: { notIn: ['CANCELLED', 'COMPLETED'] },
       },
       orderBy: { createdAt: 'desc' },
-      take: 30,
+      take: 40,
     });
 
-    const formattedOpenMatches = challenges.map((c) => {
+    // Keep only real upcoming matches and deduplicate
+    const seenMatchKeys = new Set<string>();
+    const upcomingChallenges = [];
+    for (const c of rawChallenges) {
+      if (!this.isMatchUpcoming(c.date, c.time)) continue;
+      const key = `${c.challengerName}_${c.date}_${c.time}_${c.sport}`.toLowerCase();
+      if (!seenMatchKeys.has(key)) {
+        seenMatchKeys.add(key);
+        upcomingChallenges.push(c);
+      }
+    }
+
+    // Sort upcoming challenges by date ascending
+    upcomingChallenges.sort((a, b) => {
+      const dateA = a.date || '';
+      const dateB = b.date || '';
+      return dateA.localeCompare(dateB);
+    });
+
+    const formattedOpenMatches = upcomingChallenges.map((c) => {
       const isOpponentFound = c.status === 'ACCEPTED' || !!c.opponentName;
+      const isToday = this.isMatchForToday(c.date);
       return {
         id: c.id,
         turfId: c.turfId,
@@ -1290,18 +1401,20 @@ export class SuperAdminService {
         opponentName: c.opponentName || 'Open Slot',
         opponentTeamSize: c.opponentTeamSize || c.teamSize || '7v7',
         opponentContact: c.opponentContact || null,
+        isToday,
       };
     });
 
-    // 3. Query Real Bookings for this Turf
+    // 3. Query Real Bookings for TODAY for this Turf
+    const { todayStr } = this.getIstNow();
     const bookings = turfInfo.id
       ? await this.prisma.turfBooking.findMany({
           where: {
             verifiedAdminId: turfInfo.id,
             status: { not: 'Cancelled' },
+            date: todayStr,
           },
-          orderBy: { date: 'desc' },
-          take: 30,
+          orderBy: { timeSlot: 'asc' },
         })
       : [];
 
@@ -1326,10 +1439,12 @@ export class SuperAdminService {
     ];
 
     const slotsList = standardSlotTimes.map((slotTime) => {
-      // Check if this slot has an open challenge
+      // Check if this slot has an open challenge SPECIFICALLY FOR TODAY
       const match = formattedOpenMatches.find((m) =>
-        m.time.toLowerCase().includes(slotTime.toLowerCase()) ||
-        slotTime.toLowerCase().includes(m.time.split(' - ')[0]?.trim().toLowerCase() || '')
+        m.isToday && (
+          m.time.toLowerCase().includes(slotTime.toLowerCase()) ||
+          slotTime.toLowerCase().includes(m.time.split(' - ')[0]?.trim().toLowerCase() || '')
+        )
       );
       if (match) {
         return {
