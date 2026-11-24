@@ -2365,7 +2365,7 @@ export class TurfService {
   // =========================================================================
   async getOpenMatches(location?: string, sport?: string) {
     const where: any = {
-      status: { not: 'CANCELLED' },
+      status: { notIn: ['CANCELLED', 'COMPLETED'] },
     };
 
     if (sport && sport.toLowerCase() !== 'all') {
@@ -2394,10 +2394,15 @@ export class TurfService {
 
   async createOpenMatch(body: any) {
     const id = body.id || `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const turfId = body.turfId != null ? Number(body.turfId) : null;
+    const bookingId = body.bookingId != null ? Number(body.bookingId) : null;
+
     const challenge = await this.prisma.openChallenge.upsert({
       where: { id },
       create: {
         id,
+        turfId,
+        bookingId,
         turfName: body.turfName || 'Turf Arena',
         location: body.location || 'Madurai',
         date: body.date || 'Today',
@@ -2413,6 +2418,8 @@ export class TurfService {
         joinRequests: [],
       },
       update: {
+        turfId: turfId ?? undefined,
+        bookingId: bookingId ?? undefined,
         turfName: body.turfName,
         location: body.location,
         date: body.date,
