@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   MapPin,
   Crosshair,
@@ -19,6 +19,7 @@ import {
   Minimize2,
   Swords,
   CalendarDays,
+  Calendar,
   Clock,
   CheckCircle2,
   AlertCircle,
@@ -114,6 +115,46 @@ export default function TurfRadarMap({
   const [outreachTarget, setOutreachTarget] = useState<OutreachTarget | null>(null);
   const [copiedPlayerId, setCopiedPlayerId] = useState<number | null>(null);
 
+  // Active Selected Date for inspecting turf court slots
+  const getInitialDateStr = () => {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const istNow = new Date(Date.now() + istOffsetMs);
+    return istNow.toISOString().slice(0, 10);
+  };
+  const [selectedDate, setSelectedDate] = useState<string>(getInitialDateStr());
+
+  // Quick Date Pill Options (Today, Tomorrow, +2 Days, +3 Days, +4 Days)
+  const quickDateOptions = useMemo(() => {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const now = new Date(Date.now() + istOffsetMs);
+    const options = [];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayName = i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : days[d.getUTCDay()];
+      const dateNum = d.getUTCDate();
+      const monthName = months[d.getUTCMonth()];
+      options.push({
+        dateStr,
+        label: dayName,
+        subLabel: `${dateNum} ${monthName}`,
+      });
+    }
+    return options;
+  }, []);
+
+  const displayDateLabel = useMemo(() => {
+    const istOffsetMs = 5.5 * 60 * 60 * 1000;
+    const today = new Date(Date.now() + istOffsetMs).toISOString().slice(0, 10);
+    const tomorrow = new Date(Date.now() + (5.5 + 24) * 60 * 60 * 1000).toISOString().slice(0, 10);
+    if (selectedDate === today) return 'Today';
+    if (selectedDate === tomorrow) return 'Tomorrow';
+    return selectedDate;
+  }, [selectedDate]);
+
   const isFull = isFullscreen || localFullscreen;
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -156,8 +197,8 @@ export default function TurfRadarMap({
     };
   }, [invalidateMapSize]);
 
-  // Load nearby real players & live turf operations for the selected turf
-  const loadTurfData = useCallback((tId?: number, rKm: number = radiusKm) => {
+  // Load nearby real players & live turf operations for the selected turf and date
+  const loadTurfData = useCallback((tId?: number, rKm: number = radiusKm, dStr: string = selectedDate) => {
     let isMounted = true;
     setLoading(true);
     setError(null);
@@ -165,6 +206,7 @@ export default function TurfRadarMap({
     getNearbyPlayers({
       turfId: tId,
       radiusKm: rKm,
+      date: dStr,
     })
       .then((res) => {
         if (!isMounted) return;
@@ -183,12 +225,12 @@ export default function TurfRadarMap({
     return () => {
       isMounted = false;
     };
-  }, [radiusKm, selectedTurfId]);
+  }, [radiusKm, selectedTurfId, selectedDate]);
 
   useEffect(() => {
-    const cleanup = loadTurfData(selectedTurfId, radiusKm);
+    const cleanup = loadTurfData(selectedTurfId, radiusKm, selectedDate);
     return cleanup;
-  }, [selectedTurfId, radiusKm]);
+  }, [selectedTurfId, radiusKm, selectedDate]);
 
   // Handle switching selected turf (e.g. clicking turf pin or dropdown)
   const handleSelectTurf = useCallback(
@@ -507,7 +549,10 @@ export default function TurfRadarMap({
       return `Hello ${player.fullName}! We have an open match challenge at ${activeVenueName} (${activeArea}) for ${outreachTarget.sport} on ${outreachTarget.date || 'Today'} at ${outreachTarget.time}. Team '${outreachTarget.challengerName || 'Host'}' is looking for an opponent! Are you and your team available to play? Let us know to lock your spot!`;
     }
     if (outreachTarget?.type === 'SLOT') {
-      return `Hello ${player.fullName}! We have a court slot available at ${activeVenueName} (${activeArea}) today from ${outreachTarget.time} for ${outreachTarget.sport} at ₹${outreachTarget.rate || 1200}. Would you like us to book this slot for you?`;
+      const dateText = outreachTarget.date && outreachTarget.date !== getInitialDateStr()
+        ? `on ${outreachTarget.date}`
+        : 'today';
+      return `Hello ${player.fullName}! We have a court slot available at ${activeVenueName} (${activeArea}) ${dateText} from ${outreachTarget.time} for ${outreachTarget.sport} at ₹${outreachTarget.rate || 1200}. Would you like us to book this slot for you?`;
     }
     return `Hello ${player.fullName}! We noticed you're active around ${activeVenueName}. We have prime slots and open challenges available today for ${player.preferredSport}. Would you like to reserve a court or join a match?`;
   };
@@ -776,18 +821,75 @@ export default function TurfRadarMap({
               </div>
 
               {/* Slot Counts Pill */}
-              <div className="text-right shrink-0 font-mono text-[10px]">
-                <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 block mb-1">
+              <div className="text-right shrink-0 font-mono text-[10px] space-y-1">
+                <span className="px-2 py-0.5 rounded font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 block">
                   {data?.slotsOverview?.availableCount ?? 16} Available
                 </span>
                 <span className="px-2 py-0.5 rounded font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30 block">
                   {data?.slotsOverview?.bookedCount ?? 0} Booked
                 </span>
+                {(data?.slotsOverview?.skippedCount ?? 0) > 0 && (
+                  <span className="px-2 py-0.5 rounded font-bold bg-slate-800/90 text-slate-400 border border-slate-700 block">
+                    {data?.slotsOverview?.skippedCount} Skipped
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          {/* 2. UPCOMING OPEN CHALLENGES & TODAY'S COURT SLOTS */}
+          {/* INTERACTIVE DATE SWITCHER BAR (Choose Today, Tomorrow, Future Days or Pick Calendar Date) */}
+          <div className="px-3 py-2 bg-[#0C101A] border-b border-[#1E273A] shrink-0">
+            <div className="flex items-center justify-between gap-1.5 mb-1.5 font-mono text-[10px]">
+              <span className="text-slate-400 font-bold flex items-center gap-1.5">
+                <CalendarDays className="w-3.5 h-3.5 text-[#D4FF00]" />
+                <span>SELECT DATE FOR SLOTS & MATCHES:</span>
+              </span>
+              <span className="text-[#D4FF00] font-bold">
+                {displayDateLabel}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+              {quickDateOptions.map((opt) => {
+                const isSelected = selectedDate === opt.dateStr;
+                return (
+                  <button
+                    key={opt.dateStr}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDate(opt.dateStr);
+                      setOutreachTarget(null);
+                    }}
+                    className={`px-2.5 py-1 rounded text-[10.5px] font-mono font-bold shrink-0 transition-all flex items-center gap-1 border ${
+                      isSelected
+                        ? 'bg-[#D4FF00] text-black border-[#D4FF00] font-black shadow-sm'
+                        : 'bg-[#121826] text-slate-300 border-[#1E273A] hover:border-slate-500 hover:text-white'
+                    }`}
+                  >
+                    <span>{opt.label}</span>
+                    <span className={`text-[9px] ${isSelected ? 'text-black/80 font-bold' : 'text-slate-400'}`}>
+                      {opt.subLabel}
+                    </span>
+                  </button>
+                );
+              })}
+              <div className="relative shrink-0 flex items-center">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedDate(e.target.value);
+                      setOutreachTarget(null);
+                    }
+                  }}
+                  className="bg-[#121826] text-[#D4FF00] border border-[#1E273A] rounded px-2 py-0.5 text-[10.5px] font-mono focus:outline-none focus:border-[#D4FF00] cursor-pointer"
+                  title="Pick a custom date"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 2. UPCOMING OPEN CHALLENGES & COURT SLOTS */}
           <div className="p-2.5 bg-[#0A0E17] border-b border-[#1E273A] shrink-0 space-y-2.5">
             {/* Upcoming Challenges Header */}
             <div className="flex items-center justify-between font-mono text-xs">
@@ -862,14 +964,15 @@ export default function TurfRadarMap({
               </div>
             )}
 
-            {/* Today's Court Slots Header */}
+            {/* Court Slots Header */}
             <div className="flex items-center justify-between font-mono text-xs pt-1 border-t border-[#1E273A]/60">
               <span className="font-bold text-white flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#D4FF00]" />
-                <span>Today&apos;s Court Slots</span>
+                <span>Court Slots ({displayDateLabel})</span>
               </span>
               <span className="text-[10px] text-slate-400 font-mono">
-                {data?.slotsOverview?.availableCount ?? 16} Available • 16 Standard Hours
+                {data?.slotsOverview?.availableCount ?? 16} Available
+                {(data?.slotsOverview?.skippedCount ?? 0) > 0 ? ` • ${data?.slotsOverview?.skippedCount} Skipped` : ''}
               </span>
             </div>
 
@@ -878,39 +981,49 @@ export default function TurfRadarMap({
               {data?.slotsOverview?.slots?.map((slot, idx) => {
                 const isBooked = slot.status === 'BOOKED';
                 const isOpenMatch = slot.status === 'OPEN_MATCH';
+                const isSkipped = slot.status === 'SKIPPED';
                 const isSelected = outreachTarget?.type === 'SLOT' && outreachTarget.time === slot.timeSlot;
 
                 return (
                   <div
                     key={idx}
                     onClick={() => {
-                      if (!isBooked) {
+                      if (!isBooked && !isSkipped) {
                         setOutreachTarget({
                           type: 'SLOT',
                           title: `Slot: ${slot.timeSlot.split(' - ')[0]}`,
-                          detail: `₹${slot.rate} • ${slot.sport || 'Court'}`,
+                          detail: `${displayDateLabel} • ₹${slot.rate} • ${slot.sport || 'Court'}`,
                           sport: slot.sport || 'Football',
                           time: slot.timeSlot,
                           rate: slot.rate,
+                          date: selectedDate,
                         });
                       }
                     }}
-                    className={`p-1.5 rounded border text-center transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#D4FF00] text-black border-[#D4FF00] font-black shadow-sm'
+                    className={`p-1.5 rounded border text-center transition-all ${
+                      isSkipped
+                        ? 'bg-[#0B0D13]/70 border-[#181D28] text-slate-500 opacity-60 cursor-not-allowed'
+                        : isSelected
+                        ? 'bg-[#D4FF00] text-black border-[#D4FF00] font-black shadow-sm cursor-pointer'
                         : isOpenMatch
-                        ? 'bg-[#1C2014] border-[#D4FF00]/50 text-[#D4FF00]'
+                        ? 'bg-[#1C2014] border-[#D4FF00]/50 text-[#D4FF00] cursor-pointer'
                         : isBooked
-                        ? 'bg-[#1F1214] border-rose-500/30 text-rose-400'
-                        : 'bg-[#0E131F] border-[#1E273A] text-emerald-400 hover:border-emerald-400'
+                        ? 'bg-[#1F1214] border-rose-500/30 text-rose-400 cursor-not-allowed'
+                        : 'bg-[#0E131F] border-[#1E273A] text-emerald-400 hover:border-emerald-400 cursor-pointer'
                     }`}
-                    title={`${slot.timeSlot}: ${slot.status} (Click to target players below)`}
+                    title={
+                      isSkipped
+                        ? `${slot.timeSlot}: Skipped (Time has passed without booking)`
+                        : isBooked
+                        ? `${slot.timeSlot}: Booked by ${slot.customerName || 'Customer'}`
+                        : `${slot.timeSlot}: ${slot.status} (Click to target players below)`
+                    }
                   >
-                    <span className={`block text-[8.5px] truncate ${isSelected ? 'text-black font-bold' : 'text-slate-400'}`}>
+                    <span className={`block text-[8.5px] truncate ${isSelected ? 'text-black font-bold' : isSkipped ? 'text-slate-600 line-through' : 'text-slate-400'}`}>
                       {slot.timeSlot.split(' - ')[0]}
                     </span>
                     <span className="font-bold block truncate">
-                      {isOpenMatch ? '⚡Match' : isBooked ? 'Booked' : '₹' + slot.rate}
+                      {isSkipped ? 'Skipped' : isOpenMatch ? '⚡Match' : isBooked ? 'Booked' : '₹' + slot.rate}
                     </span>
                   </div>
                 );

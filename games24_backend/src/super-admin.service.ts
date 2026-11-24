@@ -1083,12 +1083,44 @@ export class SuperAdminService {
     return d === 'today' || d.slice(0, 10) === todayStr;
   }
 
+  private isMatchForDate(matchDate: string | null | undefined, targetDate: string): boolean {
+    if (!matchDate) return false;
+    const d = matchDate.trim().toLowerCase();
+    const { todayStr } = this.getIstNow();
+    if (d === 'today') return targetDate === todayStr;
+    if (d === 'tomorrow') {
+      const tomorrowStr = new Date(Date.now() + (5.5 + 24) * 60 * 60 * 1000).toISOString().slice(0, 10);
+      return targetDate === tomorrowStr;
+    }
+    return d.slice(0, 10) === targetDate;
+  }
+
+  private isSlotEnded(timeSlot: string, currentHour: number, currentMinute: number): boolean {
+    try {
+      const parts = timeSlot.split('-').map((s) => s.trim());
+      const endPart = parts[parts.length - 1] || parts[0];
+      const match = endPart.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      if (match) {
+        let h = parseInt(match[1], 10);
+        const m = parseInt(match[2], 10);
+        const ampm = (match[3] || '').toUpperCase();
+        if (ampm === 'PM' && h < 12) h += 12;
+        if (ampm === 'AM' && h === 12) h = 0;
+        if (h < currentHour || (h === currentHour && m <= currentMinute)) {
+          return true;
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
   // RADAR: SURROUNDING PLAYERS BY RADIUS (KM) FOR A TURF OR GIVEN COORDINATES
   async getNearbyPlayers(params: {
     turfId?: number;
     lat?: number;
     lng?: number;
     radiusKm?: number;
+    date?: string;
   }) {
     // 0. Fetch all turfs for plotting across the map
     const [allVerifiedTurfs, allAdminTurfs, allChallenges] = await Promise.all([
@@ -1379,9 +1411,17 @@ export class SuperAdminService {
       return dateA.localeCompare(dateB);
     });
 
+    const { todayStr, currentHour, currentMinute } = this.getIstNow();
+    const targetDate = params.date && params.date.trim().length >= 10
+      ? params.date.trim().slice(0, 10)
+      : todayStr;
+    const isToday = targetDate === todayStr;
+    const isPastDate = targetDate < todayStr;
+    const isFutureDate = targetDate > todayStr;
+
     const formattedOpenMatches = upcomingChallenges.map((c) => {
       const isOpponentFound = c.status === 'ACCEPTED' || !!c.opponentName;
-      const isToday = this.isMatchForToday(c.date);
+      const isMatchOnTargetDate = this.isMatchForDate(c.date, targetDate);
       return {
         id: c.id,
         turfId: c.turfId,
@@ -1401,18 +1441,18 @@ export class SuperAdminService {
         opponentName: c.opponentName || 'Open Slot',
         opponentTeamSize: c.opponentTeamSize || c.teamSize || '7v7',
         opponentContact: c.opponentContact || null,
-        isToday,
+        isToday: this.isMatchForToday(c.date),
+        isMatchOnTargetDate,
       };
     });
 
-    // 3. Query Real Bookings for TODAY for this Turf
-    const { todayStr } = this.getIstNow();
+    // 3. Query Real Bookings for the TARGET DATE for this Turf
     const bookings = turfInfo.id
       ? await this.prisma.turfBooking.findMany({
           where: {
             verifiedAdminId: turfInfo.id,
             status: { not: 'Cancelled' },
-            date: todayStr,
+            date: targetDate,
           },
           orderBy: { timeSlot: 'asc' },
         })
@@ -1439,9 +1479,19 @@ export class SuperAdminService {
     ];
 
     const slotsList = standardSlotTimes.map((slotTime) => {
-      // Check if this slot has an open challenge SPECIFICALLY FOR TODAY
+      // Determine if this slot has already passed
+      let isPassed = false;
+      if (isPastDate) {
+        isPassed = true;
+      } else if (isToday) {
+        isPassed = this.isSlotEnded(slotTime, currentHour, currentMinute);
+      } else {
+        isPassed = false;
+      }
+
+      // 1. Check if this slot has an open challenge on this target date
       const match = formattedOpenMatches.find((m) =>
-        m.isToday && (
+        m.isMatchOnTargetDate && (
           m.time.toLowerCase().includes(slotTime.toLowerCase()) ||
           slotTime.toLowerCase().includes(m.time.split(' - ')[0]?.trim().toLowerCase() || '')
         )
@@ -1453,10 +1503,11 @@ export class SuperAdminService {
           sport: match.sport,
           rate: 1200,
           challenge: match,
+          isPassed,
         };
       }
 
-      // Check if slot has a regular booking
+      // 2. Check if slot has a regular booking on this target date
       const booking = bookings.find((b) => b.timeSlot === slotTime);
       if (booking) {
         return {
@@ -1466,24 +1517,43 @@ export class SuperAdminService {
           rate: booking.amount,
           customerName: booking.customerName,
           customerPhone: booking.customerPhone,
+          isPassed,
         };
       }
 
+      // 3. If slot has elapsed and no booking was made -> SKIPPED
+      if (isPassed) {
+        return {
+          timeSlot: slotTime,
+          status: 'SKIPPED',
+          sport: 'Court',
+          rate: 1200,
+          isPassed: true,
+        };
+      }
+
+      // 4. Free available slot
       return {
         timeSlot: slotTime,
         status: 'AVAILABLE',
         sport: 'Football',
         rate: 1200,
+        isPassed: false,
       };
     });
 
     const availableCount = slotsList.filter((s) => s.status === 'AVAILABLE').length;
     const bookedCount = slotsList.filter((s) => s.status === 'BOOKED').length;
     const openMatchesCount = slotsList.filter((s) => s.status === 'OPEN_MATCH').length;
+    const skippedCount = slotsList.filter((s) => s.status === 'SKIPPED').length;
     const waitingOpponentCount = formattedOpenMatches.filter((m) => m.status === 'WAITING_FOR_OPPONENT').length;
     const opponentGotCount = formattedOpenMatches.filter((m) => m.status === 'OPPONENT_FOUND').length;
 
     return {
+      selectedDate: targetDate,
+      isToday,
+      isPastDate,
+      isFutureDate,
       turf: turfInfo,
       allTurfs: turfListSummary,
       radiusKm: radius,
@@ -1491,9 +1561,14 @@ export class SuperAdminService {
       players: filteredPlayers,
       slotsOverview: {
         totalSlots: standardSlotTimes.length,
+        selectedDate: targetDate,
+        isToday,
+        isPastDate,
+        isFutureDate,
         availableCount,
         bookedCount,
         openMatchesCount,
+        skippedCount,
         waitingOpponentCount,
         opponentGotCount,
         slots: slotsList,

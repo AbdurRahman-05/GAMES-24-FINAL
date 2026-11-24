@@ -651,19 +651,25 @@ export interface TurfOpenMatch {
 
 export interface TurfSlotItem {
   timeSlot: string;
-  status: 'AVAILABLE' | 'BOOKED' | 'OPEN_MATCH';
+  status: 'AVAILABLE' | 'BOOKED' | 'OPEN_MATCH' | 'SKIPPED';
   sport: string;
   rate: number;
   customerName?: string;
   customerPhone?: string;
   challenge?: TurfOpenMatch;
+  isPassed?: boolean;
 }
 
 export interface TurfSlotsOverview {
   totalSlots: number;
+  selectedDate?: string;
+  isToday?: boolean;
+  isPastDate?: boolean;
+  isFutureDate?: boolean;
   availableCount: number;
   bookedCount: number;
   openMatchesCount: number;
+  skippedCount?: number;
   waitingOpponentCount: number;
   opponentGotCount: number;
   slots: TurfSlotItem[];
@@ -685,6 +691,10 @@ export interface NearbyTurfSummary {
 }
 
 export interface NearbyPlayersResponse {
+  selectedDate?: string;
+  isToday?: boolean;
+  isPastDate?: boolean;
+  isFutureDate?: boolean;
   turf: {
     id: number;
     venueName: string;
@@ -710,12 +720,14 @@ export async function getNearbyPlayers(params: {
   lat?: number;
   lng?: number;
   radiusKm?: number;
+  date?: string;
 }): Promise<NearbyPlayersResponse> {
   const query = new URLSearchParams();
   if (params.turfId) query.set('turfId', String(params.turfId));
   if (params.lat != null) query.set('lat', String(params.lat));
   if (params.lng != null) query.set('lng', String(params.lng));
   if (params.radiusKm != null) query.set('radius', String(params.radiusKm));
+  if (params.date) query.set('date', params.date);
 
   const res = await safeAdminFetch(`/super-admin/nearby-players?${query.toString()}`);
   if (!res.ok) {

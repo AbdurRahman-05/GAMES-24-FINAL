@@ -165,12 +165,14 @@ export class SuperAdminController {
     @Query('lat') lat?: string,
     @Query('lng') lng?: string,
     @Query('radius') radius?: string,
+    @Query('date') date?: string,
   ) {
     return this.superAdminService.getNearbyPlayers({
       turfId: turfId ? Number(turfId) : undefined,
       lat: lat ? Number(lat) : undefined,
       lng: lng ? Number(lng) : undefined,
       radiusKm: radius ? Number(radius) : 10,
+      date,
     });
   }
 
