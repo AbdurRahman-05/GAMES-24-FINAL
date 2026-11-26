@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/constants/app_constants.dart';
-import 'booking_manager.dart';
-import 'challenge_manager.dart';
-import 'booking_qr_pass_modal.dart';
-import 'services/cashfree_service.dart';
+import 'booking_preview_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final int? turfId;
@@ -2030,150 +2027,34 @@ class _BookingScreenState extends State<BookingScreen> {
 
                         if (!mounted) return;
 
-                        // 1. Launch Cashfree Payment Checkout
-                        final cashfreeRes = await CashfreeService.startCheckout(
-                          context: context,
-                          amount: courtFee.toDouble(),
-                          customerPhone: customerPhone,
-                          customerName: customerName,
-                          turfId: effectiveTurfId,
-                          bookingPayload: bookingPayload,
+                        // Open Booking Preview Screen directly (removes the mock bottom slide)
+                        final bookingSuccess = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (ctx) => BookingPreviewScreen(
+                              turfId: effectiveTurfId,
+                              turfName: widget.turfName,
+                              turfLocation: widget.location,
+                              imageUrl: widget.imageUrl,
+                              courtName: _selectedCourt ?? '${widget.turfName} Main Arena',
+                              sport: _selectedSport,
+                              date: selectedDate,
+                              timeSlot: combinedSlot,
+                              timeSlots: sortedSlots,
+                              courtFee: courtFee.toDouble(),
+                              customerName: customerName,
+                              customerPhone: customerPhone,
+                              isOpenForChallenge: _isOpenForChallenge,
+                              teamName: tName,
+                              teamSize: tSize,
+                              bookingPayload: bookingPayload,
+                            ),
+                          ),
                         );
 
-                        if (cashfreeRes == null || !cashfreeRes.success) {
-                          // Payment cancelled or failed
-                          return;
-                        }
-
-                        Map<String, dynamic> bookingObj = {};
-                        http.Response? res;
-                        if (cashfreeRes.booking != null) {
-                          bookingObj = Map<String, dynamic>.from(cashfreeRes.booking!);
-                        } else {
-                          // Fallback direct confirmation
-                          res = await http.post(
-                            Uri.parse(
-                              '${ApiConfig.baseUrl}/turfs/$effectiveTurfId/book',
-                            ),
-                            headers: {'Content-Type': 'application/json'},
-                            body: jsonEncode(bookingPayload),
-                          );
-
-                          if (res.statusCode == 200 || res.statusCode == 201) {
-                            try {
-                              final resData = jsonDecode(res.body);
-                              final Map<String, dynamic> rawMap = resData is Map<String, dynamic>
-                                  ? resData
-                                  : (resData is Map ? Map<String, dynamic>.from(resData) : {});
-                              bookingObj = (rawMap['booking'] is Map)
-                                  ? Map<String, dynamic>.from(rawMap['booking'])
-                                  : Map<String, dynamic>.from(rawMap);
-                            } catch (_) {}
-                          }
-                        }
-
-                        if (bookingObj.isNotEmpty || cashfreeRes.success) {
-                          try {
-                            final targetTurfId = bookingObj['turfId'] ??
-                                bookingObj['verifiedAdminId'] ??
-                                _resolvedTurfId ??
-                                widget.turfId ??
-                                1;
-
-                            bookingObj['turfId'] = targetTurfId;
-                            bookingObj['verifiedAdminId'] = targetTurfId;
-                            bookingObj['turfName'] = widget.turfName;
-                            bookingObj['imageUrl'] = widget.imageUrl;
-                            bookingObj['location'] = widget.location;
-                            bookingObj['courtName'] = _selectedCourt ?? '${widget.turfName} Main Arena';
-                            bookingObj['isActive'] = true;
-                            bookingObj['isOpenMatch'] = _isOpenForChallenge;
-                            bookingObj['customerName'] = customerName;
-                            bookingObj['customerPhone'] = customerPhone;
-                            bookingObj['sport'] = _selectedSport;
-                            bookingObj['amount'] = courtFee.toDouble();
-                            bookingObj['paymentMethod'] = 'Cashfree (UPI)';
-
-                            if (bookingObj['date'] == null) {
-                              bookingObj['date'] = selectedDate;
-                            }
-                            if (bookingObj['timeSlot'] == null) {
-                              bookingObj['timeSlot'] = combinedSlot;
-                            }
-                            if (bookingObj['status'] == null) {
-                              bookingObj['status'] = 'Confirmed';
-                            }
-                            if (bookingObj['bookingCode'] == null && bookingObj['id'] != null) {
-                              bookingObj['bookingCode'] =
-                                  'G24-BK-${bookingObj['id'].toString().padLeft(4, '0')}';
-                            }
-                            if (bookingObj['bookingId'] == null) {
-                              bookingObj['bookingId'] =
-                                  bookingObj['bookingCode'] ?? 'G24-BK-0001';
-                            }
-
-                            BookingManager().addBooking(bookingObj);
-                          } catch (e) {
-                            debugPrint('Error caching booking locally: $e');
-                          }
-                          BookingManager().fetchBookings();
-
-                          if (_isOpenForChallenge) {
-                            final initials = tName.length >= 2
-                                ? tName.substring(0, 2).toUpperCase()
-                                : 'TC';
-
-                            ChallengeManager().addChallenge(
-                              Challenge(
-                                id: 'ch_${DateTime.now().millisecondsSinceEpoch}',
-                                turfName: widget.turfName,
-                                location: widget.location,
-                                date: selectedDate,
-                                time: combinedSlot,
-                                sport: _selectedSport,
-                                challengerName: tName,
-                                challengerTeamInitials: initials,
-                                challengerColor: const Color(0xFFD4FF00),
-                                creatorPhone: customerPhone,
-                                teamSize: tSize,
-                                isCreator: true,
-                                joinRequests: [],
-                              ),
-                            );
-                          }
-
-                          if (mounted) {
-                            _selectedTimeSlots.clear();
-                            _loadSlots();
-                            BookingQrPassModal.show(context, bookingObj);
-                            return;
-                          }
-                        } else {
-                          String errorMsg = cashfreeRes.message;
-                          if (res != null && res.body.isNotEmpty) {
-                            try {
-                              final json = jsonDecode(res.body);
-                              if (json['message'] != null) {
-                                errorMsg = json['message'].toString();
-                              }
-                            } catch (_) {}
-                          }
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  errorMsg.isNotEmpty
-                                      ? errorMsg
-                                      : 'Booking failed. Slot may already be booked.',
-                                ),
-                                backgroundColor: const Color(0xFFDC2626),
-                                behavior: SnackBarBehavior.floating,
-                                duration: const Duration(seconds: 3),
-                              ),
-                            );
-                            _selectedTimeSlots.clear();
-                            _loadSlots(); // Immediately refresh to show real-time slot status
-                          }
+                        if (bookingSuccess == true && mounted) {
+                          _selectedTimeSlots.clear();
+                          _loadSlots();
                         }
                       } else {
                         if (mounted) {
