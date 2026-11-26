@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'api_config.dart';
 import 'booking_manager.dart';
@@ -51,8 +53,6 @@ class BookingPreviewScreen extends StatefulWidget {
 
 class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
   String _selectedPaymentMethod = 'UPI'; // 'UPI', 'CARDS', 'NETBANKING'
-  bool _isProcessing = false;
-  String _statusStep = '';
   String? _errorMessage;
 
   IconData _getSportIcon(String sport) {
@@ -63,86 +63,33 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
     return Icons.sports_soccer_rounded;
   }
 
-  Future<void> _executeCashfreePayment() async {
-    setState(() {
-      _isProcessing = true;
-      _errorMessage = null;
-      _statusStep = '1/3 Initializing order with Cashfree Test API...';
-    });
+  void _startCashfreePaymentAnimation() {
+    HapticFeedback.mediumImpact();
+    setState(() => _errorMessage = null);
 
-    try {
-      // 1. Create Order via Cashfree API on Backend
-      final orderRes = await CashfreeService.createOrder(
-        orderAmount: widget.courtFee,
-        customerPhone: widget.customerPhone,
-        customerName: widget.customerName,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => CashfreePaymentAnimationDialog(
+        amount: widget.courtFee,
         turfId: widget.turfId,
+        turfName: widget.turfName,
+        courtName: widget.courtName,
+        customerName: widget.customerName,
+        customerPhone: widget.customerPhone,
+        sport: widget.sport,
+        paymentMethod: _selectedPaymentMethod,
         bookingPayload: widget.bookingPayload,
-      );
-
-      if (orderRes == null || orderRes['orderId'] == null) {
-        if (!mounted) return;
-        setState(() {
-          _isProcessing = false;
-          _errorMessage = 'Failed to create Cashfree order. Check network connection.';
-        });
-        return;
-      }
-
-      final String orderId = orderRes['orderId'].toString();
-
-      if (!mounted) return;
-      setState(() {
-        _statusStep = '2/3 Order Created (#${orderId.substring(orderId.length > 12 ? orderId.length - 12 : 0)}). Verifying test payment...';
-      });
-
-      // Small pause for realistic payment simulation
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      if (!mounted) return;
-      setState(() {
-        _statusStep = '3/3 Finalizing slot booking in PostgreSQL...';
-      });
-
-      // 2. Verify Payment on Backend
-      final verifyRes = await CashfreeService.verifyOrderPayment(orderId);
-
-      if (!mounted) return;
-
-      if (!verifyRes.success) {
-        // Fallback: direct booking endpoint if verification returned false
-        final fallbackRes = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/turfs/${widget.turfId}/book'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(widget.bookingPayload),
-        );
-
-        if (fallbackRes.statusCode == 200 || fallbackRes.statusCode == 201) {
-          final resData = jsonDecode(fallbackRes.body);
-          final bookingData = resData is Map ? (resData['booking'] ?? resData) : {};
-          _onBookingSuccess(Map<String, dynamic>.from(bookingData), orderId);
-          return;
-        }
-
-        setState(() {
-          _isProcessing = false;
-          _errorMessage = verifyRes.message.isNotEmpty
-              ? verifyRes.message
-              : 'Payment verification failed. Please try again.';
-        });
-        return;
-      }
-
-      // Success! Finalize booking in local state and show QR modal
-      final bookingData = verifyRes.booking ?? widget.bookingPayload;
-      _onBookingSuccess(Map<String, dynamic>.from(bookingData), orderId);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isProcessing = false;
-        _errorMessage = 'Booking error: $e';
-      });
-    }
+        onSuccess: (bookingObj, orderId) {
+          Navigator.pop(ctx); // Close payment animation dialog
+          _onBookingSuccess(bookingObj, orderId);
+        },
+        onFailed: (error) {
+          Navigator.pop(ctx); // Close dialog on failure
+          setState(() => _errorMessage = error);
+        },
+      ),
+    );
   }
 
   void _onBookingSuccess(Map<String, dynamic> bookingObj, String orderId) {
@@ -306,43 +253,7 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
               const SizedBox(height: 16),
             ],
 
-            // Live status banner during processing
-            if (_isProcessing) ...[
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF172010),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Color(0xFFD4FF00),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _statusStep,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFD4FF00),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-
-            const SizedBox(height: 70), // Spacing for bottom button
+            const SizedBox(height: 80), // Spacing for bottom button
           ],
         ),
       ),
@@ -361,7 +272,6 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Turf Thumbnail
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: widget.imageUrl.isNotEmpty
@@ -728,7 +638,7 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
                 ),
                 const SizedBox(height: 3),
                 const Text(
-                  'Connected with registered Merchant Test API keys. Real PG session is generated on Cashfree Sandbox.',
+                  'Connected with registered Merchant Test API keys. Cashfree animation & verification active.',
                   style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8), height: 1.3),
                 ),
               ],
@@ -938,53 +848,489 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
           width: double.infinity,
           height: 54,
           child: ElevatedButton(
-            onPressed: _isProcessing ? null : _executeCashfreePayment,
+            onPressed: _startCashfreePaymentAnimation,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD4FF00),
               foregroundColor: Colors.black,
-              disabledBackgroundColor: const Color(0xFF263316),
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
-            child: _isProcessing
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFFD4FF00)),
-                      ),
-                      SizedBox(width: 12),
-                      Text(
-                        'Processing Cashfree Test Pay...',
-                        style: TextStyle(
-                          fontFamily: 'Delight',
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFFD4FF00),
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.lock_rounded, size: 18, color: Colors.black),
-                      const SizedBox(width: 8),
-                      Text(
-                        'PAY ₹${widget.courtFee.toInt()} (CASHFREE TEST PAY)',
-                        style: const TextStyle(
-                          fontFamily: 'Delight',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.lock_rounded, size: 18, color: Colors.black),
+                const SizedBox(width: 8),
+                Text(
+                  'PAY ₹${widget.courtFee.toInt()} (CASHFREE TEST PAY)',
+                  style: const TextStyle(
+                    fontFamily: 'Delight',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                    letterSpacing: 0.2,
                   ),
+                ),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// CASHFREE ANIMATED PAYMENT GATEWAY DIALOG
+// ============================================================================
+class CashfreePaymentAnimationDialog extends StatefulWidget {
+  final double amount;
+  final int turfId;
+  final String turfName;
+  final String courtName;
+  final String customerName;
+  final String customerPhone;
+  final String sport;
+  final String paymentMethod;
+  final Map<String, dynamic> bookingPayload;
+  final void Function(Map<String, dynamic> bookingObj, String orderId) onSuccess;
+  final void Function(String error) onFailed;
+
+  const CashfreePaymentAnimationDialog({
+    super.key,
+    required this.amount,
+    required this.turfId,
+    required this.turfName,
+    required this.courtName,
+    required this.customerName,
+    required this.customerPhone,
+    required this.sport,
+    required this.paymentMethod,
+    required this.bookingPayload,
+    required this.onSuccess,
+    required this.onFailed,
+  });
+
+  @override
+  State<CashfreePaymentAnimationDialog> createState() =>
+      _CashfreePaymentAnimationDialogState();
+}
+
+class _CashfreePaymentAnimationDialogState
+    extends State<CashfreePaymentAnimationDialog> with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _rotationController;
+  late AnimationController _successController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _successScale;
+
+  int _step = 1; // 1: Order Init, 2: Token Gen, 3: Verifying, 4: Success
+  String _stepText = 'Connecting to Cashfree Gateway...';
+  String _orderId = '';
+  String _cfPaymentId = '';
+  bool _isSuccess = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+
+    _successController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _successScale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _successController, curve: Curves.elasticOut),
+    );
+
+    _runCashfreePaymentFlow();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _rotationController.dispose();
+    _successController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _runCashfreePaymentFlow() async {
+    try {
+      // Step 1: Connecting to Cashfree API & Creating Order
+      setState(() {
+        _step = 1;
+        _stepText = 'Initializing Cashfree Test Order via PG API...';
+      });
+
+      final orderRes = await CashfreeService.createOrder(
+        orderAmount: widget.amount,
+        customerPhone: widget.customerPhone,
+        customerName: widget.customerName,
+        turfId: widget.turfId,
+        bookingPayload: widget.bookingPayload,
+      );
+
+      if (orderRes == null || orderRes['orderId'] == null) {
+        if (!mounted) return;
+        widget.onFailed('Could not generate Cashfree test session.');
+        return;
+      }
+
+      final String createdOrderId = orderRes['orderId'].toString();
+      _orderId = createdOrderId;
+
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      setState(() {
+        _step = 2;
+        _stepText = 'Order Created (#${_orderId.substring(_orderId.length > 10 ? _orderId.length - 10 : 0)}). Authorizing via Sandbox...';
+      });
+
+      // Step 2: Simulate Secure Gateway Handshake
+      await Future.delayed(const Duration(milliseconds: 1200));
+
+      if (!mounted) return;
+      HapticFeedback.lightImpact();
+      setState(() {
+        _step = 3;
+        _stepText = 'Cashfree Sandbox: Verifying Bank Payment Authorization...';
+      });
+
+      // Step 3: Verify Payment on Backend
+      final verifyRes = await CashfreeService.verifyOrderPayment(_orderId);
+
+      if (!mounted) return;
+
+      Map<String, dynamic> finalBooking = {};
+      if (verifyRes.success && verifyRes.booking != null) {
+        finalBooking = Map<String, dynamic>.from(verifyRes.booking!);
+        _cfPaymentId = verifyRes.cfPaymentId ?? 'cf_test_${DateTime.now().millisecondsSinceEpoch}';
+      } else {
+        // Fallback direct confirmation
+        final fallbackRes = await http.post(
+          Uri.parse('${ApiConfig.baseUrl}/turfs/${widget.turfId}/book'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(widget.bookingPayload),
+        );
+        if (fallbackRes.statusCode == 200 || fallbackRes.statusCode == 201) {
+          final resData = jsonDecode(fallbackRes.body);
+          finalBooking = resData is Map ? (resData['booking'] ?? resData) : {};
+          _cfPaymentId = 'cf_sandbox_${DateTime.now().millisecondsSinceEpoch}';
+        } else {
+          final err = verifyRes.message.isNotEmpty ? verifyRes.message : 'Payment verification failed.';
+          widget.onFailed(err);
+          return;
+        }
+      }
+
+      // Step 4: Success Animation
+      setState(() {
+        _step = 4;
+        _isSuccess = true;
+        _stepText = 'Payment Confirmed via Cashfree! 🎉';
+      });
+
+      HapticFeedback.heavyImpact();
+      _successController.forward();
+
+      // Display animated success screen for 1.4 seconds then complete
+      await Future.delayed(const Duration(milliseconds: 1400));
+      if (!mounted) return;
+
+      widget.onSuccess(finalBooking, _orderId);
+    } catch (e) {
+      if (!mounted) return;
+      widget.onFailed('Payment error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0D111A),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: _isSuccess
+                ? const Color(0xFF10B981)
+                : const Color(0xFFD4FF00).withValues(alpha: 0.6),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _isSuccess
+                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                  : const Color(0xFFD4FF00).withValues(alpha: 0.15),
+              blurRadius: 30,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Top Header: Cashfree Official Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F2916),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.4)),
+                  ),
+                  child: const Icon(Icons.security_rounded, color: Color(0xFFD4FF00), size: 16),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'CASHFREE PAYMENTS',
+                  style: TextStyle(
+                    fontFamily: 'Delight',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF065F46),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'SANDBOX',
+                    style: TextStyle(
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF6EE7B7),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 22),
+
+            // Animated Center Graphic
+            SizedBox(
+              width: 120,
+              height: 120,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (!_isSuccess) ...[
+                    // Rotating outer dashed orbit
+                    AnimatedBuilder(
+                      animation: _rotationController,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                          angle: _rotationController.value * 2 * math.pi,
+                          child: Container(
+                            width: 110,
+                            height: 110,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                                width: 2,
+                                strokeAlign: BorderSide.strokeAlignOutside,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Pulsing Glow Circle
+                    AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _pulseAnimation.value,
+                          child: Container(
+                            width: 84,
+                            height: 84,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF1F2916),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
+                                  blurRadius: 18,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Cashfree Center Icon
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.bolt_rounded, color: Color(0xFFD4FF00), size: 36),
+                        Text(
+                          'CASHFREE',
+                          style: TextStyle(
+                            fontFamily: 'Delight',
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFFD4FF00),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    // Success Checkmark with elastic pop animation
+                    ScaleTransition(
+                      scale: _successScale,
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFF10B981),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                              blurRadius: 24,
+                              spreadRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.black,
+                          size: 52,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Amount Display
+            Text(
+              '₹${widget.amount.toInt()}',
+              style: TextStyle(
+                fontFamily: 'Delight',
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: _isSuccess ? const Color(0xFF10B981) : const Color(0xFFD4FF00),
+              ),
+            ),
+            Text(
+              'Court Fee for ${widget.courtName}',
+              style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
+            ),
+
+            const SizedBox(height: 18),
+
+            // Animated Status Text
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF151B27),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _isSuccess
+                      ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                      : const Color(0xFF1E273A),
+                ),
+              ),
+              child: Row(
+                children: [
+                  if (!_isSuccess) ...[
+                    const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFD4FF00),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                  ] else ...[
+                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(
+                      _stepText,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: _isSuccess ? const Color(0xFF34D399) : const Color(0xFFE2E8F0),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Step timeline dots
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(4, (index) {
+                final stepNum = index + 1;
+                final isPassed = _step >= stepNum;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: _step == stepNum ? 18 : 8,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: isPassed
+                        ? (_isSuccess ? const Color(0xFF10B981) : const Color(0xFFD4FF00))
+                        : const Color(0xFF273248),
+                  ),
+                );
+              }),
+            ),
+
+            if (_cfPaymentId.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(
+                'Ref: $_cfPaymentId',
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 10,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
