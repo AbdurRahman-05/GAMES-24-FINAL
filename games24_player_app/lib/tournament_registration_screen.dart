@@ -31,13 +31,35 @@ class _TournamentRegistrationScreenState
   Future<void> _loadUserPrefills() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final phone = (prefs.getString('mobileNumber') ?? '').trim();
-      final name = (prefs.getString('fullName') ?? prefs.getString('userName') ?? '').trim();
+      final phone =
+          (prefs.getString('mobileNumber') ??
+                  prefs.getString('phone') ??
+                  prefs.getString('phoneNumber') ??
+                  prefs.getString('user_phone') ??
+                  '')
+              .trim();
+      final name =
+          (prefs.getString('fullName') ?? prefs.getString('userName') ?? '')
+              .trim();
       final email = (prefs.getString('email') ?? '').trim();
       if (mounted) {
-        if (phone.isNotEmpty && _contactCtrl.text.isEmpty) _contactCtrl.text = phone;
-        if (name.isNotEmpty && _captainNameCtrl.text.isEmpty) _captainNameCtrl.text = name;
-        if (email.isNotEmpty && _emailCtrl.text.isEmpty) _emailCtrl.text = email;
+        if (phone.isNotEmpty && _contactCtrl.text.isEmpty) {
+          _contactCtrl.text = phone;
+        }
+        if (name.isNotEmpty && _captainNameCtrl.text.isEmpty) {
+          _captainNameCtrl.text = name;
+        }
+        if (email.isNotEmpty && _emailCtrl.text.isEmpty) {
+          _emailCtrl.text = email;
+        }
+        if (TournamentManager().isUserRegistered(widget.tournament)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You are already registered for this tournament!'),
+              backgroundColor: Color(0xFF14532D),
+            ),
+          );
+        }
       }
     } catch (_) {}
   }
@@ -77,26 +99,22 @@ class _TournamentRegistrationScreenState
               _dialogRow('Team', _teamNameCtrl.text),
               _dialogRow('Players', _playersCountCtrl.text),
               _dialogRow('Entry Fee', widget.tournament.entryFee),
-              _dialogRow(
-                'Venue',
-                (widget.tournament.courtAllocation != null &&
-                        widget.tournament.courtAllocation!.isNotEmpty &&
-                        widget.tournament.courtAllocation != widget.tournament.venue)
-                    ? '${widget.tournament.venue} (${widget.tournament.courtAllocation})'
-                    : widget.tournament.venue,
-              ),
+              _dialogRow('Venue', widget.tournament.venue),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Color(0xFFA1A1AA))),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Color(0xFFA1A1AA)),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(dialogCtx).pop(); // close dialog
 
-                final success = await TournamentManager()
+                final error = await TournamentManager()
                     .registerTeam(widget.tournament.id, {
                       'teamName': _teamNameCtrl.text.trim(),
                       'captainName': _captainNameCtrl.text.trim(),
@@ -105,12 +123,15 @@ class _TournamentRegistrationScreenState
                       'playersCount': _playersCountCtrl.text.trim(),
                     });
 
-                if (success) {
+                if (error == null) {
                   messenger.showSnackBar(
                     SnackBar(
                       content: const Text(
                         'Registration Successful! 🏆',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       backgroundColor: const Color(0xFF141414),
                       behavior: SnackBarBehavior.floating,
@@ -124,9 +145,9 @@ class _TournamentRegistrationScreenState
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: const Text(
-                        'Registration Failed. Tournament might be full or team name exists.',
-                        style: TextStyle(color: Colors.white),
+                      content: Text(
+                        error,
+                        style: const TextStyle(color: Colors.white),
                       ),
                       backgroundColor: const Color(0xFF141414),
                       behavior: SnackBarBehavior.floating,
@@ -162,11 +183,18 @@ class _TournamentRegistrationScreenState
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$label: ', style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13)),
+          Text(
+            '$label: ',
+            style: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
+          ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
             ),
           ),
         ],
@@ -212,7 +240,11 @@ class _TournamentRegistrationScreenState
             const SizedBox(height: 24),
             const Text(
               'Team Registration Form',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 16),
             _buildForm(),
@@ -223,9 +255,7 @@ class _TournamentRegistrationScreenState
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: const Color(0xFF0F0F0F),
-          border: const Border(
-            top: BorderSide(color: Color(0xFF262626)),
-          ),
+          border: const Border(top: BorderSide(color: Color(0xFF262626))),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.5),
@@ -270,45 +300,27 @@ class _TournamentRegistrationScreenState
         children: [
           Text(
             widget.tournament.title,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 12),
           _summaryRow(Icons.sports_soccer, 'Sport', widget.tournament.sport),
           _summaryRow(Icons.calendar_today, 'Date', widget.tournament.date),
           _summaryRow(Icons.access_time, 'Time', widget.tournament.time),
-          _summaryRow(
-            Icons.location_on,
-            'Venue',
-            (widget.tournament.courtAllocation != null &&
-                    widget.tournament.courtAllocation!.isNotEmpty &&
-                    widget.tournament.courtAllocation != widget.tournament.venue)
-                ? '${widget.tournament.venue} (${widget.tournament.courtAllocation})'
-                : widget.tournament.venue,
-          ),
+          _summaryRow(Icons.location_on, 'Venue', widget.tournament.venue),
           _summaryRow(
             Icons.monetization_on,
             'Entry Fee',
             widget.tournament.entryFee,
           ),
-          if (widget.tournament.championPrize != null && widget.tournament.championPrize!.trim().isNotEmpty) ...[
-            _summaryRow(
-              Icons.emoji_events,
-              'Winner Prize',
-              widget.tournament.championPrize!,
-            ),
-            if (widget.tournament.runnerUpPrize != null && widget.tournament.runnerUpPrize!.trim().isNotEmpty)
-              _summaryRow(
-                Icons.military_tech_rounded,
-                'Runner-Up Prize',
-                widget.tournament.runnerUpPrize!,
-              ),
-          ] else ...[
-            _summaryRow(
-              Icons.emoji_events,
-              'Prize Pool',
-              widget.tournament.prizePool,
-            ),
-          ],
+          _summaryRow(
+            Icons.emoji_events,
+            'Prize Pool',
+            widget.tournament.prizePool,
+          ),
           _summaryRow(
             Icons.group,
             'Available Slots',
@@ -333,7 +345,11 @@ class _TournamentRegistrationScreenState
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.white),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -409,7 +425,10 @@ class _TournamentRegistrationScreenState
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Color(0xFFA1A1AA), fontSize: 13),
-        floatingLabelStyle: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold),
+        floatingLabelStyle: const TextStyle(
+          color: Color(0xFFD4FF00),
+          fontWeight: FontWeight.bold,
+        ),
         filled: true,
         fillColor: const Color(0xFF141414),
         border: OutlineInputBorder(

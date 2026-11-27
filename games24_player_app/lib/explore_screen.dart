@@ -217,8 +217,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
             name: turf['venueName'] ?? turf['name'] ?? 'Turf Arena',
             location: turf['location'] ?? 'Madurai',
             price: turf['price'] ?? '₹1,200',
-            rating: turf['rating']?.toString() ?? '4.9',
-            reviews: turf['reviews']?.toString() ?? '128',
+            rating: turf['rating']?.toString() ?? '', // no reviews yet: show "New"
+            reviews: turf['reviews']?.toString() ?? '0',
             imageUrl: resolvedImg,
             photoUrls: photoUrls,
             amenities: amenities,
@@ -545,7 +545,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   const Icon(Icons.star, color: Colors.orange, size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    rating,
+                    rating.isEmpty ? 'New' : rating,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -553,7 +553,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text(
+                  if (rating.isNotEmpty) Text(
                     '($reviews)',
                     style: const TextStyle(
                       color: Color(0xFFA1A1AA),

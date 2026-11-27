@@ -1,8 +1,8 @@
+import 'core/session/session_manager.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:games24_player_app/login_screen.dart';
 import 'package:games24_player_app/api_config.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -53,7 +53,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  void _parseGoogleMapInput(String input, Function(double lat, double lng) onParsed) {
+  void _parseGoogleMapInput(
+    String input,
+    Function(double lat, double lng) onParsed,
+  ) {
     final trimmed = input.trim();
     if (trimmed.isEmpty) return;
 
@@ -135,7 +138,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F2916),
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: const Color(0xFFD4FF00).withValues(alpha: 0.3),
+                        ),
                       ),
                       child: const Icon(
                         Icons.location_on_rounded,
@@ -176,11 +181,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFF1C1C1C),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.my_location_rounded, color: Color(0xFFD4FF00), size: 18),
+                      const Icon(
+                        Icons.my_location_rounded,
+                        color: Color(0xFFD4FF00),
+                        size: 18,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -225,32 +236,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   spacing: 8,
                   runSpacing: 8,
                   children: presetAreas.map((area) {
-                    final isSelected = tempArea.contains(area['name'] as String);
+                    final isSelected = tempArea.contains(
+                      area['name'] as String,
+                    );
                     return InkWell(
                       onTap: () {
                         setModalState(() {
                           tempArea = '${area['name']}, Madurai';
                           tempLat = area['lat'] as double;
                           tempLng = area['lng'] as double;
-                          mapUrlCtrl.text = 'https://www.google.com/maps?q=$tempLat,$tempLng';
+                          mapUrlCtrl.text =
+                              'https://www.google.com/maps?q=$tempLat,$tempLng';
                         });
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF1F2916) : const Color(0xFF1A1A1A),
+                          color: isSelected
+                              ? const Color(0xFF1F2916)
+                              : const Color(0xFF1A1A1A),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF2A2A2A),
+                            color: isSelected
+                                ? const Color(0xFFD4FF00)
+                                : const Color(0xFF2A2A2A),
                           ),
                         ),
                         child: Text(
                           area['name'] as String,
                           style: TextStyle(
-                            color: isSelected ? const Color(0xFFD4FF00) : Colors.white,
+                            color: isSelected
+                                ? const Color(0xFFD4FF00)
+                                : Colors.white,
                             fontSize: 11,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ),
@@ -283,10 +308,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                   decoration: InputDecoration(
                     hintText: 'https://maps.google.com/?q=9.9210,78.1380',
-                    hintStyle: const TextStyle(color: Color(0xFF555555), fontSize: 11),
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF555555),
+                      fontSize: 11,
+                    ),
                     filled: true,
                     fillColor: const Color(0xFF0D0D0D),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: Color(0xFF2E2E2E)),
@@ -307,7 +338,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFD4FF00),
                       foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       elevation: 0,
                     ),
                     onPressed: _isSavingLocation
@@ -315,18 +348,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         : () async {
                             setModalState(() => _isSavingLocation = true);
                             try {
-                              final prefs = await SharedPreferences.getInstance();
+                              final prefs =
+                                  await SharedPreferences.getInstance();
                               await prefs.setDouble('player_latitude', tempLat);
-                              await prefs.setDouble('player_longitude', tempLng);
+                              await prefs.setDouble(
+                                'player_longitude',
+                                tempLng,
+                              );
                               await prefs.setString('player_city', tempArea);
                               if (mapUrlCtrl.text.isNotEmpty) {
-                                await prefs.setString('player_maps_url', mapUrlCtrl.text.trim());
+                                await prefs.setString(
+                                  'player_maps_url',
+                                  mapUrlCtrl.text.trim(),
+                                );
                               }
 
                               // Call backend API to persist to PostgreSQL User table
                               try {
                                 await http.patch(
-                                  Uri.parse('${ApiConfig.baseUrl}/auth/player/profile'),
+                                  Uri.parse(
+                                    '${ApiConfig.baseUrl}/auth/player/profile',
+                                  ),
                                   headers: {'Content-Type': 'application/json'},
                                   body: jsonEncode({
                                     'phone': _mobileNumber,
@@ -349,7 +391,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Radar location updated successfully! You are now visible to turfs.'),
+                                    content: Text(
+                                      'Radar location updated successfully! You are now visible to turfs.',
+                                    ),
                                     backgroundColor: Color(0xFF1F2916),
                                   ),
                                 );
@@ -363,11 +407,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
                           )
                         : const Text(
                             'Save & Update Location Pin',
-                            style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                            ),
                           ),
                   ),
                 ),
@@ -398,7 +448,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: Color(0xFF262626)),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         content: SingleChildScrollView(
           child: Text(
             body,
@@ -415,9 +471,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD4FF00),
               foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Close', style: TextStyle(fontWeight: FontWeight.w900)),
+            child: const Text(
+              'Close',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
           ),
         ],
       ),
@@ -485,7 +546,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   ListTile(
                     leading: const Icon(
                       Icons.phone_outlined,
@@ -507,7 +572,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   ListTile(
                     leading: const Icon(
                       Icons.sports_soccer_outlined,
@@ -529,7 +598,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   ListTile(
                     leading: const Icon(
                       Icons.location_on_outlined,
@@ -600,7 +673,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       (v) => _pushNotifications = v,
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   SwitchListTile(
                     activeThumbColor: const Color(0xFFD4FF00),
                     activeTrackColor: const Color(0xFF1F2916),
@@ -627,7 +704,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       (v) => _matchReminders = v,
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   SwitchListTile(
                     activeThumbColor: const Color(0xFFD4FF00),
                     activeTrackColor: const Color(0xFF1F2916),
@@ -691,7 +772,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'Games24 takes your privacy seriously. We securely store your mobile number and bookings to facilitate turf reservations and challenge coordination. We do not sell your personal data to any third parties.',
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   ListTile(
                     leading: const Icon(
                       Icons.description_outlined,
@@ -714,7 +799,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       'By booking slots or joining open challenges via Games24, players agree to follow fair play guidelines, arrive promptly at scheduled slots, and respect turf facility equipment and rules.',
                     ),
                   ),
-                  const Divider(height: 1, indent: 56, color: Color(0xFF262626)),
+                  const Divider(
+                    height: 1,
+                    indent: 56,
+                    color: Color(0xFF262626),
+                  ),
                   const ListTile(
                     leading: Icon(Icons.info_outline, color: Color(0xFFD4FF00)),
                     title: Text(
@@ -737,13 +826,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             Center(
               child: TextButton.icon(
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    (route) => false,
-                  );
-                },
+                onPressed: () => SessionManager.logout(context),
                 icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
                 label: const Text(
                   'Log Out from Games24',

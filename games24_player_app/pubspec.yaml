@@ -44,6 +44,7 @@ dependencies:
   flutter_contacts: ^2.6.0
   audioplayers: ^6.8.1
   google_fonts: ^9.0.0
+  flutter_cashfree_pg_sdk: ^2.7.0+55
 dev_dependencies:
   flutter_test:
     sdk: flutter

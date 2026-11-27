@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'login_screen.dart';
 import 'api_config.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +63,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() => _isLoading = true);
     final mobile = '$_selectedCountryCode$mobileRaw';
     try {
+      // Only registered numbers can reset a password.
+      final check = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/auth/check-mobile'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'mobileNumber': mobile}),
+      );
+      if (!mounted) return;
+      if ((check.statusCode == 200 || check.statusCode == 201) &&
+          jsonDecode(check.body)['exists'] != true) {
+        ToastUtils.showError(context, 'No account found for this number. Please sign up.');
+        return;
+      }
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/auth/send-otp'),
         headers: {'Content-Type': 'application/json'},
@@ -72,12 +85,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         setState(() {
           _currentStep = 2;
         });
-        ToastUtils.showSuccess(context, 'OTP sent successfully');
+        final data = jsonDecode(response.body);
+        final otp = data is Map ? data['otp'] : null;
+        ToastUtils.showSuccess(
+          context,
+          kDebugMode && otp != null ? 'Test OTP (debug build): $otp' : 'OTP sent to your mobile number',
+        );
       } else {
-        ToastUtils.showError(context, 'Failed to send OTP');
+        String msg = 'Failed to send OTP';
+        try {
+          msg = (jsonDecode(response.body)['message'] ?? msg).toString();
+        } catch (_) {}
+        ToastUtils.showError(context, msg);
       }
     } catch (e) {
-      ToastUtils.showError(context, 'Error occurred');
+      ToastUtils.showError(context, 'Unable to connect. Please check your internet connection.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

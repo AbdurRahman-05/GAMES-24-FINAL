@@ -1115,7 +1115,7 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             final nav = Navigator.of(context);
                             final messenger = ScaffoldMessenger.of(context);
 
-                            await TeamManager().scheduleTeamMatch(
+                            final result = await TeamManager().scheduleTeamMatch(
                               challengerTeamId: myTeam.teamCode,
                               challengerTeamName: myTeam.name,
                               opponentTeamId: oppCode,
@@ -1127,10 +1127,10 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
                             nav.pop();
                             messenger.showSnackBar(
                               SnackBar(
-                                content: Text(
-                                  'Challenge sent to $oppName ($oppCode)! Scheduled for $selectedSlot.',
-                                ),
-                                backgroundColor: const Color(0xFF141414),
+                                content: Text(result.message),
+                                backgroundColor: result.ok
+                                    ? const Color(0xFF141414)
+                                    : const Color(0xFFEF4444),
                               ),
                             );
                           },
@@ -1166,17 +1166,18 @@ class _TeamsHubScreenState extends State<TeamsHubScreen> {
       );
       return;
     }
-    final success = await TeamManager().joinTeamWithCode(code);
-    if (success && mounted) {
+    final error = await TeamManager().joinTeamWithCode(code);
+    if (!mounted) return;
+    if (error == null) {
       _codeController.clear();
       FocusScope.of(context).unfocus();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Joined squad "$code" successfully!'),
-          backgroundColor: const Color(0xFF141414),
-        ),
-      );
     }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error ?? 'You joined the squad! It now appears in My Teams.'),
+        backgroundColor: error == null ? const Color(0xFF141414) : const Color(0xFFEF4444),
+      ),
+    );
   }
 
   @override

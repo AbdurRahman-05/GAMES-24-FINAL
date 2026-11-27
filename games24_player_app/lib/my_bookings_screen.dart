@@ -1232,8 +1232,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                     ),
                                     onPressed: () async {
                                       Navigator.pop(ctx);
-                                      final success = await BookingManager()
+                                      final result = await BookingManager()
                                           .cancelBooking(bookingId);
+                                      final success = result.ok;
                                       if (mounted) {
                                         ScaffoldMessenger.of(
                                           context,
@@ -1252,9 +1253,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                               ),
                                             ),
                                             content: Text(
-                                              success
-                                                  ? 'Booking cancelled successfully.'
-                                                  : 'Failed to cancel booking (must be at least 3 hours before start time).',
+                                              result.message,
                                               style: const TextStyle(
                                                 color: Colors.white,
                                               ),
@@ -1678,7 +1677,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 const SizedBox(height: 16),
                 const Center(
                   child: Text(
-                    'Cancel Slot (Eligible for 100% refund up to 4 hrs prior)',
+                    'Cancel Slot (100% refund if cancelled 3+ hrs before start)',
                     style: TextStyle(
                       fontSize: 10,
                       color: Color(0xFFEF4444),

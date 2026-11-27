@@ -1,8 +1,6 @@
-import 'dart:convert';
+import 'core/network/api_client.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'api_config.dart';
 
 enum TournamentStatus { ongoing, upcoming, completed, cancelled }
 
@@ -123,7 +121,9 @@ class Tournament {
           final m = Map<String, dynamic>.from(u);
           final tName = (m['teamName'] ?? '').toString().trim();
           final regId = (m['id'] ?? '').toString();
-          if (tName.isEmpty || mockNames.contains(tName.toLowerCase()) || regId.startsWith('reg_')) {
+          if (tName.isEmpty ||
+              mockNames.contains(tName.toLowerCase()) ||
+              regId.startsWith('reg_')) {
             continue; // Skip mock teams
           }
           regUsers.add(m);
@@ -140,25 +140,41 @@ class Tournament {
       status: parsedStatus,
       date: json['date']?.toString() ?? 'Upcoming',
       time: json['time']?.toString() ?? '09:00 AM',
-      venue: json['venue']?.toString() ?? (json['venueName']?.toString() ?? 'Champions Arena'),
+      venue:
+          json['venue']?.toString() ??
+          (json['venueName']?.toString() ?? 'Champions Arena'),
       location: json['location']?.toString() ?? 'Madurai',
       entryFee: entryFeeVal,
       prizePool: json['prizePool']?.toString() ?? '₹15,000',
-      grandPrize: json['grandPrize']?.toString() ?? (json['prizePool']?.toString() ?? '₹15,000'),
+      grandPrize:
+          json['grandPrize']?.toString() ??
+          (json['prizePool']?.toString() ?? '₹15,000'),
       maxTeams: maxTeamsVal,
       registeredTeams: realTeamsCount,
       format: json['format']?.toString() ?? 'Knockout',
-      imageUrl: json['imageUrl']?.toString() ?? (json['bannerUrl']?.toString() ?? 'https://picsum.photos/seed/tournament/800/400'),
-      reportingTime: json['reportingTime']?.toString() ?? '30 minutes before match',
+      imageUrl:
+          json['imageUrl']?.toString() ??
+          (json['bannerUrl']?.toString() ??
+              'https://picsum.photos/seed/tournament/800/400'),
+      reportingTime:
+          json['reportingTime']?.toString() ?? '30 minutes before match',
       matchDay: json['matchDay']?.toString() ?? 'Day 1',
-      tournamentProgress: json['tournamentProgress']?.toString() ?? (parsedStatus == TournamentStatus.ongoing ? 'Live Now' : 'Upcoming'),
+      tournamentProgress:
+          json['tournamentProgress']?.toString() ??
+          (parsedStatus == TournamentStatus.ongoing ? 'Live Now' : 'Upcoming'),
       registeredUsers: regUsers,
       isPrivate: json['isPrivate'] == true,
       accessCode: json['accessCode']?.toString(),
-      rules: (json['rules'] is List) ? List<String>.from(json['rules']) : const [],
-      isVenueTBA: json['isVenueTBA'] == true || (json['venue']?.toString().contains('TBA') ?? false),
+      rules: (json['rules'] is List)
+          ? List<String>.from(json['rules'])
+          : const [],
+      isVenueTBA:
+          json['isVenueTBA'] == true ||
+          (json['venue']?.toString().contains('TBA') ?? false),
       externalTicketUrl: json['externalTicketUrl']?.toString(),
-      courtsCount: (json['courtsCount'] is num) ? (json['courtsCount'] as num).toInt() : 2,
+      courtsCount: (json['courtsCount'] is num)
+          ? (json['courtsCount'] as num).toInt()
+          : 2,
       organizerPhone: json['organizerPhone']?.toString(),
       organizerName: json['organizerName']?.toString(),
       subtitle: json['subtitle']?.toString(),
@@ -167,14 +183,21 @@ class Tournament {
       startDate: json['startDate']?.toString() ?? json['date']?.toString(),
       endDate: json['endDate']?.toString(),
       registrationDeadline: json['registrationDeadline']?.toString(),
-      playersPerTeam: (json['playersPerTeam'] is num) ? (json['playersPerTeam'] as num).toInt() : (int.tryParse(json['playersPerTeam']?.toString() ?? '') ?? 8),
-      championPrize: json['championPrize']?.toString() ?? json['prizePool']?.toString(),
+      playersPerTeam: (json['playersPerTeam'] is num)
+          ? (json['playersPerTeam'] as num).toInt()
+          : (int.tryParse(json['playersPerTeam']?.toString() ?? '') ?? 8),
+      championPrize:
+          json['championPrize']?.toString() ?? json['prizePool']?.toString(),
       runnerUpPrize: json['runnerUpPrize']?.toString(),
-      isOwnerCreated: json['isOwnerCreated'] == true ||
+      isOwnerCreated:
+          json['isOwnerCreated'] == true ||
           json['createdByRole'] == 'OWNER' ||
           (json['verifiedAdminId'] != null && json['verifiedAdminId'] != 0),
-      createdByRole: json['createdByRole']?.toString() ??
-          ((json['isOwnerCreated'] == true || json['verifiedAdminId'] != null) ? 'OWNER' : 'PLAYER'),
+      createdByRole:
+          json['createdByRole']?.toString() ??
+          ((json['isOwnerCreated'] == true || json['verifiedAdminId'] != null)
+              ? 'OWNER'
+              : 'PLAYER'),
     );
   }
 
@@ -273,12 +296,24 @@ class TournamentManager extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _currentUserPhone = (prefs.getString('mobileNumber') ?? '').trim();
-      final createdList = prefs.getStringList('my_created_tournament_ids') ?? [];
-      final registeredList = prefs.getStringList('my_registered_tournament_ids') ?? [];
+      final createdList =
+          prefs.getStringList('my_created_tournament_ids') ?? [];
+      final registeredList =
+          prefs.getStringList('my_registered_tournament_ids') ?? [];
       _myCreatedTournamentIds = createdList.toSet();
       _myRegisteredTournamentIds = registeredList.toSet();
       notifyListeners();
     } catch (_) {}
+  }
+
+  /// Clears the previous user's tournament state (logout / account switch) and reloads.
+  Future<void> reset() async {
+    _tournaments = [];
+    _currentUserPhone = '';
+    _myCreatedTournamentIds = {};
+    _myRegisteredTournamentIds = {};
+    notifyListeners();
+    await fetchTournaments();
   }
 
   void updateCurrentUserPhone(String phone) {
@@ -398,20 +433,15 @@ class TournamentManager extends ChangeNotifier {
     _isLoading = true;
     await _initUserData();
     try {
-      final url = (sport != null && sport.isNotEmpty && sport != 'All Sports')
-          ? '${ApiConfig.baseUrl}/turfs/tournaments?sport=${Uri.encodeComponent(sport)}'
-          : '${ApiConfig.baseUrl}/turfs/tournaments';
-      http.Response res;
-      try {
-        res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 18));
-      } catch (_) {
-        // Cold start retry once
-        await Future.delayed(const Duration(milliseconds: 1000));
-        res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 18));
-      }
-      if (res.statusCode == 200) {
-        final List list = jsonDecode(res.body);
-        _tournaments = list.map((item) => Tournament.fromJson(Map<String, dynamic>.from(item))).toList();
+      // "viewer" lets the server include this player's own private tournaments.
+      final res = await ApiClient.get('/turfs/tournaments', query: {
+        'sport': (sport != null && sport.isNotEmpty && sport != 'All Sports') ? sport : null,
+        'viewer': _currentUserPhone.isNotEmpty ? _currentUserPhone : null,
+      });
+      if (res.ok && res.data is List) {
+        _tournaments = (res.data as List)
+            .map((item) => Tournament.fromJson(Map<String, dynamic>.from(item as Map)))
+            .toList();
         notifyListeners();
       }
     } catch (e) {
@@ -421,90 +451,81 @@ class TournamentManager extends ChangeNotifier {
     }
   }
 
+  /// Finds a private tournament by its access PIN and adds it to the list so it can be opened.
+  Future<({Tournament? tournament, String? error})> findPrivateTournament(String pin) async {
+    final res = await ApiClient.get('/turfs/tournaments/private/${Uri.encodeComponent(pin.trim())}');
+    if (!res.ok || res.map['tournament'] is! Map) {
+      return (tournament: null, error: res.message);
+    }
+    final json = Map<String, dynamic>.from(res.map['tournament'] as Map);
+    json['accessCode'] = pin.trim().toUpperCase(); // remember the PIN for registration
+    final t = Tournament.fromJson(json);
+    _tournaments.removeWhere((x) => x.id == t.id);
+    _tournaments.insert(0, t);
+    notifyListeners();
+    return (tournament: t, error: null);
+  }
+
   void addTournament(Tournament tournament) {
     _tournaments.insert(0, tournament);
     _myCreatedTournamentIds.add(tournament.id);
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setStringList('my_created_tournament_ids', _myCreatedTournamentIds.toList());
-    }).catchError((_) {});
+    SharedPreferences.getInstance()
+        .then((prefs) {
+          prefs.setStringList(
+            'my_created_tournament_ids',
+            _myCreatedTournamentIds.toList(),
+          );
+        })
+        .catchError((_) {});
     notifyListeners();
   }
 
-  Future<bool> createTournamentInBackend(Map<String, dynamic> data) async {
-    try {
-      final res = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
-      );
-      if (res.statusCode == 200 || res.statusCode == 201) {
-        try {
-          final resJson = jsonDecode(res.body);
-          final createdId = (resJson['tournament']?['id'] ?? resJson['id'])?.toString();
-          if (createdId != null && createdId.isNotEmpty) {
-            _myCreatedTournamentIds.add(createdId);
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setStringList('my_created_tournament_ids', _myCreatedTournamentIds.toList());
-          }
-        } catch (_) {}
-        await fetchTournaments();
-        return true;
-      }
-    } catch (e) {
-      debugPrint("Error creating tournament in backend: $e");
+  /// Creates the tournament on the server. Returns null on success or the server's error.
+  /// Nothing is added locally on failure (no phantom tournaments only this phone can see).
+  Future<String?> createTournamentInBackend(Map<String, dynamic> data) async {
+    final res = await ApiClient.post('/turfs/tournaments', body: data);
+    if (!res.ok) return res.message;
+    final created = res.map['tournament'];
+    final createdId = (created is Map ? created['id'] : res.map['id'])?.toString();
+    if (createdId != null && createdId.isNotEmpty) {
+      _myCreatedTournamentIds.add(createdId);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('my_created_tournament_ids', _myCreatedTournamentIds.toList());
     }
-    return false;
+    if (created is Map && created['accessCode'] != null) {
+      lastCreatedAccessCode = created['accessCode'].toString();
+    }
+    await fetchTournaments();
+    return null;
   }
 
-  Future<bool> registerTeam(
+  /// PIN assigned by the server to the most recently created private tournament.
+  String? lastCreatedAccessCode;
+
+  /// Registers a team. Only marks the tournament as joined when the server accepts it.
+  /// Returns null on success or the server's reason (full, on hold, wrong PIN, duplicate...).
+  Future<String?> registerTeam(
     String tournamentId,
     Map<String, dynamic> registrationData,
   ) async {
-    final index = _tournaments.indexWhere((t) => t.id == tournamentId);
-    if (index != -1) {
-      final tournament = _tournaments[index];
-      if (tournament.registeredTeams < tournament.maxTeams) {
-        bool alreadyRegistered = tournament.registeredUsers.any(
-          (user) => user['teamName'] == registrationData['teamName'],
-        );
-        if (alreadyRegistered) {
-          return false;
-        }
+    final intId = int.tryParse(tournamentId.replaceAll(RegExp(r'[^0-9]'), ''));
+    if (intId == null || intId <= 0) return 'This tournament could not be found.';
 
-        final updatedUsers = List<Map<String, dynamic>>.from(
-          tournament.registeredUsers,
-        )..add(registrationData);
-        _tournaments[index] = tournament.copyWith(
-          registeredTeams: tournament.registeredTeams + 1,
-          registeredUsers: updatedUsers,
-        );
-
-        _myRegisteredTournamentIds.add(tournamentId);
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setStringList('my_registered_tournament_ids', _myRegisteredTournamentIds.toList());
-        } catch (_) {}
-
-        notifyListeners();
-
-        // Sync with backend database
-        try {
-          final cleanId = tournamentId.replaceAll(RegExp(r'[^0-9]'), '');
-          final intId = int.tryParse(cleanId);
-          if (intId != null && intId > 0) {
-            await http.post(
-              Uri.parse('${ApiConfig.baseUrl}/turfs/tournaments/$intId/register'),
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode(registrationData),
-            );
-          }
-        } catch (e) {
-          debugPrint("Error registering tournament in backend: $e");
-        }
-        await fetchTournaments();
-        return true;
-      }
+    final t = _tournaments.where((x) => x.id == tournamentId).firstOrNull;
+    final body = Map<String, dynamic>.from(registrationData);
+    if (t?.isPrivate == true && (t?.accessCode ?? '').isNotEmpty) {
+      body['accessCode'] = t!.accessCode;
     }
-    return false;
+
+    final res = await ApiClient.post('/turfs/tournaments/$intId/register', body: body);
+    if (!res.ok) return res.message;
+
+    _myRegisteredTournamentIds.add(tournamentId);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('my_registered_tournament_ids', _myRegisteredTournamentIds.toList());
+    } catch (_) {}
+    await fetchTournaments();
+    return null;
   }
 }

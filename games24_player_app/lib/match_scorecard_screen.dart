@@ -4644,7 +4644,7 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                           }
                         });
 
-                        await BookingManager().updateBookingOpponent(
+                        final result = await BookingManager().updateBookingOpponent(
                           widget.bookingId,
                           enteredName,
                           opponentPhone: oppPhone,
@@ -4654,8 +4654,13 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              backgroundColor: const Color(0xFFD4FF00),
-                              content: Text('Opponent set to "$enteredName"! Match ready.', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                              backgroundColor: result.ok ? const Color(0xFFD4FF00) : const Color(0xFFEF4444),
+                              content: Text(
+                                result.ok
+                                    ? 'Opponent set to "$enteredName"! Match ready.'
+                                    : 'Opponent saved on this phone only: ${result.message}',
+                                style: TextStyle(color: result.ok ? Colors.black : Colors.white, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           );
                         }
@@ -4716,14 +4721,20 @@ class _MatchScorecardScreenState extends State<MatchScorecardScreen>
                 }
               });
 
-              await BookingManager().convertBookingToPrivate(widget.bookingId);
+              final result = await BookingManager().convertBookingToPrivate(widget.bookingId);
               _saveSquad(showFeedback: false);
+              if (!result.ok && mounted) {
+                // Server still lists it as an open match: keep the UI consistent with that.
+                setState(() => _isOpenChallenge = true);
+              }
 
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: Color(0xFF1E40AF),
-                    content: Text('Match converted to Normal Private Match! Both teams are now editable.'),
+                  SnackBar(
+                    backgroundColor: result.ok ? const Color(0xFF1E40AF) : const Color(0xFFEF4444),
+                    content: Text(result.ok
+                        ? 'Match converted to Normal Private Match! Both teams are now editable.'
+                        : 'Could not convert this match: ${result.message}'),
                   ),
                 );
               }

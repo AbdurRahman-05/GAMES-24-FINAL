@@ -51,19 +51,29 @@ class _CreatePrivateTournamentStep2ScreenState
             .trim();
     final backendPayload = widget.formData.toBackendJson(
       organizerName: userName.isNotEmpty ? userName : 'Private Organizer',
-      organizerPhone: userPhone.isNotEmpty ? userPhone : '9876543210',
+      organizerPhone: userPhone,
     );
-    final success = await TournamentManager().createTournamentInBackend(
+    final error = await TournamentManager().createTournamentInBackend(
       backendPayload,
     );
 
-    if (!success) {
-      // Fallback: also ensure local entry exists
-      final newTourney = widget.formData.toTournament();
-      TournamentManager().addTournament(newTourney);
+    if (error != null) {
+      if (mounted) {
+        setState(() => _isPublishing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFEF4444),
+            content: Text('Could not publish tournament: $error'),
+          ),
+        );
+      }
+      return;
     }
 
     if (mounted) {
+      final serverPin =
+          TournamentManager().lastCreatedAccessCode ?? widget.formData.accessCode;
       final tournamentTitle = widget.formData.title.trim().isNotEmpty
           ? widget.formData.title.trim()
           : 'Private Invitational Cup';
@@ -85,7 +95,7 @@ class _CreatePrivateTournamentStep2ScreenState
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Private Tournament "$tournamentTitle" Created! PIN: ${widget.formData.accessCode} 🔒',
+                  'Private Tournament "$tournamentTitle" Created! PIN: $serverPin 🔒 (share it with invited teams)',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 13,

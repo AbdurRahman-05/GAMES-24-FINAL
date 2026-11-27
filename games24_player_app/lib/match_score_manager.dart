@@ -1,3 +1,4 @@
+import 'core/network/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -595,6 +596,19 @@ class MatchScoreManager {
     _loadFromStorage();
   }
 
+  /// Drops the previous user's in-memory history (logout / account switch) and reloads.
+  Future<void> reset() async {
+    _matches.clear();
+    _savedSquads.clear();
+    _savedLiveStates.clear();
+    _extraWins = 0;
+    _extraMatches = 0;
+    _formBonus = 0.0;
+    statsNotifier.value++;
+    liveStateNotifier.value++;
+    await _loadFromStorage();
+  }
+
   List<MatchResultItem> get matches => List.unmodifiable(_matches);
   int get extraWins => _extraWins;
   int get extraMatches => _extraMatches;
@@ -926,6 +940,42 @@ class MatchScoreManager {
     }
     statsNotifier.value++;
     await _persistToStorage();
+    await _syncResultToServer(result);
+  }
+
+  /// Sends the player's own result to the server so leaderboard and profile stats are real and
+  /// shared across devices. The server ignores duplicates (same matchId), so retries are safe.
+  Future<void> _syncResultToServer(MatchResultItem result) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final phone = (prefs.getString('mobileNumber') ?? '').trim();
+      final myName = (prefs.getString('fullName') ?? '').trim().toLowerCase();
+      if (phone.isEmpty) return;
+
+      PlayerMatchStat? mine;
+      for (final s in [...result.playerStatsA, ...result.playerStatsB]) {
+        if (myName.isNotEmpty && s.name.trim().toLowerCase() == myName) {
+          mine = s;
+          break;
+        }
+      }
+      final winnerLower = result.winner.toLowerCase();
+      final outcome = result.userWon
+          ? 'won'
+          : (winnerLower.contains('draw') || winnerLower.contains('tie') ? 'draw' : 'lost');
+
+      await ApiClient.post('/auth/player/match-result', body: {
+        'phone': phone,
+        'matchId': result.id,
+        'result': outcome,
+        'sport': result.sport,
+        'runs': mine?.runs ?? 0,
+        'wickets': mine?.wickets ?? 0,
+        'isMvp': myName.isNotEmpty && (result.manOfTheMatch ?? '').trim().toLowerCase() == myName,
+      });
+    } catch (e) {
+      debugPrint('Could not sync match result: $e');
+    }
   }
 
   List<PlayerItem>? _cachedRealContacts;

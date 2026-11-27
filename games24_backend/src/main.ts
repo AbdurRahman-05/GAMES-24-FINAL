@@ -12,7 +12,8 @@ async function bootstrap() {
     mkdirSync(uploadsDir, { recursive: true });
   }
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // rawBody is needed to verify Cashfree webhook signatures over the exact bytes received.
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
   app.enableCors({
     origin: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

@@ -7,6 +7,10 @@ import 'explore_screen.dart';
 import 'profile_screen.dart';
 import 'notifications_screen.dart';
 import 'location_manager.dart';
+import 'booking_manager.dart';
+import 'challenge_manager.dart';
+import 'team_manager.dart';
+import 'tournament_manager.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -15,8 +19,34 @@ class MainLayout extends StatefulWidget {
   State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MainLayoutState extends State<MainLayout> with WidgetsBindingObserver {
   int _currentIndex = 0;
+  DateTime _lastRefresh = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Data changes on other devices (owner check-ins, challenge requests, tournament sign-ups),
+  /// so refresh from the server whenever the app comes back to the foreground.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (DateTime.now().difference(_lastRefresh) < const Duration(seconds: 20)) return;
+    _lastRefresh = DateTime.now();
+    BookingManager().fetchBookings();
+    ChallengeManager().fetchChallenges(location: LocationManager().currentLocation);
+    TournamentManager().fetchTournaments();
+    TeamManager().refreshFromServer();
+  }
 
   late final List<Widget> _pages = [
     HomeScreen(

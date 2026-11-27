@@ -57,6 +57,7 @@ class _BookingScreenState extends State<BookingScreen> {
   final TextEditingController _teamSizeController = TextEditingController();
   int _currentImageIndex = 0;
   bool _isLoadingSlots = false;
+  String? _slotsError;
   bool _isBookingInProgress = false;
   bool _showPassedSlots = false;
   List<Map<String, dynamic>> _slots = [];
@@ -212,14 +213,16 @@ class _BookingScreenState extends State<BookingScreen> {
           .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
-        final match = list.firstWhere(
+        // Exact name match only. Falling back to "the first turf" (or id 1) could book a
+        // completely different venue.
+        final matches = list.where(
           (t) =>
               (t['venueName']?.toString().toLowerCase() ==
                   widget.turfName.toLowerCase()) ||
               (t['name']?.toString().toLowerCase() ==
                   widget.turfName.toLowerCase()),
-          orElse: () => list.isNotEmpty ? list.first : null,
-        );
+        ).toList();
+        final match = matches.length == 1 ? matches.first : null;
         if (match != null && match['id'] != null) {
           _resolvedTurfId = match['id'] is int
               ? match['id']
@@ -232,7 +235,6 @@ class _BookingScreenState extends State<BookingScreen> {
     } catch (e) {
       debugPrint("Error resolving turfId: $e");
     }
-    _resolvedTurfId ??= 1;
     return _resolvedTurfId;
   }
 
@@ -265,7 +267,10 @@ class _BookingScreenState extends State<BookingScreen> {
 
   Future<void> _loadSlots() async {
     if (!mounted) return;
-    setState(() => _isLoadingSlots = true);
+    setState(() {
+      _isLoadingSlots = true;
+      _slotsError = null;
+    });
     final targetDate = _dates[_selectedDateIndex]['fullDate']!;
     final now = DateTime.now();
     final todayStr =
@@ -342,33 +347,14 @@ class _BookingScreenState extends State<BookingScreen> {
     }
 
     if (!mounted) return;
-    // Fallback: auto-split 1-hour slots from turf schedule
-    final rawPrice =
-        int.tryParse(widget.price.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1200;
-    final generated = AppConstants.generateTimeSlots(
-      widget.openingTime ?? '06:00 AM',
-      widget.closingTime ?? '10:00 PM',
-    );
-    if (!mounted) return;
+    // No fake slots: without live availability the player could pick a slot that is already
+    // booked or blocked and only find out after paying.
     setState(() {
-      _slots = generated.map<Map<String, dynamic>>((s) {
-        final slotStartMin = AppConstants.parseSlotStartMinutes(s);
-        final isPast = isToday &&
-            slotStartMin != -1 &&
-            currentMinutes >= slotStartMin;
-        return <String, dynamic>{
-          'slot': s,
-          'time': s,
-          'status': isPast ? 'passed' : 'available',
-          'isPast': isPast,
-          'price': rawPrice,
-          'isNight': false,
-        };
-      }).toList();
-      _selectedTimeSlots.removeWhere((t) {
-        final startMin = AppConstants.parseSlotStartMinutes(t);
-        return isToday && startMin != -1 && currentMinutes >= startMin;
-      });
+      _slots = [];
+      _selectedTimeSlots.clear();
+      _slotsError = effectiveTurfId == null
+          ? 'This venue could not be found. Please go back and open it again.'
+          : 'Could not load live slot availability. Check your connection and try again.';
       _isLoadingSlots = false;
     });
   }
@@ -1076,6 +1062,36 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Widget _buildTimeSlots() {
+    if (!_isLoadingSlots && _slotsError != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1111),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFF7F1D1D)),
+          ),
+          child: Column(
+            children: [
+              const Icon(Icons.wifi_off_rounded, color: Color(0xFFEF4444)),
+              const SizedBox(height: 8),
+              Text(
+                _slotsError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+              const SizedBox(height: 10),
+              TextButton.icon(
+                onPressed: _loadSlots,
+                icon: const Icon(Icons.refresh_rounded, color: Color(0xFFD4FF00)),
+                label: const Text('Retry', style: TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     if (_isLoadingSlots) {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
@@ -1838,7 +1854,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '• Free cancellation is allowed only up to 3 hours before the slot start time.\n• Slots booked within 3 hours are locked and cannot be cancelled.',
+                    '• Cancel up to 3 hours before the slot starts for a 100% refund to your original payment method.\n• Within 3 hours of the start time, bookings are locked and cannot be cancelled.',
                     style: TextStyle(
                       fontSize: 11,
                       color: Color(0xFFFDE68A),
@@ -1997,10 +2013,17 @@ class _BookingScreenState extends State<BookingScreen> {
                             (prefs.getString('mobileNumber') ?? '').trim();
 
                         if (customerName.isEmpty) {
-                          customerName = 'Guest Player';
+                          customerName = 'Player';
                         }
-                        if (customerPhone.isEmpty) {
-                          customerPhone = '';
+                        if (customerPhone.replaceAll(RegExp(r'\D'), '').length < 10) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Your session has expired. Please log in again to book.'),
+                              ),
+                            );
+                          }
+                          return;
                         }
 
                         final tName = _teamNameController.text.trim().isNotEmpty
@@ -2052,16 +2075,17 @@ class _BookingScreenState extends State<BookingScreen> {
                           ),
                         );
 
-                        if (bookingSuccess == true && mounted) {
-                          _selectedTimeSlots.clear();
+                        if (mounted) {
+                          if (bookingSuccess == true) _selectedTimeSlots.clear();
                           _loadSlots();
                         }
                       } else {
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Booking Confirmed!')),
+                            const SnackBar(
+                              content: Text('This venue could not be found. Please open it again from the venue list.'),
+                            ),
                           );
-                          Navigator.pop(context);
                         }
                       }
                     } catch (e) {

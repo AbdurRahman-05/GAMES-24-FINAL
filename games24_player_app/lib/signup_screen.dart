@@ -1,4 +1,6 @@
-﻿import 'api_config.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'core/session/session_manager.dart';
+import 'api_config.dart';
 import 'dart:async';
 import 'package:pinput/pinput.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +9,6 @@ import 'login_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'main_layout.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -120,7 +121,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
-                          onChanged: (String? newValue) {
+                          onChanged: _isOtpVerified ? null : (String? newValue) {
                             if (newValue != null) {
                               setState(() {
                                 _selectedCountryCode = newValue;
@@ -153,6 +154,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         child: TextField(
                           controller: _mobileController,
+                          // Locked after OTP verification so a different, unverified
+                          // number cannot be registered with this verification.
+                          readOnly: _isOtpVerified,
                           keyboardType: TextInputType.phone,
                           style: const TextStyle(
                             color: Colors.white,
@@ -458,7 +462,7 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        ToastUtils.showSuccess(context, 'Test OTP: ${data["otp"]}');
+        ToastUtils.showSuccess(context, _otpSentMessage(data));
         _showOtpDialog(mobile);
       } else {
         ToastUtils.showError(context, 'Failed to send OTP');
@@ -519,14 +523,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('is_logged_in', true);
-        await prefs.setString('fullName', data['fullName'] ?? name);
-        await prefs.setString('mobileNumber', data['mobileNumber'] ?? mobile);
-        await prefs.setString(
-          'preferredSport',
-          data['preferredSport'] ??
-              ['Football', 'Cricket', 'Badminton'][_selectedSportIndex],
+        await SessionManager.startSession(
+          mobileNumber: (data['mobileNumber'] ?? mobile).toString(),
+          fullName: (data['fullName'] ?? name).toString(),
+          preferredSport: (data['preferredSport'] ??
+                  ['Football', 'Cricket', 'Badminton'][_selectedSportIndex])
+              .toString(),
         );
 
         if (!mounted) return;
@@ -765,7 +767,7 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
       );
       final data = jsonDecode(response.body);
       if (mounted) {
-        ToastUtils.showSuccess(context, 'Test OTP: ${data["otp"]}');
+        ToastUtils.showSuccess(context, _otpSentMessage(data));
       }
       _startTimer();
     } catch (e) {
@@ -970,4 +972,12 @@ class _ModernOtpDialogState extends State<ModernOtpDialog> {
       ),
     );
   }
+}
+
+/// The backend only returns the OTP in non-production environments (no SMS provider there).
+/// Show it only in debug builds; release builds never display a code.
+String _otpSentMessage(dynamic data) {
+  final otp = data is Map ? data['otp'] : null;
+  if (kDebugMode && otp != null) return 'Test OTP (debug build): $otp';
+  return 'OTP sent to your mobile number';
 }

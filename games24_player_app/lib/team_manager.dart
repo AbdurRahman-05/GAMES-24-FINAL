@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+﻿import 'core/network/api_client.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -149,59 +150,72 @@ class TeamManager {
 
   List<PlayerTeam> get teams => teamsNotifier.value;
 
+  /// Clears the previous user's teams (logout / account switch) and reloads for the current user.
+  Future<void> reset() async {
+    teamsNotifier.value = [];
+    await _loadFromStorage();
+  }
+
+  static Future<String> _myPhone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getString('mobileNumber') ?? '').trim();
+  }
+
+  /// Shows cached teams first, then replaces them with the server's list: teams this player
+  /// captains plus teams they joined (members are read from the captain's single record).
   Future<void> _loadFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final str = prefs.getString(_storageKey);
       if (str != null && str.isNotEmpty) {
         final List list = jsonDecode(str);
-        final loaded = list
+        teamsNotifier.value = list
             .map((item) => PlayerTeam.fromJson(Map<String, dynamic>.from(item)))
-            .where((t) => t.name != 'Blazing Strikers FC' && t.name != 'Thunder Smashers')
             .toList();
-        teamsNotifier.value = loaded;
       }
-
-      final phone = (prefs.getString('mobileNumber') ?? '').trim();
-      if (phone.isNotEmpty) {
-        final res = await http
-            .get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(phone)}'))
-            .timeout(const Duration(seconds: 15));
-        if (res.statusCode == 200) {
-          final data = jsonDecode(res.body);
-          if (data['teams'] is List && (data['teams'] as List).isNotEmpty) {
-            final remoteTeams = (data['teams'] as List)
-                .map((item) => PlayerTeam.fromJson(Map<String, dynamic>.from(item)))
-                .where((t) => t.name != 'Blazing Strikers FC' && t.name != 'Thunder Smashers')
-                .toList();
-            teamsNotifier.value = remoteTeams;
-            await prefs.setString(_storageKey, jsonEncode(remoteTeams.map((t) => t.toJson()).toList()));
-          }
-        }
-      }
+      await refreshFromServer();
     } catch (e) {
       debugPrint("Error loading teams: $e");
     }
   }
 
-  Future<void> _saveToStorage() async {
+  Future<void> refreshFromServer() async {
+    final phone = await _myPhone();
+    if (phone.isEmpty) return;
+    final res = await ApiClient.get('/auth/teams/my', query: {'phone': phone});
+    if (!res.ok || res.map['teams'] is! List) return;
+    final remote = (res.map['teams'] as List)
+        .map((item) => PlayerTeam.fromJson(Map<String, dynamic>.from(item as Map)))
+        .toList();
+    teamsNotifier.value = remote;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_storageKey, jsonEncode(remote.map((t) => t.toJson()).toList()));
+  }
+
+  /// Saves teams this player captains to the server (which assigns unique join codes and keeps
+  /// members who joined by code). Memberships are not saved here: they live with the captain.
+  Future<String?> _saveToStorage({Map<String, List<String>> removedMembers = const {}}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final teamList = teamsNotifier.value.map((t) => t.toJson()).toList();
-      final str = jsonEncode(teamList);
-      await prefs.setString(_storageKey, str);
+      await prefs.setString(_storageKey, jsonEncode(teamList));
 
       final phone = (prefs.getString('mobileNumber') ?? '').trim();
-      if (phone.isNotEmpty) {
-        final uri = Uri.parse('${ApiConfig.baseUrl}/auth/user/teams');
-        await http.post(
-          uri,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'phone': phone, 'teams': teamList}),
-        ).timeout(const Duration(seconds: 15));
-      }
+      if (phone.isEmpty) return 'Not logged in';
+      final owned = teamsNotifier.value.where((t) => t.isCaptain).map((t) {
+        final json = t.toJson();
+        final removed = removedMembers[t.id];
+        if (removed != null && removed.isNotEmpty) json['removedMemberPhones'] = removed;
+        return json;
+      }).toList();
+
+      final res = await ApiClient.post('/auth/user/teams', body: {'phone': phone, 'teams': owned});
+      if (!res.ok) return res.message;
+      await refreshFromServer();
+      return null;
     } catch (e) {
       debugPrint("Error saving teams: $e");
+      return 'Could not save your team. Please try again.';
     }
   }
 
@@ -267,10 +281,17 @@ class TeamManager {
     final idx = list.indexWhere((t) => t.id == teamId);
     if (idx != -1) {
       final team = list[idx];
+      final keep = updatedMembers.map((m) => m.phone.replaceAll(RegExp(r'\D'), '')).toSet();
+      // Tell the server who was removed so it does not merge them back in.
+      final removed = team.members
+          .map((m) => m.phone.replaceAll(RegExp(r'\D'), ''))
+          .where((p) => p.isNotEmpty && !keep.contains(p))
+          .toList();
       list[idx] = PlayerTeam(
         id: team.id,
         name: team.name,
         sport: team.sport,
+        teamCode: team.teamCode,
         roleBadge: team.roleBadge,
         isCaptain: team.isCaptain,
         squadSize: team.squadSize,
@@ -284,54 +305,41 @@ class TeamManager {
         members: updatedMembers,
       );
       teamsNotifier.value = list;
-      await _saveToStorage();
+      await _saveToStorage(removedMembers: {teamId: removed});
     }
   }
 
-  Future<bool> joinTeamWithCode(String code) async {
-    if (code.trim().isEmpty) return false;
-    final cleanCode = code.trim().toUpperCase();
-    final newTeam = PlayerTeam(
-      id: 'team_joined_${DateTime.now().millisecondsSinceEpoch}',
-      name: 'Squad $cleanCode',
-      sport: 'Football',
-      squadSize: '7v7 Squad',
-      roleBadge: 'Member',
-      isCaptain: false,
-      membersCount: 8,
-      winsCount: 0,
-      rating: '5.0',
-      dateText: 'Joined with Code',
-    );
-
-    teamsNotifier.value = [newTeam, ...teamsNotifier.value];
-    await _saveToStorage();
-    return true;
+  /// Joins a real team by its code (validated on the server). Returns null on success or an
+  /// error message to show.
+  Future<String?> joinTeamWithCode(String code) async {
+    if (code.trim().isEmpty) return 'Enter a team code';
+    final prefs = await SharedPreferences.getInstance();
+    final res = await ApiClient.post('/auth/teams/join', body: {
+      'code': code.trim().toUpperCase(),
+      'phone': (prefs.getString('mobileNumber') ?? '').trim(),
+      'name': (prefs.getString('fullName') ?? 'Player').trim(),
+      'playerId': prefs.getString('playerId'),
+    });
+    if (!res.ok) return res.message;
+    await refreshFromServer();
+    return null;
   }
 
+  /// The player's id from the server (PLY-0007). Cached per session; cleared on logout.
   static Future<String> getCurrentPlayerId() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getString('playerId');
     if (stored != null && stored.isNotEmpty) return stored;
     final phone = (prefs.getString('mobileNumber') ?? '').trim();
-    if (phone.isNotEmpty) {
-      try {
-        final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(phone)}')).timeout(const Duration(seconds: 15));
-        if (res.statusCode == 200) {
-          final data = jsonDecode(res.body);
-          if (data['playerId'] != null && data['playerId'].toString().isNotEmpty) {
-            final pid = data['playerId'].toString();
-            await prefs.setString('playerId', pid);
-            return pid;
-          }
-        }
-      } catch (_) {}
-      final digits = phone.replaceAll(RegExp(r'\D'), '');
-      final pid = 'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '1001'}';
+    if (phone.isEmpty) return '';
+    final res = await ApiClient.get('/auth/user-profile', query: {'phone': phone});
+    final pid = res.ok ? (res.map['playerId']?.toString() ?? '') : '';
+    // Only real ids are cached; the old "PLY-<last 4 digits>" fallback could collide with
+    // another player's id, so nothing is stored when the server is unreachable.
+    if (pid.isNotEmpty && res.map['id'] != null && res.map['id'] != 0) {
       await prefs.setString('playerId', pid);
-      return pid;
     }
-    return 'PLY-1001';
+    return pid;
   }
 
   Future<List<Map<String, dynamic>>> searchPlayers(String query) async {
@@ -422,51 +430,22 @@ class TeamManager {
   }
 
   Future<bool> respondToInvitation(String inviteId, bool accept, {TeamInvitation? invitation}) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final myPhone = prefs.getString('mobileNumber') ?? '';
-      final myName = prefs.getString('fullName') ?? 'Player';
-
-      final res = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/auth/team-invitations/$inviteId/respond'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'action': accept ? 'accept' : 'decline',
-          'playerData': {
-            'phone': myPhone,
-            'name': myName,
-          },
-        }),
-      ).timeout(const Duration(seconds: 15));
-
-      if (accept && invitation != null) {
-        final joinedTeam = PlayerTeam(
-          id: invitation.senderTeamId,
-          name: invitation.senderTeamName,
-          sport: invitation.senderTeamSport,
-          teamCode: invitation.senderTeamCode,
-          roleBadge: invitation.role,
-          isCaptain: false,
-          squadSize: 'Squad',
-          membersCount: 2,
-          dateText: 'Joined via Invite',
-        );
-
-        final existing = teamsNotifier.value.indexWhere((t) => t.id == joinedTeam.id);
-        if (existing == -1) {
-          teamsNotifier.value = [joinedTeam, ...teamsNotifier.value];
-          await _saveToStorage();
-        }
-      }
-
-      return res.statusCode == 200 || res.statusCode == 201;
-    } catch (e) {
-      debugPrint("Error responding to invitation: $e");
-      return false;
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final res = await ApiClient.post('/auth/team-invitations/$inviteId/respond', body: {
+      'action': accept ? 'accept' : 'decline',
+      'playerData': {
+        'phone': prefs.getString('mobileNumber') ?? '',
+        'name': prefs.getString('fullName') ?? 'Player',
+      },
+    });
+    // On accept the server adds this player to the captain's team; reload so the team appears
+    // with its real members (no separate local copy that would drift out of sync).
+    if (res.ok && accept) await refreshFromServer();
+    return res.ok;
   }
 
-  Future<bool> scheduleTeamMatch({
+  /// Sends a team-vs-team match request; the opposing captain gets an in-app notification.
+  Future<({bool ok, String message})> scheduleTeamMatch({
     required String challengerTeamId,
     required String challengerTeamName,
     required String opponentTeamId,
@@ -476,27 +455,18 @@ class TeamManager {
     String? date,
     String? timeSlot,
   }) async {
-    try {
-      final res = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/auth/team-match/challenge'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'challengerTeamId': challengerTeamId,
-          'challengerTeamName': challengerTeamName,
-          'opponentTeamId': opponentTeamId,
-          'opponentTeamName': opponentTeamName,
-          'sport': sport,
-          'venueName': venueName ?? 'Downtown Sports Arena',
-          'date': date ?? DateTime.now().toIso8601String().substring(0, 10),
-          'timeSlot': timeSlot ?? '07:00 PM - 08:00 PM',
-        }),
-      ).timeout(const Duration(seconds: 15));
-
-      return res.statusCode == 200 || res.statusCode == 201;
-    } catch (e) {
-      debugPrint("Error scheduling team match: $e");
-      return false;
-    }
+    final res = await ApiClient.post('/auth/team-match/challenge', body: {
+      'challengerTeamId': challengerTeamId,
+      'challengerTeamName': challengerTeamName,
+      'opponentTeamId': opponentTeamId,
+      'opponentTeamName': opponentTeamName,
+      'sport': sport,
+      'venueName': venueName ?? 'Venue to be decided',
+      'date': date ?? DateTime.now().toIso8601String().substring(0, 10),
+      'timeSlot': timeSlot ?? '07:00 PM - 08:00 PM',
+    });
+    return (ok: res.ok, message: res.message);
   }
+
 }
 

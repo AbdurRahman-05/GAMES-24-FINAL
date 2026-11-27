@@ -201,7 +201,7 @@ class _SupportScreenState extends State<SupportScreen> {
                 children: [
                   _buildFaqItem(
                     question: 'How do I cancel or reschedule a turf slot?',
-                    answer: 'Navigate to "My Bookings" from the Profile or Home screen, tap your upcoming booking, and select "Cancel Booking" or "Reschedule". Cancellations made at least 2 hours before the slot are eligible for refund.',
+                    answer: 'Navigate to "My Bookings" from the Profile or Home screen, tap your upcoming booking, and select "Cancel Booking". Bookings can be cancelled up to 3 hours before the slot starts; online payments are refunded in full to the original payment method.',
                   ),
                   const Divider(height: 1, color: Color(0xFF262626)),
                   _buildFaqItem(

@@ -1,3 +1,4 @@
+import 'core/session/session_manager.dart';
 import 'api_config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -6,7 +7,6 @@ import 'core/utils/toast_utils.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
 import 'main_layout.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool showLogo;
@@ -401,19 +401,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('is_logged_in', true);
-        if (data['fullName'] != null) {
-          await prefs.setString('fullName', data['fullName']);
-        }
-        if (data['mobileNumber'] != null) {
-          await prefs.setString('mobileNumber', data['mobileNumber']);
-        }
-        if (data['preferredSport'] != null) {
-          await prefs.setString('preferredSport', data['preferredSport']);
-        } else {
-          await prefs.setString('mobileNumber', mobile); // fallback
-        }
+        // Starts a clean session: data cached by a previously logged-in account is wiped.
+        await SessionManager.startSession(
+          mobileNumber: (data['mobileNumber'] ?? mobile).toString(),
+          fullName: (data['fullName'] ?? 'Player').toString(),
+          preferredSport: data['preferredSport']?.toString(),
+        );
 
         if (!mounted) return;
         Navigator.pushReplacement(

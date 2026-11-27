@@ -3,7 +3,7 @@ import { PrismaService } from './prisma.service.js';
 import * as bcrypt from 'bcrypt';
 import fs from 'fs';
 import path from 'path';
-import { DEFAULT_TURF_SPORTS, generateTimeSlots, getISTDateAndMinutes, parseSlotStartMinutes } from './turf.service.js';
+import { DEFAULT_TURF_SPORTS, generateTimeSlots, getISTDateAndMinutes, parseSlotStartMinutes, isRevenueBooking } from './turf.service.js';
 
 function getAdminCourts(adminId: number, venueName: string, sportsList: any[], courtsJson?: any) {
   if (Array.isArray(courtsJson) && courtsJson.length > 0) {
@@ -808,7 +808,7 @@ export class AuthService {
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    const activeBookings = (verifiedAdmin.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+    const activeBookings = (verifiedAdmin.bookings || []).filter((b: any) => isRevenueBooking(b));
     const cancelledBookings = (verifiedAdmin.bookings || []).filter((b: any) => b.status === 'Cancelled');
     const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
     const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
@@ -916,7 +916,7 @@ export class AuthService {
     // Compute all branches summary for multi-branch switching (both verified and pending review)
     const rawBranches = [
       ...allAdmins.map((va: any) => {
-        const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+        const bks = (va.bookings || []).filter((b: any) => isRevenueBooking(b));
         const tdBks = bks.filter((b: any) => b.date === todayStr);
         const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
         const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
@@ -1052,7 +1052,7 @@ export class AuthService {
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const monthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    const activeBookings = (admin.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+    const activeBookings = (admin.bookings || []).filter((b: any) => isRevenueBooking(b));
     const cancelledBookings = (admin.bookings || []).filter((b: any) => b.status === 'Cancelled');
     const todayBookings = activeBookings.filter((b: any) => b.date === todayStr);
     const monthBookings = activeBookings.filter((b: any) => b.date?.startsWith(monthPrefix));
@@ -1160,7 +1160,7 @@ export class AuthService {
     // Compute all branches summary for multi-branch switching (both verified and pending review)
     const rawBranches = [
       ...allAdmins.map((va: any) => {
-        const bks = (va.bookings || []).filter((b: any) => b.status !== 'Cancelled');
+        const bks = (va.bookings || []).filter((b: any) => isRevenueBooking(b));
         const tdBks = bks.filter((b: any) => b.date === todayStr);
         const mBks = bks.filter((b: any) => b.date?.startsWith(monthPrefix));
         const tdRev = tdBks.reduce((sum: number, b: any) => sum + (Number(b.amount) || 0), 0);
@@ -1438,26 +1438,58 @@ export class AuthService {
   }
 
   async saveUserTeams(phone: string, teams: any) {
-    const clean = phone.trim().replace(/\D/g, '');
-    const last10 = clean.length >= 10 ? clean.slice(-10) : clean;
-
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { mobileNumber: clean },
-          { mobileNumber: { contains: last10 } },
-        ],
-      },
-    });
-
-    if (user) {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { teamsJson: Array.isArray(teams) ? teams : [] },
-      });
+    const user = await this.findUserByPhone(phone);
+    if (!user) {
+      throw new BadRequestException('Player not found. Please log in again.');
     }
 
-    return { success: true, message: 'Teams synced to database successfully' };
+    const incoming: any[] = Array.isArray(teams) ? teams : [];
+    const existing: any[] = Array.isArray(user.teamsJson) ? (user.teamsJson as any[]) : [];
+    const existingById = new Map(existing.filter((t) => t?.id).map((t) => [String(t.id), t]));
+    const takenCodes = await this.allTeamCodes();
+
+    const saved = incoming
+      // A player's own record only holds teams they captain; memberships live on the captain's record.
+      .filter((t) => t && typeof t === 'object' && t.isCaptain !== false && t.id)
+      .slice(0, 50)
+      .map((t) => {
+        const prev = existingById.get(String(t.id));
+        const removed = new Set(
+          (Array.isArray(t.removedMemberPhones) ? t.removedMemberPhones : []).map((p: any) => this.last10(p)),
+        );
+        // Keep members who joined via team code on the server even if this phone's copy is older.
+        const byKey = new Map<string, any>();
+        for (const m of [...(Array.isArray(prev?.members) ? prev.members : []), ...(Array.isArray(t.members) ? t.members : [])]) {
+          if (!m) continue;
+          const key = this.last10(m.phone) || `name:${String(m.name || '').toLowerCase()}`;
+          if (removed.has(this.last10(m.phone))) continue;
+          byKey.set(key, m);
+        }
+        const members = Array.from(byKey.values()).slice(0, 40);
+
+        let teamCode = String(t.teamCode || prev?.teamCode || '').toUpperCase();
+        if (!/^[A-Z0-9]{4,10}$/.test(teamCode) || (!prev?.teamCode && takenCodes.has(teamCode))) {
+          teamCode = this.generateTeamCode(takenCodes);
+        }
+        takenCodes.add(teamCode);
+
+        const { removedMemberPhones: _ignored, captainName: _cn, captainPhone: _cp, ...rest } = t;
+        return {
+          ...rest,
+          teamCode,
+          isCaptain: true,
+          roleBadge: 'Captain',
+          members,
+          membersCount: Math.max(1, members.length),
+        };
+      });
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { teamsJson: saved },
+    });
+
+    return { success: true, message: 'Teams synced to database successfully', teams: saved };
   }
 
   private getInvitationsFilePath(): string {
@@ -1677,7 +1709,41 @@ export class AuthService {
     challenges.unshift(newChallenge);
     fs.writeFileSync(file, JSON.stringify(challenges, null, 2), 'utf8');
 
-    return { success: true, message: 'Team match scheduled successfully!', challenge: newChallenge };
+    // Tell the opposing captain (previously the challenge was written to a file nobody read).
+    let opponentNotified = false;
+    if (body.opponentTeamId) {
+      const users = await this.prisma.user.findMany({ select: { mobileNumber: true, teamsJson: true } });
+      const captain = users.find((u) =>
+        (Array.isArray(u.teamsJson) ? (u.teamsJson as any[]) : []).some(
+          (t) =>
+            String(t?.id) === String(body.opponentTeamId) ||
+            String(t?.teamCode || '').toUpperCase() === String(body.opponentTeamId).toUpperCase(),
+        ),
+      );
+      if (captain) {
+        await this.prisma.playerNotification
+          .create({
+            data: {
+              userPhone: this.last10(captain.mobileNumber),
+              title: 'Team match challenge ⚔️',
+              message: `${newChallenge.challengerTeamName} challenged ${newChallenge.opponentTeamName} to a ${newChallenge.sport} match on ${newChallenge.date} (${newChallenge.timeSlot}) at ${newChallenge.venueName}.`,
+              type: 'challenge',
+              metadata: { challengeId: newChallenge.id },
+            },
+          })
+          .then(() => (opponentNotified = true))
+          .catch(() => null);
+      }
+    }
+
+    return {
+      success: true,
+      message: opponentNotified
+        ? 'Team match request sent to the opposing captain!'
+        : 'Team match saved. The opposing captain could not be notified in-app.',
+      challenge: newChallenge,
+      opponentNotified,
+    };
   }
 
   // ==========================================
@@ -2335,7 +2401,7 @@ export class AuthService {
     playerId?: string;
   }) {
     const friendRequests = this.readFriendRequests();
-    const allProfiles = this.readPlayerProfiles();
+    let allProfiles = this.readPlayerProfiles();
 
     // Reconcile Prisma users with profiles:
     const prismaUsers = await this.prisma.user.findMany();
@@ -2352,32 +2418,22 @@ export class AuthService {
           playerId: uPlayerId,
           phone: u.mobileNumber,
           fullName: u.fullName || 'Active Player',
-          avatarUrl: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150`,
-          city: 'Chennai',
+          avatarUrl: null,
+          city: u.city || 'Madurai',
           state: 'Tamil Nadu',
           sport: u.preferredSport || 'Cricket',
           role: u.preferredSport === 'Cricket' ? 'All-Rounder' : 'Forward / Striker',
-          matchesPlayed: 10,
-          wins: 7,
-          losses: 3,
-          runs: 210,
-          wickets: 8,
-          battingAvg: 30.0,
-          strikeRate: 140.0,
-          bowlingEcon: 7.2,
-          fifties: 1,
-          hundreds: 0,
-          goals: 5,
-          assists: 3,
-          cleanSheets: 1,
-          mvpCount: 2,
-          fairPlayRating: 5.0,
-          points: 2500,
-          badge: 'Rising Star',
-          form: '78%',
-          isVerified: true,
+          // New players start with real (empty) stats; results are added via /auth/player/match-result.
+          ...this.emptyPlayerStats(),
         });
       }
+    }
+
+    // Rank only real registered players (seeded demo profiles are not shown as competitors).
+    const realPhones = new Set(prismaUsers.map((u) => this.normalizePhone(u.mobileNumber)));
+    const realProfiles = allProfiles.filter((p) => realPhones.has(this.normalizePhone(p.phone)));
+    if (realProfiles.length > 0) {
+      allProfiles = realProfiles;
     }
 
     // Determine current user
@@ -2807,6 +2863,236 @@ export class AuthService {
       message: 'Player profile and Google Map location updated successfully',
       profile: index !== -1 ? allProfiles[index] : null,
     };
+  }
+
+  // ==========================================
+  // TEAMS (single shared record owned by the captain)
+  // ==========================================
+
+  private last10(phone?: string | null): string {
+    return String(phone || '').replace(/\D/g, '').slice(-10);
+  }
+
+  private async findUserByPhone(phone: string) {
+    const l10 = this.last10(phone);
+    if (l10.length !== 10) return null;
+    return this.prisma.user.findFirst({
+      where: { mobileNumber: { in: [l10, `91${l10}`, `+91${l10}`, `+91 ${l10}`] } },
+    });
+  }
+
+  private generateTeamCode(taken: Set<string>): string {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    for (;;) {
+      let code = '';
+      for (let i = 0; i < 6; i++) code += alphabet[Math.floor(Math.random() * alphabet.length)];
+      if (!taken.has(code)) return code;
+    }
+  }
+
+  private async allTeamCodes(): Promise<Set<string>> {
+    const users = await this.prisma.user.findMany({ select: { teamsJson: true } });
+    const codes = new Set<string>();
+    for (const u of users) {
+      for (const t of (Array.isArray(u.teamsJson) ? (u.teamsJson as any[]) : [])) {
+        if (t?.teamCode) codes.add(String(t.teamCode).toUpperCase());
+      }
+    }
+    return codes;
+  }
+
+  /** Teams the player captains plus teams they are a member of (read from the captain's record). */
+  async getMyTeams(phone: string) {
+    const me = this.last10(phone);
+    if (me.length !== 10) return { success: true, teams: [] };
+    const users = await this.prisma.user.findMany({
+      select: { id: true, mobileNumber: true, fullName: true, teamsJson: true },
+    });
+    const own: any[] = [];
+    const memberOf: any[] = [];
+    for (const u of users) {
+      const teams = Array.isArray(u.teamsJson) ? (u.teamsJson as any[]) : [];
+      const isMe = this.last10(u.mobileNumber) === me;
+      for (const t of teams) {
+        if (!t || typeof t !== 'object') continue;
+        if (isMe) {
+          own.push({ ...t, isCaptain: true, roleBadge: t.roleBadge || 'Captain' });
+          continue;
+        }
+        const members = Array.isArray(t.members) ? t.members : [];
+        const membership = members.find((m: any) => this.last10(m?.phone) === me);
+        if (membership) {
+          memberOf.push({
+            ...t,
+            isCaptain: false,
+            roleBadge: membership.role || 'Member',
+            captainName: u.fullName,
+            captainPhone: u.mobileNumber,
+            membersCount: members.length + 1,
+          });
+        }
+      }
+    }
+    return { success: true, teams: [...own, ...memberOf] };
+  }
+
+  /** Captain joins a player to their team using the team's 6-character code. */
+  async joinTeamByCode(body: { code?: string; phone?: string; name?: string; playerId?: string }) {
+    const code = String(body?.code || '').trim().toUpperCase();
+    const me = this.last10(body?.phone);
+    if (code.length < 4) throw new BadRequestException('Enter a valid team code');
+    if (me.length !== 10) throw new BadRequestException('Your phone number is required to join a team');
+
+    const users = await this.prisma.user.findMany({
+      select: { id: true, mobileNumber: true, fullName: true, teamsJson: true },
+    });
+    for (const u of users) {
+      const teams = Array.isArray(u.teamsJson) ? [...(u.teamsJson as any[])] : [];
+      const idx = teams.findIndex((t) => String(t?.teamCode || '').toUpperCase() === code);
+      if (idx === -1) continue;
+
+      if (this.last10(u.mobileNumber) === me) {
+        throw new BadRequestException('You are already the captain of this team');
+      }
+      const team = { ...teams[idx] };
+      const members: any[] = Array.isArray(team.members) ? [...team.members] : [];
+      if (!members.some((m) => this.last10(m?.phone) === me)) {
+        members.push({
+          id: `MBR-${Date.now()}`,
+          name: String(body?.name || 'Player').slice(0, 60),
+          phone: me,
+          role: 'Player',
+          ...(body?.playerId ? { playerId: body.playerId } : {}),
+        });
+        team.members = members;
+        team.membersCount = members.length + 1;
+        teams[idx] = team;
+        await this.prisma.user.update({ where: { id: u.id }, data: { teamsJson: teams } });
+        await this.prisma.playerNotification
+          .create({
+            data: {
+              userPhone: this.last10(u.mobileNumber),
+              title: 'New squad member 🙌',
+              message: `${body?.name || 'A player'} joined ${team.name} using your team code.`,
+              type: 'team',
+              metadata: { teamId: team.id },
+            },
+          })
+          .catch(() => null);
+      }
+      return {
+        success: true,
+        message: `You joined ${team.name}!`,
+        team: { ...team, isCaptain: false, roleBadge: 'Member', captainName: u.fullName, captainPhone: u.mobileNumber },
+      };
+    }
+    throw new NotFoundException('No team found for this code. Ask your captain to share the code again.');
+  }
+
+  // ==========================================
+  // MATCH RESULTS (server-side player stats)
+  // ==========================================
+
+  private emptyPlayerStats() {
+    return {
+      matchesPlayed: 0,
+      wins: 0,
+      losses: 0,
+      draws: 0,
+      runs: 0,
+      wickets: 0,
+      battingAvg: 0,
+      strikeRate: 0,
+      bowlingEcon: 0,
+      fifties: 0,
+      hundreds: 0,
+      goals: 0,
+      assists: 0,
+      cleanSheets: 0,
+      mvpCount: 0,
+      fairPlayRating: 5.0,
+      points: 0,
+      badge: 'Rookie',
+      form: '—',
+      isVerified: false,
+      recordedMatchIds: [] as string[],
+    };
+  }
+
+  /**
+   * Records one finished match for a player. Idempotent per matchId so retries do not double count.
+   * Points: win 30, draw 15, loss 5, +1 per run, +20 per wicket, +25 per goal, +10 per assist, +50 MVP.
+   */
+  async recordMatchResult(body: {
+    phone?: string;
+    matchId?: string;
+    result?: 'won' | 'lost' | 'draw';
+    sport?: string;
+    runs?: number;
+    wickets?: number;
+    goals?: number;
+    assists?: number;
+    isMvp?: boolean;
+  }) {
+    const user = await this.findUserByPhone(String(body?.phone || ''));
+    if (!user) throw new BadRequestException('Player not found');
+    const matchId = String(body?.matchId || '').trim();
+    if (!matchId) throw new BadRequestException('matchId is required');
+    const result = body?.result === 'won' || body?.result === 'draw' ? body.result : 'lost';
+
+    const clamp = (v: any, max: number) => Math.max(0, Math.min(max, Math.floor(Number(v) || 0)));
+    const runs = clamp(body?.runs, 400);
+    const wickets = clamp(body?.wickets, 10);
+    const goals = clamp(body?.goals, 20);
+    const assists = clamp(body?.assists, 20);
+    const isMvp = body?.isMvp === true;
+
+    const profiles = this.readPlayerProfiles();
+    const me = this.last10(user.mobileNumber);
+    let profile = profiles.find((p) => this.normalizePhone(p.phone) === me);
+    if (!profile) {
+      profile = {
+        playerId: `PLY-${user.id.toString().padStart(4, '0')}`,
+        phone: user.mobileNumber,
+        fullName: user.fullName,
+        avatarUrl: null,
+        city: user.city || 'Madurai',
+        state: 'Tamil Nadu',
+        sport: user.preferredSport || 'Football',
+        role: user.preferredSport === 'Cricket' ? 'All-Rounder' : 'Forward / Striker',
+        ...this.emptyPlayerStats(),
+      };
+      profiles.push(profile);
+    }
+    const recorded: string[] = Array.isArray(profile.recordedMatchIds) ? profile.recordedMatchIds : [];
+    if (recorded.includes(matchId)) {
+      return { success: true, duplicate: true, profile };
+    }
+
+    profile.matchesPlayed = (Number(profile.matchesPlayed) || 0) + 1;
+    if (result === 'won') profile.wins = (Number(profile.wins) || 0) + 1;
+    else if (result === 'lost') profile.losses = (Number(profile.losses) || 0) + 1;
+    else profile.draws = (Number(profile.draws) || 0) + 1;
+    profile.runs = (Number(profile.runs) || 0) + runs;
+    profile.wickets = (Number(profile.wickets) || 0) + wickets;
+    profile.goals = (Number(profile.goals) || 0) + goals;
+    profile.assists = (Number(profile.assists) || 0) + assists;
+    if (isMvp) profile.mvpCount = (Number(profile.mvpCount) || 0) + 1;
+
+    const gained =
+      (result === 'won' ? 30 : result === 'draw' ? 15 : 5) + runs + wickets * 20 + goals * 25 + assists * 10 + (isMvp ? 50 : 0);
+    profile.points = (Number(profile.points) || 0) + gained;
+    profile.form = profile.matchesPlayed > 0 ? `${Math.round((profile.wins / profile.matchesPlayed) * 100)}%` : '—';
+    profile.badge =
+      profile.points >= 5000 ? 'Legend' : profile.points >= 2000 ? 'Pro' : profile.points >= 500 ? 'Rising Star' : 'Rookie';
+    profile.recordedMatchIds = [matchId, ...recorded].slice(0, 300);
+    this.writePlayerProfiles(profiles);
+
+    await this.prisma.user
+      .update({ where: { id: user.id }, data: { matchesPlayed: { increment: 1 } } })
+      .catch(() => null);
+
+    return { success: true, pointsGained: gained, profile };
   }
 
   async updateVerifiedAdminMetrics(id: number, metrics: any) {

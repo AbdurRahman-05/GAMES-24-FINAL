@@ -45,9 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
 
   String _filterSport = 'All';
-  String _filterDistance = 'Any';
   String _filterPrice = 'Any';
-  String _filterRating = 'Any';
   final Set<String> _filterAmenities = {};
 
   @override
@@ -149,13 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
-      // 4. Rating Filter
-      if (_filterRating != 'Any') {
-        final ratingRaw = (turf['rating'] ?? '4.8').toString();
-        final ratingVal = double.tryParse(ratingRaw) ?? 4.8;
-        if (_filterRating == '4.0+ ★' && ratingVal < 4.0) return false;
-        if (_filterRating == '4.5+ ★' && ratingVal < 4.5) return false;
-      }
 
       // 5. Amenities Filter
       if (_filterAmenities.isNotEmpty) {
@@ -182,9 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
         LocationManager().currentLocation != 'All';
     return isLocFiltered ||
         _filterSport != 'All' ||
-        _filterDistance != 'Any' ||
         _filterPrice != 'Any' ||
-        _filterRating != 'Any' ||
         _filterAmenities.isNotEmpty;
   }
 
@@ -195,9 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
       count++;
     }
     if (_filterSport != 'All') count++;
-    if (_filterDistance != 'Any') count++;
     if (_filterPrice != 'Any') count++;
-    if (_filterRating != 'Any') count++;
     count += _filterAmenities.length;
     return count;
   }
@@ -206,9 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
     LocationManager().setLocation('All Madurai');
     setState(() {
       _filterSport = 'All';
-      _filterDistance = 'Any';
       _filterPrice = 'Any';
-      _filterRating = 'Any';
       _filterAmenities.clear();
       _searchQuery = '';
       _searchController.clear();
@@ -580,26 +565,10 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    if (_filterDistance != 'Any') {
-      chips.add(
-        _buildFilterPill(_filterDistance, () {
-          setState(() => _filterDistance = 'Any');
-        }),
-      );
-    }
-
     if (_filterPrice != 'Any') {
       chips.add(
         _buildFilterPill(_filterPrice, () {
           setState(() => _filterPrice = 'Any');
-        }),
-      );
-    }
-
-    if (_filterRating != 'Any') {
-      chips.add(
-        _buildFilterPill(_filterRating, () {
-          setState(() => _filterRating = 'Any');
         }),
       );
     }
@@ -2360,16 +2329,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     'Decline',
                                     style: TextStyle(fontSize: 11),
                                   ),
-                                  onPressed: () {
-                                    ChallengeManager().rejectRequest(
+                                  onPressed: () async {
+                                    final messenger = ScaffoldMessenger.of(context);
+                                    Navigator.pop(context);
+                                    final result = await ChallengeManager().rejectRequest(
                                       challenge.id,
                                       req.id,
                                     );
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Request declined.'),
-                                      ),
+                                    messenger.showSnackBar(
+                                      SnackBar(content: Text(result.message)),
                                     );
                                   },
                                 ),
@@ -2399,20 +2367,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                       color: Colors.black,
                                     ),
                                   ),
-                                  onPressed: () {
-                                    ChallengeManager().acceptRequest(
+                                  onPressed: () async {
+                                    final messenger = ScaffoldMessenger.of(context);
+                                    Navigator.pop(context);
+                                    final result = await ChallengeManager().acceptRequest(
                                       challenge.id,
                                       req,
                                     );
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    messenger.showSnackBar(
                                       SnackBar(
-                                        content: Text(
-                                          'Challenge accepted! Paired with ${req.teamName}.',
-                                        ),
-                                        backgroundColor: const Color(
-                                          0xFF141414,
-                                        ),
+                                        content: Text(result.message),
+                                        backgroundColor: result.ok
+                                            ? const Color(0xFF141414)
+                                            : const Color(0xFFEF4444),
                                       ),
                                     );
                                   },
@@ -2510,7 +2477,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Try changing your sport, distance, or search query',
+              'Try changing your sport, price, area or search query',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
             ),
@@ -2597,8 +2564,8 @@ class _HomeScreenState extends State<HomeScreen> {
             amenities: tags,
             openingTime: turf['openingTime'] ?? '06:00 AM',
             closingTime: turf['closingTime'] ?? '10:00 PM',
-            rating: turf['rating']?.toString() ?? '4.9',
-            reviews: turf['reviews']?.toString() ?? '128',
+            rating: turf['rating']?.toString() ?? '', // no reviews yet: show "New"
+            reviews: turf['reviews']?.toString() ?? '0',
             sports: sportsStr,
             sportsList: (turf['sportsList'] is List)
                 ? (turf['sportsList'] as List)
@@ -2679,14 +2646,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Icon(Icons.star, color: Colors.amber, size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    rating,
+                    rating.isEmpty ? 'New' : rating,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       color: Colors.white,
                     ),
                   ),
-                  Text(
+                  if (rating.isNotEmpty) Text(
                     ' ($reviews)',
                     style: const TextStyle(
                       color: Color(0xFFA1A1AA),
@@ -2891,9 +2858,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showFilterBottomSheet(BuildContext context) {
     String tempSport = _filterSport;
-    String tempDistance = _filterDistance;
     String tempPrice = _filterPrice;
-    String tempRating = _filterRating;
     final Set<String> tempAmenities = Set<String>.from(_filterAmenities);
 
     showModalBottomSheet(
@@ -3012,9 +2977,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () {
                               setModalState(() {
                                 tempSport = 'All';
-                                tempDistance = 'Any';
                                 tempPrice = 'Any';
-                                tempRating = 'Any';
                                 tempAmenities.clear();
                               });
                             },
@@ -3060,20 +3023,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 }).toList(),
                           ),
 
-                          // 2. Distance
-                          buildSectionLabel('Nearby Distance'),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: ['Any', '< 5 km', '< 10 km', '< 25 km']
-                                .map((d) {
-                                  return buildChip(d, tempDistance == d, () {
-                                    setModalState(() => tempDistance = d);
-                                  });
-                                })
-                                .toList(),
-                          ),
-
                           // 3. Price
                           buildSectionLabel('Price per Hour'),
                           Wrap(
@@ -3090,18 +3039,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     setModalState(() => tempPrice = p);
                                   });
                                 }).toList(),
-                          ),
-
-                          // 4. Rating
-                          buildSectionLabel('Customer Rating'),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: ['Any', '4.0+ ★', '4.5+ ★'].map((r) {
-                              return buildChip(r, tempRating == r, () {
-                                setModalState(() => tempRating = r);
-                              });
-                            }).toList(),
                           ),
 
                           // 5. Amenities
@@ -3158,9 +3095,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () {
                               setState(() {
                                 _filterSport = tempSport;
-                                _filterDistance = tempDistance;
                                 _filterPrice = tempPrice;
-                                _filterRating = tempRating;
                                 _filterAmenities.clear();
                                 _filterAmenities.addAll(tempAmenities);
 
@@ -3305,7 +3240,7 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
     });
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     final tName = _teamNameCtrl.text.trim();
     final tSize = _teamSizeCtrl.text.trim();
     final cNumber = _contactCtrl.text.trim();
@@ -3329,12 +3264,18 @@ class _JoinChallengeBottomSheetState extends State<_JoinChallengeBottomSheet> {
       _isSubmitting = true;
     });
 
-    ChallengeManager().requestToJoin(
+    final result = await ChallengeManager().requestToJoin(
       widget.challenge.id,
       tName,
       tSize,
       cNumber,
     );
+    if (!mounted) return;
+    if (!result.ok) {
+      setState(() => _isSubmitting = false);
+      _showError(result.message);
+      return;
+    }
 
     Navigator.pop(context);
 

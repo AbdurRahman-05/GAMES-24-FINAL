@@ -1,8 +1,7 @@
+import 'core/network/api_client.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'api_config.dart';
 
 class JoinRequest {
   final String id;
@@ -225,6 +224,15 @@ class Challenge {
   }
 }
 
+/// Result of a challenge action, carrying the server's message for the UI.
+class ChallengeActionResult {
+  final bool ok;
+  final String message;
+  const ChallengeActionResult(this.ok, this.message);
+}
+
+/// Open challenges are owned by the server: every action is sent there first and the local list
+/// only changes when the server accepts it. Local storage is just a per-user cache.
 class ChallengeManager {
   static final ChallengeManager _instance = ChallengeManager._internal();
   factory ChallengeManager() => _instance;
@@ -235,12 +243,22 @@ class ChallengeManager {
 
   static const String _storageKey = 'saved_open_challenges';
   String _currentUserPhone = '';
+  String? _lastLocation;
+  String? _lastSport;
 
   final ValueNotifier<List<Challenge>> challengesNotifier =
       ValueNotifier<List<Challenge>>([]);
 
   List<Challenge> get activeChallenges =>
       challengesNotifier.value.where((c) => !c.isExpired).toList();
+
+  /// Clears the previous user's cached challenges (logout / account switch) and reloads.
+  Future<void> reset() async {
+    challengesNotifier.value = [];
+    _currentUserPhone = '';
+    await _loadFromStorage();
+    await fetchChallenges(location: _lastLocation, sport: _lastSport);
+  }
 
   void cleanExpiredChallenges() {
     final active = activeChallenges;
@@ -257,13 +275,12 @@ class ChallengeManager {
       final savedStr = prefs.getString(_storageKey);
       if (savedStr != null && savedStr.isNotEmpty) {
         final List list = jsonDecode(savedStr);
-        final loaded = list
+        challengesNotifier.value = list
             .map((item) => Challenge.fromJson(Map<String, dynamic>.from(item)))
-            .where((c) => c.id != '1' && c.id != '2' && !c.isExpired)
+            .where((c) => !c.isExpired)
             .toList();
-        challengesNotifier.value = loaded;
       }
-      syncWithCurrentUser();
+      await syncWithCurrentUser();
     } catch (e) {
       debugPrint("Error loading challenges: $e");
     }
@@ -272,78 +289,47 @@ class ChallengeManager {
   Future<void> _saveToStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final str = jsonEncode(
-        challengesNotifier.value.map((c) => c.toJson()).toList(),
+      await prefs.setString(
+        _storageKey,
+        jsonEncode(challengesNotifier.value.map((c) => c.toJson()).toList()),
       );
-      await prefs.setString(_storageKey, str);
     } catch (e) {
       debugPrint("Error saving challenges: $e");
     }
   }
 
-  /// Fetches real-time open matches from the cloud backend so matches created
-  /// in any player account are instantly visible to all other accounts across devices.
+  /// Replaces the list with the server's open matches. Challenges the server no longer returns
+  /// (accepted elsewhere, cancelled, converted to private) disappear instead of lingering.
   Future<void> fetchChallenges({String? location, String? sport}) async {
+    _lastLocation = location;
+    _lastSport = sport;
     try {
       final prefs = await SharedPreferences.getInstance();
       _currentUserPhone = (prefs.getString('mobileNumber') ?? '').trim();
 
-      String query = '';
-      if (location != null && location.isNotEmpty && location.toLowerCase() != 'all madurai' && location.toLowerCase() != 'all') {
-        query += '?location=${Uri.encodeComponent(location)}';
-      }
-      if (sport != null && sport.isNotEmpty && sport.toLowerCase() != 'all') {
-        query += '${query.isEmpty ? '?' : '&'}sport=${Uri.encodeComponent(sport)}';
-      }
+      final loc = (location ?? '').toLowerCase();
+      final res = await ApiClient.get('/turfs/open-matches', query: {
+        'location': (loc.isEmpty || loc == 'all' || loc == 'all madurai') ? null : location,
+        'sport': (sport == null || sport.toLowerCase() == 'all') ? null : sport,
+      });
+      if (!res.ok || res.map['matches'] is! List) return;
 
-      final uri = Uri.parse('${ApiConfig.baseUrl}/turfs/open-matches$query');
-      http.Response res;
-      try {
-        res = await http.get(uri).timeout(const Duration(seconds: 20));
-      } catch (_) {
-        // Cold start retry once
-        await Future.delayed(const Duration(milliseconds: 1000));
-        res = await http.get(uri).timeout(const Duration(seconds: 20));
-      }
-
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body);
-        if (data['matches'] is List) {
-          final List list = data['matches'];
-          final List<Challenge> serverChallenges = [];
-
-          for (var item in list) {
-            final map = Map<String, dynamic>.from(item);
-            final c = Challenge.fromJson(map);
-
-            if (_currentUserPhone.isNotEmpty && c.creatorPhone.isNotEmpty) {
-              c.isCreator = _isMatchingPhone(c.creatorPhone, _currentUserPhone);
-            }
-
-            if (!c.isCreator && _currentUserPhone.isNotEmpty) {
-              c.userHasRequested = c.joinRequests.any((r) => _isMatchingPhone(r.contactDetails, _currentUserPhone));
-            }
-
-            if (!c.isExpired) {
-              serverChallenges.add(c);
-            }
-          }
-
-          // Merge: keep local user-created challenges that might still be sending
-          final Map<String, Challenge> merged = {};
-          for (var c in serverChallenges) {
-            merged[c.id] = c;
-          }
-          for (var c in challengesNotifier.value) {
-            if (!merged.containsKey(c.id) && !c.isExpired) {
-              merged[c.id] = c;
-            }
-          }
-
-          challengesNotifier.value = merged.values.toList();
-          _saveToStorage();
+      final List<Challenge> serverChallenges = [];
+      for (final item in res.map['matches'] as List) {
+        final c = Challenge.fromJson(Map<String, dynamic>.from(item as Map));
+        if (_currentUserPhone.isNotEmpty && c.creatorPhone.isNotEmpty) {
+          c.isCreator = _isMatchingPhone(c.creatorPhone, _currentUserPhone);
         }
+        if (!c.isCreator && _currentUserPhone.isNotEmpty) {
+          c.userHasRequested = c.joinRequests.any(
+            (r) => _isMatchingPhone(r.contactDetails, _currentUserPhone),
+          );
+        }
+        if (!c.isExpired) serverChallenges.add(c);
       }
+
+      challengesNotifier.value = serverChallenges;
+      await _saveToStorage();
     } catch (e) {
       debugPrint("Error fetching open challenges from backend: $e");
     }
@@ -357,8 +343,7 @@ class ChallengeManager {
 
       final list = List<Challenge>.from(challengesNotifier.value);
       bool changed = false;
-      for (int i = 0; i < list.length; i++) {
-        final c = list[i];
+      for (final c in list) {
         if (c.creatorPhone.isNotEmpty) {
           final isMine = _isMatchingPhone(c.creatorPhone, _currentUserPhone);
           if (c.isCreator != isMine) {
@@ -367,9 +352,7 @@ class ChallengeManager {
           }
         }
       }
-      if (changed) {
-        challengesNotifier.value = list;
-      }
+      if (changed) challengesNotifier.value = list;
     } catch (_) {}
   }
 
@@ -384,154 +367,41 @@ class ChallengeManager {
     return false;
   }
 
-  void addChallenge(Challenge challenge) {
-    challengesNotifier.value = [challenge, ...challengesNotifier.value];
-    _saveToStorage();
-
-    // Sync to backend in background so other accounts/phones immediately see it
-    http.post(
-      Uri.parse('${ApiConfig.baseUrl}/turfs/open-matches'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(challenge.toJson()),
-    ).then((res) {
-      debugPrint("Open challenge synced to cloud: ${res.statusCode}");
-    }).catchError((e) {
-      debugPrint("Error syncing open challenge to cloud: $e");
-    });
-  }
-
-  void requestToJoin(
+  Future<ChallengeActionResult> requestToJoin(
     String id,
     String teamName,
     String teamSize,
     String contactDetails,
-  ) {
-    final list = List<Challenge>.from(challengesNotifier.value);
-    final index = list.indexWhere((c) => c.id == id);
-    if (index != -1) {
-      final req = JoinRequest(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        teamName: teamName,
-        teamSize: teamSize,
-        contactDetails: contactDetails,
-        requestedAt: 'Just now',
-      );
-      final updatedRequests = List<JoinRequest>.from(list[index].joinRequests)
-        ..add(req);
-
-      list[index] = Challenge(
-        id: list[index].id,
-        turfName: list[index].turfName,
-        location: list[index].location,
-        date: list[index].date,
-        time: list[index].time,
-        sport: list[index].sport,
-        challengerName: list[index].challengerName,
-        challengerTeamInitials: list[index].challengerTeamInitials,
-        challengerColor: list[index].challengerColor,
-        creatorPhone: list[index].creatorPhone,
-        teamSize: list[index].teamSize,
-        isCreator: list[index].isCreator,
-        isJoined: list[index].isJoined,
-        opponentName: list[index].opponentName,
-        opponentTeamSize: list[index].opponentTeamSize,
-        opponentContact: list[index].opponentContact,
-        joinRequests: updatedRequests,
-        userHasRequested: true,
-      );
-
-      challengesNotifier.value = list;
-      _saveToStorage();
-
-      // Sync join request to cloud
-      http.post(
-        Uri.parse('${ApiConfig.baseUrl}/turfs/open-matches/$id/join'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'id': req.id,
-          'teamName': teamName,
-          'teamSize': teamSize,
-          'contactDetails': contactDetails,
-        }),
-      ).catchError((e) {
-        debugPrint("Error syncing join request: $e");
-        return http.Response('', 500);
-      });
-    }
+  ) async {
+    final res = await ApiClient.post('/turfs/open-matches/$id/join', body: {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'teamName': teamName,
+      'teamSize': teamSize,
+      'contactDetails': contactDetails,
+    });
+    if (!res.ok) return ChallengeActionResult(false, res.message);
+    await fetchChallenges(location: _lastLocation, sport: _lastSport);
+    return ChallengeActionResult(true, res.message);
   }
 
-  void acceptRequest(String challengeId, JoinRequest request) {
-    final list = List<Challenge>.from(challengesNotifier.value);
-    final index = list.indexWhere((c) => c.id == challengeId);
-    if (index != -1) {
-      list[index] = Challenge(
-        id: list[index].id,
-        turfName: list[index].turfName,
-        location: list[index].location,
-        date: list[index].date,
-        time: list[index].time,
-        sport: list[index].sport,
-        challengerName: list[index].challengerName,
-        challengerTeamInitials: list[index].challengerTeamInitials,
-        challengerColor: list[index].challengerColor,
-        creatorPhone: list[index].creatorPhone,
-        teamSize: list[index].teamSize,
-        isCreator: list[index].isCreator,
-        isJoined: true,
-        opponentName: request.teamName,
-        opponentTeamSize: request.teamSize,
-        opponentContact: request.contactDetails,
-        joinRequests: [],
-        userHasRequested: list[index].userHasRequested,
-      );
-      challengesNotifier.value = list;
-      _saveToStorage();
-
-      // Sync accepted match to cloud
-      http.post(
-        Uri.parse('${ApiConfig.baseUrl}/turfs/open-matches/$challengeId/accept'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'opponentName': request.teamName,
-          'opponentContact': request.contactDetails,
-          'opponentTeamSize': request.teamSize,
-        }),
-      ).catchError((e) {
-        debugPrint("Error syncing accepted challenge: $e");
-        return http.Response('', 500);
-      });
-    }
+  Future<ChallengeActionResult> acceptRequest(String challengeId, JoinRequest request) async {
+    final res = await ApiClient.post('/turfs/open-matches/$challengeId/accept', body: {
+      'opponentName': request.teamName,
+      'opponentContact': request.contactDetails,
+      'opponentTeamSize': request.teamSize,
+    });
+    if (!res.ok) return ChallengeActionResult(false, res.message);
+    await fetchChallenges(location: _lastLocation, sport: _lastSport);
+    return ChallengeActionResult(true, 'Challenge accepted! Paired with ${request.teamName}.');
   }
 
-  void rejectRequest(String challengeId, String requestId) {
-    final list = List<Challenge>.from(challengesNotifier.value);
-    final index = list.indexWhere((c) => c.id == challengeId);
-    if (index != -1) {
-      final updatedRequests = list[index].joinRequests
-          .where((r) => r.id != requestId)
-          .toList();
-      list[index] = Challenge(
-        id: list[index].id,
-        turfName: list[index].turfName,
-        location: list[index].location,
-        date: list[index].date,
-        time: list[index].time,
-        sport: list[index].sport,
-        challengerName: list[index].challengerName,
-        challengerTeamInitials: list[index].challengerTeamInitials,
-        challengerColor: list[index].challengerColor,
-        creatorPhone: list[index].creatorPhone,
-        teamSize: list[index].teamSize,
-        isCreator: list[index].isCreator,
-        isJoined: list[index].isJoined,
-        opponentName: list[index].opponentName,
-        opponentTeamSize: list[index].opponentTeamSize,
-        opponentContact: list[index].opponentContact,
-        joinRequests: updatedRequests,
-        userHasRequested: list[index].userHasRequested,
-      );
-      challengesNotifier.value = list;
-      _saveToStorage();
-    }
+  Future<ChallengeActionResult> rejectRequest(String challengeId, String requestId) async {
+    final res = await ApiClient.post('/turfs/open-matches/$challengeId/reject', body: {
+      'requestId': requestId,
+      'callerPhone': _currentUserPhone,
+    });
+    if (!res.ok) return ChallengeActionResult(false, res.message);
+    await fetchChallenges(location: _lastLocation, sport: _lastSport);
+    return const ChallengeActionResult(true, 'Request declined.');
   }
 }

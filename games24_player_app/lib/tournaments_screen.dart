@@ -24,6 +24,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
   @override
   void dispose() {
     TournamentManager().removeListener(_onTournamentUpdate);
+    _pinController.dispose();
     super.dispose();
   }
 
@@ -36,6 +37,82 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
       }
       setState(() {}); // Rebuild when tournaments are added/registered
     }
+  }
+
+  final TextEditingController _pinController = TextEditingController();
+  bool _isLookingUpPin = false;
+
+  /// Private tournaments are hidden from the public list; players open them with the PIN the
+  /// organizer shared.
+  Future<void> _openPrivateTournament() async {
+    final pin = _pinController.text.trim();
+    if (pin.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enter the access PIN shared by the organizer.')),
+      );
+      return;
+    }
+    setState(() => _isLookingUpPin = true);
+    final result = await TournamentManager().findPrivateTournament(pin);
+    if (!mounted) return;
+    setState(() => _isLookingUpPin = false);
+    final tournament = result.tournament;
+    if (tournament == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFFEF4444),
+          content: Text(result.error ?? 'No tournament found for this PIN.'),
+        ),
+      );
+      return;
+    }
+    _pinController.clear();
+    FocusScope.of(context).unfocus();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => TournamentDetailsScreen(tournament: tournament)),
+    );
+  }
+
+  Widget _buildPrivatePinCard() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF262626)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_rounded, color: Color(0xFFD4FF00), size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _pinController,
+              textCapitalization: TextCapitalization.characters,
+              style: const TextStyle(color: Colors.white, fontSize: 14, letterSpacing: 1.2),
+              decoration: const InputDecoration(
+                isDense: true,
+                border: InputBorder.none,
+                hintText: 'Have a private tournament PIN?',
+                hintStyle: TextStyle(color: Color(0xFF71717A), fontSize: 13, letterSpacing: 0),
+              ),
+              onSubmitted: (_) => _openPrivateTournament(),
+            ),
+          ),
+          TextButton(
+            onPressed: _isLookingUpPin ? null : _openPrivateTournament,
+            child: _isLookingUpPin
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4FF00)),
+                  )
+                : const Text('Open', style: TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -59,7 +136,9 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSegmentedControl(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                _buildPrivatePinCard(),
+                const SizedBox(height: 20),
                 _buildContent(),
                 const SizedBox(height: 80), // padding for FAB
               ],

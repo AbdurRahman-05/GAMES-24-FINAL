@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'api_config.dart';
 import 'booking_manager.dart';
 import 'booking_qr_pass_modal.dart';
 import 'challenge_manager.dart';
@@ -52,7 +49,6 @@ class BookingPreviewScreen extends StatefulWidget {
 }
 
 class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
-  String _selectedPaymentMethod = 'UPI'; // 'UPI', 'CARDS', 'NETBANKING'
   String? _errorMessage;
 
   IconData _getSportIcon(String sport) {
@@ -78,8 +74,9 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
         customerName: widget.customerName,
         customerPhone: widget.customerPhone,
         sport: widget.sport,
-        paymentMethod: _selectedPaymentMethod,
+        paymentMethod: 'Cashfree',
         bookingPayload: widget.bookingPayload,
+        timeSlotsFallback: widget.timeSlots,
         onSuccess: (bookingObj, orderId) {
           Navigator.pop(ctx); // Close payment animation dialog
           _onBookingSuccess(bookingObj, orderId);
@@ -105,8 +102,8 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
       bookingObj['customerName'] = widget.customerName;
       bookingObj['customerPhone'] = widget.customerPhone;
       bookingObj['sport'] = widget.sport;
-      bookingObj['amount'] = widget.courtFee;
-      bookingObj['paymentMethod'] = 'Cashfree ($_selectedPaymentMethod)';
+      bookingObj['amount'] ??= widget.courtFee;
+      bookingObj['paymentMethod'] ??= 'Cashfree';
       bookingObj['orderId'] = orderId;
 
       if (bookingObj['date'] == null) bookingObj['date'] = widget.date;
@@ -125,29 +122,9 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
     }
     BookingManager().fetchBookings();
 
-    // If Open Match Challenge was requested, add to ChallengeManager
+    // The server creates the open-match challenge when the payment is confirmed; just refresh.
     if (widget.isOpenForChallenge) {
-      final initials = widget.teamName.length >= 2
-          ? widget.teamName.substring(0, 2).toUpperCase()
-          : 'TC';
-
-      ChallengeManager().addChallenge(
-        Challenge(
-          id: 'ch_${DateTime.now().millisecondsSinceEpoch}',
-          turfName: widget.turfName,
-          location: widget.turfLocation,
-          date: widget.date,
-          time: widget.timeSlot,
-          sport: widget.sport,
-          challengerName: widget.teamName,
-          challengerTeamInitials: initials,
-          challengerColor: const Color(0xFFD4FF00),
-          creatorPhone: widget.customerPhone,
-          teamSize: widget.teamSize,
-          isCreator: true,
-          joinRequests: [],
-        ),
-      );
+      ChallengeManager().fetchChallenges();
     }
 
     if (mounted) {
@@ -216,12 +193,8 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
             _buildPlayerCard(),
             const SizedBox(height: 14),
 
-            // 4. CASHFREE TEST API TRUST BANNER
+            // 4. CASHFREE PAYMENT INFO
             _buildCashfreeGatewayCard(),
-            const SizedBox(height: 14),
-
-            // 5. PAYMENT MODE SELECTOR
-            _buildPaymentMethodSelector(),
             const SizedBox(height: 14),
 
             // 6. PRICE BREAKDOWN CARD
@@ -638,130 +611,13 @@ class _BookingPreviewScreenState extends State<BookingPreviewScreen> {
                 ),
                 const SizedBox(height: 3),
                 const Text(
-                  'Connected with registered Merchant Test API keys. Cashfree animation & verification active.',
+                  'Pay with UPI, cards or netbanking on Cashfree\'s secure checkout. Your slot is held for 10 minutes while you pay.',
                   style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8), height: 1.3),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodSelector() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF121622),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1E273A)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'SELECT PAYMENT MODE',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF94A3B8),
-              letterSpacing: 0.6,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          _buildPaymentTile(
-            id: 'UPI',
-            title: 'UPI Instant Pay',
-            subtitle: 'Google Pay, PhonePe, Paytm, BHIM',
-            icon: Icons.flash_on_rounded,
-            iconColor: const Color(0xFFD4FF00),
-          ),
-          const SizedBox(height: 8),
-
-          _buildPaymentTile(
-            id: 'CARDS',
-            title: 'Credit / Debit Card',
-            subtitle: 'Visa, Mastercard, RuPay',
-            icon: Icons.credit_card_rounded,
-            iconColor: const Color(0xFF38BDF8),
-          ),
-          const SizedBox(height: 8),
-
-          _buildPaymentTile(
-            id: 'NETBANKING',
-            title: 'Net Banking',
-            subtitle: 'All Major Indian Banks',
-            icon: Icons.account_balance_rounded,
-            iconColor: const Color(0xFFA78BFA),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentTile({
-    required String id,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    final isSelected = _selectedPaymentMethod == id;
-    return InkWell(
-      onTap: () => setState(() => _selectedPaymentMethod = id),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1F2916) : const Color(0xFF0B0E17),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF1E273A),
-            width: isSelected ? 1.5 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: iconColor, size: 20),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: isSelected ? Colors.white : const Color(0xFFE2E8F0),
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
-                border: Border.all(
-                  color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF475569),
-                  width: 2,
-                ),
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, size: 12, color: Colors.black)
-                  : null,
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -892,6 +748,7 @@ class CashfreePaymentAnimationDialog extends StatefulWidget {
   final String sport;
   final String paymentMethod;
   final Map<String, dynamic> bookingPayload;
+  final List<String> timeSlotsFallback;
   final void Function(Map<String, dynamic> bookingObj, String orderId) onSuccess;
   final void Function(String error) onFailed;
 
@@ -906,6 +763,7 @@ class CashfreePaymentAnimationDialog extends StatefulWidget {
     required this.sport,
     required this.paymentMethod,
     required this.bookingPayload,
+    this.timeSlotsFallback = const [],
     required this.onSuccess,
     required this.onFailed,
   });
@@ -969,92 +827,104 @@ class _CashfreePaymentAnimationDialogState
 
   Future<void> _runCashfreePaymentFlow() async {
     try {
-      // Step 1: Connecting to Cashfree API & Creating Order
+      // Step 1: the server holds the slots and prices them (the amount shown is what is charged).
       setState(() {
         _step = 1;
-        _stepText = 'Initializing Cashfree Test Order via PG API...';
+        _stepText = 'Reserving your slot...';
       });
 
-      final orderRes = await CashfreeService.createOrder(
-        orderAmount: widget.amount,
-        customerPhone: widget.customerPhone,
-        customerName: widget.customerName,
+      final payload = widget.bookingPayload;
+      final slots = (payload['timeSlots'] is List)
+          ? List<String>.from((payload['timeSlots'] as List).map((e) => e.toString()))
+          : widget.timeSlotsFallback;
+      final created = await CashfreeService.createOrder(
         turfId: widget.turfId,
-        bookingPayload: widget.bookingPayload,
+        date: (payload['date'] ?? '').toString(),
+        timeSlots: slots,
+        sport: widget.sport,
+        courtName: widget.courtName,
+        customerName: widget.customerName,
+        customerPhone: widget.customerPhone,
+        isOpenMatch: payload['isOpenMatch'] == true,
+        teamName: payload['teamName']?.toString(),
+        teamSize: payload['teamSize']?.toString(),
       );
-
-      if (orderRes == null || orderRes['orderId'] == null) {
+      final order = created.order;
+      if (order == null) {
         if (!mounted) return;
-        widget.onFailed('Could not generate Cashfree test session.');
+        widget.onFailed(created.error ?? 'Could not start the payment.');
         return;
       }
-
-      final String createdOrderId = orderRes['orderId'].toString();
-      _orderId = createdOrderId;
-
+      _orderId = order.orderId;
       if (!mounted) return;
+
+      // Step 2: pay. Test mode is only offered by the server outside production.
       HapticFeedback.lightImpact();
       setState(() {
         _step = 2;
-        _stepText = 'Order Created (#${_orderId.substring(_orderId.length > 10 ? _orderId.length - 10 : 0)}). Authorizing via Sandbox...';
+        _stepText = order.isTestMode
+            ? 'TEST MODE: no real money is charged. Simulating payment of ₹${order.amount.toStringAsFixed(0)}...'
+            : 'Complete the payment of ₹${order.amount.toStringAsFixed(0)} on the Cashfree page...';
       });
 
-      // Step 2: Simulate Secure Gateway Handshake
-      await Future.delayed(const Duration(milliseconds: 1200));
+      if (!order.isTestMode) {
+        final checkoutError = await CashfreeService.openCheckout(order);
+        if (checkoutError != null) {
+          // Player closed the checkout or the payment failed: release the slot right away,
+          // unless Cashfree reports it as paid after all.
+          final late = await CashfreeService.cancelOrder(order.orderId);
+          if (!mounted) return;
+          if (late == null || !late.success) {
+            widget.onFailed(checkoutError);
+            return;
+          }
+          _finish(late);
+          return;
+        }
+      } else {
+        await Future.delayed(const Duration(milliseconds: 900));
+      }
 
       if (!mounted) return;
       HapticFeedback.lightImpact();
       setState(() {
         _step = 3;
-        _stepText = 'Cashfree Sandbox: Verifying Bank Payment Authorization...';
+        _stepText = 'Verifying payment with Cashfree...';
       });
 
-      // Step 3: Verify Payment on Backend
-      final verifyRes = await CashfreeService.verifyOrderPayment(_orderId);
-
-      if (!mounted) return;
-
-      Map<String, dynamic> finalBooking = {};
-      if (verifyRes.success && verifyRes.booking != null) {
-        finalBooking = Map<String, dynamic>.from(verifyRes.booking!);
-        _cfPaymentId = verifyRes.cfPaymentId ?? 'cf_test_${DateTime.now().millisecondsSinceEpoch}';
-      } else {
-        // Fallback direct confirmation
-        final fallbackRes = await http.post(
-          Uri.parse('${ApiConfig.baseUrl}/turfs/${widget.turfId}/book'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(widget.bookingPayload),
-        );
-        if (fallbackRes.statusCode == 200 || fallbackRes.statusCode == 201) {
-          final resData = jsonDecode(fallbackRes.body);
-          finalBooking = resData is Map ? (resData['booking'] ?? resData) : {};
-          _cfPaymentId = 'cf_sandbox_${DateTime.now().millisecondsSinceEpoch}';
-        } else {
-          final err = verifyRes.message.isNotEmpty ? verifyRes.message : 'Payment verification failed.';
-          widget.onFailed(err);
-          return;
-        }
+      // Step 3: the server checks the order status and amount with Cashfree, then confirms.
+      var result = await CashfreeService.verifyPayment(order.orderId);
+      for (var attempt = 0; attempt < 4 && result.isPending; attempt++) {
+        await Future.delayed(const Duration(seconds: 2));
+        result = await CashfreeService.verifyPayment(order.orderId);
       }
-
-      // Step 4: Success Animation
-      setState(() {
-        _step = 4;
-        _isSuccess = true;
-        _stepText = 'Payment Confirmed via Cashfree! 🎉';
-      });
-
-      HapticFeedback.heavyImpact();
-      _successController.forward();
-
-      // Display animated success screen for 1.4 seconds then complete
-      await Future.delayed(const Duration(milliseconds: 1400));
       if (!mounted) return;
 
-      widget.onSuccess(finalBooking, _orderId);
+      if (!result.success || result.booking == null) {
+        widget.onFailed(result.isPending
+            ? 'We have not received payment confirmation yet. If money was deducted, the booking will appear in My Bookings shortly or be refunded automatically.'
+            : result.message);
+        return;
+      }
+      _finish(result);
     } catch (e) {
       if (!mounted) return;
       widget.onFailed('Payment error: $e');
     }
+  }
+
+  Future<void> _finish(CashfreePaymentResult result) async {
+    _cfPaymentId = result.cfPaymentId ?? '';
+    setState(() {
+      _step = 4;
+      _isSuccess = true;
+      _stepText = 'Payment confirmed! Your slot is booked. 🎉';
+    });
+    HapticFeedback.heavyImpact();
+    _successController.forward();
+    await Future.delayed(const Duration(milliseconds: 1400));
+    if (!mounted) return;
+    widget.onSuccess(Map<String, dynamic>.from(result.booking ?? {}), _orderId);
   }
 
   @override

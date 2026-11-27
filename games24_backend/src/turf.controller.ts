@@ -9,12 +9,18 @@ import {
   Body,
   Headers,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { TurfService } from './turf.service.js';
+import { CashfreeService } from './cashfree.service.js';
+import { SuperAdminGuard } from './super-admin.guard.js';
 
 @Controller('turfs')
 export class TurfController {
-  constructor(private readonly turfService: TurfService) {}
+  constructor(
+    private readonly turfService: TurfService,
+    private readonly cashfreeService: CashfreeService,
+  ) {}
 
   @Get()
   async getAllTurfs() {
@@ -28,8 +34,14 @@ export class TurfController {
     @Query('phone') phone?: string,
     @Query('venue') venue?: string,
     @Query('ownerOnly') ownerOnly?: string,
+    @Query('viewer') viewer?: string,
   ) {
-    return this.turfService.getAllTournaments(sport, turfId, phone, venue, ownerOnly);
+    return this.turfService.getAllTournaments(sport, turfId, phone, venue, ownerOnly, viewer);
+  }
+
+  @Get('tournaments/private/:code')
+  async getPrivateTournament(@Param('code') code: string) {
+    return this.turfService.getTournamentByAccessCode(code);
   }
 
   @Post('tournaments')
@@ -106,13 +118,24 @@ export class TurfController {
     return this.turfService.acceptOpenMatch(id, body);
   }
 
+  @Post('open-matches/:id/reject')
+  async rejectOpenMatch(
+    @Param('id') id: string,
+    @Body() body: any,
+  ) {
+    return this.turfService.rejectOpenMatchRequest(id, body);
+  }
+
   @Post('bookings/:bookingId/cancel')
   async cancelBooking(
     @Param('bookingId', ParseIntPipe) bookingId: number,
     @Body() body: any,
     @Headers('x-admin-key') adminKey?: string,
   ) {
-    return this.turfService.cancelBooking(bookingId, body, adminKey);
+    const result = await this.turfService.cancelBooking(bookingId, body, adminKey);
+    // Cancellation is only allowed 3+ hours before the slot, which qualifies for a full refund.
+    const refund = await this.cashfreeService.refundForBooking(bookingId, 'Booking cancelled by player');
+    return { ...result, refund };
   }
 
   @Post('bookings/:bookingId/complete')
@@ -218,7 +241,10 @@ export class TurfController {
     return this.turfService.saveTurfSports(id, body);
   }
 
+  // Direct confirmed booking without online payment: platform admin only (walk-in / manual).
+  // Players book through POST /cashfree/create-order, which holds the slot until payment.
   @Post(':id/book')
+  @UseGuards(SuperAdminGuard)
   async bookSlot(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: any,

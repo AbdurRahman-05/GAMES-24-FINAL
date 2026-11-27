@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_config.dart';
 import 'tournament_form_data.dart';
+import 'core/network/api_client.dart';
 import 'create_public_tournament_step2_screen.dart';
 
 class CreatePublicTournamentScreen extends StatefulWidget {
@@ -31,6 +32,10 @@ class _CreatePublicTournamentScreenState
   final _externalTicketController = TextEditingController();
 
   // Banner Poster
+  // Gallery images are uploaded right away; the server URL (not the local path) is saved.
+  Future<String?>? _bannerUpload;
+  static const String _fallbackBanner =
+      'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800';
   String _bannerImageUrl = 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800';
   bool _isLocalBanner = false;
 
@@ -247,6 +252,10 @@ class _CreatePublicTournamentScreenState
           _bannerImageUrl = file.path;
           _isLocalBanner = true;
         });
+        final pickedFile = file;
+        _bannerUpload = pickedFile
+            .readAsBytes()
+            .then((bytes) => ApiClient.uploadPhoto(bytes, pickedFile.name));
       }
     } catch (e) {
       if (mounted) {
@@ -333,7 +342,7 @@ class _CreatePublicTournamentScreenState
     );
   }
 
-  void _proceedToStep2() {
+  Future<void> _proceedToStep2() async {
     if (_formKey.currentState?.validate() != true) return;
 
     if (!_isVenueTBA && _selectedVenue.isEmpty) {
@@ -350,6 +359,20 @@ class _CreatePublicTournamentScreenState
         .map((e) => e.key)
         .toList();
 
+    String bannerUrl = _bannerImageUrl;
+    if (_isLocalBanner) {
+      final uploaded = await (_bannerUpload ?? Future<String?>.value(null));
+      if (!mounted) return;
+      if (uploaded == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not upload your banner, using a default poster instead.')),
+        );
+        bannerUrl = _fallbackBanner;
+      } else {
+        bannerUrl = uploaded;
+      }
+    }
+
     final data = TournamentFormData(
       title: _nameController.text.trim(),
       sport: _selectedSport,
@@ -364,7 +387,7 @@ class _CreatePublicTournamentScreenState
       isPrivate: false,
       rules: selectedRules,
       customRules: _customRulesController.text.trim(),
-      imageUrl: _bannerImageUrl,
+      imageUrl: bannerUrl,
       isVenueTBA: _isVenueTBA,
       externalTicketUrl: _externalTicketController.text.trim(),
       courtsCount: _isVenueTBA ? 0 : _selectedVenueCourts,

@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from './prisma.service.js';
 import { getAdminSports, saveAdminSports } from './auth.service.js';
+import { isRevenueBooking } from './turf.service.js';
 
 @Injectable()
 export class SuperAdminService {
@@ -512,12 +513,12 @@ export class SuperAdminService {
     ]);
 
     // Aggregate booking metrics
-    const nonCancelledBookings = allBookings.filter((b) => b.status !== 'Cancelled');
+    const nonCancelledBookings = allBookings.filter((b) => isRevenueBooking(b));
     const totalRevenue = nonCancelledBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
     const totalBookingsCount = allBookings.length;
 
     const todayBookings = allBookings.filter((b) => b.date === todayStr);
-    const todayConfirmed = todayBookings.filter((b) => b.status !== 'Cancelled');
+    const todayConfirmed = todayBookings.filter((b) => isRevenueBooking(b));
     const todayCancelled = todayBookings.filter((b) => b.status === 'Cancelled');
     const todayRevenue = todayConfirmed.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
 
@@ -541,8 +542,8 @@ export class SuperAdminService {
     // 3. Turf Revenue & Bookings Breakdown
     const turfRevenueBreakdown = allTurfs.map((t) => {
       const turfBookings = t.bookings || [];
-      const validTurfBookings = turfBookings.filter((b) => b.status !== 'Cancelled');
-      const turfTodayBookings = turfBookings.filter((b) => b.date === todayStr && b.status !== 'Cancelled');
+      const validTurfBookings = turfBookings.filter((b) => isRevenueBooking(b));
+      const turfTodayBookings = turfBookings.filter((b) => b.date === todayStr && isRevenueBooking(b));
       const turfTodayCancelled = turfBookings.filter((b) => b.date === todayStr && b.status === 'Cancelled');
 
       const turfTotalRev = validTurfBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
@@ -590,7 +591,7 @@ export class SuperAdminService {
       };
 
       existing.totalBookings += 1;
-      if (b.status !== 'Cancelled') {
+      if (isRevenueBooking(b)) {
         existing.totalSpent += Number(b.amount) || 0;
       }
       if (!existing.lastBookingDate || b.date > existing.lastBookingDate) {

@@ -15,6 +15,21 @@ export class AuthController {
     return this.authService.saveUserTeams(body?.phone || '', body?.teams || []);
   }
 
+  @Get('teams/my')
+  async getMyTeams(@Query('phone') phone: string) {
+    return this.authService.getMyTeams(phone || '');
+  }
+
+  @Post('teams/join')
+  async joinTeamByCode(@Body() body: any) {
+    return this.authService.joinTeamByCode(body);
+  }
+
+  @Post('player/match-result')
+  async recordMatchResult(@Body() body: any) {
+    return this.authService.recordMatchResult(body);
+  }
+
   @Get('admin-status/:identifier')
   async getAdminStatus(@Param('identifier') identifier: string) {
     return this.authService.getAdminStatus(identifier);

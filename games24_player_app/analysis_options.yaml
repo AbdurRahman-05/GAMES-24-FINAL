@@ -16,7 +16,6 @@ analyzer:
     - windows/**
     - macos/**
     - linux/**
-    - lib/features/**
     - lib/core/router/**
     - lib/core/theme/**
     - lib/core/widgets/**

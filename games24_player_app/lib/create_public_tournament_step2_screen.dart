@@ -31,17 +31,25 @@ class _CreatePublicTournamentStep2ScreenState
     final userName = (prefs.getString('fullName') ?? prefs.getString('userName') ?? 'Gamez24 Player').trim();
     final backendPayload = widget.formData.toBackendJson(
       organizerName: userName.isNotEmpty ? userName : 'Gamez24 Player',
-      organizerPhone: userPhone.isNotEmpty ? userPhone : '9876543210',
+      organizerPhone: userPhone,
     );
-    final success = await TournamentManager().createTournamentInBackend(backendPayload);
+    final error = await TournamentManager().createTournamentInBackend(backendPayload);
 
     if (!mounted) return;
     setState(() => _isPublishing = false);
 
-    if (!success) {
-      // Fallback: also ensure local entry exists
-      final newTourney = widget.formData.toTournament();
-      TournamentManager().addTournament(newTourney);
+    if (error != null) {
+      if (mounted) {
+        setState(() => _isPublishing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFEF4444),
+            content: Text('Could not publish tournament: $error'),
+          ),
+        );
+      }
+      return;
     }
 
     if (mounted) {

@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'dart:convert';
 import 'main_layout.dart';
 import 'dart:math';
@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_config.dart';
 import 'tournament_form_data.dart';
+import 'core/network/api_client.dart';
 import 'create_private_tournament_step2_screen.dart';
 
 class CreatePrivateTournamentScreen extends StatefulWidget {
@@ -33,7 +34,12 @@ class _CreatePrivateTournamentScreenState
   final _externalTicketController = TextEditingController();
 
   // Banner Poster
-  String _bannerImageUrl = 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800';
+  // Gallery images are uploaded right away; the server URL (not the local path) is saved.
+  Future<String?>? _bannerUpload;
+  static const String _fallbackBanner =
+      'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800';
+  String _bannerImageUrl =
+      'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800';
   bool _isLocalBanner = false;
 
   // Sports & Format
@@ -81,7 +87,9 @@ class _CreatePrivateTournamentScreenState
   Future<void> _fetchLiveTurfs() async {
     setState(() => _isLoadingVenues = true);
     try {
-      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/turfs')).timeout(const Duration(seconds: 15));
+      final res = await http
+          .get(Uri.parse('${ApiConfig.baseUrl}/turfs'))
+          .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final List list = jsonDecode(res.body);
         if (mounted && list.isNotEmpty) {
@@ -91,8 +99,13 @@ class _CreatePrivateTournamentScreenState
               final sportsList = t['sports'] as List? ?? [];
               final neighborhood = (t['neighborhoodArea'] ?? '').toString();
               final street = (t['streetAddress'] ?? '').toString();
-              final venueName = (t['venueName'] ?? t['name'] ?? 'Turf Arena').toString();
-              final loc = t['location']?.toString() ?? (neighborhood.isNotEmpty ? '$neighborhood • $street' : street);
+              final venueName = (t['venueName'] ?? t['name'] ?? 'Turf Arena')
+                  .toString();
+              final loc =
+                  t['location']?.toString() ??
+                  (neighborhood.isNotEmpty
+                      ? '$neighborhood â€¢ $street'
+                      : street);
 
               return {
                 'id': t['id'],
@@ -100,13 +113,23 @@ class _CreatePrivateTournamentScreenState
                 'loc': loc,
                 'city': street.isNotEmpty ? street : 'Madurai',
                 'courts': courts.isNotEmpty ? courts.length : 2,
-                'sports': sportsList.isNotEmpty ? sportsList.join(' • ') : 'Cricket • Football',
-                'imageUrl': (t['imageUrl'] ?? (t['photoUrls'] is List && (t['photoUrls'] as List).isNotEmpty ? t['photoUrls'][0] : '')).toString(),
+                'sports': sportsList.isNotEmpty
+                    ? sportsList.join(' â€¢ ')
+                    : 'Cricket â€¢ Football',
+                'imageUrl':
+                    (t['imageUrl'] ??
+                            (t['photoUrls'] is List &&
+                                    (t['photoUrls'] as List).isNotEmpty
+                                ? t['photoUrls'][0]
+                                : ''))
+                        .toString(),
               };
             }).toList();
             _isLoadingVenues = false;
 
-            if (_selectedVenue.isEmpty && _liveTurfs.isNotEmpty && !_isVenueTBA) {
+            if (_selectedVenue.isEmpty &&
+                _liveTurfs.isNotEmpty &&
+                !_isVenueTBA) {
               _selectedVenue = _liveTurfs.first['venue'] as String;
               _selectedLocation = _liveTurfs.first['loc'] as String;
               _selectedVenueCourts = _liveTurfs.first['courts'] as int;
@@ -126,19 +149,19 @@ class _CreatePrivateTournamentScreenState
             {
               'id': 1,
               'venue': 'test turf',
-              'loc': 'villapuram • madurai',
+              'loc': 'villapuram â€¢ madurai',
               'city': 'Madurai',
               'courts': 2,
-              'sports': 'Cricket • Football',
+              'sports': 'Cricket â€¢ Football',
               'imageUrl': '',
             },
             {
               'id': 2,
               'venue': 'Inno Sports Arena (KK Nagar)',
-              'loc': 'KK Nagar, Madurai • KK Nagar 80 Feet Road',
+              'loc': 'KK Nagar, Madurai â€¢ KK Nagar 80 Feet Road',
               'city': 'Madurai',
               'courts': 4,
-              'sports': 'Cricket • Football • Badminton',
+              'sports': 'Cricket â€¢ Football â€¢ Badminton',
               'imageUrl': '',
             },
           ];
@@ -157,28 +180,33 @@ class _CreatePrivateTournamentScreenState
   final List<Map<String, String>> _presetPosters = [
     {
       'title': 'Cyber Neon Clash',
-      'url': 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800',
-      'desc': 'High Voltage Navy & Amber'
+      'url':
+          'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800',
+      'desc': 'High Voltage Navy & Amber',
     },
     {
       'title': 'Night Floodlight Match',
-      'url': 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800',
-      'desc': 'Atmospheric Turf Lights'
+      'url':
+          'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800',
+      'desc': 'Atmospheric Turf Lights',
     },
     {
       'title': 'Cricket Gold Trophy',
-      'url': 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800',
-      'desc': 'Gold & Green Cup'
+      'url':
+          'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800',
+      'desc': 'Gold & Green Cup',
     },
     {
       'title': 'FIFA Pro Turf Arena',
-      'url': 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800',
-      'desc': 'Lush Championship Turf'
+      'url':
+          'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800',
+      'desc': 'Lush Championship Turf',
     },
     {
       'title': 'Badminton Masters',
-      'url': 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
-      'desc': 'Indoor Invitational Cup'
+      'url':
+          'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800',
+      'desc': 'Indoor Invitational Cup',
     },
   ];
 
@@ -219,7 +247,20 @@ class _CreatePrivateTournamentScreenState
 
   String _formatDate(DateTime dt) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${weekdays[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }
 
@@ -262,10 +303,14 @@ class _CreatePrivateTournamentScreenState
           _bannerImageUrl = picked.path;
           _isLocalBanner = true;
         });
+        final pickedFile = picked;
+        _bannerUpload = pickedFile
+            .readAsBytes()
+            .then((bytes) => ApiClient.uploadPhoto(bytes, pickedFile.name));
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Custom poster banner loaded successfully! 🎨'),
+              content: Text('Custom poster banner loaded successfully! ðŸŽ¨'),
               backgroundColor: Color(0xFF0F172A),
               behavior: SnackBarBehavior.floating,
             ),
@@ -274,9 +319,9 @@ class _CreatePrivateTournamentScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load image: $e')));
       }
     }
   }
@@ -307,8 +352,12 @@ class _CreatePrivateTournamentScreenState
             ),
             const SizedBox(height: 16),
             const Text(
-              'Select Tournament Poster Theme 🎨',
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white),
+              'Select Tournament Poster Theme ðŸŽ¨',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 4),
             const Text(
@@ -323,7 +372,9 @@ class _CreatePrivateTournamentScreenState
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isCurrent ? const Color(0xFFD97706) : const Color(0xFFE2E8F0),
+                    color: isCurrent
+                        ? const Color(0xFFD97706)
+                        : const Color(0xFFE2E8F0),
                     width: isCurrent ? 2 : 1,
                   ),
                 ),
@@ -337,11 +388,30 @@ class _CreatePrivateTournamentScreenState
                       fit: BoxFit.cover,
                     ),
                   ),
-                  title: Text(p['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                  subtitle: Text(p['desc']!, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                  title: Text(
+                    p['title']!,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                  subtitle: Text(
+                    p['desc']!,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
                   trailing: isCurrent
-                      ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD97706))
-                      : const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF94A3B8)),
+                      ? const Icon(
+                          Icons.check_circle_rounded,
+                          color: Color(0xFFD97706),
+                        )
+                      : const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: Color(0xFF94A3B8),
+                        ),
                   onTap: () {
                     setState(() {
                       _bannerImageUrl = p['url']!;
@@ -362,7 +432,9 @@ class _CreatePrivateTournamentScreenState
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF0F172A),
                   side: const BorderSide(color: Color(0xFF0F172A)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);
@@ -388,7 +460,7 @@ class _CreatePrivateTournamentScreenState
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Rule "$text" added! ✔️'),
+        content: Text('Rule "$text" added! âœ”ï¸'),
         behavior: SnackBarBehavior.floating,
         backgroundColor: const Color(0xFF0F172A),
         duration: const Duration(seconds: 2),
@@ -407,12 +479,16 @@ class _CreatePrivateTournamentScreenState
     return defaults.contains(rule);
   }
 
-  void _proceedToStep2() {
+  Future<void> _proceedToStep2() async {
     if (_formKey.currentState?.validate() != true) return;
 
     if (!_isVenueTBA && _selectedVenue.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a tournament venue or toggle "Decide Venue Later"')),
+        const SnackBar(
+          content: Text(
+            'Please select a tournament venue or toggle "Decide Venue Later"',
+          ),
+        ),
       );
       return;
     }
@@ -424,6 +500,20 @@ class _CreatePrivateTournamentScreenState
         .map((e) => e.key)
         .toList();
 
+    String bannerUrl = _bannerImageUrl;
+    if (_isLocalBanner) {
+      final uploaded = await (_bannerUpload ?? Future<String?>.value(null));
+      if (!mounted) return;
+      if (uploaded == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not upload your banner, using a default poster instead.')),
+        );
+        bannerUrl = _fallbackBanner;
+      } else {
+        bannerUrl = uploaded;
+      }
+    }
+
     final data = TournamentFormData(
       title: _nameController.text.trim(),
       sport: _selectedSport,
@@ -433,13 +523,15 @@ class _CreatePrivateTournamentScreenState
       date: _formatDate(_selectedDate),
       time: _selectedTimeSlot,
       venue: _isVenueTBA ? 'Venue To Be Announced (TBA)' : _selectedVenue,
-      location: _isVenueTBA ? '$_selectedCity (Exact Arena TBA)' : _selectedLocation,
+      location: _isVenueTBA
+          ? '$_selectedCity (Exact Arena TBA)'
+          : _selectedLocation,
       format: _selectedFormat,
       isPrivate: true,
       accessCode: _pinController.text.trim(),
       rules: selectedRules,
       customRules: _customRulesController.text.trim(),
-      imageUrl: _bannerImageUrl,
+      imageUrl: bannerUrl,
       isVenueTBA: _isVenueTBA,
       externalTicketUrl: _externalTicketController.text.trim(),
       courtsCount: _selectedVenueCourts,
@@ -448,7 +540,8 @@ class _CreatePrivateTournamentScreenState
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => CreatePrivateTournamentStep2Screen(formData: data),
+        builder: (context) =>
+            CreatePrivateTournamentStep2Screen(formData: data),
       ),
     );
   }
@@ -461,7 +554,11 @@ class _CreatePrivateTournamentScreenState
         backgroundColor: const Color(0xFF141414),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
           onPressed: () {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
@@ -484,7 +581,7 @@ class _CreatePrivateTournamentScreenState
               ),
             ),
             Text(
-              'Step 1 of 2 • Invite-Only Cup Setup',
+              'Step 1 of 2 â€¢ Invite-Only Cup Setup',
               style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
             ),
           ],
@@ -523,21 +620,36 @@ class _CreatePrivateTournamentScreenState
 
               // Tournament Title
               _buildSectionCard(
-                title: 'Tournament Name 🏆',
+                title: 'Tournament Name ðŸ†',
                 subtitle: 'Name your private championship or cup',
                 child: TextFormField(
                   controller: _nameController,
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.shield_outlined, color: Color(0xFFD97706), size: 20),
+                    prefixIcon: const Icon(
+                      Icons.shield_outlined,
+                      color: Color(0xFFD97706),
+                      size: 20,
+                    ),
                     labelText: 'Tournament Name',
                     hintText: 'e.g. Alumni Badminton Cup 2026',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFD97706), width: 2),
+                      borderSide: const BorderSide(
+                        color: Color(0xFFD97706),
+                        width: 2,
+                      ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
@@ -551,12 +663,19 @@ class _CreatePrivateTournamentScreenState
 
               // Sport & Format
               _buildSectionCard(
-                title: 'Sport & Match Structure 🏅',
+                title: 'Sport & Match Structure ðŸ…',
                 subtitle: 'Choose your sport discipline and tournament format',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Select Sport', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                    const Text(
+                      'Select Sport',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -566,21 +685,39 @@ class _CreatePrivateTournamentScreenState
                         final icon = item['icon'] as IconData;
                         final isSel = _selectedSport == name;
                         return ChoiceChip(
-                          avatar: Icon(icon, size: 16, color: isSel ? Colors.white : const Color(0xFFD97706)),
+                          avatar: Icon(
+                            icon,
+                            size: 16,
+                            color: isSel
+                                ? Colors.white
+                                : const Color(0xFFD97706),
+                          ),
                           label: Text(name),
                           selected: isSel,
                           selectedColor: const Color(0xFF0F172A),
                           labelStyle: TextStyle(
-                            color: isSel ? Colors.white : const Color(0xFF0F172A),
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
+                            color: isSel
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
+                            fontWeight: isSel
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                             fontSize: 12,
                           ),
-                          onSelected: (_) => setState(() => _selectedSport = name),
+                          onSelected: (_) =>
+                              setState(() => _selectedSport = name),
                         );
                       }).toList(),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Format', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                    const Text(
+                      'Format',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     ..._formatsList.map((fmt) {
                       final isSel = _selectedFormat == fmt;
@@ -590,20 +727,31 @@ class _CreatePrivateTournamentScreenState
                           onTap: () => setState(() => _selectedFormat = fmt),
                           borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSel ? const Color(0xFF1F2916) : const Color(0xFF141414),
+                              color: isSel
+                                  ? const Color(0xFF1F2916)
+                                  : const Color(0xFF141414),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                                color: isSel
+                                    ? const Color(0xFFD4FF00)
+                                    : const Color(0xFF262626),
                                 width: isSel ? 1.5 : 1,
                               ),
                             ),
                             child: Row(
                               children: [
                                 Icon(
-                                  isSel ? Icons.radio_button_checked : Icons.radio_button_off,
-                                  color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF71717A),
+                                  isSel
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_off,
+                                  color: isSel
+                                      ? const Color(0xFFD4FF00)
+                                      : const Color(0xFF71717A),
                                   size: 18,
                                 ),
                                 const SizedBox(width: 10),
@@ -611,8 +759,12 @@ class _CreatePrivateTournamentScreenState
                                   fmt,
                                   style: TextStyle(
                                     fontSize: 12.5,
-                                    fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                                    color: isSel ? const Color(0xFFD4FF00) : Colors.white,
+                                    fontWeight: isSel
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: isSel
+                                        ? const Color(0xFFD4FF00)
+                                        : Colors.white,
                                   ),
                                 ),
                               ],
@@ -628,8 +780,9 @@ class _CreatePrivateTournamentScreenState
 
               // Financials: Prize Pool & Entry Fee
               _buildSectionCard(
-                title: 'Prize & Entry Fee 💵',
-                subtitle: 'Set custom rewards and registration fee for private teams',
+                title: 'Prize & Entry Fee ðŸ’µ',
+                subtitle:
+                    'Set custom rewards and registration fee for private teams',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -638,13 +791,25 @@ class _CreatePrivateTournamentScreenState
                         Expanded(
                           child: TextFormField(
                             controller: _prizeController,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                             decoration: InputDecoration(
                               labelText: 'Prize Pool',
-                              hintText: 'e.g. ₹15,000 + Trophy',
-                              prefixIcon: const Icon(Icons.card_giftcard_rounded, color: Color(0xFFD97706), size: 18),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              hintText: 'e.g. â‚¹15,000 + Trophy',
+                              prefixIcon: const Icon(
+                                Icons.card_giftcard_rounded,
+                                color: Color(0xFFD97706),
+                                size: 18,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -652,13 +817,25 @@ class _CreatePrivateTournamentScreenState
                         Expanded(
                           child: TextFormField(
                             controller: _entryFeeController,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                             decoration: InputDecoration(
                               labelText: 'Entry Fee / Team',
-                              hintText: 'e.g. ₹1,000 / team',
-                              prefixIcon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFFD97706), size: 18),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              hintText: 'e.g. â‚¹1,000 / team',
+                              prefixIcon: const Icon(
+                                Icons.confirmation_number_outlined,
+                                color: Color(0xFFD97706),
+                                size: 18,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -671,18 +848,42 @@ class _CreatePrivateTournamentScreenState
                       decoration: InputDecoration(
                         labelText: 'External Ticket / RSVP Link (Optional)',
                         hintText: 'e.g. https://forms.gle/... or Event Pass',
-                        prefixIcon: const Icon(Icons.link_rounded, color: Color(0xFFD97706), size: 18),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        prefixIcon: const Icon(
+                          Icons.link_rounded,
+                          color: Color(0xFFD97706),
+                          size: 18,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 6,
                       children: [
-                        _buildPresetChip('+ ₹10,000', () => setState(() => _prizeController.text = '₹10,000 + Trophy')),
-                        _buildPresetChip('+ ₹20,000', () => setState(() => _prizeController.text = '₹20,000 + Trophy')),
-                        _buildPresetChip('Free Entry', () => setState(() => _entryFeeController.text = 'Free Entry')),
+                        _buildPresetChip(
+                          '+ â‚¹10,000',
+                          () => setState(
+                            () => _prizeController.text = 'â‚¹10,000 + Trophy',
+                          ),
+                        ),
+                        _buildPresetChip(
+                          '+ â‚¹20,000',
+                          () => setState(
+                            () => _prizeController.text = 'â‚¹20,000 + Trophy',
+                          ),
+                        ),
+                        _buildPresetChip(
+                          'Free Entry',
+                          () => setState(
+                            () => _entryFeeController.text = 'Free Entry',
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -692,19 +893,28 @@ class _CreatePrivateTournamentScreenState
 
               // Capacity & Schedule (with high-contrast ChoiceChips)
               _buildSectionCard(
-                title: 'Team Count & Timing 📅',
+                title: 'Team Count & Timing ðŸ“…',
                 subtitle: 'Invite capacity and court time',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Invited Teams Count', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                    const Text(
+                      'Invited Teams Count',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [4, 8, 12, 16, 24].map((count) {
                         final isSel = _maxTeams == count;
                         return Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 3.0,
+                            ),
                             child: InkWell(
                               onTap: () => setState(() => _maxTeams = count),
                               borderRadius: BorderRadius.circular(10),
@@ -713,10 +923,14 @@ class _CreatePrivateTournamentScreenState
                                 height: 38,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF1E1E1E),
+                                  color: isSel
+                                      ? const Color(0xFFD4FF00)
+                                      : const Color(0xFF1E1E1E),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF262626),
+                                    color: isSel
+                                        ? const Color(0xFFD4FF00)
+                                        : const Color(0xFF262626),
                                     width: isSel ? 1.5 : 1.0,
                                   ),
                                 ),
@@ -727,7 +941,9 @@ class _CreatePrivateTournamentScreenState
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
-                                      color: isSel ? Colors.black : const Color(0xFFA1A1AA),
+                                      color: isSel
+                                          ? Colors.black
+                                          : const Color(0xFFA1A1AA),
                                     ),
                                   ),
                                 ),
@@ -749,20 +965,37 @@ class _CreatePrivateTournamentScreenState
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E1E1E),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF262626)),
+                                border: Border.all(
+                                  color: const Color(0xFF262626),
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.calendar_today_rounded, size: 16, color: Color(0xFFD4FF00)),
+                                  const Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 16,
+                                    color: Color(0xFFD4FF00),
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Match Date', style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA))),
+                                        const Text(
+                                          'Match Date',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Color(0xFFA1A1AA),
+                                          ),
+                                        ),
                                         Text(
                                           _formatDate(_selectedDate),
-                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
@@ -783,20 +1016,37 @@ class _CreatePrivateTournamentScreenState
                               decoration: BoxDecoration(
                                 color: const Color(0xFF1E1E1E),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF262626)),
+                                border: Border.all(
+                                  color: const Color(0xFF262626),
+                                ),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.access_time_rounded, size: 16, color: Color(0xFFD4FF00)),
+                                  const Icon(
+                                    Icons.access_time_rounded,
+                                    size: 16,
+                                    color: Color(0xFFD4FF00),
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Time Slot', style: TextStyle(fontSize: 10, color: Color(0xFFA1A1AA))),
+                                        const Text(
+                                          'Time Slot',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Color(0xFFA1A1AA),
+                                          ),
+                                        ),
                                         Text(
                                           _selectedTimeSlot,
-                                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
@@ -816,20 +1066,27 @@ class _CreatePrivateTournamentScreenState
 
               // Venue Selection & TBA Toggle
               _buildSectionCard(
-                title: 'Host Turf Venue 🏟️',
+                title: 'Host Turf Venue ðŸŸï¸',
                 subtitle: 'Venue for private matches or launch details later',
                 child: Column(
                   children: [
                     // Decide Venue Later (TBA) Switch Card
                     Material(
-                      color: _isVenueTBA ? const Color(0xFF1F1A12) : const Color(0xFF141414),
+                      color: _isVenueTBA
+                          ? const Color(0xFF1F1A12)
+                          : const Color(0xFF141414),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _isVenueTBA ? const Color(0xFFFBBF24) : const Color(0xFF262626),
+                            color: _isVenueTBA
+                                ? const Color(0xFFFBBF24)
+                                : const Color(0xFF262626),
                             width: _isVenueTBA ? 1.5 : 1,
                           ),
                         ),
@@ -837,12 +1094,18 @@ class _CreatePrivateTournamentScreenState
                           contentPadding: EdgeInsets.zero,
                           activeThumbColor: const Color(0xFFD97706),
                           title: const Text(
-                            'Decide Venue Later 📍 (TBA)',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            'Decide Venue Later ðŸ“ (TBA)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
                           subtitle: const Text(
                             'Venue shows as "Launching Soon". Perfect if awaiting turf confirmation.',
-                            style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
                           value: _isVenueTBA,
                           onChanged: (val) {
@@ -850,7 +1113,8 @@ class _CreatePrivateTournamentScreenState
                               _isVenueTBA = val;
                               if (val) {
                                 _selectedVenue = 'Venue To Be Announced (TBA)';
-                                _selectedLocation = '$_selectedCity (Exact Arena TBA)';
+                                _selectedLocation =
+                                    '$_selectedCity (Exact Arena TBA)';
                                 _selectedVenueCourts = 0;
                               } else {
                                 _selectedVenue = '';
@@ -881,9 +1145,15 @@ class _CreatePrivateTournamentScreenState
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF1F1A12),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF3D2A14)),
+                                  border: Border.all(
+                                    color: const Color(0xFF3D2A14),
+                                  ),
                                 ),
-                                child: const Icon(Icons.stadium_rounded, color: Color(0xFFFBBF24), size: 22),
+                                child: const Icon(
+                                  Icons.stadium_rounded,
+                                  color: Color(0xFFFBBF24),
+                                  size: 22,
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -891,24 +1161,35 @@ class _CreatePrivateTournamentScreenState
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _selectedVenue.isNotEmpty ? _selectedVenue : 'Select Host Turf Arena',
+                                      _selectedVenue.isNotEmpty
+                                          ? _selectedVenue
+                                          : 'Select Host Turf Arena',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.5,
-                                        color: _selectedVenue.isNotEmpty ? Colors.white : const Color(0xFFA1A1AA),
+                                        color: _selectedVenue.isNotEmpty
+                                            ? Colors.white
+                                            : const Color(0xFFA1A1AA),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
                                       _selectedLocation.isNotEmpty
-                                          ? '$_selectedLocation • $_selectedVenueCourts Courts Available'
+                                          ? '$_selectedLocation â€¢ $_selectedVenueCourts Courts Available'
                                           : 'Tap to browse venues in $_selectedCity',
-                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        color: Color(0xFF64748B),
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.swap_horiz_rounded, color: Color(0xFFD97706), size: 20),
+                              const Icon(
+                                Icons.swap_horiz_rounded,
+                                color: Color(0xFFD97706),
+                                size: 20,
+                              ),
                             ],
                           ),
                         ),
@@ -923,12 +1204,20 @@ class _CreatePrivateTournamentScreenState
                         ),
                         child: Row(
                           children: const [
-                            Icon(Icons.info_outline_rounded, color: Color(0xFFFBBF24), size: 20),
+                            Icon(
+                              Icons.info_outline_rounded,
+                              color: Color(0xFFFBBF24),
+                              size: 20,
+                            ),
                             SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'Venue Launching Soon mode active. Invited teams will receive notification when venue is finalized.',
-                                style: TextStyle(color: Color(0xFFFBBF24), fontSize: 11.5, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  color: Color(0xFFFBBF24),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ],
@@ -941,7 +1230,7 @@ class _CreatePrivateTournamentScreenState
 
               // Rules & Access Policy with Custom Rule Add Action
               _buildSectionCard(
-                title: 'Rules & Access Policy 📜',
+                title: 'Rules & Access Policy ðŸ“œ',
                 subtitle: 'Tournament guidelines for invited squads',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -959,11 +1248,21 @@ class _CreatePrivateTournamentScreenState
                           title: Row(
                             children: [
                               Expanded(
-                                child: Text(rule, style: const TextStyle(fontSize: 12, color: Color(0xFF334155))),
+                                child: Text(
+                                  rule,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF334155),
+                                  ),
+                                ),
                               ),
                               if (isCustom)
                                 IconButton(
-                                  icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    size: 18,
+                                    color: Colors.redAccent,
+                                  ),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
                                   onPressed: () {
@@ -988,10 +1287,16 @@ class _CreatePrivateTournamentScreenState
                             controller: _newRuleInputController,
                             style: const TextStyle(fontSize: 12),
                             decoration: InputDecoration(
-                              labelText: 'Add Custom Rule (e.g. ID verification)',
+                              labelText:
+                                  'Add Custom Rule (e.g. ID verification)',
                               hintText: 'Type rule and tap + Add',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                             ),
                             onSubmitted: (_) => _addNewCustomRule(),
                           ),
@@ -1001,11 +1306,22 @@ class _CreatePrivateTournamentScreenState
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFD97706),
                             foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                           ),
                           icon: const Icon(Icons.add, size: 16),
-                          label: const Text('+ Add', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                          label: const Text(
+                            '+ Add',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
                           onPressed: _addNewCustomRule,
                         ),
                       ],
@@ -1016,9 +1332,15 @@ class _CreatePrivateTournamentScreenState
                       style: const TextStyle(fontSize: 12),
                       decoration: InputDecoration(
                         labelText: 'Organizer Remarks / Match Notes (Optional)',
-                        hintText: 'e.g. Refreshments provided after quarterfinals',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        hintText:
+                            'e.g. Refreshments provided after quarterfinals',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                       ),
                     ),
                   ],
@@ -1032,15 +1354,26 @@ class _CreatePrivateTournamentScreenState
                 height: 52,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F172A), // Premium navy slate
+                    backgroundColor: const Color(
+                      0xFF0F172A,
+                    ), // Premium navy slate
                     foregroundColor: Colors.white,
                     elevation: 1,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                  icon: const Icon(Icons.arrow_forward_rounded, size: 20, color: Color(0xFFFDE68A)),
+                  icon: const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 20,
+                    color: Color(0xFFFDE68A),
+                  ),
                   label: const Text(
-                    'Continue to Review (Step 2) ➔',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5),
+                    'Continue to Review (Step 2) âž”',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14.5,
+                    ),
                   ),
                   onPressed: _proceedToStep2,
                 ),
@@ -1090,7 +1423,11 @@ class _CreatePrivateTournamentScreenState
                           height: 150,
                           color: const Color(0xFF1E293B),
                           child: const Center(
-                            child: Icon(Icons.sports_soccer, color: Colors.white54, size: 48),
+                            child: Icon(
+                              Icons.sports_soccer,
+                              color: Colors.white54,
+                              size: 48,
+                            ),
                           ),
                         ),
                       ),
@@ -1111,7 +1448,10 @@ class _CreatePrivateTournamentScreenState
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD97706),
                       borderRadius: BorderRadius.circular(20),
@@ -1123,7 +1463,12 @@ class _CreatePrivateTournamentScreenState
                         SizedBox(width: 4),
                         Text(
                           'PRIVATE POSTER',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ],
                     ),
@@ -1135,12 +1480,20 @@ class _CreatePrivateTournamentScreenState
                   right: 14,
                   child: Row(
                     children: [
-                      const Icon(Icons.image_rounded, color: Color(0xFFFDE68A), size: 16),
+                      const Icon(
+                        Icons.image_rounded,
+                        color: Color(0xFFFDE68A),
+                        size: 16,
+                      ),
                       const SizedBox(width: 6),
                       const Expanded(
                         child: Text(
                           'Official Private Cup Banner',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -1158,11 +1511,19 @@ class _CreatePrivateTournamentScreenState
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFF0F172A),
                       side: const BorderSide(color: Color(0xFFCBD5E1)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     icon: const Icon(Icons.style_outlined, size: 16),
-                    label: const Text('Preset Posters 🎨', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Preset Posters ðŸŽ¨',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     onPressed: _showPresetPostersSheet,
                   ),
                 ),
@@ -1173,11 +1534,19 @@ class _CreatePrivateTournamentScreenState
                       backgroundColor: const Color(0xFF0F172A),
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                     icon: const Icon(Icons.upload_file_rounded, size: 16),
-                    label: const Text('Upload Image 📸', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Upload Image ðŸ“¸',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     onPressed: _pickCustomPoster,
                   ),
                 ),
@@ -1209,7 +1578,11 @@ class _CreatePrivateTournamentScreenState
               color: Color(0xFFD97706),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.lock_rounded, color: Colors.white, size: 22),
+            child: const Icon(
+              Icons.lock_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -1217,13 +1590,21 @@ class _CreatePrivateTournamentScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  'Private Invite-Only Cup 🔒',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFFFDE68A)),
+                  'Private Invite-Only Cup ðŸ”’',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFFFDE68A),
+                  ),
                 ),
                 SizedBox(height: 3),
                 Text(
                   'Only teams with your unique Access PIN can find and register for this tournament. Hidden from public discovery.',
-                  style: TextStyle(fontSize: 11.5, color: Colors.white70, height: 1.3),
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.white70,
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
@@ -1253,7 +1634,11 @@ class _CreatePrivateTournamentScreenState
                   SizedBox(width: 6),
                   Text(
                     'Tournament Security PIN',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFFBBF24)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                      color: Color(0xFFFBBF24),
+                    ),
                   ),
                 ],
               ),
@@ -1263,7 +1648,10 @@ class _CreatePrivateTournamentScreenState
                   foregroundColor: const Color(0xFFFBBF24),
                 ),
                 icon: const Icon(Icons.refresh_rounded, size: 14),
-                label: const Text('Generate New', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'Generate New',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
                 onPressed: _generateRandomPin,
               ),
             ],
@@ -1271,26 +1659,56 @@ class _CreatePrivateTournamentScreenState
           const SizedBox(height: 8),
           TextFormField(
             controller: _pinController,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 2, color: Colors.white),
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 18,
+              letterSpacing: 2,
+              color: Colors.white,
+            ),
             decoration: InputDecoration(
               filled: true,
               fillColor: const Color(0xFF141414),
               hintText: 'e.g. G24-5821',
               hintStyle: const TextStyle(color: Color(0xFFA1A1AA)),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF262626))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF262626))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4FF00), width: 2)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF262626)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF262626)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFFD4FF00),
+                  width: 2,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.copy_rounded, size: 18, color: Color(0xFFFBBF24)),
+                icon: const Icon(
+                  Icons.copy_rounded,
+                  size: 18,
+                  color: Color(0xFFFBBF24),
+                ),
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: _pinController.text.trim()));
+                  Clipboard.setData(
+                    ClipboardData(text: _pinController.text.trim()),
+                  );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       behavior: SnackBarBehavior.floating,
                       backgroundColor: const Color(0xFF1E293B),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      content: Text('PIN "${_pinController.text.trim()}" copied! 📋'),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      content: Text(
+                        'PIN "${_pinController.text.trim()}" copied! 📋',
+                      ),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -1339,9 +1757,19 @@ class _CreatePrivateTournamentScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14.5, color: Colors.white)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14.5,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(subtitle, style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA))),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
+          ),
           const SizedBox(height: 14),
           child,
         ],
@@ -1351,7 +1779,14 @@ class _CreatePrivateTournamentScreenState
 
   Widget _buildPresetChip(String label, VoidCallback onTap) {
     return ActionChip(
-      label: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFFFBBF24), fontWeight: FontWeight.bold)),
+      label: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          color: Color(0xFFFBBF24),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
       backgroundColor: const Color(0xFF1F1A12),
       side: const BorderSide(color: Color(0xFF3D2A14)),
       onPressed: onTap,
@@ -1367,23 +1802,38 @@ class _CreatePrivateTournamentScreenState
     ];
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Select Private Match Slot', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text(
+              'Select Private Match Slot',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 14),
-            ...slots.map((s) => ListTile(
-                  title: Text(s, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  trailing: _selectedTimeSlot == s.split(' (').first ? const Icon(Icons.check, color: Color(0xFFD97706)) : null,
-                  onTap: () {
-                    setState(() => _selectedTimeSlot = s.split(' (').first);
-                    Navigator.pop(ctx);
-                  },
-                )),
+            ...slots.map(
+              (s) => ListTile(
+                title: Text(
+                  s,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                trailing: _selectedTimeSlot == s.split(' (').first
+                    ? const Icon(Icons.check, color: Color(0xFFD97706))
+                    : null,
+                onTap: () {
+                  setState(() => _selectedTimeSlot = s.split(' (').first);
+                  Navigator.pop(ctx);
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -1397,7 +1847,9 @@ class _CreatePrivateTournamentScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF141414),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
@@ -1408,23 +1860,50 @@ class _CreatePrivateTournamentScreenState
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: const Color(0xFF333333), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF333333),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Select Host Turf Venue 🏟️', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.white)),
+                const Text(
+                  'Select Host Turf Venue ðŸŸï¸',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: const Color(0xFF1F1A12), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFF3D2A14))),
-                  child: const Text('Live App Turfs', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24))),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1F1A12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF3D2A14)),
+                  ),
+                  child: const Text(
+                    'Live App Turfs',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFBBF24),
+                    ),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 4),
-            const Text('Showing verified turfs present in the app with active court counts', style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA))),
+            const Text(
+              'Showing verified turfs present in the app with active court counts',
+              style: TextStyle(fontSize: 12, color: Color(0xFFA1A1AA)),
+            ),
             const SizedBox(height: 16),
             if (_isLoadingVenues)
               const Center(
@@ -1435,64 +1914,101 @@ class _CreatePrivateTournamentScreenState
               )
             else
               ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.5),
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: venuesToShow.length,
-                separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFF262626)),
-                itemBuilder: (c, idx) {
-                  final v = venuesToShow[idx];
-                  final isSel = _selectedVenue == v['venue'];
-                  final courtCount = v['courts'] as int? ?? 2;
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(ctx).size.height * 0.5,
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: venuesToShow.length,
+                  separatorBuilder: (_, index) =>
+                      const Divider(height: 1, color: Color(0xFF262626)),
+                  itemBuilder: (c, idx) {
+                    final v = venuesToShow[idx];
+                    final isSel = _selectedVenue == v['venue'];
+                    final courtCount = v['courts'] as int? ?? 2;
 
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSel ? const Color(0xFFD4FF00) : const Color(0xFF1E1E1E),
-                        borderRadius: BorderRadius.circular(10),
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 4,
+                        horizontal: 8,
                       ),
-                      child: Icon(Icons.stadium_rounded, color: isSel ? Colors.black : const Color(0xFFD4FF00), size: 22),
-                    ),
-                    title: Row(
-                      children: [
-                        Expanded(
-                          child: Text(v['venue'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Colors.white)),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSel
+                              ? const Color(0xFFD4FF00)
+                              : const Color(0xFF1E1E1E),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1F1A12),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF3D2A14)),
-                          ),
-                          child: Text(
-                            '$courtCount Courts',
-                            style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFFFBBF24)),
-                          ),
+                        child: Icon(
+                          Icons.stadium_rounded,
+                          color: isSel ? Colors.black : const Color(0xFFD4FF00),
+                          size: 22,
                         ),
-                      ],
-                    ),
-                    subtitle: Text(
-                      '${v['loc']} • ${v['sports'] ?? 'All Sports'}',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFFA1A1AA)),
-                    ),
-                    trailing: isSel
-                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFFD4FF00))
-                        : const Icon(Icons.chevron_right_rounded, color: Color(0xFF71717A)),
-                    onTap: () {
-                      setState(() {
-                        _selectedVenue = v['venue'] as String;
-                        _selectedLocation = v['loc'] as String;
-                        _selectedVenueCourts = courtCount;
-                      });
-                      Navigator.pop(ctx);
-                    },
-                  );
-                },
+                      ),
+                      title: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              v['venue'] as String,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1F1A12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFF3D2A14),
+                              ),
+                            ),
+                            child: Text(
+                              '$courtCount Courts',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFFBBF24),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: Text(
+                        '${v['loc']} • ${v['sports'] ?? 'All Sports'}',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFFA1A1AA),
+                        ),
+                      ),
+                      trailing: isSel
+                          ? const Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFFD4FF00),
+                            )
+                          : const Icon(
+                              Icons.chevron_right_rounded,
+                              color: Color(0xFF71717A),
+                            ),
+                      onTap: () {
+                        setState(() {
+                          _selectedVenue = v['venue'] as String;
+                          _selectedLocation = v['loc'] as String;
+                          _selectedVenueCourts = courtCount;
+                        });
+                        Navigator.pop(ctx);
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),

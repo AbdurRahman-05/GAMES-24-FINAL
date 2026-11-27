@@ -40,7 +40,8 @@ class BookingQrPassModal extends StatelessWidget {
 
   String get qrPayload {
     final bookingId = displayBookingId;
-    final turfId = booking['turfId'] ?? booking['verifiedAdminId'] ?? 1;
+    // No default venue: the scanner validates the pass against its own venue on the server.
+    final turfId = booking['turfId'] ?? booking['verifiedAdminId'];
     final turfName = (booking['turfName'] ?? booking['courtName'] ?? 'Turf Arena').toString();
     final customerName = (booking['customerName'] ?? booking['userName'] ?? 'Player Customer').toString();
     final customerPhone = (booking['customerPhone'] ?? booking['userPhone'] ?? '').toString();

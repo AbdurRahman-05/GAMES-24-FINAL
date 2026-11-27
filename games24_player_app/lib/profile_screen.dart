@@ -1,3 +1,4 @@
+import 'core/session/session_manager.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +7,6 @@ import 'package:games24_player_app/api_config.dart';
 import 'package:games24_player_app/my_bookings_screen.dart';
 import 'package:games24_player_app/teams_hub_screen.dart';
 import 'package:games24_player_app/leaderboard_screen.dart';
-import 'package:games24_player_app/login_screen.dart';
 import 'package:games24_player_app/performance_screen.dart';
 import 'package:games24_player_app/badges_screen.dart';
 import 'package:games24_player_app/settings_screen.dart';
@@ -46,7 +46,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final prefs = await SharedPreferences.getInstance();
     final rawPhone = prefs.getString('mobileNumber') ?? '';
     final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
-    final fallbackId = 'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '0001'}';
+    final fallbackId =
+        'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '0001'}';
 
     setState(() {
       _fullName = prefs.getString('fullName') ?? 'Active Player';
@@ -60,7 +61,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (_mobileNumber.isNotEmpty) {
       try {
-        final profileUri = Uri.parse('${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(_mobileNumber)}');
+        final profileUri = Uri.parse(
+          '${ApiConfig.baseUrl}/auth/user-profile?phone=${Uri.encodeComponent(_mobileNumber)}',
+        );
         http.Response res;
         try {
           res = await http.get(profileUri).timeout(const Duration(seconds: 15));
@@ -73,7 +76,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final data = jsonDecode(res.body);
           if (mounted) {
             setState(() {
-              if (data['fullName'] != null && data['fullName'].toString().isNotEmpty) {
+              if (data['fullName'] != null &&
+                  data['fullName'].toString().isNotEmpty) {
                 _fullName = data['fullName'].toString();
                 prefs.setString('fullName', _fullName);
               }
@@ -81,7 +85,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _preferredSport = data['preferredSport'].toString();
                 prefs.setString('preferredSport', _preferredSport);
               }
-              if (data['playerId'] != null && data['playerId'].toString().isNotEmpty) {
+              if (data['playerId'] != null &&
+                  data['playerId'].toString().isNotEmpty) {
                 _playerId = data['playerId'].toString();
                 prefs.setString('playerId', _playerId);
               }
@@ -94,7 +99,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // Also fetch rank and points from leaderboard
       try {
-        final lbUri = Uri.parse('${ApiConfig.baseUrl}/auth/leaderboard?city=${Uri.encodeComponent(_city)}&phone=${Uri.encodeComponent(_mobileNumber)}&playerId=${Uri.encodeComponent(_playerId)}');
+        final lbUri = Uri.parse(
+          '${ApiConfig.baseUrl}/auth/leaderboard?city=${Uri.encodeComponent(_city)}&phone=${Uri.encodeComponent(_mobileNumber)}&playerId=${Uri.encodeComponent(_playerId)}',
+        );
         http.Response lbRes;
         try {
           lbRes = await http.get(lbUri).timeout(const Duration(seconds: 15));
@@ -154,7 +161,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MyBookingsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const MyBookingsScreen(),
+                  ),
                 );
               },
             ),
@@ -167,7 +176,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TeamsHubScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const TeamsHubScreen(),
+                  ),
                 );
               },
             ),
@@ -201,7 +212,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const PerformanceScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const PerformanceScreen(),
+                  ),
                 );
               },
             ),
@@ -210,11 +223,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context: context,
               icon: Icons.leaderboard_outlined,
               title: 'Leaderboard & Standings',
-              subtitle: '$_rank in $_city • Friends, City, State & Sport rankings',
+              subtitle:
+                  '$_rank in $_city • Friends, City, State & Sport rankings',
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const LeaderboardScreen(),
+                  ),
                 );
               },
             ),
@@ -242,7 +258,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
                 );
               },
             ),
@@ -255,7 +273,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SupportScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const SupportScreen(),
+                  ),
                 );
               },
             ),
@@ -295,11 +315,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF1F2916),
-                  border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35), width: 1.5),
+                  border: Border.all(
+                    color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                    width: 1.5,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  _fullName.isNotEmpty ? _fullName.substring(0, 1).toUpperCase() : 'P',
+                  _fullName.isNotEmpty
+                      ? _fullName.substring(0, 1).toUpperCase()
+                      : 'P',
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
@@ -311,20 +336,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1F2916),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.4), width: 1.5),
+                    border: Border.all(
+                      color: const Color(0xFFD4FF00).withValues(alpha: 0.4),
+                      width: 1.5,
+                    ),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, color: Color(0xFFD4FF00), size: 10),
+                      Icon(
+                        Icons.check_circle,
+                        color: Color(0xFFD4FF00),
+                        size: 10,
+                      ),
                       SizedBox(width: 2),
                       Text(
                         'Member',
-                        style: TextStyle(color: Color(0xFFD4FF00), fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Color(0xFFD4FF00),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -350,11 +389,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF1F2916),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                        border: Border.all(
+                          color: const Color(
+                            0xFFD4FF00,
+                          ).withValues(alpha: 0.35),
+                        ),
                       ),
                       child: Icon(
                         _getSportIcon(_preferredSport),
@@ -374,7 +420,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF181818),
                     borderRadius: BorderRadius.circular(8),
@@ -383,7 +432,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.badge_outlined, size: 12, color: Color(0xFFD4FF00)),
+                      const Icon(
+                        Icons.badge_outlined,
+                        size: 12,
+                        color: Color(0xFFD4FF00),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'ID: $_playerId',
@@ -404,12 +457,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               backgroundColor: const Color(0xFF141414),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                side: const BorderSide(color: Color(0xFFD4FF00)),
+                                side: const BorderSide(
+                                  color: Color(0xFFD4FF00),
+                                ),
                               ),
                             ),
                           );
                         },
-                        child: const Icon(Icons.copy_rounded, size: 12, color: Color(0xFFD4FF00)),
+                        child: const Icon(
+                          Icons.copy_rounded,
+                          size: 12,
+                          color: Color(0xFFD4FF00),
+                        ),
                       ),
                     ],
                   ),
@@ -417,7 +476,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.location_on, color: Color(0xFFD4FF00), size: 13),
+                    const Icon(
+                      Icons.location_on,
+                      color: Color(0xFFD4FF00),
+                      size: 13,
+                    ),
                     const SizedBox(width: 2),
                     Expanded(
                       child: Text(
@@ -438,24 +501,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LeaderboardScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const LeaderboardScreen(),
+                      ),
                     );
                   },
                   borderRadius: BorderRadius.circular(10),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1F2916),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                      border: Border.all(
+                        color: const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.emoji_events_rounded, color: Color(0xFFD4FF00), size: 14),
+                        const Icon(
+                          Icons.emoji_events_rounded,
+                          color: Color(0xFFD4FF00),
+                          size: 14,
+                        ),
                         const SizedBox(width: 5),
                         ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.42),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.42,
+                          ),
                           child: Text(
                             '$_rank in $_city • $_points PTS',
                             style: const TextStyle(
@@ -468,7 +544,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(Icons.chevron_right, color: Color(0xFFD4FF00), size: 14),
+                        const Icon(
+                          Icons.chevron_right,
+                          color: Color(0xFFD4FF00),
+                          size: 14,
+                        ),
                       ],
                     ),
                   ),
@@ -540,7 +620,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard({required IconData icon, required String value, required String label, bool isOrange = false}) {
+  Widget _buildStatCard({
+    required IconData icon,
+    required String value,
+    required String label,
+    bool isOrange = false,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -561,15 +646,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isOrange ? const Color(0xFF2D1606) : const Color(0xFF1F2916),
+                color: isOrange
+                    ? const Color(0xFF2D1606)
+                    : const Color(0xFF1F2916),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isOrange ? const Color(0xFFFF6B00).withValues(alpha: 0.35) : const Color(0xFFD4FF00).withValues(alpha: 0.35),
+                  color: isOrange
+                      ? const Color(0xFFFF6B00).withValues(alpha: 0.35)
+                      : const Color(0xFFD4FF00).withValues(alpha: 0.35),
                 ),
               ),
               child: Icon(
                 icon,
-                color: isOrange ? const Color(0xFFFF6B00) : const Color(0xFFD4FF00),
+                color: isOrange
+                    ? const Color(0xFFFF6B00)
+                    : const Color(0xFFD4FF00),
                 size: 18,
               ),
             ),
@@ -579,7 +670,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.w900,
-                color: isOrange ? const Color(0xFFFF6B00) : const Color(0xFFD4FF00),
+                color: isOrange
+                    ? const Color(0xFFFF6B00)
+                    : const Color(0xFFD4FF00),
                 letterSpacing: -0.5,
               ),
             ),
@@ -610,7 +703,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildMenuItem({required BuildContext context, required IconData icon, required String title, required String subtitle, VoidCallback? onTap}) {
+  Widget _buildMenuItem({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -664,19 +763,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildLogOutButton(BuildContext context) {
     return Center(
       child: GestureDetector(
-        onTap: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (route) => false,
-          );
-        },
+        onTap: () => SessionManager.logout(context),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
             color: const Color(0xFF2D1214),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.35)),
+            border: Border.all(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

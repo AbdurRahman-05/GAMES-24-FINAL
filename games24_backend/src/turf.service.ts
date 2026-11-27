@@ -108,6 +108,11 @@ export function parseSlotStartMinutes(slot: string): number {
   return hour * 60 + (isNaN(minutes) ? 0 : minutes);
 }
 
+/**
+ * Returns the end of the LAST sub-slot in minutes from the start of the booking day.
+ * A slot that ends at or before it starts (e.g. "11:00 PM - 12:00 AM") ends on the next
+ * day, so 1440 is added; otherwise such bookings were treated as finished all day long.
+ */
 export function parseSlotEndMinutes(slot: string): number {
   if (!slot) return -1;
   const slotList = slot.split(',').map((s) => s.trim()).filter(Boolean);
@@ -122,7 +127,137 @@ export function parseSlotEndMinutes(slot: string): number {
   if (isNaN(hour)) return -1;
   if (period?.toUpperCase() === 'PM' && hour !== 12) hour += 12;
   if (period?.toUpperCase() === 'AM' && hour === 12) hour = 0;
-  return hour * 60 + (isNaN(minutes) ? 0 : minutes);
+  let endMin = hour * 60 + (isNaN(minutes) ? 0 : minutes);
+  const lastStart = parseSlotStartMinutes(lastSlot);
+  if (parts.length > 1 && lastStart !== -1 && endMin <= lastStart) {
+    endMin += 24 * 60;
+  }
+  return endMin;
+}
+
+/** Bookings in these states do not count as sales (but a pending hold still blocks the slot). */
+export const PENDING_PAYMENT_STATUS = 'Pending Payment';
+export const HOLD_MINUTES = 10;
+
+export function isRevenueBooking(b: { status?: string | null }): boolean {
+  const s = (b?.status || '').toLowerCase();
+  return s !== 'cancelled' && s !== PENDING_PAYMENT_STATUS.toLowerCase();
+}
+
+export interface TurfRates {
+  dayRate: number;
+  nightRate: number;
+  weekdayRate: number;
+  weekendRate: number;
+}
+
+/** Resolves the hourly rates for a sport at a turf (same rules the slot list has always used). */
+export function resolveTurfRates(
+  turf: { dayRate?: number | null; nightRate?: number | null; weekendRate?: number | null },
+  sportsItems: TurfSportConfig[],
+  sport?: string,
+): TurfRates {
+  let matchedSport: TurfSportConfig | undefined;
+  if (sport) {
+    const s = sport.toLowerCase();
+    matchedSport =
+      sportsItems.find((x) => x.name.toLowerCase() === s) ||
+      sportsItems.find((x) => x.name.toLowerCase().includes(s) || s.includes(x.name.toLowerCase()));
+  }
+  const baseSportRate = matchedSport ? matchedSport.hourlyRate : (turf.dayRate || 1000.0);
+  const dayRate = baseSportRate;
+  const weekdayRate = (matchedSport && matchedSport.weekdayRate && Math.abs(matchedSport.weekdayRate - 1200) > 0.1)
+    ? matchedSport.weekdayRate
+    : baseSportRate;
+  const weekendRate = (matchedSport && matchedSport.weekendRate && Math.abs(matchedSport.weekendRate - 1600) > 0.1)
+    ? matchedSport.weekendRate
+    : (matchedSport ? matchedSport.hourlyRate : (turf.weekendRate || 1600.0));
+  const nightRate = (matchedSport && matchedSport.nightRate && Math.abs(matchedSport.nightRate - 1400) > 0.1)
+    ? matchedSport.nightRate
+    : (matchedSport ? matchedSport.hourlyRate : (turf.nightRate || 1400.0));
+  return { dayRate, nightRate, weekdayRate, weekendRate };
+}
+
+export function isWeekendDate(dateStr: string): boolean {
+  const [year, month, d] = dateStr.split('-').map(Number);
+  const day = new Date(year, month - 1, d).getDay();
+  return day === 0 || day === 6;
+}
+
+export interface SlotPrice {
+  price: number;
+  originalPrice: number;
+  rateType: string;
+  isNight: boolean;
+  offer: any;
+}
+
+/**
+ * Single source of truth for what one slot costs. Used both to DISPLAY slot prices and to
+ * CHARGE for a booking, so the amount a player sees is exactly the amount they pay.
+ */
+export function priceForSlot(rates: TurfRates, isWeekend: boolean, slot: string, offerRecord?: any): SlotPrice {
+  const startMin = parseSlotStartMinutes(slot);
+  const hour = startMin === -1 ? 12 : Math.floor(startMin / 60);
+  const isNight = hour >= 18 || hour < 6;
+
+  let price: number;
+  let rateType: string;
+  if (isWeekend) {
+    if (isNight) {
+      price = rates.weekendRate + Math.max(0, rates.nightRate - rates.dayRate);
+      rateType = 'Weekend Night Rate';
+    } else {
+      price = rates.weekendRate;
+      rateType = 'Weekend Day Rate';
+    }
+  } else if (isNight) {
+    price = rates.nightRate;
+    rateType = 'Weekday Night Rate';
+  } else {
+    price = rates.dayRate;
+    rateType = 'Weekday Day Rate';
+  }
+
+  let finalPrice = price;
+  let offer: any = null;
+  if (offerRecord) {
+    if (offerRecord.offerType === 'PERCENT') {
+      const disc = offerRecord.discountPercent ?? 20;
+      finalPrice = Math.round(price * (1 - disc / 100));
+      offer = {
+        id: offerRecord.id,
+        offerType: 'PERCENT',
+        discountPercent: disc,
+        tagLabel: offerRecord.tagLabel || `${disc}% OFF`,
+        originalPrice: price,
+        offerPrice: finalPrice,
+        rawOfferString: offerRecord.rawOfferString || `PERCENT|${disc}|${offerRecord.tagLabel || ''}`,
+      };
+    } else if (offerRecord.offerType === 'PRICE') {
+      finalPrice = offerRecord.offerPrice ?? Math.round(price * 0.8);
+      const orig = offerRecord.originalPrice ?? price;
+      offer = {
+        id: offerRecord.id,
+        offerType: 'PRICE',
+        discountPercent: orig > 0 ? Math.round(((orig - finalPrice) / orig) * 100) : 0,
+        tagLabel: offerRecord.tagLabel || 'Special Price',
+        originalPrice: orig,
+        offerPrice: finalPrice,
+        rawOfferString: offerRecord.rawOfferString || `PRICE|${orig}|${finalPrice}`,
+      };
+    }
+  }
+
+  return { price: Math.max(0, finalPrice), originalPrice: price, rateType, isNight, offer };
+}
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+export function isValidDateString(date: unknown): date is string {
+  if (typeof date !== 'string' || !DATE_RE.test(date)) return false;
+  const [y, m, d] = date.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
 }
 
 export function getISTDateAndMinutes(): { todayStr: string; currentMinutes: number } {
@@ -271,14 +406,7 @@ export class TurfService {
       });
     }
 
-    // 3. Fallback to the first available verifiedAdmin if any
-    if (!turf) {
-      turf = await this.prisma.verifiedAdmin.findFirst({
-        orderBy: { id: 'asc' },
-        ...(Object.keys(include).length > 0 ? { include } : {}),
-      });
-    }
-
+    // No "first venue" fallback: an unknown id must never resolve to someone else's turf.
     return turf;
   }
 
@@ -295,6 +423,7 @@ export class TurfService {
       orderBy: { id: 'desc' },
     });
 
+    const istNow = getISTDateAndMinutes();
     return verified.map((t: any) => {
       const photos = normalizePhotoList(t.photoUrls);
       
@@ -302,21 +431,12 @@ export class TurfService {
         ? t.amenities
         : ['Drinking Water', 'Parking', 'Floodlights', 'Restroom'];
 
-      // Live dynamic rate based on current day and time
-      const now = new Date();
-      const currentDay = now.getDay();
-      const isWeekendNow = (currentDay === 0 || currentDay === 6);
-      const currentHour = now.getHours();
-      const isNightNow = (currentHour >= 18 || currentHour < 6);
-
-      let currentPrice = t.dayRate || 1000;
-      if (isWeekendNow) {
-        if (isNightNow) currentPrice = (t.weekendRate || 1600) + Math.max(0, (t.nightRate || 1400) - (t.dayRate || 1000));
-        else currentPrice = t.weekendRate || 1600;
-      } else {
-        if (isNightNow) currentPrice = t.nightRate || 1400;
-        else currentPrice = t.dayRate || t.weekdayRate || 1000;
-      }
+      // Live rate for the current hour in IST, using the same rules as the slot list
+      const currentPrice = priceForSlot(
+        resolveTurfRates(t, this.getSportsForTurf(t.id)),
+        isWeekendDate(istNow.todayStr),
+        FULL_24_SLOTS[Math.floor(istNow.currentMinutes / 60) % 24],
+      ).price;
 
       return {
         id: t.id,
@@ -340,8 +460,8 @@ export class TurfService {
         weekendRate: t.weekendRate,
         price: `₹${currentPrice.toLocaleString('en-IN')}`,
         currentRate: currentPrice,
-        rating: '4.9',
-        reviews: '128',
+        rating: null, // no review system yet: do not show invented ratings
+        reviews: 0,
         sports: this.getSportsForTurf(t.id).map(s => s.name),
         sportsList: this.getSportsForTurf(t.id),
         courts: getCourtsForTurf(t.id, t.venueName, this.getSportsForTurf(t.id), t.courts),
@@ -374,6 +494,7 @@ export class TurfService {
       for (const b of sanitizedBookings) {
         const s = (b.status || '').toLowerCase();
         if (s === 'cancelled' || s === 'completed' || s === 'not visited') continue;
+        if (s === PENDING_PAYMENT_STATUS.toLowerCase()) continue;
         if (isBookingSlotEnded(b.date, b.timeSlot, todayStr, currentMinutes)) {
           if (s === 'checked in') {
             b.status = 'Completed';
@@ -422,8 +543,8 @@ export class TurfService {
       weekdayRate: turf.weekdayRate,
       weekendRate: turf.weekendRate,
       price: `₹${(turf.dayRate || 1000).toLocaleString('en-IN')}`,
-      rating: '4.9',
-      reviews: '128',
+      rating: null, // no review system yet: do not show invented ratings
+      reviews: 0,
       sports: sportsItems.map(s => s.name),
       sportsList: sportsItems,
       courts: courtsList,
@@ -448,34 +569,19 @@ export class TurfService {
     const { todayStr, currentMinutes } = getISTDateAndMinutes();
     const targetDate = date || todayStr;
 
-    const [year, month, d] = targetDate.split('-').map(Number);
-    const dateObj = new Date(year, month - 1, d);
-    const dayOfWeek = dateObj.getDay(); // 0 is Sunday, 6 is Saturday
-    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
-
-    const sportsItems = this.getSportsForTurf(verifiedAdminId);
-    let matchedSport: TurfSportConfig | undefined;
-    if (sport) {
-      matchedSport = sportsItems.find(s => s.name.toLowerCase() === sport.toLowerCase());
-      if (!matchedSport) {
-        matchedSport = sportsItems.find(s =>
-          s.name.toLowerCase().includes(sport.toLowerCase()) ||
-          sport.toLowerCase().includes(s.name.toLowerCase())
-        );
-      }
+    if (!isValidDateString(targetDate)) {
+      throw new BadRequestException('date must be in YYYY-MM-DD format');
     }
 
-    const baseSportRate = matchedSport ? matchedSport.hourlyRate : (turf.dayRate || 1000.0);
-    const dayRate = baseSportRate;
-    const weekdayRate = (matchedSport && matchedSport.weekdayRate && Math.abs(matchedSport.weekdayRate - 1200) > 0.1)
-      ? matchedSport.weekdayRate
-      : baseSportRate;
-    const weekendRate = (matchedSport && matchedSport.weekendRate && Math.abs(matchedSport.weekendRate - 1600) > 0.1)
-      ? matchedSport.weekendRate
-      : (matchedSport ? matchedSport.hourlyRate : (turf.weekendRate || 1600.0));
-    const nightRate = (matchedSport && matchedSport.nightRate && Math.abs(matchedSport.nightRate - 1400) > 0.1)
-      ? matchedSport.nightRate
-      : (matchedSport ? matchedSport.hourlyRate : (turf.nightRate || 1400.0));
+    const [year, month, d] = targetDate.split('-').map(Number);
+    const dateObj = new Date(year, month - 1, d);
+    const isWeekend = isWeekendDate(targetDate);
+
+    const sportsItems = this.getSportsForTurf(verifiedAdminId);
+    const rates = resolveTurfRates(turf, sportsItems, sport);
+    const { dayRate, nightRate, weekdayRate, weekendRate } = rates;
+
+    await this.releaseExpiredHolds(verifiedAdminId);
 
     const openingTime = turf.dashboard?.openingTime || '06:00 AM';
     const closingTime = turf.dashboard?.closingTime || '10:00 PM';
@@ -576,67 +682,14 @@ export class TurfService {
       else if (isBooked) status = 'booked';
       else if (isBlocked) status = 'blocked';
 
-      // Parse starting hour to check if Night slot (06:00 PM to 06:00 AM)
-      const startPart = slot.split('-')[0].trim();
-      const [timePart, period] = startPart.split(' ');
-      let hour = parseInt(timePart.split(':')[0], 10);
-      if (period?.toUpperCase() === 'PM' && hour !== 12) hour += 12;
-      if (period?.toUpperCase() === 'AM' && hour === 12) hour = 0;
-      const isNight = (hour >= 18 || hour < 6);
-
-      let price: number;
-      let rateType: string;
-
-      if (isWeekend) {
-        if (isNight) {
-          const nightDiff = Math.max(0, nightRate - dayRate);
-          price = weekendRate + nightDiff;
-          rateType = 'Weekend Night Rate';
-        } else {
-          price = weekendRate;
-          rateType = 'Weekend Day Rate';
-        }
-      } else {
-        if (isNight) {
-          price = nightRate;
-          rateType = 'Weekday Night Rate';
-        } else {
-          price = dayRate;
-          rateType = 'Weekday Day Rate';
-        }
-      }
-
-      const offerRecord = offerMap.get(slot);
-      let offer: any = null;
-      let finalPrice = price;
-
-      if (offerRecord) {
-        if (offerRecord.offerType === 'PERCENT') {
-          const disc = offerRecord.discountPercent ?? 20;
-          finalPrice = Math.round(price * (1 - disc / 100));
-          offer = {
-            id: offerRecord.id,
-            offerType: 'PERCENT',
-            discountPercent: disc,
-            tagLabel: offerRecord.tagLabel || `${disc}% OFF`,
-            originalPrice: price,
-            offerPrice: finalPrice,
-            rawOfferString: offerRecord.rawOfferString || `PERCENT|${disc}|${offerRecord.tagLabel || ''}`,
-          };
-        } else if (offerRecord.offerType === 'PRICE') {
-          finalPrice = offerRecord.offerPrice ?? Math.round(price * 0.8);
-          const orig = offerRecord.originalPrice ?? price;
-          offer = {
-            id: offerRecord.id,
-            offerType: 'PRICE',
-            discountPercent: orig > 0 ? Math.round(((orig - finalPrice) / orig) * 100) : 0,
-            tagLabel: offerRecord.tagLabel || 'Special Price',
-            originalPrice: orig,
-            offerPrice: finalPrice,
-            rawOfferString: offerRecord.rawOfferString || `PRICE|${orig}|${finalPrice}`,
-          };
-        }
-      }
+      const { price, originalPrice: _orig, rateType, isNight, offer } = priceForSlot(
+        rates,
+        isWeekend,
+        slot,
+        offerMap.get(slot),
+      );
+      const finalPrice = price;
+      const bookingInfo = isBooked ? bookedSlotMap.get(slot) : null;
 
       return {
         slot,
@@ -645,12 +698,14 @@ export class TurfService {
         reason: isBlocked ? (blockedReasonMap.get(slot) || 'Under Maintenance') : null,
         blockReason: isBlocked ? (blockedReasonMap.get(slot) || 'Under Maintenance') : null,
         isPast,
-        originalPrice: price,
+        originalPrice: _orig,
         price: finalPrice,
         rateType,
         isNight,
         isWeekend,
-        booking: isBooked ? bookedSlotMap.get(slot) : null,
+        // Customer details are only exposed to the owner view; players just see that it is taken.
+        booking: bookingInfo && isOwner ? bookingInfo : null,
+        isHeld: Boolean(bookingInfo && bookingInfo.status === PENDING_PAYMENT_STATUS),
         offer,
         offerTag: offer ? offer.rawOfferString : null,
       };
@@ -678,19 +733,90 @@ export class TurfService {
     };
   }
 
+  /**
+   * Cancels payment holds that were never paid within HOLD_MINUTES so their slots become free again.
+   */
+  async releaseExpiredHolds(verifiedAdminId?: number) {
+    const cutoff = new Date(Date.now() - HOLD_MINUTES * 60 * 1000);
+    await this.prisma.turfBooking
+      .updateMany({
+        where: {
+          status: PENDING_PAYMENT_STATUS,
+          createdAt: { lt: cutoff },
+          ...(verifiedAdminId ? { verifiedAdminId } : {}),
+        },
+        data: { status: 'Cancelled', paymentMethod: 'Payment not completed' },
+      })
+      .catch((e) => console.error('Error releasing expired payment holds:', e));
+  }
+
+  /**
+   * Server-side price for a set of slots. Uses the same rules as the slot list (day/night,
+   * weekday/weekend, sport rate and slot offers) so the charged amount matches what is shown.
+   */
+  async quoteSlots(turf: any, date: string, slots: string[], sport?: string) {
+    const rates = resolveTurfRates(turf, this.getSportsForTurf(turf.id), sport);
+    const weekend = isWeekendDate(date);
+    const offers = await this.prisma.slotOffer.findMany({
+      where: { verifiedAdminId: turf.id, date, timeSlot: { in: slots } },
+    });
+    const offerMap = new Map(offers.map((o) => [o.timeSlot, o]));
+    const lines = slots.map((s) => ({ slot: s, ...priceForSlot(rates, weekend, s, offerMap.get(s)) }));
+    const total = lines.reduce((sum, l) => sum + l.price, 0);
+    return { total, lines };
+  }
+
+  /**
+   * Direct booking without online payment. Restricted to the platform admin (walk-in / manual
+   * bookings); players must go through /cashfree/create-order so the slot is paid for.
+   */
   async bookSlot(id: number, body: any) {
-    const { customerName, customerPhone, sport, courtName, date, timeSlot, amount, paymentMethod } = body || {};
+    const booking = await this.reserveSlots(id, body, { hold: false });
+    return {
+      success: true,
+      message: 'Booking confirmed successfully in realtime!',
+      ...booking,
+      booking,
+    };
+  }
 
-    const rawSlots: string[] = Array.isArray(body?.timeSlots) && body.timeSlots.length > 0
-      ? body.timeSlots
-      : String(timeSlot || '').split(',').map((s: string) => s.trim()).filter(Boolean);
+  /** Reserves slots for HOLD_MINUTES while the player pays. Confirmed by confirmPaymentHold(). */
+  async createPaymentHold(id: number, body: any) {
+    return this.reserveSlots(id, body, { hold: true });
+  }
 
-    if (!date || rawSlots.length === 0) {
-      throw new BadRequestException('Date and at least one timeSlot are required for booking');
+  private parseRequestedSlots(body: any): string[] {
+    const raw: string[] = Array.isArray(body?.timeSlots) && body.timeSlots.length > 0
+      ? body.timeSlots.map((s: any) => String(s))
+      : String(body?.timeSlot || '').split(',');
+    const cleaned = raw.map((s) => s.trim()).filter(Boolean);
+    const unique = Array.from(new Set(cleaned));
+    for (const s of unique) {
+      if (parseSlotStartMinutes(s) === -1 || !s.includes('-') || s.length > 40) {
+        throw new BadRequestException(`Invalid time slot "${s}"`);
+      }
     }
+    unique.sort((a, b) => parseSlotStartMinutes(a) - parseSlotStartMinutes(b));
+    return unique;
+  }
 
-    // Sort slots by start time
-    rawSlots.sort((a, b) => parseSlotStartMinutes(a) - parseSlotStartMinutes(b));
+  private async reserveSlots(id: number, body: any, opts: { hold: boolean }) {
+    const { customerName, customerPhone, sport, courtName, date, paymentMethod } = body || {};
+
+    if (!isValidDateString(date)) {
+      throw new BadRequestException('A valid date (YYYY-MM-DD) is required for booking');
+    }
+    const rawSlots = this.parseRequestedSlots(body);
+    if (rawSlots.length === 0) {
+      throw new BadRequestException('At least one timeSlot is required for booking');
+    }
+    if (rawSlots.length > 12) {
+      throw new BadRequestException('A single booking can contain at most 12 slots');
+    }
+    const cleanPhone = String(customerPhone || '').replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      throw new BadRequestException('A valid customer phone number is required for booking');
+    }
     const combinedTimeSlot = rawSlots.join(', ');
 
     // Validate that slot is not in the past or within 5-minute cutoff
@@ -707,7 +833,11 @@ export class TurfService {
       }
     }
 
-    const turf = await this.findVerifiedAdmin(id, true, false);
+    // Exact lookup only: never fall back to another venue for a booking.
+    const turf = await this.prisma.verifiedAdmin.findUnique({
+      where: { id },
+      include: { dashboard: true },
+    });
     if (!turf) {
       throw new NotFoundException(`Turf #${id} not found`);
     }
@@ -718,31 +848,21 @@ export class TurfService {
 
     const verifiedAdminId = turf.id;
 
-    // Security hardening: Calculate authentic server-side price based on owner's court/sport rates and active slot offers.
-    // Hackers cannot tamper with amount in the client request.
-    let expectedTotalAmount = 0;
-    const sportConfig = this.getSportsForTurf(verifiedAdminId).find(s => s.name.toLowerCase() === (sport || 'Football').toLowerCase());
-    const baseSlotRate = sportConfig?.hourlyRate || turf.dayRate || 1000.0;
-
+    // Only slots inside the venue's operating hours can be booked.
+    const openSlots = new Set(
+      generateTimeSlots(turf.dashboard?.openingTime || '06:00 AM', turf.dashboard?.closingTime || '10:00 PM'),
+    );
     for (const s of rawSlots) {
-      const slotOffer = await this.prisma.slotOffer.findUnique({
-        where: {
-          verifiedAdminId_date_timeSlot: {
-            verifiedAdminId,
-            date,
-            timeSlot: s,
-          },
-        },
-      });
-      if (slotOffer?.offerPrice && slotOffer.offerPrice > 0) {
-        expectedTotalAmount += slotOffer.offerPrice;
-      } else {
-        expectedTotalAmount += baseSlotRate;
+      if (!openSlots.has(s)) {
+        throw new BadRequestException(`Slot "${s}" is outside the venue's operating hours`);
       }
     }
 
-    // Enforce authentic server-verified amount
-    const bookingAmount = expectedTotalAmount > 0 ? expectedTotalAmount : (Number(amount) || 1000.0);
+    await this.releaseExpiredHolds(verifiedAdminId);
+
+    // Authentic server-side price; any client-sent amount is ignored.
+    const quote = await this.quoteSlots(turf, date, rawSlots, sport);
+    const bookingAmount = quote.total;
 
     let booking: any;
     try {
@@ -776,21 +896,21 @@ export class TurfService {
 
           // 2. Atomically create the booking (protected by unique index & serializable lock)
           const isOpenMatch = body?.isOpenMatch === true;
-          const teamName = body?.teamName?.trim() || customerName?.trim() || 'My Team';
-          const teamSize = body?.teamSize?.trim() || '7v7';
+          const teamName = String(body?.teamName || '').trim() || String(customerName || '').trim() || 'My Team';
+          const teamSize = String(body?.teamSize || '').trim() || '7v7';
 
           const createdBooking = await tx.turfBooking.create({
             data: {
               verifiedAdminId,
-              customerName: customerName?.trim() || 'Player Customer',
-              customerPhone: customerPhone?.trim() || '9876543210',
+              customerName: String(customerName || '').trim() || 'Player Customer',
+              customerPhone: cleanPhone.slice(-10),
               sport: sport || 'Football',
               courtName: courtName || `${turf.venueName} Main Arena`,
               date,
               timeSlot: combinedTimeSlot,
               amount: bookingAmount,
-              paymentMethod: paymentMethod || 'UPI (GPay)',
-              status: 'Confirmed',
+              paymentMethod: opts.hold ? 'Cashfree (awaiting payment)' : (paymentMethod || 'Cash (Venue)'),
+              status: opts.hold ? PENDING_PAYMENT_STATUS : 'Confirmed',
               isOpenMatch,
               openMatchStatus: isOpenMatch ? 'WAITING_FOR_OPPONENT' : null,
               teamName: isOpenMatch ? teamName : null,
@@ -805,28 +925,9 @@ export class TurfService {
             data: { bookingCode: formalBookingCode },
           });
 
-          if (isOpenMatch) {
-            const initials = teamName.length >= 2 ? teamName.substring(0, 2).toUpperCase() : 'TC';
-            await tx.openChallenge.create({
-              data: {
-                id: `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-                bookingId: createdBooking.id,
-                turfId: verifiedAdminId,
-                turfName: turf.venueName,
-                location: turf.neighborhoodArea || 'Madurai',
-                date,
-                time: combinedTimeSlot,
-                sport: sport || 'Football',
-                challengerName: teamName,
-                challengerTeamInitials: initials,
-                challengerColor: String(body?.challengerColor ?? '4280148788'),
-                creatorPhone: customerPhone?.trim() || '9876543210',
-                teamSize,
-                isJoined: false,
-                status: 'OPEN',
-                joinRequests: [],
-              },
-            });
+          // A held (unpaid) booking does not advertise an open match yet; that happens on payment.
+          if (isOpenMatch && !opts.hold) {
+            await this.createChallengeForBooking(tx, updatedWithCode, turf);
           }
 
           return {
@@ -837,6 +938,10 @@ export class TurfService {
             turfName: turf.venueName,
             courtName: courtName || `${turf.venueName} Main Arena`,
             location: turf.neighborhoodArea || 'Madurai',
+            priceBreakdown: quote.lines.map((l) => ({ slot: l.slot, price: l.price, rateType: l.rateType })),
+            holdExpiresAt: opts.hold
+              ? new Date(createdBooking.createdAt.getTime() + HOLD_MINUTES * 60 * 1000).toISOString()
+              : null,
           };
         },
         {
@@ -850,72 +955,107 @@ export class TurfService {
       throw err;
     }
 
-    // Automatically update AdminDashboard metrics based on actual database bookings
-    const monthPrefix = todayStr.substring(0, 7);
+    if (!opts.hold) {
+      await this.recalculateDashboardMetrics(verifiedAdminId);
+    }
+    return booking;
+  }
 
-    const allBookings = await this.prisma.turfBooking.findMany({
-      where: { verifiedAdminId, status: { not: 'Cancelled' } },
-    });
-
-    const todayBookings = allBookings.filter((b) => b.date === todayStr);
-    const monthBookings = allBookings.filter((b) => b.date.startsWith(monthPrefix));
-
-    const todayCount = todayBookings.length;
-    const todayPaid = todayBookings.filter((b) => !b.paymentMethod?.toLowerCase().includes('cash')).length;
-    const todayCash = todayBookings.filter((b) => b.paymentMethod?.toLowerCase().includes('cash')).length;
-    const todayRev = todayBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
-    const monthTotal = monthBookings.length;
-    const monthRev = monthBookings.reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
-
-    const blockedCount = await this.prisma.blockedSlot.count({
-      where: { verifiedAdminId, date: todayStr },
-    });
-
-    const openingTime = turf.dashboard?.openingTime || '06:00 AM';
-    const closingTime = turf.dashboard?.closingTime || '10:00 PM';
-    const totalSlots = generateTimeSlots(openingTime, closingTime).length;
-    const freeSlots = Math.max(0, totalSlots - todayCount - blockedCount);
-    const slotsPercent = totalSlots > 0 ? Math.round((todayCount / totalSlots) * 100) : 0;
-
-    await this.prisma.adminDashboard.upsert({
-      where: { verifiedAdminId },
-      create: {
-        verifiedAdminId,
-        todayBookingsCount: todayCount,
-        todayPaidBookings: todayPaid,
-        todayCashBookings: todayCash,
-        todayRevenue: todayRev,
-        todayBookingsGrowth: todayCount > 0 ? `+${todayCount} Today` : '0% Today',
-        monthRevenue: monthRev,
-        monthTotalBookings: monthTotal,
-        revenueBadge: `₹${monthRev.toLocaleString('en-IN')} GMV`,
-        freeSlotsCount: freeSlots,
-        bookedSlotsCount: todayCount,
-        blockedSlotsCount: blockedCount,
-        slotsBadge: `${slotsPercent}% Full`,
-      },
-      update: {
-        todayBookingsCount: todayCount,
-        todayPaidBookings: todayPaid,
-        todayCashBookings: todayCash,
-        todayRevenue: todayRev,
-        todayBookingsGrowth: todayCount > 0 ? `+${todayCount} Today` : '0% Today',
-        monthRevenue: monthRev,
-        monthTotalBookings: monthTotal,
-        revenueBadge: `₹${monthRev.toLocaleString('en-IN')} GMV`,
-        freeSlotsCount: freeSlots,
-        bookedSlotsCount: todayCount,
-        blockedSlotsCount: blockedCount,
-        slotsBadge: `${slotsPercent}% Full`,
+  /** Creates the public open-match challenge for a confirmed booking (once per booking). */
+  private async createChallengeForBooking(tx: any, booking: any, turf: any) {
+    const existing = await tx.openChallenge.findFirst({ where: { bookingId: booking.id } });
+    if (existing) return existing;
+    const teamName = booking.teamName || booking.customerName || 'My Team';
+    const initials = teamName.length >= 2 ? teamName.substring(0, 2).toUpperCase() : 'TC';
+    return tx.openChallenge.create({
+      data: {
+        id: `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        bookingId: booking.id,
+        turfId: turf.id,
+        turfName: turf.venueName,
+        location: turf.neighborhoodArea || 'Madurai',
+        date: booking.date,
+        time: booking.timeSlot,
+        sport: booking.sport || 'Football',
+        challengerName: teamName,
+        challengerTeamInitials: initials,
+        challengerColor: '4292149248',
+        creatorPhone: booking.customerPhone,
+        teamSize: booking.teamSize || '7v7',
+        isJoined: false,
+        status: 'OPEN',
+        joinRequests: [],
       },
     });
+  }
 
-    return {
-      success: true,
-      message: 'Booking confirmed successfully in realtime!',
-      ...booking,
-      booking,
-    };
+  /**
+   * Turns a paid payment hold into a confirmed booking. If the hold already expired, it tries to
+   * re-reserve the same slots; returns null when they were taken in the meantime (caller refunds).
+   */
+  async confirmPaymentHold(bookingId: number, paymentLabel: string): Promise<any | null> {
+    const booking = await this.prisma.turfBooking.findUnique({
+      where: { id: bookingId },
+      include: { verifiedAdmin: true },
+    });
+    if (!booking) return null;
+
+    if (booking.status === 'Confirmed' || booking.status === 'Checked In') {
+      return booking;
+    }
+
+    let confirmed: any = null;
+    if (booking.status === PENDING_PAYMENT_STATUS) {
+      confirmed = await this.prisma.turfBooking.update({
+        where: { id: bookingId },
+        data: { status: 'Confirmed', paymentMethod: paymentLabel },
+      });
+    } else if (booking.status === 'Cancelled') {
+      // Hold expired before payment completed: re-check availability and restore it if free.
+      try {
+        confirmed = await this.prisma.$transaction(
+          async (tx) => {
+            for (const s of booking.timeSlot.split(',').map((x) => x.trim()).filter(Boolean)) {
+              const clash = await tx.turfBooking.findFirst({
+                where: {
+                  verifiedAdminId: booking.verifiedAdminId,
+                  date: booking.date,
+                  timeSlot: { contains: s },
+                  status: { not: 'Cancelled' },
+                  id: { not: booking.id },
+                },
+              });
+              if (clash) return null;
+            }
+            return tx.turfBooking.update({
+              where: { id: bookingId },
+              data: { status: 'Confirmed', paymentMethod: paymentLabel },
+            });
+          },
+          { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+        );
+      } catch {
+        confirmed = null;
+      }
+    }
+
+    if (!confirmed) return null;
+
+    if (confirmed.isOpenMatch) {
+      await this.createChallengeForBooking(this.prisma, confirmed, booking.verifiedAdmin).catch((e) =>
+        console.error('Error creating open challenge for paid booking:', e),
+      );
+    }
+    await this.recalculateDashboardMetrics(confirmed.verifiedAdminId);
+    return confirmed;
+  }
+
+  /** Releases an unpaid hold immediately (player closed checkout or payment failed). */
+  async releasePaymentHold(bookingId: number) {
+    await this.prisma.turfBooking.updateMany({
+      where: { id: bookingId, status: PENDING_PAYMENT_STATUS },
+      data: { status: 'Cancelled', paymentMethod: 'Payment not completed' },
+    });
   }
 
   async toggleBlockSlot(id: number, body: any) {
@@ -1213,37 +1353,25 @@ export class TurfService {
     const orConditions: any[] = [];
     const challengeOrConditions: any[] = [];
 
-    if (phone && phone.trim()) {
-      const trimmedPhone = phone.trim();
-      const cleanDigits = trimmedPhone.replace(/\D/g, '');
-      const last10 = cleanDigits.length >= 10 ? cleanDigits.slice(-10) : cleanDigits;
-
-      if (last10.length >= 7) {
-        orConditions.push({ customerPhone: { contains: last10 } });
-        orConditions.push({ opponentPhone: { contains: last10 } });
-        challengeOrConditions.push({ creatorPhone: { contains: last10 } });
-        challengeOrConditions.push({ opponentContact: { contains: last10 } });
-      }
-      orConditions.push({ customerPhone: trimmedPhone });
-      orConditions.push({ opponentPhone: trimmedPhone });
-      challengeOrConditions.push({ creatorPhone: trimmedPhone });
-      challengeOrConditions.push({ opponentContact: trimmedPhone });
-    }
-
-    if (name && name.trim()) {
-      orConditions.push({ customerName: { equals: name.trim(), mode: 'insensitive' } });
-      orConditions.push({ opponentName: { equals: name.trim(), mode: 'insensitive' } });
-      challengeOrConditions.push({ challengerName: { equals: name.trim(), mode: 'insensitive' } });
-      challengeOrConditions.push({ opponentName: { equals: name.trim(), mode: 'insensitive' } });
-    }
-
-    if (orConditions.length === 0 && challengeOrConditions.length === 0) {
+    // Bookings are matched by the player's phone number only. Matching by name leaked bookings
+    // between different players who share a name, so `name` is intentionally ignored.
+    void name;
+    const cleanDigits = String(phone || '').replace(/\D/g, '');
+    if (cleanDigits.length < 10) {
       return [];
     }
+    const last10 = cleanDigits.slice(-10);
+    const phoneVariants = Array.from(new Set([last10, `91${last10}`, `+91${last10}`, `+91 ${last10}`, String(phone).trim()]));
+    orConditions.push({ customerPhone: { in: phoneVariants } });
+    orConditions.push({ opponentPhone: { in: phoneVariants } });
+    challengeOrConditions.push({ creatorPhone: { in: phoneVariants } });
+    challengeOrConditions.push({ opponentContact: { in: phoneVariants } });
 
     const bookings = await this.prisma.turfBooking.findMany({
       where: {
         OR: orConditions,
+        // Unpaid holds are not bookings yet; they expire or get confirmed by the payment flow.
+        status: { not: PENDING_PAYMENT_STATUS },
       },
       include: {
         verifiedAdmin: {
@@ -1283,7 +1411,7 @@ export class TurfService {
 
       let isActive = false;
       const statusLower = (b.status || '').toLowerCase();
-      if (statusLower !== 'cancelled' && statusLower !== 'completed') {
+      if (statusLower !== 'cancelled' && statusLower !== 'completed' && statusLower !== 'not visited') {
         if (b.date > todayStr) {
           isActive = true;
         } else if (b.date === todayStr) {
@@ -1361,8 +1489,8 @@ export class TurfService {
         id: c.bookingId || c.id,
         bookingId: `G24-CH-${c.id}`,
         bookingCode: `G24-CH-${c.id}`,
-        verifiedAdminId: c.turfId || 1,
-        turfId: c.turfId || 1,
+        verifiedAdminId: c.turfId ?? null,
+        turfId: c.turfId ?? null,
         turfName: c.turfName,
         courtName: 'Main Arena',
         sport: c.sport,
@@ -1405,6 +1533,7 @@ export class TurfService {
       const unvisitedPast = allBookings.filter((b) => {
         const s = (b.status || '').toLowerCase();
         if (s === 'cancelled' || s === 'completed' || s === 'not visited' || s === 'checked in') return false;
+        if (s === PENDING_PAYMENT_STATUS.toLowerCase()) return false;
         return isBookingSlotEnded(b.date, b.timeSlot, todayStr, currentMinutes);
       });
 
@@ -1435,8 +1564,10 @@ export class TurfService {
         }
       }
 
-      const activeBookings = allBookings.filter((b) => b.status !== 'Cancelled');
-      const cancelledBookings = allBookings.filter((b) => b.status === 'Cancelled');
+      const activeBookings = allBookings.filter((b) => isRevenueBooking(b));
+      const cancelledBookings = allBookings.filter(
+        (b) => b.status === 'Cancelled' && b.paymentMethod !== 'Payment not completed',
+      );
       const todayBookings = activeBookings.filter((b) => b.date === todayStr);
       const monthBookings = activeBookings.filter((b) => b.date && b.date.startsWith(monthPrefix));
 
@@ -2393,9 +2524,31 @@ export class TurfService {
   }
 
   async createOpenMatch(body: any) {
-    const id = body.id || `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const turfId = body.turfId != null ? Number(body.turfId) : null;
     const bookingId = body.bookingId != null ? Number(body.bookingId) : null;
+
+    // One challenge per booking: paid open-match bookings already create theirs server-side.
+    if (bookingId) {
+      const existingForBooking = await this.prisma.openChallenge.findFirst({ where: { bookingId } });
+      if (existingForBooking) {
+        return {
+          success: true,
+          message: 'Open match already posted for this booking.',
+          challenge: existingForBooking,
+        };
+      }
+    }
+
+    // A client-supplied id may only update a challenge created by the same phone number.
+    let id = body.id || `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    if (body.id) {
+      const existing = await this.prisma.openChallenge.findUnique({ where: { id: body.id } });
+      const callerLast10 = String(body.creatorPhone || '').replace(/\D/g, '').slice(-10);
+      const ownerLast10 = String(existing?.creatorPhone || '').replace(/\D/g, '').slice(-10);
+      if (existing && (!callerLast10 || callerLast10 !== ownerLast10)) {
+        id = `ch_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      }
+    }
 
     const challenge = await this.prisma.openChallenge.upsert({
       where: { id },
@@ -2445,7 +2598,24 @@ export class TurfService {
       throw new NotFoundException(`Open match with ID ${challengeId} not found`);
     }
 
+    if (challenge.status !== 'OPEN' || challenge.isJoined) {
+      throw new BadRequestException('This open match already has an opponent.');
+    }
+
     const currentRequests: any[] = Array.isArray(challenge.joinRequests) ? (challenge.joinRequests as any[]) : [];
+    const contactLast10 = String(body.contactDetails || '').replace(/\D/g, '').slice(-10);
+    if (contactLast10) {
+      if (String(challenge.creatorPhone || '').replace(/\D/g, '').slice(-10) === contactLast10) {
+        throw new BadRequestException('You cannot request to join your own open match.');
+      }
+      const already = currentRequests.find(
+        (r) => String(r?.contactDetails || '').replace(/\D/g, '').slice(-10) === contactLast10,
+      );
+      if (already) {
+        return { success: true, message: 'You have already requested to join this match.', challenge };
+      }
+    }
+
     const newRequest = {
       id: body.id || `req_${Date.now()}`,
       teamName: body.teamName || 'Opponent Squad',
@@ -2495,12 +2665,15 @@ export class TurfService {
     });
 
     let bookingId = challenge.bookingId;
-    if (!bookingId) {
+    if (!bookingId && challenge.turfId) {
+      // Legacy challenges without a bookingId: only look inside the same venue.
       const matchBooking = await this.prisma.turfBooking.findFirst({
         where: {
+          verifiedAdminId: challenge.turfId,
           isOpenMatch: true,
           date: challenge.date,
           timeSlot: { contains: challenge.time },
+          status: { not: 'Cancelled' },
         },
       });
       if (matchBooking) {
@@ -2530,12 +2703,42 @@ export class TurfService {
     };
   }
 
+  /** Host declines one join request; it is removed for everyone, not just on the host's phone. */
+  async rejectOpenMatchRequest(challengeId: string, body: any) {
+    const challenge = await this.prisma.openChallenge.findUnique({ where: { id: challengeId } });
+    if (!challenge) {
+      throw new NotFoundException(`Open match with ID ${challengeId} not found`);
+    }
+    const callerLast10 = String(body?.callerPhone || '').replace(/\D/g, '').slice(-10);
+    const ownerLast10 = String(challenge.creatorPhone || '').replace(/\D/g, '').slice(-10);
+    if (!callerLast10 || callerLast10 !== ownerLast10) {
+      throw new BadRequestException('Only the host of this open match can decline requests.');
+    }
+    const requestId = String(body?.requestId || '');
+    const current: any[] = Array.isArray(challenge.joinRequests) ? (challenge.joinRequests as any[]) : [];
+    const remaining = current.filter((r) => String(r?.id) !== requestId);
+    const updated = await this.prisma.openChallenge.update({
+      where: { id: challengeId },
+      data: { joinRequests: remaining },
+    });
+    return { success: true, message: 'Join request declined.', challenge: updated };
+  }
+
   async completeBooking(bookingId: number) {
     const booking = await this.prisma.turfBooking.findUnique({
       where: { id: bookingId },
     });
     if (!booking) {
       throw new NotFoundException(`Booking with ID ${bookingId} not found`);
+    }
+    const statusLower = (booking.status || '').toLowerCase();
+    if (statusLower === 'cancelled' || statusLower === PENDING_PAYMENT_STATUS.toLowerCase()) {
+      throw new BadRequestException('Only confirmed bookings can be marked as completed.');
+    }
+    const { todayStr, currentMinutes } = getISTDateAndMinutes();
+    if (!isBookingSlotEnded(booking.date, booking.timeSlot, todayStr, currentMinutes)) {
+      // The court is still running: keep the booking active (player may play another match).
+      return { success: false, message: 'Booking slot has not ended yet.', booking };
     }
     const updated = await this.prisma.turfBooking.update({
       where: { id: bookingId },
@@ -2584,16 +2787,9 @@ export class TurfService {
     });
 
     // Also update any corresponding openChallenge so other users don't see it as open
+    // Only the challenge linked to THIS booking (date/time matching touched other venues).
     await this.prisma.openChallenge.updateMany({
-      where: {
-        OR: [
-          { bookingId: booking.id },
-          {
-            date: booking.date,
-            time: { contains: booking.timeSlot },
-          },
-        ],
-      },
+      where: { bookingId: booking.id },
       data: {
         isJoined: true,
         status: 'ACCEPTED',
@@ -2632,16 +2828,9 @@ export class TurfService {
     });
 
     // Cancel the open challenge so it is removed from public open challenge list
+    // Only the challenge linked to THIS booking (date/time matching touched other venues).
     await this.prisma.openChallenge.updateMany({
-      where: {
-        OR: [
-          { bookingId: booking.id },
-          {
-            date: booking.date,
-            time: { contains: booking.timeSlot },
-          },
-        ],
-      },
+      where: { bookingId: booking.id },
       data: {
         status: 'CANCELLED',
       },
@@ -2660,11 +2849,21 @@ export class TurfService {
     phone?: string,
     venue?: string,
     ownerOnly?: string,
+    viewer?: string,
   ) {
     const where: any = {
       status: { notIn: ['ON_HOLD', 'DELETED'] },
       isHold: false,
     };
+    const callerLast10 = String(phone || viewer || '').replace(/\D/g, '').slice(-10);
+    // Private tournaments are never listed publicly; organizers still see their own.
+    if (callerLast10.length === 10) {
+      where.AND = [
+        { OR: [{ isPrivate: false }, { organizerPhone: { contains: callerLast10 } }] },
+      ];
+    } else {
+      where.isPrivate = false;
+    }
     if (sport && sport !== 'All Sports') {
       where.sport = { contains: sport, mode: 'insensitive' };
     }
@@ -2709,8 +2908,19 @@ export class TurfService {
       return true;
     });
 
-    return activeTournaments.map((t) => ({
+    return activeTournaments.map((t) => this.toPublicTournament(t, callerLast10));
+  }
+
+  private toPublicTournament(t: any, callerLast10 = '') {
+    const isOrganizer =
+      callerLast10.length === 10 && String(t.organizerPhone || '').replace(/\D/g, '').endsWith(callerLast10);
+    return {
       id: t.id.toString(),
+      isPrivate: t.isPrivate === true,
+      // The PIN is only returned to the organizer; everyone else must already know it.
+      accessCode: isOrganizer ? t.accessCode : null,
+      createdByRole: t.createdByRole,
+      isOwnerCreated: t.isOwnerCreated,
       title: t.title,
       sport: t.sport,
       format: t.format,
@@ -2733,7 +2943,28 @@ export class TurfService {
       organizerName: t.organizerName,
       organizerPhone: t.organizerPhone,
       verifiedAdminId: t.verifiedAdminId,
-    }));
+    };
+  }
+
+  /** Looks up a private tournament by its access PIN (the only way to see one). */
+  async getTournamentByAccessCode(code: string) {
+    const clean = String(code || '').trim().toUpperCase();
+    if (clean.length < 4) {
+      throw new BadRequestException('Enter a valid tournament access PIN');
+    }
+    const t = await this.prisma.tournament.findFirst({
+      where: {
+        isPrivate: true,
+        accessCode: { equals: clean, mode: 'insensitive' },
+        isHold: false,
+        status: { notIn: ['ON_HOLD', 'DELETED', 'CANCELLED'] },
+      },
+      include: { verifiedAdmin: true },
+    });
+    if (!t) {
+      throw new NotFoundException('No private tournament found for this PIN');
+    }
+    return { success: true, tournament: this.toPublicTournament(t) };
   }
 
   async createTournament(body: any) {
@@ -2757,12 +2988,32 @@ export class TurfService {
     const organizerPhone = (body?.organizerPhone || body?.phone || '9876543210').toString().trim();
     const bannerUrl = (body?.bannerUrl || body?.imageUrl || 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80').toString().trim();
 
+    const createdByRole = String(body?.createdByRole || 'OWNER').toUpperCase() === 'PLAYER' ? 'PLAYER' : 'OWNER';
+    const isPlayerCreated = createdByRole === 'PLAYER';
+
+    // Player tournaments are never silently attached to a venue by name match: that put them on
+    // the venue owner's dashboard (who could delete them) without the venue agreeing to host.
     let verifiedAdminId = body?.verifiedAdminId ? Number(body.verifiedAdminId) : null;
-    if (!verifiedAdminId && venueName && !venueName.toLowerCase().includes('tba')) {
+    if (!verifiedAdminId && !isPlayerCreated && venueName && !venueName.toLowerCase().includes('tba')) {
       const match = await this.prisma.verifiedAdmin.findFirst({
         where: { venueName: { equals: venueName, mode: 'insensitive' } },
       });
       if (match) verifiedAdminId = match.id;
+    }
+
+    const isPrivate = body?.isPrivate === true;
+    let accessCode: string | null = null;
+    if (isPrivate) {
+      accessCode = String(body?.accessCode || '').trim().toUpperCase();
+      if (!/^[A-Z0-9]{4,10}$/.test(accessCode)) {
+        accessCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+      }
+      // PINs must be unique so a PIN identifies exactly one tournament.
+      for (let i = 0; i < 5; i++) {
+        const clash = await this.prisma.tournament.findFirst({ where: { accessCode } });
+        if (!clash) break;
+        accessCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+      }
     }
 
     const created = await this.prisma.tournament.create({
@@ -2785,6 +3036,10 @@ export class TurfService {
         status: 'UPCOMING',
         isHold: false,
         verifiedAdminId,
+        createdByRole,
+        isOwnerCreated: !isPlayerCreated,
+        isPrivate,
+        accessCode,
       },
     });
 
@@ -2796,50 +3051,83 @@ export class TurfService {
   }
 
   async registerTournament(id: number, body: any) {
-    const tournament = await this.prisma.tournament.findUnique({
-      where: { id },
-      include: { verifiedAdmin: true },
-    });
-    if (!tournament) {
-      throw new NotFoundException('Tournament not found');
+    const teamName = String(body?.teamName || '').trim();
+    if (!teamName) {
+      throw new BadRequestException('Team name is required to register.');
     }
-    if (tournament.isHold || tournament.status === 'ON_HOLD' || tournament.status === 'CANCELLED') {
-      throw new BadRequestException('This tournament is currently placed on hold by platform administrator and cannot accept registrations.');
-    }
-    if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status !== 'VERIFIED')) {
-      throw new BadRequestException('The venue for this tournament is currently on hold by platform administrator.');
-    }
-    if (tournament.registeredTeams >= tournament.maxTeams) {
-      throw new BadRequestException('Tournament registration is full!');
-    }
+    const captainPhone = String(body?.captainPhone || body?.contact || body?.phone || body?.contactPhone || '').replace(/\D/g, '').slice(-10);
 
-    const currentUsers = Array.isArray(tournament.registeredUsers)
-      ? (tournament.registeredUsers as any[])
-      : [];
-
-    const teamName = body?.teamName || 'New Team';
-    const alreadyRegistered = currentUsers.some(
-      (u) => (u.teamName || '').toLowerCase() === teamName.toLowerCase(),
-    );
-    if (alreadyRegistered) {
-      throw new BadRequestException(`Team "${teamName}" is already registered for this tournament!`);
-    }
-
-    const updatedUsers = [...currentUsers, { ...body, registeredAt: new Date().toISOString() }];
-
-    const updated = await this.prisma.tournament.update({
-      where: { id },
-      data: {
-        registeredTeams: { increment: 1 },
-        registeredUsers: updatedUsers,
-      },
-    });
-
-    return {
-      success: true,
-      message: `Team "${teamName}" registered successfully for "${tournament.title}"!`,
-      tournament: updated,
+    // Only keep known registration fields (the raw body used to be stored as-is).
+    const entry = {
+      id: `reg_srv_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      teamName: teamName.slice(0, 60),
+      captainName: String(body?.captainName || body?.name || '').trim().slice(0, 60),
+      captainPhone,
+      contact: captainPhone,
+      playersCount: Number(body?.playersCount || body?.players?.length || 0) || null,
+      players: Array.isArray(body?.players) ? body.players.slice(0, 30).map((p: any) => String(p?.name ?? p).slice(0, 60)) : [],
+      registeredAt: new Date().toISOString(),
     };
+
+    try {
+      return await this.prisma.$transaction(
+        async (tx) => {
+          const tournament = await tx.tournament.findUnique({
+            where: { id },
+            include: { verifiedAdmin: true },
+          });
+          if (!tournament) {
+            throw new NotFoundException('Tournament not found');
+          }
+          if (tournament.isPrivate) {
+            const code = String(body?.accessCode || '').trim().toUpperCase();
+            if (!code || code !== String(tournament.accessCode || '').toUpperCase()) {
+              throw new BadRequestException('This is a private tournament. Enter the correct access PIN to register.');
+            }
+          }
+          if (tournament.isHold || tournament.status === 'ON_HOLD' || tournament.status === 'CANCELLED') {
+            throw new BadRequestException('This tournament is currently placed on hold by platform administrator and cannot accept registrations.');
+          }
+          if (tournament.verifiedAdmin && (tournament.verifiedAdmin.isBookingHold || tournament.verifiedAdmin.status !== 'VERIFIED')) {
+            throw new BadRequestException('The venue for this tournament is currently on hold by platform administrator.');
+          }
+
+          const currentUsers = Array.isArray(tournament.registeredUsers)
+            ? (tournament.registeredUsers as any[])
+            : [];
+          if (currentUsers.length >= tournament.maxTeams || tournament.registeredTeams >= tournament.maxTeams) {
+            throw new BadRequestException('Tournament registration is full!');
+          }
+          if (currentUsers.some((u) => String(u?.teamName || '').toLowerCase() === teamName.toLowerCase())) {
+            throw new BadRequestException(`Team "${teamName}" is already registered for this tournament!`);
+          }
+          if (captainPhone && currentUsers.some((u) => String(u?.captainPhone || '').replace(/\D/g, '').slice(-10) === captainPhone)) {
+            throw new BadRequestException('You have already registered a team for this tournament.');
+          }
+
+          const updated = await tx.tournament.update({
+            where: { id },
+            data: {
+              registeredTeams: currentUsers.length + 1,
+              registeredUsers: [...currentUsers, entry],
+            },
+          });
+
+          return {
+            success: true,
+            message: `Team "${teamName}" registered successfully for "${tournament.title}"!`,
+            tournament: this.toPublicTournament(updated),
+            registration: entry,
+          };
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+    } catch (err: any) {
+      if (err?.code === 'P2034') {
+        throw new ConflictException('Another team registered at the same moment. Please try again.');
+      }
+      throw err;
+    }
   }
 
   async cancelTournament(id: number) {

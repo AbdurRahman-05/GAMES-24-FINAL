@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +51,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
   Map<String, dynamic> _season = {
     'name': 'Season 4 Final Lap',
     'daysLeft': 12,
-    'reward': 'Top 3 earn ₹25,000 Vouchers + Golden Jersey',
+    'reward': 'Top 3 earn â‚¹25,000 Vouchers + Golden Jersey',
   };
 
   @override
@@ -70,7 +70,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     final prefs = await SharedPreferences.getInstance();
     final rawPhone = prefs.getString('mobileNumber') ?? '';
     final digits = rawPhone.replaceAll(RegExp(r'\D'), '');
-    final fallbackId = 'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '0001'}';
+    final fallbackId =
+        'PLY-${digits.length >= 4 ? digits.substring(digits.length - 4) : '0001'}';
 
     setState(() {
       _myPhone = rawPhone.isNotEmpty ? rawPhone : '+919087786231';
@@ -80,16 +81,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       _currentState = prefs.getString('userState') ?? 'Tamil Nadu';
     });
 
-    await Future.wait([
-      _fetchLeaderboard(),
-      _fetchFriendsAndRequests(),
-    ]);
+    await Future.wait([_fetchLeaderboard(), _fetchFriendsAndRequests()]);
   }
 
   String _getScopeParam() {
     if (_selectedScope.startsWith('Friends')) return 'friends';
-    if (_selectedScope.contains('City') || _selectedScope == _currentCity) return 'city';
-    if (_selectedScope.contains('State') || _selectedScope == _currentState) return 'state';
+    if (_selectedScope.contains('City') || _selectedScope == _currentCity) {
+      return 'city';
+    }
+    if (_selectedScope.contains('State') || _selectedScope == _currentState) {
+      return 'state';
+    }
     return 'global';
   }
 
@@ -122,9 +124,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         final data = jsonDecode(res.body);
         if (mounted) {
           setState(() {
-            _leaderboard = List<Map<String, dynamic>>.from(data['leaderboard'] ?? []);
+            _leaderboard = List<Map<String, dynamic>>.from(
+              data['leaderboard'] ?? [],
+            );
             if (data['currentUserRank'] != null) {
-              _currentUserRank = Map<String, dynamic>.from(data['currentUserRank']);
+              _currentUserRank = Map<String, dynamic>.from(
+                data['currentUserRank'],
+              );
             }
             if (data['season'] != null) {
               _season = Map<String, dynamic>.from(data['season']);
@@ -163,12 +169,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         'wins': '15 Wins',
         'matchesPlayed': 18,
         'winRate': '83% W',
-        'imageUrl': 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
         'badge': 'Universal Elite',
         'isVerified': true,
         'isYou': true,
         'friendshipStatus': 'none',
-        'statsSummary': '460 Runs • 18 Wkts',
+        'statsSummary': '460 Runs â€¢ 18 Wkts',
       },
       {
         'rank': 2,
@@ -187,12 +194,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         'wins': '14 Wins',
         'matchesPlayed': 17,
         'winRate': '82% W',
-        'imageUrl': 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150',
         'badge': 'Century King',
         'isVerified': true,
         'isYou': false,
         'friendshipStatus': 'none',
-        'statsSummary': '560 Runs • 1 Wkts',
+        'statsSummary': '560 Runs â€¢ 1 Wkts',
       },
       {
         'rank': 3,
@@ -211,12 +219,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         'wins': '15 Wins',
         'matchesPlayed': 18,
         'winRate': '83% W',
-        'imageUrl': 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
         'badge': 'Golden Boot',
         'isVerified': true,
         'isYou': false,
         'friendshipStatus': 'none',
-        'statsSummary': '24 Goals • 8 Ast',
+        'statsSummary': '24 Goals â€¢ 8 Ast',
       },
       {
         'rank': 4,
@@ -235,12 +244,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         'wins': '11 Wins',
         'matchesPlayed': 15,
         'winRate': '73% W',
-        'imageUrl': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
         'badge': 'Turf Master',
         'isVerified': true,
         'isYou': false,
         'friendshipStatus': 'accepted',
-        'statsSummary': '490 Runs • 2 Wkts',
+        'statsSummary': '490 Runs â€¢ 2 Wkts',
       },
       {
         'rank': 5,
@@ -259,12 +269,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         'wins': '10 Wins',
         'matchesPlayed': 14,
         'winRate': '71% W',
-        'imageUrl': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
         'badge': 'Wicket Machine',
         'isVerified': true,
         'isYou': false,
         'friendshipStatus': 'pending_received',
-        'statsSummary': '95 Runs • 26 Wkts',
+        'statsSummary': '95 Runs â€¢ 26 Wkts',
       },
       {
         'rank': 6,
@@ -283,12 +294,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         'wins': '12 Wins',
         'matchesPlayed': 16,
         'winRate': '75% W',
-        'imageUrl': 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150',
         'badge': 'Death Overs Ace',
         'isVerified': true,
         'isYou': false,
         'friendshipStatus': 'none',
-        'statsSummary': '80 Runs • 28 Wkts',
+        'statsSummary': '80 Runs â€¢ 28 Wkts',
       },
     ];
 
@@ -296,22 +308,53 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     List<Map<String, dynamic>> filtered = List.from(seedPlayers);
     final scopeParam = _getScopeParam();
     if (scopeParam == 'friends') {
-      filtered = filtered.where((p) => p['isYou'] == true || p['friendshipStatus'] == 'accepted').toList();
+      filtered = filtered
+          .where(
+            (p) => p['isYou'] == true || p['friendshipStatus'] == 'accepted',
+          )
+          .toList();
     } else if (scopeParam == 'city') {
-      filtered = filtered.where((p) => (p['city'] as String).toLowerCase() == _currentCity.toLowerCase()).toList();
+      filtered = filtered
+          .where(
+            (p) =>
+                (p['city'] as String).toLowerCase() ==
+                _currentCity.toLowerCase(),
+          )
+          .toList();
     } else if (scopeParam == 'state') {
-      filtered = filtered.where((p) => (p['state'] as String).toLowerCase() == _currentState.toLowerCase()).toList();
+      filtered = filtered
+          .where(
+            (p) =>
+                (p['state'] as String).toLowerCase() ==
+                _currentState.toLowerCase(),
+          )
+          .toList();
     }
 
     if (_selectedSport != 'All Sports') {
-      filtered = filtered.where((p) => (p['sport'] as String).toLowerCase() == _selectedSport.toLowerCase()).toList();
+      filtered = filtered
+          .where(
+            (p) =>
+                (p['sport'] as String).toLowerCase() ==
+                _selectedSport.toLowerCase(),
+          )
+          .toList();
     }
 
     if (_selectedRole != 'All Roles') {
-      filtered = filtered.where((p) => (p['role'] as String).toLowerCase() == _selectedRole.toLowerCase()).toList();
+      filtered = filtered
+          .where(
+            (p) =>
+                (p['role'] as String).toLowerCase() ==
+                _selectedRole.toLowerCase(),
+          )
+          .toList();
     }
 
-    filtered.sort((a, b) => (b['pointsNumeric'] as int).compareTo(a['pointsNumeric'] as int));
+    filtered.sort(
+      (a, b) =>
+          (b['pointsNumeric'] as int).compareTo(a['pointsNumeric'] as int),
+    );
 
     for (int i = 0; i < filtered.length; i++) {
       filtered[i]['rank'] = i + 1;
@@ -325,12 +368,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Future<void> _fetchFriendsAndRequests() async {
     try {
-      final res = await http.get(Uri.parse('${ApiConfig.baseUrl}/auth/friends?identifier=$_myPhone')).timeout(const Duration(seconds: 15));
+      final res = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/auth/friends?identifier=$_myPhone'),
+          )
+          .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         if (mounted) {
           setState(() {
-            _incomingRequests = List<Map<String, dynamic>>.from(data['incomingRequests'] ?? []);
+            _incomingRequests = List<Map<String, dynamic>>.from(
+              data['incomingRequests'] ?? [],
+            );
           });
         }
       }
@@ -358,9 +407,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.person_add_alt_1, color: Colors.white, size: 18),
+                const Icon(
+                  Icons.person_add_alt_1,
+                  color: Colors.white,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: Text(body['message'] ?? 'Friend request sent!')),
+                Expanded(
+                  child: Text(body['message'] ?? 'Friend request sent!'),
+                ),
               ],
             ),
             backgroundColor: Color(0xFFD4FF00),
@@ -400,7 +455,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(body['message'] ?? 'Request updated'),
-            backgroundColor: action == 'accept' ? const Color(0xFFD4FF00) : const Color(0xFF1E1E1E),
+            backgroundColor: action == 'accept'
+                ? const Color(0xFFD4FF00)
+                : const Color(0xFF1E1E1E),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -423,7 +480,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     if (_selectedSport == 'Cricket') {
       return ['All Roles', 'All-Rounder', 'Batter', 'Bowler', 'Wicket-Keeper'];
     } else if (_selectedSport == 'Football') {
-      return ['All Roles', 'Forward / Striker', 'Midfielder', 'Defender', 'Goalkeeper'];
+      return [
+        'All Roles',
+        'Forward / Striker',
+        'Midfielder',
+        'Defender',
+        'Goalkeeper',
+      ];
     } else if (_selectedSport == 'Badminton') {
       return ['All Roles', 'Singles Specialist', 'Doubles Specialist'];
     }
@@ -440,7 +503,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             final name = (p['name'] ?? '').toString().toLowerCase();
             final id = (p['playerId'] ?? '').toString().toLowerCase();
             final role = (p['role'] ?? '').toString().toLowerCase();
-            return name.contains(query) || id.contains(query) || role.contains(query);
+            return name.contains(query) ||
+                id.contains(query) ||
+                role.contains(query);
           }).toList();
 
     return Scaffold(
@@ -470,7 +535,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
                 )
               else ...[
-                if (displayedList.length >= 3) _buildPodium(displayedList.take(3).toList()),
+                if (displayedList.length >= 3)
+                  _buildPodium(displayedList.take(3).toList()),
                 _buildCurrentUserCard(),
                 _buildRankingsList(displayedList),
                 _buildHowPointsWorkCard(),
@@ -539,7 +605,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               Icon(Icons.location_on, size: 10, color: Colors.green[700]),
               const SizedBox(width: 3),
               Text(
-                '$_currentCity • $_currentState',
+                '$_currentCity â€¢ $_currentState',
                 style: TextStyle(
                   color: Color(0xFFA1A1AA),
                   fontSize: 11,
@@ -614,7 +680,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         decoration: InputDecoration(
           hintText: 'Search by Player Name or ID (e.g. PLY-0002)...',
           hintStyle: const TextStyle(fontSize: 13, color: Color(0xFFA1A1AA)),
-          prefixIcon: const Icon(Icons.search, size: 18, color: Color(0xFFD4FF00)),
+          prefixIcon: const Icon(
+            Icons.search,
+            size: 18,
+            color: Color(0xFFD4FF00),
+          ),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear, size: 16, color: Colors.white),
@@ -624,7 +694,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   },
                 )
               : null,
-          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 0,
+            horizontal: 16,
+          ),
           filled: true,
           fillColor: const Color(0xFF1F1F1F),
           border: OutlineInputBorder(
@@ -699,7 +772,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.redAccent,
                           borderRadius: BorderRadius.circular(6),
@@ -717,7 +793,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    _season['reward'] ?? 'Top 3 earn ₹25,000 Vouchers + Golden Jersey',
+                    _season['reward'] ??
+                        'Top 3 earn â‚¹25,000 Vouchers + Golden Jersey',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.85),
                       fontSize: 11,
@@ -750,10 +827,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         ),
         child: Row(
           children: scopes.map((tab) {
-            final isSelected = _selectedScope == tab['key'] ||
-                (_selectedScope.startsWith('Friends') && tab['key'] == 'Friends') ||
-                (_selectedScope.startsWith('City') && tab['key'] == _currentCity) ||
-                (_selectedScope.startsWith('State') && tab['key'] == _currentState);
+            final isSelected =
+                _selectedScope == tab['key'] ||
+                (_selectedScope.startsWith('Friends') &&
+                    tab['key'] == 'Friends') ||
+                (_selectedScope.startsWith('City') &&
+                    tab['key'] == _currentCity) ||
+                (_selectedScope.startsWith('State') &&
+                    tab['key'] == _currentState);
 
             return Expanded(
               child: GestureDetector(
@@ -767,7 +848,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
+                    color: isSelected
+                        ? const Color(0xFFD4FF00)
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: isSelected
                         ? [
@@ -775,7 +858,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               color: Colors.black.withValues(alpha: 0.06),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
-                            )
+                            ),
                           ]
                         : null,
                   ),
@@ -783,8 +866,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     child: Text(
                       tab['title']!,
                       style: TextStyle(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? Colors.black : const Color(0xFFA1A1AA),
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.black
+                            : const Color(0xFFA1A1AA),
                         fontSize: 11,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -835,7 +922,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFF2E2E32),
+                  color: isSelected
+                      ? const Color(0xFFD4FF00)
+                      : const Color(0xFF2E2E32),
                 ),
               ),
               onSelected: (val) {
@@ -869,7 +958,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? const Color(0xFFD4FF00) : const Color(0xFFA1A1AA),
+                  color: isSelected
+                      ? const Color(0xFFD4FF00)
+                      : const Color(0xFFA1A1AA),
                 ),
               ),
               selected: isSelected,
@@ -878,7 +969,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
-                  color: isSelected ? const Color(0xFFD4FF00) : Colors.transparent,
+                  color: isSelected
+                      ? const Color(0xFFD4FF00)
+                      : Colors.transparent,
                 ),
               ),
               onSelected: (val) {
@@ -906,11 +999,27 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildPodiumColumn(player: second, rank: 2, height: 110, medalColor: Colors.grey[400]!),
+          _buildPodiumColumn(
+            player: second,
+            rank: 2,
+            height: 110,
+            medalColor: Colors.grey[400]!,
+          ),
           const SizedBox(width: 14),
-          _buildPodiumColumn(player: first, rank: 1, height: 135, medalColor: Colors.amber[700]!, isCenter: true),
+          _buildPodiumColumn(
+            player: first,
+            rank: 1,
+            height: 135,
+            medalColor: Colors.amber[700]!,
+            isCenter: true,
+          ),
           const SizedBox(width: 14),
-          _buildPodiumColumn(player: third, rank: 3, height: 95, medalColor: Colors.brown[400]!),
+          _buildPodiumColumn(
+            player: third,
+            rank: 3,
+            height: 95,
+            medalColor: Colors.brown[400]!,
+          ),
         ],
       ),
     );
@@ -947,11 +1056,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 child: CircleAvatar(
                   radius: avatarSize / 2,
                   backgroundColor: Color(0xFFD4FF00),
-                  backgroundImage: player['imageUrl'] != null ? NetworkImage(player['imageUrl']) : null,
+                  backgroundImage: player['imageUrl'] != null
+                      ? NetworkImage(player['imageUrl'])
+                      : null,
                   child: player['imageUrl'] == null
                       ? Text(
                           (player['name'] ?? 'P').substring(0, 1).toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         )
                       : null,
                 ),
@@ -959,13 +1073,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               if (isCenter)
                 const Positioned(
                   top: -16,
-                  child: Icon(Icons.workspace_premium, color: Colors.amber, size: 30),
+                  child: Icon(
+                    Icons.workspace_premium,
+                    color: Colors.amber,
+                    size: 30,
+                  ),
                 )
               else
                 Positioned(
                   top: -8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1.5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(10),
@@ -990,7 +1111,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 Positioned(
                   bottom: -8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Color(0xFFD4FF00),
                       borderRadius: BorderRadius.circular(10),
@@ -1056,11 +1180,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: isCenter ? 14 : 12,
-                    color: isCenter ? Colors.amber[900] : const Color(0xFFD4FF00),
+                    color: isCenter
+                        ? Colors.amber[900]
+                        : const Color(0xFFD4FF00),
                   ),
                 ),
                 Text(
-                  'PTS • ${player['winRate']}',
+                  'PTS â€¢ ${player['winRate']}',
                   style: TextStyle(fontSize: 8.5, color: Color(0xFFA1A1AA)),
                 ),
               ],
@@ -1105,8 +1231,14 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       radius: 24,
                       backgroundColor: const Color(0xFFD4FF00),
                       child: Text(
-                        _myName.isNotEmpty ? _myName.substring(0, 1).toUpperCase() : 'P',
-                        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 18),
+                        _myName.isNotEmpty
+                            ? _myName.substring(0, 1).toUpperCase()
+                            : 'P',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -1152,7 +1284,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                           ),
                           const SizedBox(width: 6),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF1F2916),
                               borderRadius: BorderRadius.circular(6),
@@ -1170,8 +1305,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'ID: $_myPlayerId • $_currentCity, $_currentState',
-                        style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+                        'ID: $_myPlayerId â€¢ $_currentCity, $_currentState',
+                        style: TextStyle(
+                          color: Color(0xFFA1A1AA),
+                          fontSize: 11,
+                        ),
                       ),
                     ],
                   ),
@@ -1199,7 +1337,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Icon(Icons.trending_up, color: Color(0xFFD4FF00), size: 16),
+                  const Icon(
+                    Icons.trending_up,
+                    color: Color(0xFFD4FF00),
+                    size: 16,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     '$pointsToNext pts to overtake $targetName',
@@ -1220,7 +1362,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               LinearProgressIndicator(
                 value: 0.88,
                 backgroundColor: const Color(0xFF262626),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4FF00)),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFFD4FF00),
+                ),
                 minHeight: 5,
                 borderRadius: BorderRadius.circular(3),
               ),
@@ -1238,7 +1382,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.military_tech_outlined, size: 48, color: Colors.grey[400]),
+              Icon(
+                Icons.military_tech_outlined,
+                size: 48,
+                color: Colors.grey[400],
+              ),
               const SizedBox(height: 12),
               Text(
                 _selectedScope.startsWith('Friends')
@@ -1256,7 +1404,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   },
                   icon: const Icon(Icons.person_add_alt, size: 16),
                   label: const Text('Add Friends from Global Rankings'),
-                  style: TextButton.styleFrom(foregroundColor: const Color(0xFFD4FF00)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFFD4FF00),
+                  ),
                 ),
               ],
             ],
@@ -1278,7 +1428,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 children: [
                   Text(
                     '${_selectedScope.replaceAll(RegExp(r'[^a-zA-Z\s]'), '')} Rankings',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -1290,7 +1443,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               InkWell(
                 onTap: _showLocationPickerModal,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
@@ -1302,7 +1458,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       const SizedBox(width: 4),
                       Text(
                         _currentCity,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -1315,7 +1474,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: list.length,
-          separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFF262626)),
+          separatorBuilder: (_, index) =>
+              const Divider(height: 1, color: Color(0xFF262626)),
           itemBuilder: (context, index) {
             final player = list[index];
             return _buildRankRow(player);
@@ -1366,11 +1526,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: Color(0xFFD4FF00),
-                  backgroundImage: player['imageUrl'] != null ? NetworkImage(player['imageUrl']) : null,
+                  backgroundImage: player['imageUrl'] != null
+                      ? NetworkImage(player['imageUrl'])
+                      : null,
                   child: player['imageUrl'] == null
                       ? Text(
-                          name.isNotEmpty ? name.substring(0, 1).toUpperCase() : 'P',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          name.isNotEmpty
+                              ? name.substring(0, 1).toUpperCase()
+                              : 'P',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         )
                       : null,
                 ),
@@ -1378,7 +1545,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   const Positioned(
                     bottom: -2,
                     right: -2,
-                    child: Icon(Icons.check_circle, color: Color(0xFF10B981), size: 14),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF10B981),
+                      size: 14,
+                    ),
                   ),
               ],
             ),
@@ -1402,25 +1573,37 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       if (isYou) ...[
                         const SizedBox(width: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
                           decoration: BoxDecoration(
                             color: Color(0xFFD4FF00),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Text(
                             'YOU',
-                            style: TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                       const SizedBox(width: 6),
                       if (change == '-')
-                        const Text('—', style: TextStyle(color: Colors.grey, fontSize: 10))
+                        const Text(
+                          'â€”',
+                          style: TextStyle(color: Colors.grey, fontSize: 10),
+                        )
                       else
                         Row(
                           children: [
                             Icon(
-                              isNegative ? Icons.arrow_drop_down : Icons.arrow_drop_up,
+                              isNegative
+                                  ? Icons.arrow_drop_down
+                                  : Icons.arrow_drop_up,
                               color: changeColor,
                               size: 16,
                             ),
@@ -1441,23 +1624,37 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     children: [
                       if (playerId.isNotEmpty) ...[
                         Text(
-                          '$playerId • ',
-                          style: const TextStyle(color: Color(0xFFD4FF00), fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                          '$playerId â€¢ ',
+                          style: const TextStyle(
+                            color: Color(0xFFD4FF00),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'monospace',
+                          ),
                         ),
                       ],
                       Flexible(
                         child: Text(
                           location,
-                          style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+                          style: TextStyle(
+                            color: Color(0xFFA1A1AA),
+                            fontSize: 11,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text('•', style: TextStyle(color: Colors.grey[400], fontSize: 11)),
+                      Text(
+                        'â€¢',
+                        style: TextStyle(color: Colors.grey[400], fontSize: 11),
+                      ),
                       const SizedBox(width: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1F2916),
                           borderRadius: BorderRadius.circular(4),
@@ -1514,7 +1711,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         message: 'Friends',
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
-          child: Icon(Icons.people_alt_rounded, color: Color(0xFFD4FF00), size: 18),
+          child: Icon(
+            Icons.people_alt_rounded,
+            color: Color(0xFFD4FF00),
+            size: 18,
+          ),
         ),
       );
     } else if (status == 'pending_sent') {
@@ -1522,12 +1723,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
         message: 'Request Pending',
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
-          child: Icon(Icons.hourglass_top_rounded, color: Colors.orange, size: 18),
+          child: Icon(
+            Icons.hourglass_top_rounded,
+            color: Colors.orange,
+            size: 18,
+          ),
         ),
       );
     } else if (status == 'pending_received') {
       return IconButton(
-        icon: const Icon(Icons.check_circle_outline, color: Color(0xFFD4FF00), size: 20),
+        icon: const Icon(
+          Icons.check_circle_outline,
+          color: Color(0xFFD4FF00),
+          size: 20,
+        ),
         tooltip: 'Accept Friend Request',
         onPressed: () {
           final reqId = player['friendRequestId'];
@@ -1596,11 +1805,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         CircleAvatar(
                           radius: 32,
                           backgroundColor: const Color(0xFFD4FF00),
-                          backgroundImage: player['imageUrl'] != null ? NetworkImage(player['imageUrl']) : null,
+                          backgroundImage: player['imageUrl'] != null
+                              ? NetworkImage(player['imageUrl'])
+                              : null,
                           child: player['imageUrl'] == null
                               ? Text(
                                   name.substring(0, 1).toUpperCase(),
-                                  style: const TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.w900),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 )
                               : null,
                         ),
@@ -1623,7 +1838,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                   ),
                                   if (player['isVerified'] == true) ...[
                                     const SizedBox(width: 6),
-                                    const Icon(Icons.verified, color: Color(0xFF10B981), size: 18),
+                                    const Icon(
+                                      Icons.verified,
+                                      color: Color(0xFF10B981),
+                                      size: 18,
+                                    ),
                                   ],
                                 ],
                               ),
@@ -1631,7 +1850,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFF1F2916),
                                       borderRadius: BorderRadius.circular(6),
@@ -1649,22 +1871,33 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                   const SizedBox(width: 6),
                                   InkWell(
                                     onTap: () {
-                                      Clipboard.setData(ClipboardData(text: playerId));
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      Clipboard.setData(
+                                        ClipboardData(text: playerId),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
                                           content: Text('Copied $playerId'),
                                           duration: const Duration(seconds: 1),
                                         ),
                                       );
                                     },
-                                    child: const Icon(Icons.copy, size: 12, color: Colors.grey),
+                                    child: const Icon(
+                                      Icons.copy,
+                                      size: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '$location • $sport $role',
-                                style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 12),
+                                '$location â€¢ $sport $role',
+                                style: TextStyle(
+                                  color: Color(0xFFA1A1AA),
+                                  fontSize: 12,
+                                ),
                               ),
                             ],
                           ),
@@ -1677,15 +1910,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     if (!isYou) ...[
                       if (status == 'accepted')
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1F2916),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFD4FF00).withValues(alpha: 0.35)),
+                            border: Border.all(
+                              color: const Color(
+                                0xFFD4FF00,
+                              ).withValues(alpha: 0.35),
+                            ),
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.handshake_rounded, color: Color(0xFFD4FF00), size: 20),
+                              Icon(
+                                Icons.handshake_rounded,
+                                color: Color(0xFFD4FF00),
+                                size: 20,
+                              ),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -1702,15 +1946,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         )
                       else if (status == 'pending_sent')
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF1F1A12),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
+                            border: Border.all(
+                              color: const Color(
+                                0xFFF59E0B,
+                              ).withValues(alpha: 0.35),
+                            ),
                           ),
                           child: Row(
                             children: const [
-                              Icon(Icons.hourglass_top_rounded, color: Color(0xFFFBBF24), size: 20),
+                              Icon(
+                                Icons.hourglass_top_rounded,
+                                color: Color(0xFFFBBF24),
+                                size: 20,
+                              ),
                               SizedBox(width: 10),
                               Expanded(
                                 child: Text(
@@ -1733,14 +1988,28 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 onPressed: () {
                                   Navigator.pop(context);
                                   final reqId = player['friendRequestId'];
-                                  if (reqId != null) _respondFriendRequest(reqId, 'accept');
+                                  if (reqId != null) {
+                                    _respondFriendRequest(reqId, 'accept');
+                                  }
                                 },
-                                icon: const Icon(Icons.check, size: 16, color: Colors.black),
-                                label: const Text('Accept Friend', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
+                                icon: const Icon(
+                                  Icons.check,
+                                  size: 16,
+                                  color: Colors.black,
+                                ),
+                                label: const Text(
+                                  'Accept Friend',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                  ),
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFD4FF00),
                                   foregroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
                             ),
@@ -1750,14 +2019,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 onPressed: () {
                                   Navigator.pop(context);
                                   final reqId = player['friendRequestId'];
-                                  if (reqId != null) _respondFriendRequest(reqId, 'decline');
+                                  if (reqId != null) {
+                                    _respondFriendRequest(reqId, 'decline');
+                                  }
                                 },
                                 icon: const Icon(Icons.close, size: 16),
                                 label: const Text('Decline'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  side: const BorderSide(color: Color(0xFF2E2E32)),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  side: const BorderSide(
+                                    color: Color(0xFF2E2E32),
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
                             ),
@@ -1771,8 +2046,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               Navigator.pop(context);
                               _sendFriendRequest(player);
                             },
-                            icon: const Icon(Icons.person_add_alt_1, size: 18, color: Colors.black),
-                            label: const Text('Send Friend Request 👋', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
+                            icon: const Icon(
+                              Icons.person_add_alt_1,
+                              size: 18,
+                              color: Colors.black,
+                            ),
+                            label: const Text(
+                              'Send Friend Request ðŸ‘‹',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD4FF00),
                               foregroundColor: Colors.black,
@@ -1799,11 +2084,26 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        _buildStatBox('Universal PTS', '$points', Icons.stars, Colors.amber[700]!),
+                        _buildStatBox(
+                          'Universal PTS',
+                          '$points',
+                          Icons.stars,
+                          Colors.amber[700]!,
+                        ),
                         const SizedBox(width: 10),
-                        _buildStatBox('Wins ($matches M)', '$wins', Icons.emoji_events, const Color(0xFFD4FF00)),
+                        _buildStatBox(
+                          'Wins ($matches M)',
+                          '$wins',
+                          Icons.emoji_events,
+                          const Color(0xFFD4FF00),
+                        ),
                         const SizedBox(width: 10),
-                        _buildStatBox('Win Rate', '$winRate', Icons.trending_up, Colors.orange),
+                        _buildStatBox(
+                          'Win Rate',
+                          '$winRate',
+                          Icons.trending_up,
+                          Colors.orange,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -1822,18 +2122,31 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             children: [
                               Text(
                                 '$sport Metrics',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                statsSummary.isNotEmpty ? statsSummary : '150+ Runs • 12 Wickets',
-                                style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11),
+                                statsSummary.isNotEmpty
+                                    ? statsSummary
+                                    : '150+ Runs â€¢ 12 Wickets',
+                                style: TextStyle(
+                                  color: Color(0xFFA1A1AA),
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
                           ),
                           Row(
                             children: const [
-                              Icon(Icons.local_fire_department, color: Colors.orange, size: 16),
+                              Icon(
+                                Icons.local_fire_department,
+                                color: Colors.orange,
+                                size: 16,
+                              ),
                               SizedBox(width: 2),
                               Text(
                                 'Form 92%',
@@ -1859,7 +2172,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               Navigator.pop(context);
                               _showHeadToHeadModal(player);
                             },
-                            icon: const Icon(Icons.compare_arrows_rounded, size: 18),
+                            icon: const Icon(
+                              Icons.compare_arrows_rounded,
+                              size: 18,
+                            ),
                             label: const Text('Head-to-Head'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: const Color(0xFFD4FF00),
@@ -1878,11 +2194,23 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                               Navigator.pop(context);
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const TeamsHubScreen()),
+                                MaterialPageRoute(
+                                  builder: (_) => const TeamsHubScreen(),
+                                ),
                               );
                             },
-                            icon: const Icon(Icons.groups_outlined, size: 18, color: Colors.black),
-                            label: const Text('Invite to Squad', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
+                            icon: const Icon(
+                              Icons.groups_outlined,
+                              size: 18,
+                              color: Colors.black,
+                            ),
+                            label: const Text(
+                              'Invite to Squad',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black,
+                              ),
+                            ),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD4FF00),
                               foregroundColor: Colors.black,
@@ -1921,7 +2249,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             const SizedBox(height: 6),
             Text(
               value,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.white,
+              ),
             ),
             const SizedBox(height: 2),
             Text(
@@ -1963,7 +2295,12 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               const SizedBox(height: 16),
               const Text(
                 'HEAD-TO-HEAD COMPARISON',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.8, color: Colors.white),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  letterSpacing: 0.8,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 16),
               Row(
@@ -1975,24 +2312,49 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         radius: 26,
                         backgroundColor: const Color(0xFFD4FF00),
                         child: Text(
-                          _myName.isNotEmpty ? _myName.substring(0, 1).toUpperCase() : 'Y',
-                          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900),
+                          _myName.isNotEmpty
+                              ? _myName.substring(0, 1).toUpperCase()
+                              : 'Y',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text('You ($_myName)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white)),
-                      Text(_currentUserRank['role'] ?? 'All-Rounder', style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 10)),
+                      Text(
+                        'You ($_myName)',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        _currentUserRank['role'] ?? 'All-Rounder',
+                        style: TextStyle(
+                          color: Color(0xFFA1A1AA),
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF3B1212),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
                       'VS',
-                      style: TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 12),
+                      style: TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                   Column(
@@ -2000,26 +2362,62 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       CircleAvatar(
                         radius: 26,
                         backgroundColor: Colors.blueGrey,
-                        backgroundImage: target['imageUrl'] != null ? NetworkImage(target['imageUrl']) : null,
+                        backgroundImage: target['imageUrl'] != null
+                            ? NetworkImage(target['imageUrl'])
+                            : null,
                         child: target['imageUrl'] == null
                             ? Text(
-                                (target['name'] ?? 'P').substring(0, 1).toUpperCase(),
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                (target['name'] ?? 'P')
+                                    .substring(0, 1)
+                                    .toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               )
                             : null,
                       ),
                       const SizedBox(height: 6),
-                      Text(target['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.white)),
-                      Text(target['role'] ?? '', style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 10)),
+                      Text(
+                        target['name'] ?? '',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        target['role'] ?? '',
+                        style: TextStyle(
+                          color: Color(0xFFA1A1AA),
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
               const SizedBox(height: 20),
-              _buildCompareRow('Points', '${_currentUserRank['points']}', '${target['points']}'),
-              _buildCompareRow('Wins', '${_currentUserRank['wins'] ?? '15 Wins'}', '${target['wins']}'),
-              _buildCompareRow('Matches', '18', '${target['matchesPlayed'] ?? 15}'),
-              _buildCompareRow('Win Rate', '83%', '${target['winRate'] ?? '75%'}'),
+              _buildCompareRow(
+                'Points',
+                '${_currentUserRank['points']}',
+                '${target['points']}',
+              ),
+              _buildCompareRow(
+                'Wins',
+                '${_currentUserRank['wins'] ?? '15 Wins'}',
+                '${target['wins']}',
+              ),
+              _buildCompareRow(
+                'Matches',
+                '18',
+                '${target['matchesPlayed'] ?? 15}',
+              ),
+              _buildCompareRow(
+                'Win Rate',
+                '83%',
+                '${target['winRate'] ?? '75%'}',
+              ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -2028,9 +2426,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFD4FF00),
                     foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Close Comparison', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
+                  child: const Text(
+                    'Close Comparison',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -2049,7 +2455,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Text(
               val1,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD4FF00)),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Color(0xFFD4FF00),
+              ),
             ),
           ),
           Container(
@@ -2068,7 +2478,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
             child: Text(
               val2,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.blueGrey,
+              ),
             ),
           ),
         ],
@@ -2111,10 +2525,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                     children: [
                       const Text(
                         'Incoming Friend Requests',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1F2916),
                           borderRadius: BorderRadius.circular(10),
@@ -2137,11 +2558,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       child: Center(
                         child: Column(
                           children: [
-                            Icon(Icons.people_outline, size: 48, color: Colors.grey[400]),
+                            Icon(
+                              Icons.people_outline,
+                              size: 48,
+                              color: Colors.grey[400],
+                            ),
                             const SizedBox(height: 8),
                             const Text(
                               'No pending friend requests.',
-                              style: TextStyle(color: Colors.grey, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -2152,7 +2580,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _incomingRequests.length,
-                      separatorBuilder: (_, index) => const Divider(height: 1, color: Color(0xFF262626)),
+                      separatorBuilder: (_, index) =>
+                          const Divider(height: 1, color: Color(0xFF262626)),
                       itemBuilder: (context, idx) {
                         final req = _incomingRequests[idx];
                         final senderName = req['fromName'] ?? 'Player';
@@ -2164,18 +2593,41 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             backgroundColor: const Color(0xFFD4FF00),
                             child: Text(
                               senderName.substring(0, 1).toUpperCase(),
-                              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
                           ),
-                          title: Text(senderName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
-                          subtitle: Text('ID: $senderId', style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 11)),
+                          title: Text(
+                            senderName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'ID: $senderId',
+                            style: TextStyle(
+                              color: Color(0xFFA1A1AA),
+                              fontSize: 11,
+                            ),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.check_circle, color: Color(0xFFD4FF00), size: 24),
+                                icon: const Icon(
+                                  Icons.check_circle,
+                                  color: Color(0xFFD4FF00),
+                                  size: 24,
+                                ),
                                 onPressed: () async {
-                                  await _respondFriendRequest(req['id'], 'accept');
+                                  await _respondFriendRequest(
+                                    req['id'],
+                                    'accept',
+                                  );
                                   setSheetState(() {
                                     _incomingRequests.removeAt(idx);
                                   });
@@ -2183,9 +2635,16 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                                 },
                               ),
                               IconButton(
-                                icon: Icon(Icons.cancel, color: Colors.red[400], size: 24),
+                                icon: Icon(
+                                  Icons.cancel,
+                                  color: Colors.red[400],
+                                  size: 24,
+                                ),
                                 onPressed: () async {
-                                  await _respondFriendRequest(req['id'], 'decline');
+                                  await _respondFriendRequest(
+                                    req['id'],
+                                    'decline',
+                                  );
                                   setSheetState(() {
                                     _incomingRequests.removeAt(idx);
                                   });
@@ -2248,7 +2707,11 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               const SizedBox(height: 16),
               const Text(
                 'Select Your Home Region',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -2261,7 +2724,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   itemCount: locations.length,
                   itemBuilder: (context, idx) {
                     final loc = locations[idx];
-                    final isCurrent = loc['city'] == _currentCity && loc['state'] == _currentState;
+                    final isCurrent =
+                        loc['city'] == _currentCity &&
+                        loc['state'] == _currentState;
 
                     return Material(
                       color: Colors.transparent,
@@ -2269,18 +2734,34 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: Icon(
                           Icons.location_city,
-                          color: isCurrent ? const Color(0xFFD4FF00) : Colors.grey,
+                          color: isCurrent
+                              ? const Color(0xFFD4FF00)
+                              : Colors.grey,
                         ),
                         title: Text(
                           loc['city']!,
                           style: TextStyle(
-                            fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
-                            color: isCurrent ? const Color(0xFFD4FF00) : Colors.white,
+                            fontWeight: isCurrent
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                            color: isCurrent
+                                ? const Color(0xFFD4FF00)
+                                : Colors.white,
                           ),
                         ),
-                        subtitle: Text(loc['state']!, style: const TextStyle(fontSize: 11, color: Color(0xFFA1A1AA))),
+                        subtitle: Text(
+                          loc['state']!,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFFA1A1AA),
+                          ),
+                        ),
                         trailing: isCurrent
-                            ? const Icon(Icons.check_circle, color: Color(0xFFD4FF00), size: 20)
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFFD4FF00),
+                                size: 20,
+                              )
                             : null,
                         onTap: () async {
                           final nav = Navigator.of(context);
